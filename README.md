@@ -15,4 +15,11 @@ Current state of affairs:
 
 ![](images/W25X20CL.png)
 
-- Bootloop issue (#11) in SerialPrintPGM.
+- Bootloop issue (#11) in MarlinSerial::write.
+
+- Bypassing serial results in a boot:
+
+![](https://user-images.githubusercontent.com/53943260/78669598-820ec180-78aa-11ea-80bc-3bf8e1cf7158.png)
+
+
+![](https://user-images.githubusercontent.com/53943260/78669836-dd40b400-78aa-11ea-818d-72fd7a4c7a00.png)

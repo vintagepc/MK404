@@ -57,6 +57,7 @@
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
 #include "w25x20cl.h"
+#include "TMC2130.h"
 
 avr_t * avr = NULL;
 avr_vcd_t vcd_file;
@@ -81,6 +82,7 @@ uint32_t colors[4] = {
 };
 
 struct hw_t {
+	avr_t *mcu;
 	hd44780_t lcd;
 	rotenc_t encoder;
 	button_t powerPanic;
@@ -91,6 +93,7 @@ struct hw_t {
 	thermistor_t tExtruder;
 	thermistor_t tBed;
 	w25x20cl_t spiFlash;
+	tmc2130_t X;
 } hw;
 
 unsigned char guKey = 0;
@@ -117,6 +120,8 @@ void avr_special_init( avr_t * avr, void * data)
 		perror(flash_data->avr_flash_path);
 		exit(1);
 	}
+
+	// Do the same for the EEPROM
 }
 
 // avr special flash deinitalization
@@ -310,7 +315,6 @@ void setupLCD()
 			hw.lcd.irq + IRQ_HD44780_BRIGHTNESS);
 
 	rotenc_init(avr, &hw.encoder);
-
 	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_A_PIN,
 	avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),1));
 
@@ -323,7 +327,7 @@ void setupLCD()
 
 void setupSerial()
 {
-	uart_pty_init(avr, &hw.UART0);
+	//uart_pty_init(avr, &hw.UART0);
 	uart_pty_init(avr, &hw.UART1);
 	uart_pty_init(avr, &hw.UART2);
 	uart_pty_init(avr, &hw.UART3);
@@ -338,7 +342,7 @@ void setupSerial()
 
 	// Setup UART1. 
 
-	//uart_pty_connect(&hwUART1,'1');
+	//uart_pty_connect(&hw.UART1,'1');
 }
 
 void setupHeaters()
@@ -352,6 +356,25 @@ void setupHeaters()
 		(short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
 		sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
 		OVERSAMPLENR, 20.0f);
+}
+
+void setupDrivers()
+{
+	tmc2130_init(avr, &hw.X, 'X');
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT),
+		hw.X.irq + IRQ_TMC2130_SPI_BYTE_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),0),
+		hw.X.irq + IRQ_TMC2130_SPI_CSEL);
+}
+
+static void forceBLLow(
+		struct avr_irq_t * irq,
+		uint32_t value,
+        void *param)
+{	
+	printf("BLLOW hooked");
+	if (value)
+		avr_raise_irq(avr_io_getirq(hw.mcu,AVR_IOCTL_IOPORT_GETIRQ('E'),3),0); // Set BL pin low on boot.
 }
 
 int main(int argc, char *argv[])
@@ -378,6 +401,8 @@ int main(int argc, char *argv[])
 	}
 
 	avr = avr_make_mcu_by_name(mmcu);
+
+	hw.mcu = avr;
 	if (!avr) {
 		fprintf(stderr, "%s: Error creating the AVR core\n", argv[0]);
 		exit(1);
@@ -407,7 +432,6 @@ int main(int argc, char *argv[])
 	avr_init(avr);
 	avr_load_firmware(avr,&f);
 	avr->frequency = freq;
-
 	memcpy(avr->flash + boot_base, boot, boot_size);
 	printf("Boot base at:%u\n",boot_base);
 	free(boot);
@@ -428,6 +452,10 @@ int main(int argc, char *argv[])
 	setupHeaters();
 
 	setupLCD();
+
+	setupDrivers();
+
+	avr_irq_register_notify(avr_io_getirq(hw.mcu,AVR_IOCTL_IOPORT_GETIRQ('E'),3),forceBLLow,NULL);
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");

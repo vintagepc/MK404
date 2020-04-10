@@ -36,10 +36,21 @@ LDFLAGS += -lpthread -lutil
 
 include ../Makefile.opengl
 
-all: obj ${target} 
+.PHONY: MK3S.afx
 
-//atmega2560_PFW.axf: atmega2560_PFW.c
+all: obj ${target} MK3S.afx 
 
+MK3S.afx:
+	./build-fw.sh
+	cp ../Prusa-Firmware-build/Firmware.ino.elf MK3S.afx;
+	
+
+OBJdump: MK3S.afx
+	avr-objdump -d MK3S.afx > MK3S.txt
+	
+buildRun: all 
+	./Einsy.elf
+	
 ${board} : ${OBJ}/thermistor.o: hwDefs/thermistor.c
 
 include ${simavr}/Makefile.common

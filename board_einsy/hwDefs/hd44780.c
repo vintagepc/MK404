@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "sim_time.h"
-
+#include "avr_timer.h"
 #include "hd44780.h"
 
 //#define TRACE(_w) _w
@@ -387,8 +387,9 @@ hd44780_brightness_changed_hook(
         void *param)
 {
 	hd44780_t *b = (hd44780_t *) param;
-	//printf("Brightness pin changed value: %u\n",value);
+	TRACE(printf("Brightness pin changed value: %u\n",value));
 	b->iBrightness = (uint8_t)value;
+	avr_raise_irq(b->irq + IRQ_HD44780_BRIGHTNESS_OUT,0); // Force low to enable detect.
 	hd44780_set_flag(b,HD44780_FLAG_DIRTY,1);
 }
 
@@ -469,7 +470,8 @@ hd44780_init(
 	for (int i = 0; i < IRQ_HD44780_INPUT_COUNT; i++)
 		avr_irq_register_notify(b->irq + i, hd44780_pin_changed_hook, b);
 
-	avr_irq_register_notify(b->irq + IRQ_HD44780_BRIGHTNESS, hd44780_brightness_changed_hook,b);
+	// Attach to PWM control signal
+	avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_TIMER_GETIRQ('3'),TIMER_IRQ_OUT_PWM0),hd44780_brightness_changed_hook,b);
 
 	_hd44780_reset_cursor(b);
 	_hd44780_clear_screen(b);

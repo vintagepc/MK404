@@ -33,15 +33,15 @@ enum {
 	IRQ_UART_PTY_COUNT
 };
 
-DECLARE_FIFO(uint8_t,uart_pty_fifo, 128);
+DECLARE_FIFO(uint8_t,uart_pty_fifo, 512);
 
 typedef struct uart_pty_port_t {
-	int			tap : 1, crlf : 1;
+	unsigned int	tap : 1, crlf : 1;
 	int 		s;			// socket we chat on
 	char 		slavename[64];
 	uart_pty_fifo_t in;
 	uart_pty_fifo_t out;
-	uint8_t		buffer[128];
+	uint8_t		buffer[512];
 	size_t		buffer_len, buffer_done;
 } uart_pty_port_t, *uart_pty_port_p;
 

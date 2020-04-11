@@ -26,6 +26,7 @@ IPATH += ./hwDefs // Custom parts first..
 IPATH += ../parts
 IPATH += ${simavr}/include
 IPATH += ${simavr}/simavr/sim
+IPATH += ${simavr}/simavr/cores
 
 VPATH = .
 VPATH += ./hwDefs
@@ -64,9 +65,11 @@ ${board} : ${OBJ}/hd44780.o
 ${board} : ${OBJ}/hd44780_glut.o
 ${board} : ${OBJ}/thermistor.o
 ${board} : ${OBJ}/w25x20cl.o
+${board} : ${OBJ}/Einsy_EEPROM.o
 ${board} : ${OBJ}/${target}.o
 
 ${target}: ${board}
+	if [ ! -f ${target}.elf ]; then ln -s ${OBJ}/${target}.elf ${target}.elf; fi
 	@echo $@ done
 
 clean: clean-${OBJ}

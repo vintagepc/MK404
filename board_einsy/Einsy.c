@@ -42,10 +42,10 @@
 #define TERMISTOR_TABLE(num) \
 		_TERMISTOR_TABLE(num)
 
-
 #include "sim_avr.h"
 #include "avr_ioport.h"
 #include "avr_spi.h"
+#include "avr_eeprom.h"
 #include "sim_elf.h"
 #include "sim_hex.h"
 #include "sim_gdb.h"
@@ -57,6 +57,8 @@
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
 #include "w25x20cl.h"
+#include "Firmware/eeprom.h"
+#include "Einsy_EEPROM.h"
 
 avr_t * avr = NULL;
 avr_vcd_t vcd_file;
@@ -67,13 +69,10 @@ uint8_t gbPrintPC = 0;
 struct avr_flash {
 	char avr_flash_path[1024];
 	int avr_flash_fd;
+	char avr_eeprom_path[1024];
+	int avr_eeprom_fd;
 };
 
-// LCD setup
-// bg. char bg, text,
-// white  = ebf8ff
-
-//float pixsize = 16;
 int window;
 
 uint32_t colors[4] = {
@@ -129,10 +128,13 @@ void avr_special_deinit( avr_t* avr, void * data)
 	lseek(flash_data->avr_flash_fd, SEEK_SET, 0);
 	ssize_t r = write(flash_data->avr_flash_fd, avr->flash, avr->flashend + 1);
 	if (r != avr->flashend + 1) {
-		fprintf(stderr, "unable to load flash memory\n");
+		fprintf(stderr, "unable to write flash memory\n");
 		perror(flash_data->avr_flash_path);
 	}
 	close(flash_data->avr_flash_fd);
+
+	einsy_eeprom_save(avr, flash_data->avr_eeprom_path, flash_data->avr_eeprom_fd);
+
 	uart_pty_stop(&hw.UART0);
 	uart_pty_stop(&hw.UART1);
 }
@@ -210,7 +212,7 @@ avr_run_thread(
 	}
 
 	printf("Writing flash state...\n");
-	avr_special_deinit(avr,avr->custom.data);
+	avr_terminate(avr);
 	printf("AVR finished.\n");
 	return NULL;
 }
@@ -400,11 +402,16 @@ int main(int argc, char *argv[])
 	snprintf(flash_data.avr_flash_path, sizeof(flash_data.avr_flash_path),
 			"Einsy_%s_flash.bin", mmcu);
 	flash_data.avr_flash_fd = 0;
+	snprintf(flash_data.avr_eeprom_path, sizeof(flash_data.avr_eeprom_path),
+			"Einsy_%s_eeprom.bin", mmcu);
+	flash_data.avr_flash_fd = 0;
 	// register our own functions
 	avr->custom.init = avr_special_init;
 	avr->custom.deinit = avr_special_deinit;
 	avr->custom.data = &flash_data;
 	avr_init(avr);
+	flash_data.avr_eeprom_fd = einsy_eeprom_load(avr, flash_data.avr_eeprom_path);
+
 	avr_load_firmware(avr,&f);
 	avr->frequency = freq;
 

@@ -16,7 +16,7 @@
 #	You should have received a copy of the GNU General Public License
 #	along with simavr.  If not, see <http://www.gnu.org/licenses/>.
 
-target=	Einsy2
+target=	Einsy
 firm_src = ${wildcard at*${board}.c}
 firmware = ${firm_src:.c=.axf}
 simavr = ../../
@@ -69,7 +69,7 @@ ${board} : ${OBJ}/Einsy_EEPROM.o
 ${board} : ${OBJ}/${target}.o
 
 ${target}: ${board}
-	if [ ! -f Einsy2.elf ]; then ln -s ${OBJ}/${target}.elf ${target}.elf; fi
+	if [ ! -f ${target}.elf ]; then ln -s ${OBJ}/${target}.elf ${target}.elf; fi
 	@echo $@ done
 
 clean: clean-${OBJ}

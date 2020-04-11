@@ -30,10 +30,10 @@ int einsy_eeprom_load(
 		perror(path);
 		exit(1);
 	}
-	uint8_t bEmpty = 0;
+	uint8_t bEmpty = 1;
 	for (int i=0; i<mcu->eeprom.size +1; i++)
 	{
-		bEmpty |= buffer[i]==0;
+		bEmpty &= buffer[i]==0;
 	}
 	if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
 		memcpy(mcu->eeprom.eeprom, buffer, mcu->eeprom.size +1);

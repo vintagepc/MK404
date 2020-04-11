@@ -189,6 +189,13 @@ avr_run_thread(
 					printf("RESET/KILL\n");
 					// RESET BUTTON
 					avr_reset(avr);
+					avr_raise_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN, 0);
+					break;
+				case 't':
+					printf("FACTORY_RESET\n");
+					// Hold the button during boot to get factory reset menu
+					avr_reset(avr);
+					rotenc_button_press_hold(&hw.encoder);
 					break;
 				case 'f':
 					printf("Forcing display redraw\n");
@@ -422,6 +429,7 @@ int main(int argc, char *argv[])
 	printf("Boot base at:%u\n",boot_base);
 	free(boot);
 	avr->pc = boot_base;
+	avr->reset_pc = boot_base;
 	/* end of flash, remember we are writing /code/ */
 	avr->codeend = avr->flashend;
 	avr->log = 1 + verbose;

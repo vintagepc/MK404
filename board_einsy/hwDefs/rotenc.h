@@ -30,8 +30,9 @@
 
 #include "rotenc.h"
 
-#define ROTENC_PULSE_DURATION_US   10000UL
+#define ROTENC_PULSE_DURATION_US   50000UL
 #define ROTENC_BUTTON_DURATION_US 100000UL
+#define ROTENC_BUTTON_DURATION_LONG_US 3000000UL // 3s
 #define ROTENC_STATE_COUNT 4
 
 typedef enum {
@@ -70,7 +71,8 @@ rotenc_twist(
 	rotenc_t * rotenc,
 	rotenc_twist_t direction);
 
-void
-rotenc_button_press(rotenc_t * rotenc);
+void rotenc_button_press(rotenc_t * rotenc);
+
+void rotenc_button_press_hold(rotenc_t * rotenc);
 
 #endif /* __ROTENC_H__*/

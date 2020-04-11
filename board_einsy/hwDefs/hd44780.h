@@ -98,7 +98,7 @@ typedef struct hd44780_t
 	int		w, h;				// width and height of the LCD
 
 	uint16_t cursor;			// offset in vram
-	uint8_t  vram[80 + 64];
+	uint8_t  vram[104];
 	uint8_t  cgram[64];
 	uint8_t  cg_cursor;
 

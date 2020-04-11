@@ -62,7 +62,7 @@ static void
 _hd44780_clear_screen(
 		hd44780_t *b)
 {
-	memset(b->vram, ' ', 0x67);
+	memset(b->vram, ' ', 0x68);
 	hd44780_set_flag(b, HD44780_FLAG_DIRTY, 1);
 	avr_raise_irq(b->irq + IRQ_HD44780_ADDR, b->cursor);
 }
@@ -248,6 +248,7 @@ hd44780_write_command(
 		case 0:		// 0 0 0 0 0 0 0 1
 			_hd44780_clear_screen(b);
 			_hd44780_reset_cursor(b);
+			delay = 1520;
 			break;
 	}
 	return delay;

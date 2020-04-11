@@ -56,8 +56,10 @@ static void thermistor_in_hook(
 				short d_adc = t[0] - lt[0];
 				float d_temp = t[1] - lt[1];
 				float delta = p->current - t[1];
-				tt = lt[0] + (d_adc * (delta / d_temp));
+				tt = t[0] + (d_adc * (delta / d_temp));
 			}
+			// if (p->adc_mux_number==-1)
+			// 	printf("simAVR ADC out value: %u\n",((tt / p->oversampling) * 5000) / 0x3ff);
 			avr_raise_irq(p->irq + IRQ_TERM_ADC_VALUE_OUT,
 						 ((tt / p->oversampling) * 5000) / 0x3ff);
 			return;

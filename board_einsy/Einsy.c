@@ -348,12 +348,12 @@ void setupHeaters()
 	thermistor_init(avr, &hw.tExtruder, 0,
 		(short*)TERMISTOR_TABLE(TEMP_SENSOR_0),
 		sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(short) / 2,
-		OVERSAMPLENR, 25.0f);
+		OVERSAMPLENR, 183.0f);
 
-		thermistor_init(avr, &hw.tBed, 2,
-		(short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
-		sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
-		OVERSAMPLENR, 20.0f);
+		 thermistor_init(avr, &hw.tBed, 2,
+		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
+		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
+		 OVERSAMPLENR, 63.0f);
 }
 
 int main(int argc, char *argv[])
@@ -414,6 +414,9 @@ int main(int argc, char *argv[])
 
 	avr_load_firmware(avr,&f);
 	avr->frequency = freq;
+	avr->vcc = 5000;
+	avr->aref = 0;
+	avr->avcc = 5000;
 
 	memcpy(avr->flash + boot_base, boot, boot_size);
 	printf("Boot base at:%u\n",boot_base);

@@ -36,6 +36,7 @@
 
 #define TEMP_SENSOR_0 5
 #define TEMP_SENSOR_BED 1
+#define TEMP_SENSOR_AMBIENT 2000
 
 #define _TERMISTOR_TABLE(num) \
 		temptable_##num
@@ -83,12 +84,8 @@ struct hw_t {
 	hd44780_t lcd;
 	rotenc_t encoder;
 	button_t powerPanic;
-	uart_pty_t UART0;
-	uart_pty_t UART1;
-	uart_pty_t UART2;
-	uart_pty_t UART3;
-	thermistor_t tExtruder;
-	thermistor_t tBed;
+	uart_pty_t UART0, UART1, UART2, UART3;
+	thermistor_t tExtruder, tBed, tPinda, tAmbient;
 	w25x20cl_t spiFlash;
 } hw;
 
@@ -361,6 +358,17 @@ void setupHeaters()
 		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
 		 OVERSAMPLENR, 63.0f);
+
+		// same table as bed.
+		thermistor_init(avr, &hw.tPinda, 3,
+		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
+		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
+		 OVERSAMPLENR, 63.0f);
+
+		thermistor_init(avr, &hw.tAmbient, 6,
+		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
+		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
+		 OVERSAMPLENR, 35.0f);
 }
 
 int main(int argc, char *argv[])

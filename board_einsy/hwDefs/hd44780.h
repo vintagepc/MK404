@@ -64,6 +64,7 @@ enum {
     IRQ_HD44780_DATA_IN,
     IRQ_HD44780_DATA_OUT,
 	IRQ_HD44780_BRIGHTNESS, // Technically an input but best handled OOB of the main ones.
+	IRQ_HD44780_BRIGHTNESS_OUT, // Technically an input but best handled OOB of the main ones.
     IRQ_HD44780_COUNT
 };
 

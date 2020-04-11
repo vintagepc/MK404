@@ -52,8 +52,6 @@ OBJdump: MK3S.afx
 buildRun: all 
 	./Einsy.elf
 	
-${board} : ${OBJ}/thermistor.o: hwDefs/thermistor.c
-
 include ${simavr}/Makefile.common
 
 board = ${OBJ}/${target}.elf
@@ -73,4 +71,4 @@ ${target}: ${board}
 	@echo $@ done
 
 clean: clean-${OBJ}
-	rm -rf *.hex *.a *.axf ${target} *.vcd .*.swo .*.swp .*.swm .*.swn
+	rm -rf *.a *.axf ${target} *.vcd .*.swo .*.swp .*.swm .*.swn

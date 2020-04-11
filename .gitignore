@@ -1,0 +1,7 @@
+
+.directory
+.vscode
+build-env
+*.d
+*.o
+*.elf

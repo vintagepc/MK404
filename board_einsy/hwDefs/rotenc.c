@@ -97,7 +97,7 @@ rotenc_button_auto_release(
 }
 
 void
-rotenc_button_press(rotenc_t * rotenc)
+_rotenc_button_press(rotenc_t * rotenc, uint32_t duration)
 {
 	// Press down
 	if (rotenc->verbose) {
@@ -108,9 +108,19 @@ rotenc_button_press(rotenc_t * rotenc)
 	// Pull up later
 	avr_cycle_timer_register_usec(
 		rotenc->avr,
-		ROTENC_BUTTON_DURATION_US,
+		duration,
 		rotenc_button_auto_release,
 		rotenc);
+}
+
+void rotenc_button_press(rotenc_t *rotenc)
+{
+	_rotenc_button_press(rotenc, ROTENC_BUTTON_DURATION_US);
+}
+
+void rotenc_button_press_hold(rotenc_t *rotenc)
+{
+	_rotenc_button_press(rotenc, ROTENC_BUTTON_DURATION_LONG_US);
 }
 
 /*
@@ -123,7 +133,7 @@ rotenc_twist(
 {
 	rotenc->direction = direction;
 
-	rotenc->iPulseCt = 8;
+	rotenc->iPulseCt = 6;
 
 	avr_cycle_timer_register_usec(
 		rotenc->avr,
@@ -153,5 +163,6 @@ rotenc_init(
 			IRQ_ROTENC_COUNT,
 			_rotenc_irq_names);
 	rotenc->avr = avr;
+	//rotenc->verbose =1;
 }
 

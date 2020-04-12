@@ -57,6 +57,7 @@ include ${simavr}/Makefile.common
 board = ${OBJ}/${target}.elf
 
 ${board} : ${OBJ}/rotenc.o
+${board} : ${OBJ}/fan.o
 ${board} : ${OBJ}/button.o
 ${board} : ${OBJ}/uart_pty.o
 ${board} : ${OBJ}/hd44780.o

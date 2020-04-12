@@ -380,7 +380,7 @@ void setupHeaters()
 
 		fan_init(avr, &hw.fPrint,4500, 
 			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),7),
-			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM2));
+			NULL);//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM2));
 }
 
 int main(int argc, char *argv[])

@@ -47,11 +47,13 @@
 #include "avr_ioport.h"
 #include "avr_spi.h"
 #include "avr_eeprom.h"
+#include "avr_timer.h"
 #include "sim_elf.h"
 #include "sim_hex.h"
 #include "sim_gdb.h"
 #include "uart_pty.h"
 #include "hd44780_glut.h"
+#include "fan.h"
 #include "rotenc.h"
 #include "button.h"
 #include "thermistor.h"
@@ -86,6 +88,7 @@ struct hw_t {
 	button_t powerPanic;
 	uart_pty_t UART0, UART1, UART2, UART3;
 	thermistor_t tExtruder, tBed, tPinda, tAmbient;
+	fan_t fExtruder,fPrint;
 	w25x20cl_t spiFlash;
 } hw;
 
@@ -369,6 +372,15 @@ void setupHeaters()
 		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
 		 OVERSAMPLENR, 35.0f);
+
+		fan_init(avr, &hw.fExtruder,3300, 
+			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),6),
+			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM0));
+
+
+		fan_init(avr, &hw.fPrint,4500, 
+			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),7),
+			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM2));
 }
 
 int main(int argc, char *argv[])

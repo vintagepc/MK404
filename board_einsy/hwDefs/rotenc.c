@@ -131,9 +131,13 @@ rotenc_twist(
 	rotenc_t * rotenc,
 	rotenc_twist_t direction)
 {
-	rotenc->direction = direction;
-
-	rotenc->iPulseCt = 6;
+	if (rotenc->direction == direction)
+		rotenc->iPulseCt+=6; // Just tick it more if the dir is correct.
+	else
+	{
+		rotenc->direction = direction;
+		rotenc->iPulseCt = 6;
+	}
 
 	avr_cycle_timer_register_usec(
 		rotenc->avr,

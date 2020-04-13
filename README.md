@@ -15,7 +15,8 @@ You currently cannot run an as-is Marlin build. See the following notes on the s
 - Encoder and buttons are simulated
 - Power panic (fake button) is wired up
 - 4 UARTS are defined but not attached externally.
-- Thermistors are defined for the bed and hotend, but I have not debugged why they read 0 instead of the starting temp yet. 
+- Thermistors are defined for the bed, PINDA, ambient and hotend. Bed/PINDA read higher than expected over 40C due to code in the official firmware (prusa3d#2601)
+- Fans have been attached as a starting point. PWM still needs to be attached but they will read values if set directly.
 - Firmware starts to boot, detects missing SPI flash (A stub has been wired in to serve as a starting point):
 
 ![](images/W25X20CL.png)
@@ -26,4 +27,4 @@ You currently cannot run an as-is Marlin build. See the following notes on the s
 
 ![](https://user-images.githubusercontent.com/53943260/78808917-1f91f000-7994-11ea-87ae-fd7fa096972b.png)
 
-- The Timer bug (#1) has also been worked around in the provided .afx file by calling timer0_init() at the beginning of setup() in marlin_main.cpp.
+- The Timer bug (#1) has also been worked around in the provided .afx file by calling timer0_init() at the beginning of setup() in marlin_main.cpp. A further fix is in progress. 

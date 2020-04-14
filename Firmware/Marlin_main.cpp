@@ -994,9 +994,7 @@ static void w25x20cl_err_msg()
 // are initialized by the main() routine provided by the Arduino framework.
 void setup()
 {
-
-  timer0_init();
-	mmu_init();
+  	mmu_init();
 
 	ultralcd_init();
 

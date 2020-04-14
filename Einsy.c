@@ -383,6 +383,52 @@ void setupHeaters()
 			NULL);//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM2));
 }
 
+void setupTimers(avr_t* avr)
+{
+
+	 avr_regbit_t rb = AVR_IO_REGBITS(0xB0,0,0xFF);
+	 //	avr_regbit_setto(avr, rb, 0x03);
+	//	rb.reg++;
+	//avr_regbit_setto(avr, rb, 0x03); // B
+
+	// rb.reg = 0x80; // TCCR1A
+	// avr_regbit_setto(avr, rb, 0x01);
+	// rb.reg++;
+	// avr_regbit_setto(avr, rb, 0x03); // B
+
+	// //rb.reg = 0xB0; // TCCR2A
+	// avr_regbit_setto(avr, rb, 0);
+	// rb.reg++;
+	// avr_regbit_setto(avr, rb, 0x1); // B
+
+	//  rb.reg=0xb3; //OCR2A
+	//  avr_regbit_setto(avr, rb, 0x00);
+	//  rb.reg++; // 2B
+	//  avr_regbit_setto(avr, rb, 128);
+
+	rb.reg = 0x70;
+	rb.mask= 0b00000111;
+	// TIMSK2
+	avr_regbit_setto(avr,rb,0x01);
+
+		// rb.mask = 0xFF;
+	// rb.reg = 0x90; // TCCR3A
+	// avr_regbit_setto(avr, rb, 0x01 | 1<<6);
+	// rb.reg++;
+	// avr_regbit_setto(avr, rb, 1); // B
+
+	// rb.reg = 0xA0; // TCCR4A
+	// avr_regbit_setto(avr, rb, 0x01 | 1 <<6);
+	// rb.reg++;
+	// avr_regbit_setto(avr, rb, 0x01); // B
+
+	// rb.reg = 0x120; // TCCR5A
+	// avr_regbit_setto(avr, rb, 0x01);
+	// rb.reg++;
+	// avr_regbit_setto(avr, rb, 0x03); // B */
+
+}
+
 int main(int argc, char *argv[])
 {
 	struct avr_flash flash_data;
@@ -466,6 +512,8 @@ int main(int argc, char *argv[])
 	setupHeaters();
 
 	setupLCD();
+
+	setupTimers(avr);
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");

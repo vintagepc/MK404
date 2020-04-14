@@ -375,12 +375,13 @@ void setupHeaters()
 
 		fan_init(avr, &hw.fExtruder,3300, 
 			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),6),
-			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM0));
-
+			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('H'),5),
+			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM2));
 
 		fan_init(avr, &hw.fPrint,4500, 
 			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),7),
-			NULL);//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM2));
+			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('H'),3),
+			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM0));
 }
 
 void setupTimers(avr_t* avr)
@@ -411,16 +412,22 @@ void setupTimers(avr_t* avr)
 	// TIMSK2
 	avr_regbit_setto(avr,rb,0x01);
 
-		// rb.mask = 0xFF;
-	// rb.reg = 0x90; // TCCR3A
-	// avr_regbit_setto(avr, rb, 0x01 | 1<<6);
+
+
+	//rb.reg++;
+	//rb.mask= 0b00001111;
+	// TIMSK3
+	//avr_regbit_setto(avr,rb,0b00000010);
+
+	//rb.reg = 0x90; // TCCR3A
+	//avr_regbit_setto(avr, rb, 0x03);// | 1<<6);
 	// rb.reg++;
 	// avr_regbit_setto(avr, rb, 1); // B
 
-	// rb.reg = 0xA0; // TCCR4A
-	// avr_regbit_setto(avr, rb, 0x01 | 1 <<6);
-	// rb.reg++;
-	// avr_regbit_setto(avr, rb, 0x01); // B
+//	 rb.reg = 0xA0; // TCCR4A
+//	 avr_regbit_setto(avr, rb, 0x03);// | 1 <<6);
+//	 rb.reg++;
+//	 avr_regbit_setto(avr, rb, 0x01); // B
 
 	// rb.reg = 0x120; // TCCR5A
 	// avr_regbit_setto(avr, rb, 0x01);

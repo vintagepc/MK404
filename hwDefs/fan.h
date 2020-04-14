@@ -11,6 +11,7 @@
 
 enum {
 	IRQ_FAN_PWM_IN = 0,
+    IRQ_FAN_DIGITAL_IN,
     IRQ_FAN_SPEED_OUT,
     IRQ_FAN_TACH_OUT,
 	IRQ_FAN_COUNT
@@ -41,6 +42,7 @@ fan_init(
 		fan_t * b,
 		uint16_t iMaxRPM,
         avr_irq_t *irqTach,
+        avr_irq_t *irqDigital,
         avr_irq_t *irqPWM);
 
 void fan_stall(fan_t *p, bool bStall);

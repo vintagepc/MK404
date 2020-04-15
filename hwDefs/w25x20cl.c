@@ -190,8 +190,6 @@ static void w25x20cl_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void *
 	else
 	{
 		this->state = W25X20CL_STATE_IDLE;
-		this->cmdOut = 0xFF;
-		SPI_SEND();
 	}
 }
 

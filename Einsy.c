@@ -48,6 +48,7 @@
 #include "avr_spi.h"
 #include "avr_eeprom.h"
 #include "avr_timer.h"
+#include "avr_extint.h"
 #include "sim_elf.h"
 #include "sim_hex.h"
 #include "sim_gdb.h"
@@ -62,6 +63,7 @@
 #include "w25x20cl.h"
 #include "Firmware/eeprom.h"
 #include "Einsy_EEPROM.h"
+#include "stdbool.h"
 
 avr_t * avr = NULL;
 avr_vcd_t vcd_file;
@@ -438,6 +440,8 @@ void setupTimers(avr_t* avr)
 
 int main(int argc, char *argv[])
 {
+	bool bBootloader = false;
+
 	struct avr_flash flash_data;
 	char boot_path[1024] = "stk500boot_v2_mega2560.hex";
 	//char boot_path[1024] = "atmega2560_PFW.axf";
@@ -453,6 +457,8 @@ int main(int argc, char *argv[])
 			debug++;
 		else if (!strcmp(argv[i], "-v"))
 			verbose++;
+		else if (!strcmp(argv[i], "-b"))
+			bBootloader = true;
 		else {
 			fprintf(stderr, "%s: invalid argument %s\n", argv[0], argv[i]);
 			exit(1);
@@ -501,8 +507,11 @@ int main(int argc, char *argv[])
 	memcpy(avr->flash + boot_base, boot, boot_size);
 	printf("Boot base at:%u\n",boot_base);
 	free(boot);
-	avr->pc = boot_base;
-	avr->reset_pc = boot_base;
+	if (bBootloader)
+	{
+		avr->pc = boot_base;
+		avr->reset_pc = boot_base;
+	}
 	/* end of flash, remember we are writing /code/ */
 	avr->codeend = avr->flashend;
 	avr->log = 1 + verbose;
@@ -513,6 +522,10 @@ int main(int argc, char *argv[])
 		avr->state = cpu_Stopped;
 		avr_gdb_init(avr);
 	}
+
+	// suppress continuous polling for low INT lines... major performance drain.
+	for (int i=0; i<8; i++)
+		avr_extint_set_strict_lvl_trig(avr,i,false);
 
 	setupSerial();
 

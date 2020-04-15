@@ -38,7 +38,7 @@ enum w25x20cl_states{
 typedef struct w25x20cl_t {
 	avr_irq_t *	irq;		// irq list
 	uint8_t flash[W25X20CL_TOTAL_SIZE];
-	uint8_t cmdIn[4];
+	uint8_t cmdIn[5];
 	uint8_t rxCnt;
 	uint8_t cmdOut;
 	uint8_t command;

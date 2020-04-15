@@ -1,0 +1,27 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout SimAVR
+    - uses: actions/checkout@v2
+      with:
+        repository: 'vintagepc/simavr'
+        ref: 'worktree_test'
+    - name: Checkout Board
+    - uses: actions/checkout@v2
+      with: 
+        path: examples/boards_einsy
+    - name: Build SimAVR
+      run: make
+    - name: Build board
+      run: cd examples/boards_einsy && make

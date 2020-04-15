@@ -1,5 +1,4 @@
-name: C/C++ CI
-
+name: Build board
 on:
   push:
     branches: [ master ]
@@ -12,7 +11,3 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
-      - name: make
-        run: make

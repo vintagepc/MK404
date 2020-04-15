@@ -539,6 +539,15 @@ int main(int argc, char *argv[])
 	button_init(avr, &hw.powerPanic,"PowerPanic");
 	//avr_raise_irq(hwPowerPanic.irq + IRQ_BUTTON_OUT, 0);
 
+	// Fake an external pullup on the BL pin so it can be detected:
+	avr_ioport_external_t ex;
+	ex.mask = 1<<3;
+	ex.value = 0;
+	ex.name = 'E';
+
+	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
+
+
 	/*
 	 * OpenGL init, can be ignored
 	 */

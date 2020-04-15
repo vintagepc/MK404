@@ -393,7 +393,7 @@ void setupHeaters()
 			avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),5));
 
 		avr_connect_irq(hw.hExtruder.irq + IRQ_HEATER_TEMP_OUT,hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
-		avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
+	//	avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
 }
 
 void setupTimers(avr_t* avr)

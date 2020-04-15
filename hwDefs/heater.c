@@ -61,7 +61,7 @@ static void heater_pwm_hook(
 
     if (this->flags.bAuto) // Only update RPM if auto (pwm-controlled). Else user supplied RPM.
         this->iPWM = value;
-    TRACE(printf("New PWM value on heater: %u/\n", this->iPWM));
+    TRACE(printf("New PWM value on heater: %u\n", this->iPWM));
     if (this->iPWM > 0)
     {
         avr_cycle_timer_register_usec(this->avr,100000,heater_temp_change,this);
@@ -102,7 +102,7 @@ heater_init(
     if(irqDigital) avr_connect_irq(irqDigital, this->irq + IRQ_HEATER_DIGITAL_IN);
     //avr_connect_irq(this->irq + IRQ_FAN_TACH_OUT,irqTach);
 
-    //avr_irq_register_notify(this->irq + IRQ_HEATER_PWM_IN, heater_pwm_hook,this);
+    avr_irq_register_notify(this->irq + IRQ_HEATER_PWM_IN, heater_pwm_hook,this);
     avr_irq_register_notify(this->irq + IRQ_HEATER_DIGITAL_IN, heater_digital_hook,this);
 }
 

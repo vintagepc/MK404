@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <fcntl.h>
 #include "sim_avr.h"
 #include "avr_spi.h"
 #include "w25x20cl.h"
@@ -189,8 +190,7 @@ static const char * irq_names[IRQ_W25X20CL_COUNT] = {
 		[IRQ_W25X20CL_SPI_BYTE_OUT] = "8>w25x20cl.chain",
 };
 
-void
-w25x20cl_init(
+void w25x20cl_init(
 		struct avr_t * avr,
 		w25x20cl_t *p)
 {
@@ -201,5 +201,53 @@ w25x20cl_init(
 	
 	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_BYTE_IN, w25x20cl_spi_in_hook, p);
 	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_CSEL, w25x20cl_csel_in_hook, p);
+}
+
+int w25x20cl_load(
+		const char* path,
+		w25x20cl_t *p)
+{
+	w25x20cl_t* this = (w25x20cl_t*)p;
+	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
+	int fd = open(path, O_RDWR | O_CREAT, 0644);
+	if (fd < 0) {
+		perror(path);
+		exit(1);
+	}
+	printf("Loading %u bytes of XFLASH\n", W25X20CL_TOTAL_SIZE);
+	(void)ftruncate(fd, W25X20CL_TOTAL_SIZE + 1);
+	uint8_t *buffer = malloc(W25X20CL_TOTAL_SIZE + 1);
+	ssize_t r = read(fd, buffer, W25X20CL_TOTAL_SIZE + 1);
+	printf("Read %d bytes\n", (int)r);
+	if (r !=  W25X20CL_TOTAL_SIZE + 1) {
+		fprintf(stderr, "unable to load XFLASH\n");
+		perror(path);
+		exit(1);
+	}
+	uint8_t bEmpty = 1;
+	for (int i = 0; i < W25X20CL_TOTAL_SIZE + 1; i++)
+	{
+		bEmpty &= buffer[i] == 0;
+	}
+	if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
+		memcpy(this->flash, buffer, W25X20CL_TOTAL_SIZE + 1);
+
+	free(buffer);
+	return fd;
+}
+
+void w25x20cl_save(
+		const char* path, 
+		w25x20cl_t *p)
+{
+	w25x20cl_t* this = (w25x20cl_t*)p;
+	// Also write out the xflash contents:
+	lseek(this->xflash_fd, SEEK_SET, 0);
+	ssize_t r = write(this->xflash_fd, this->flash, W25X20CL_TOTAL_SIZE + 1);
+	if (r != W25X20CL_TOTAL_SIZE + 1) {
+		fprintf(stderr, "unable to write xflash memory\n");
+		perror(path);
+	}
+	close(this->xflash_fd);
 }
 

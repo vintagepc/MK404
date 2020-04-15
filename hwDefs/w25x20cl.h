@@ -14,6 +14,14 @@
  * for practicality sake the shift register is kept 32 bits
  * wide so it acts as 4 of them "daisy chained" already. 
  */
+
+#define W25X20CL_TOTAL_SIZE 262144
+#define W25X20CL_PAGE_SIZE 256
+#define W25X20CL_SECTOR_SIZE 4096
+#define W25X20CL_BLOCK32_SIZE 32768
+#define W25X20CL_BLOCK64_SIZE 65536
+
+
 enum {
 	IRQ_W25X20CL_SPI_BYTE_IN = 0,	// if hooked to a byte based SPI IRQ
 	IRQ_W25X20CL_SPI_BYTE_OUT,		// to chain them !!
@@ -21,18 +29,23 @@ enum {
 	IRQ_W25X20CL_COUNT
 };
 
-typedef union w25x20cl_flags_t{
-    uint8_t flags;
-    struct 
-    {
-        uint8_t selected : 1;
-    } bits;
-} w25x20cl_flags_t;
+enum w25x20cl_states{
+	W25X20CL_STATE_IDLE = 0, //when CS is HIGH
+	W25X20CL_STATE_LOADING,
+	W25X20CL_STATE_RUNNING,
+};
 
 typedef struct w25x20cl_t {
 	avr_irq_t *	irq;		// irq list
-	uint8_t value;
-	w25x20cl_flags_t flags;
+	uint8_t flash[W25X20CL_TOTAL_SIZE];
+	uint8_t cmdIn[4];
+	uint8_t rxCnt;
+	uint8_t cmdOut;
+	uint8_t command;
+	uint32_t address;
+	uint8_t page_pointer;
+	uint8_t status_register;
+	int state;
 	// TODO...
 } w25x20cl_t;
 

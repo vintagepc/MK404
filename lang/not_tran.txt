@@ -1,0 +1,21 @@
+Auto
+Belt test        
+Bright
+Brightness
+Cont.
+Cut filament
+Cutter
+Cutting filament
+Dim
+FS Action
+Is the filament unloaded?
++Jam
+Level Bright
+Level Dimmed
+Pause
+PINDA
+Please insert filament (but not load them!) into extruder and then press the knob.
+Possible extruder jam detected (IR=0). Fix problem and press knob.
+Sheet %.7s\x0aZ offset: %+1.3f mm\x0a%cContinue\x0a%cStart from zero
+%s level expected
+Timeout

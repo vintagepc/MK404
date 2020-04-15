@@ -11,11 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
+      - uses: actions/checkout@v1
 
-    - name: Checkout tools repo
-      uses: actions/checkout@v1
-      with:
-        repository: vintagepc/simavr
-        path: test
+      - uses: actions/checkout@v1
+        with:
+          repository: vintagepc/simavr
+          path: test

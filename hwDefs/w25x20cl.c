@@ -103,6 +103,7 @@ static void w25x20cl_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 			this->command = this->cmdIn[0];
 			switch(this->command)
 			{
+				case _CMD_RD_DATA:
 				case _CMD_MFRID_DEVID:
 				{
 					if (this->rxCnt == 4)
@@ -117,6 +118,7 @@ static void w25x20cl_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 						this->state = W25X20CL_STATE_RUNNING;
 					}
 				} break;
+				
 				default:
 				{
 				printf("w25x20cl_t: error: unknown command: ");
@@ -131,12 +133,19 @@ static void w25x20cl_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 		} break;
 		case W25X20CL_STATE_RUNNING:
 		{
-			TRACE(printf("command:%02x, addr:%05x\n", this->command, this->address));
+			TRACE(printf("w25x20cl_t: command:%02x, addr:%05x\n", this->command, this->address));
 			switch (this->command)
 			{
 				case _CMD_MFRID_DEVID:
 				{
 					this->cmdOut = (this->address % 2)?_DEVID:_MFRID;
+					this->address++;
+					this->address %= W25X20CL_TOTAL_SIZE;
+					SPI_SEND();
+				} break;
+				case _CMD_RD_DATA:
+				{
+					this->cmdOut = this->flash[this->address];
 					this->address++;
 					this->address %= W25X20CL_TOTAL_SIZE;
 					SPI_SEND();

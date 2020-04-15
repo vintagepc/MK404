@@ -55,6 +55,7 @@
 #include "uart_pty.h"
 #include "hd44780_glut.h"
 #include "fan.h"
+#include "heater.h"
 #include "rotenc.h"
 #include "button.h"
 #include "thermistor.h"
@@ -91,6 +92,7 @@ struct hw_t {
 	uart_pty_t UART0, UART1, UART2, UART3;
 	thermistor_t tExtruder, tBed, tPinda, tAmbient;
 	fan_t fExtruder,fPrint;
+	heater_t hExtruder, hBed;
 	w25x20cl_t spiFlash;
 } hw;
 
@@ -357,23 +359,23 @@ void setupHeaters()
 	thermistor_init(avr, &hw.tExtruder, 0,
 		(short*)TERMISTOR_TABLE(TEMP_SENSOR_0),
 		sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(short) / 2,
-		OVERSAMPLENR, 183.0f);
+		OVERSAMPLENR, 25.0f);
 
 		 thermistor_init(avr, &hw.tBed, 2,
 		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
-		 OVERSAMPLENR, 63.0f);
+		 OVERSAMPLENR, 23.0f);
 
 		// same table as bed.
 		thermistor_init(avr, &hw.tPinda, 3,
 		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
-		 OVERSAMPLENR, 63.0f);
+		 OVERSAMPLENR, 24.0f);
 
 		thermistor_init(avr, &hw.tAmbient, 6,
 		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
-		 OVERSAMPLENR, 35.0f);
+		 OVERSAMPLENR, 21.0f);
 
 		fan_init(avr, &hw.fExtruder,3300, 
 			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),6),
@@ -384,6 +386,14 @@ void setupHeaters()
 			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),7),
 			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('H'),3),
 			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM0));
+
+	//	heater_init(avr, &hw.hBed, 0.25,NULL,//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('0'),TIMER_IRQ_OUT_PWM0), 
+	//		avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),5));
+		heater_init(avr, &hw.hExtruder, 1.5, 25.0, NULL,//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('3'),TIMER_IRQ_OUT_PWM2), 
+			avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),5));
+
+		avr_connect_irq(hw.hExtruder.irq + IRQ_HEATER_TEMP_OUT,hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
+		avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
 }
 
 void setupTimers(avr_t* avr)
@@ -409,8 +419,12 @@ void setupTimers(avr_t* avr)
 	//  rb.reg++; // 2B
 	//  avr_regbit_setto(avr, rb, 128);
 
-	rb.reg = 0x70;
+	rb.reg = 0x6e;
 	rb.mask= 0b00000111;
+	// TIMSK0
+//	avr_regbit_setto(avr,rb,0x01);
+
+	rb.reg = 0x70;
 	// TIMSK2
 	avr_regbit_setto(avr,rb,0x01);
 

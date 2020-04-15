@@ -340,8 +340,8 @@ void setupSerial()
 	w25x20cl_init(avr, &hw.spiFlash);
 
 	// Wire up the SPI
-	avr_connect_irq(avr_io_getirq(avr, AVR_IOCTL_SPI_GETIRQ(0),0), 
-		hw.spiFlash.irq + IRQ_W25X20CL_SPI_BYTE_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT), hw.spiFlash.irq + IRQ_W25X20CL_SPI_BYTE_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),5),hw.spiFlash.irq + IRQ_W25X20CL_SPI_CSEL);
 
 	//uart_pty_connect(&hw.UART0, '0');
 

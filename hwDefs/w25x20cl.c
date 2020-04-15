@@ -40,8 +40,18 @@
  */
 static void w25x20cl_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
-	w25x20cl_t * p = (w25x20cl_t*)param;
-	TRACE(printf("SPI byte received: %02x\n",value));
+	w25x20cl_t* this = (w25x20cl_t*)param;
+	if (!this->flags.bits.selected)
+		return;
+	TRACE(printf("w25x20cl_t: byte received: %02x\n",value));
+}
+
+// Called when CSEL changes.
+static void w25x20cl_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
+{
+	w25x20cl_t* this = (w25x20cl_t*)param;
+	TRACE(printf("w25x20cl_t: CSEL changed to %02x\n",value));
+	this->flags.bits.selected = (value==0); // NOTE: active low!
 }
 
 static const char * irq_names[IRQ_W25X20CL_COUNT] = {
@@ -56,6 +66,6 @@ w25x20cl_init(
 {
 	p->irq = avr_alloc_irq(&avr->irq_pool, 0, IRQ_W25X20CL_COUNT, irq_names);
 	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_BYTE_IN, w25x20cl_spi_in_hook, p);
-
+	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_CSEL, w25x20cl_csel_in_hook, p);
 }
 

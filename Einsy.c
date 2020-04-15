@@ -138,6 +138,8 @@ void avr_special_deinit( avr_t* avr, void * data)
 	close(flash_data->avr_flash_fd);
 
 	einsy_eeprom_save(avr, flash_data->avr_eeprom_path, flash_data->avr_eeprom_fd);
+	
+	w25x20cl_save(hw.spiFlash.filepath, &hw.spiFlash);
 
 	uart_pty_stop(&hw.UART0);
 	uart_pty_stop(&hw.UART1);
@@ -505,12 +507,16 @@ int main(int argc, char *argv[])
 	snprintf(flash_data.avr_eeprom_path, sizeof(flash_data.avr_eeprom_path),
 			"Einsy_%s_eeprom.bin", mmcu);
 	flash_data.avr_flash_fd = 0;
+	snprintf(hw.spiFlash.filepath, sizeof(hw.spiFlash.filepath),
+			"Einsy_%s_xflash.bin", mmcu);
+	hw.spiFlash.xflash_fd = 0;
 	// register our own functions
 	avr->custom.init = avr_special_init;
 	avr->custom.deinit = avr_special_deinit;
 	avr->custom.data = &flash_data;
 	avr_init(avr);
 	flash_data.avr_eeprom_fd = einsy_eeprom_load(avr, flash_data.avr_eeprom_path);
+	hw.spiFlash.xflash_fd = w25x20cl_load(hw.spiFlash.filepath, &hw.spiFlash);
 
 	avr_load_firmware(avr,&f);
 	avr->frequency = freq;

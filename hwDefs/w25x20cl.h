@@ -46,12 +46,21 @@ typedef struct w25x20cl_t {
 	uint8_t page_pointer;
 	uint8_t status_register;
 	int state;
+	int xflash_fd;
+	char filepath[1024];
 	// TODO...
 } w25x20cl_t;
 
-void
-w25x20cl_init(
+void w25x20cl_init(
 		struct avr_t * avr,
+		w25x20cl_t *p);
+
+int w25x20cl_load(
+		const char* path,
+		w25x20cl_t *p);
+
+void w25x20cl_save(
+		const char* path, 
 		w25x20cl_t *p);
 
 #endif

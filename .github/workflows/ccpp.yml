@@ -12,8 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Checkout SimAVR
+    - name: Checkout simavr
       uses: actions/checkout@v2
       with:
         repository: 'vintagepc/simavr'

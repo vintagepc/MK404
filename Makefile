@@ -23,14 +23,12 @@ simavr = ../../
 
 IPATH = .
 IPATH += ./hwDefs // Custom parts first..
-IPATH += ../parts
 IPATH += ${simavr}/include
 IPATH += ${simavr}/simavr/sim
 IPATH += ${simavr}/simavr/cores
 
 VPATH = .
 VPATH += ./hwDefs
-VPATH += ../parts
 
 
 LDFLAGS += -lpthread -lutil
@@ -58,6 +56,7 @@ board = ${OBJ}/${target}.elf
 
 ${board} : ${OBJ}/rotenc.o
 ${board} : ${OBJ}/fan.o
+${board} : ${OBJ}/heater.o
 ${board} : ${OBJ}/button.o
 ${board} : ${OBJ}/uart_pty.o
 ${board} : ${OBJ}/hd44780.o

@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include "sim_avr.h"
 #include "avr_spi.h"
@@ -46,7 +47,7 @@
 // #define _CMD_ENABLE_WR_VSR 0x50
 #define _CMD_DISABLE_WR    0x04
 #define _CMD_RD_STATUS_REG 0x05
-#define _CMD_WR_STATUS_REG 0x01
+// #define _CMD_WR_STATUS_REG 0x01
 #define _CMD_RD_DATA       0x03
 // #define _CMD_RD_FAST       0x0b
 // #define _CMD_RD_FAST_D_O   0x3b
@@ -119,6 +120,10 @@ static void w25x20cl_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 						this->state = W25X20CL_STATE_RUNNING;
 					}
 				} break;
+				case _CMD_RD_STATUS_REG:
+				{
+					this->state = W25X20CL_STATE_RUNNING;
+				} break;
 				
 				default:
 				{
@@ -149,6 +154,11 @@ static void w25x20cl_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 					this->cmdOut = this->flash[this->address];
 					this->address++;
 					this->address %= W25X20CL_TOTAL_SIZE;
+					SPI_SEND();
+				} break;
+				case _CMD_RD_STATUS_REG:
+				{
+					this->cmdOut = this->status_register;
 					SPI_SEND();
 				} break;
 			}
@@ -201,6 +211,8 @@ void w25x20cl_init(
 	
 	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_BYTE_IN, w25x20cl_spi_in_hook, p);
 	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_CSEL, w25x20cl_csel_in_hook, p);
+	
+	p->status_register = 0b00000000; //SREG default values
 }
 
 int w25x20cl_load(

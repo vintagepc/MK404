@@ -1,10 +1,18 @@
 # MK3SIM
 A project/repo for simulating Einsy hardware. 
 
-Not much to see here yet, I figured that I'd just start something separate to share status updates, ideas, and related things for this topic. If I invited you you're welcome to sit back and enjoy the ride, or contribute to hardware implementations.
+I figured that I'd just start something separate to share status updates, ideas, and related things for this topic. If I invited you you're welcome to sit back and enjoy the ride, or contribute to hardware implementations.
 
-*NOTE:*
-You currently cannot run an as-is Marlin build. See the following notes on the serial and timer bootloop issues.
+*Summary status:* Mostly functional, should now be able to boot stock Prusa Marlin build for MK3S. 
+Remaining To-Dos of note:
+- PINDA
+- SD Card
+- Filament sensor
+- TMC2130
+- Beeper
+- Motors/positioning
+- Better visuals
+
 
 *Current state of affairs*:
 - Bootloader works:
@@ -18,9 +26,6 @@ You currently cannot run an as-is Marlin build. See the following notes on the s
 - Thermistors are defined for the bed, PINDA, ambient and hotend. Bed/PINDA read higher than expected over 40C due to code in the official firmware (prusa3d#2601)
 - Fans have been attached, and can be controlled by the PWM output (or manually overridden to simulate conditions). 
 - Heater behaviour has been implemented. A Hotend heater is attached and appears functional, but the bed heating still has some issues to work out (#45)
-- Firmware starts to boot, detects missing SPI flash (A stub has been wired in to serve as a starting point):
-
-![](images/W25X20CL.png)
 
 - Full boot (Serial bug fixed)
 

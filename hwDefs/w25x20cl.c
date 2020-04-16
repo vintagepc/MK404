@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "sim_avr.h"
+#include "avr_ioport.h"
 #include "avr_spi.h"
 #include "w25x20cl.h"
 
@@ -299,6 +300,7 @@ void w25x20cl_init(
 	
 	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT),p->irq + IRQ_W25X20CL_SPI_BYTE_IN);
 	avr_connect_irq(p->irq + IRQ_W25X20CL_SPI_BYTE_OUT,avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_INPUT));
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),5),p->irq + IRQ_W25X20CL_SPI_CSEL);
 	
 	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_BYTE_IN, w25x20cl_spi_in_hook, p);
 	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_CSEL, w25x20cl_csel_in_hook, p);

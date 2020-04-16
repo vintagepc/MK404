@@ -113,8 +113,8 @@ class MarlinSerial //: public Stream
 	{
 		if (selectedSerialPort == 0)
 		{
-			while (!((UCSR1A) & (1 << UDRE1)));
-			UDR1 = c;
+			while (!((M_UCSRxA) & (1 << M_UDREx)));
+			M_UDRx = c;
 		}
 		else if (selectedSerialPort == 1)
 		{

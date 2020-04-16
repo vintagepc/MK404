@@ -396,7 +396,7 @@ void setupHeaters()
 
 void setupDrivers()
 {
-	tmc2130_init(avr, &hw.X, 'X');
+	tmc2130_init(avr, &hw.X, 'X', 2);
 	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT),
 		hw.X.irq + IRQ_TMC2130_SPI_BYTE_IN);
 	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),0),
@@ -572,8 +572,6 @@ int main(int argc, char *argv[])
 	setupLCD();
 
 	setupDrivers();
-
-	avr_irq_register_notify(avr_io_getirq(hw.mcu,AVR_IOCTL_IOPORT_GETIRQ('E'),3),forceBLLow,NULL);
 
 	setupTimers(avr);
 

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "avr_ioport.h"
 #include "sim_avr.h"
 #include "avr_spi.h"
 #include "avr_adc.h"
@@ -70,13 +71,6 @@ static void tmc2130_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * p
 
 }
 
-// Called when the MCU wants to read the diag pin ADC
-static void tmc2130_diag_read_hook(struct avr_irq_t * irq, uint32_t value, void * param)
-{
-    tmc2130_t* this = (tmc2130_t*)param;
-    TRACE(printf("TMC2130 %c: Diag pin read\n",this->axis));
-    avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT,0xFFFFFF);
-}
 // Called when CSEL changes.
 static void tmc2130_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
@@ -130,7 +124,7 @@ void
 tmc2130_init(
 		struct avr_t * avr,
 		tmc2130_t *p,
-        char axis, uint8_t iDiagADC) 
+        char axis, uint8_t iDiagPort) 
 {
 	p->irq = avr_alloc_irq(&avr->irq_pool, 0, IRQ_TMC2130_COUNT, irq_names);
     p->axis = axis;
@@ -143,17 +137,20 @@ tmc2130_init(
     avr_connect_irq(p->irq + IRQ_TMC2130_SPI_BYTE_OUT,
         avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_INPUT));
     
-	avr_irq_t * src = avr_io_getirq(avr, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_OUT_TRIGGER);
-	avr_irq_t * dst = avr_io_getirq(avr, AVR_IOCTL_ADC_GETIRQ, iDiagADC);
-	if (src && dst) {
-		avr_connect_irq(src, p->irq + IRQ_TMC2130_DIAG_TRIGGER_IN);
-		avr_connect_irq(p->irq + IRQ_TMC2130_DIAG_OUT, dst);
-    }
+	// avr_irq_t * src = avr_io_getirq(avr, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_OUT_TRIGGER);
+	// avr_irq_t * dst = avr_io_getirq(avr, AVR_IOCTL_ADC_GETIRQ, iDiagADC);
+	// if (src && dst) {
+	// 	avr_connect_irq(src, p->irq + IRQ_TMC2130_DIAG_TRIGGER_IN);
+	// 	avr_connect_irq(p->irq + IRQ_TMC2130_DIAG_OUT, dst);
+    // }
 	avr_irq_register_notify(p->irq + IRQ_TMC2130_SPI_BYTE_IN, tmc2130_spi_in_hook, p);
     avr_irq_register_notify(p->irq + IRQ_TMC2130_SPI_CSEL, tmc2130_csel_in_hook, p);
     avr_irq_register_notify(p->irq + IRQ_TMC2130_DIR_IN, tmc2130_dir_in_hook, p);
     avr_irq_register_notify(p->irq + IRQ_TMC2130_STEP_IN, tmc2130_step_in_hook, p);
     avr_irq_register_notify(p->irq + IRQ_TMC2130_ENABLE_IN, tmc2130_enable_in_hook, p);
-    avr_irq_register_notify(p->irq + IRQ_TMC2130_DIAG_TRIGGER_IN, tmc2130_diag_read_hook,p);
+    avr_connect_irq(p->irq + IRQ_TMC2130_DIAG_OUT,
+		avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),iDiagPort));	
+    avr_raise_irq(p->irq + IRQ_TMC2130_DIAG_OUT,0);
+    //avr_irq_register_notify(p->irq + IRQ_TMC2130_DIAG_TRIGGER_IN, tmc2130_diag_read_hook,p);
 }
 

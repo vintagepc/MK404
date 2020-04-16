@@ -57,7 +57,7 @@
 #define _CMD_BLOCK32_ERASE 0x52
 #define _CMD_BLOCK64_ERASE 0xd8
 #define _CMD_CHIP_ERASE    0xc7
-// #define _CMD_CHIP_ERASE2   0x60
+#define _CMD_CHIP_ERASE2   0x60
 // #define _CMD_PWR_DOWN      0xb9
 // #define _CMD_PWR_DOWN_REL  0xab
 #define _CMD_MFRID_DEVID   0x90
@@ -65,16 +65,9 @@
 // #define _CMD_JEDEC_ID      0x9f
 #define _CMD_RD_UID        0x4b
 
-#define W25X20CL_STATUS_BUSY   0x01
-#define W25X20CL_STATUS_WEL    0x02
-#define W25X20CL_STATUS_BP0    0x04
-#define W25X20CL_STATUS_BP1    0x08
-#define W25X20CL_STATUS_TB     0x20
-#define W25X20CL_STATUS_SRP    0x80
-
 #define SPI_SEND() do{\
 avr_raise_irq(this->irq + IRQ_W25X20CL_SPI_BYTE_OUT, this->cmdOut);\
-TRACE(printf("W25X20CL: Clocking out %02x\n", this->cmdOut));\
+TRACE(printf("w25x20cl_t: Clocking out %02x\n", this->cmdOut));\
 }while (0)
 
 /*
@@ -107,22 +100,55 @@ static void w25x20cl_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 			{
 				case _CMD_RD_DATA:
 				case _CMD_MFRID_DEVID:
+				case _CMD_SECTOR_ERASE:
+				case _CMD_BLOCK32_ERASE:
+				case _CMD_BLOCK64_ERASE:
 				{
 					if (this->rxCnt == 4)
 					{
 						this->address = 0;
 						for (uint  i = 0; i < 3; i++)
 						{
-							this->address <<= 8;
+							this->address *= W25X20CL_PAGE_SIZE;
 							this->address |= this->cmdIn[i + 1];
 						}
 						this->address %= W25X20CL_TOTAL_SIZE;
 						this->state = W25X20CL_STATE_RUNNING;
 					}
 				} break;
+				
+				case _CMD_PAGE_PROGRAM:
+				{
+					if (this->rxCnt == 4)
+					{
+						this->address = 0;
+						for (uint  i = 0; i < 3; i++)
+						{
+							this->address *= W25X20CL_PAGE_SIZE;
+							this->address |= this->cmdIn[i + 1];
+						}
+						this->address %= W25X20CL_TOTAL_SIZE;
+						memcpy(this->pageBuffer, this->flash + (this->address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE, W25X20CL_PAGE_SIZE);
+						this->state = W25X20CL_STATE_RUNNING;
+					}
+				} break;
+				
+				case _CMD_ENABLE_WR:
+				case _CMD_DISABLE_WR:
 				case _CMD_RD_STATUS_REG:
+				case _CMD_CHIP_ERASE:
+				case _CMD_CHIP_ERASE2:
 				{
 					this->state = W25X20CL_STATE_RUNNING;
+				} break;
+				
+				case _CMD_RD_UID:
+				{
+					if (this->rxCnt == 5)
+					{
+						this->address = sizeof(this->UID);
+						this->state = W25X20CL_STATE_RUNNING;
+					}
 				} break;
 				
 				default:
@@ -139,7 +165,7 @@ static void w25x20cl_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 		} break;
 		case W25X20CL_STATE_RUNNING:
 		{
-			TRACE(printf("w25x20cl_t: command:%02x, addr:%05x\n", this->command, this->address));
+			TRACE(printf("w25x20cl_t: command:%02x, address:%05x, value:%02x\n", this->command, this->address, value));
 			switch (this->command)
 			{
 				case _CMD_MFRID_DEVID:
@@ -158,8 +184,22 @@ static void w25x20cl_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 				} break;
 				case _CMD_RD_STATUS_REG:
 				{
-					this->cmdOut = this->status_register;
+					this->cmdOut = this->status_register.byte;
 					SPI_SEND();
+				} break;
+				case _CMD_RD_UID:
+				{
+					if (this->address)
+					{
+						this->cmdOut = (this->UID >> 8*(this->address - 1)) & 0xFF;
+						SPI_SEND();
+						this->address--;
+					}
+				} break;
+				case _CMD_PAGE_PROGRAM:
+				{
+					this->pageBuffer[this->address & 0xFF] = value;
+					this->address = ((this->address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE) + ((this->address + 1) & 0xFF);
 				} break;
 			}
 		}
@@ -185,10 +225,61 @@ static void w25x20cl_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void *
 		this->cmdOut = 0;
 		this->command = 0;
 		this->address = 0;
-		this->page_pointer = 0;
 	}
 	else
 	{
+		if (this->state == W25X20CL_STATE_RUNNING)
+		{
+			switch (this->command)
+			{
+				case _CMD_ENABLE_WR:
+				{
+					this->status_register.bits.WEL = 1;
+				} break;
+				case _CMD_DISABLE_WR:
+				{
+					this->status_register.bits.WEL = 0;
+				} break;
+				case _CMD_PAGE_PROGRAM:
+				{
+					if(!this->status_register.bits.WEL) break;
+					this->address /= W25X20CL_PAGE_SIZE;
+					this->address *= W25X20CL_PAGE_SIZE;
+					for (unsigned int i = 0; i < sizeof(this->pageBuffer); i++)
+						this->flash[this->address + i] &= this->pageBuffer[i];
+					this->status_register.bits.WEL = 0;
+				} break;
+				case _CMD_CHIP_ERASE:
+				case _CMD_CHIP_ERASE2:
+				{
+					if(!this->status_register.bits.WEL) break;
+					memset(this->flash, 0xFF, sizeof(this->flash));
+					this->status_register.bits.WEL = 0;
+				} break;
+				case _CMD_SECTOR_ERASE:
+				{
+					if(!this->status_register.bits.WEL) break;
+					this->address /= W25X20CL_SECTOR_SIZE;
+					this->address *= W25X20CL_SECTOR_SIZE;
+					printf("_CMD_SECTOR_ERASE: %05x\n", this->address);
+					memset(this->flash + this->address, 0xFF, W25X20CL_SECTOR_SIZE);
+				} break;
+				case _CMD_BLOCK32_ERASE:
+				{
+					if(!this->status_register.bits.WEL) break;
+					this->address /= W25X20CL_BLOCK32_SIZE;
+					this->address *= W25X20CL_BLOCK32_SIZE;
+					memset(this->flash + this->address, 0xFF, W25X20CL_BLOCK32_SIZE);
+				} break;
+				case _CMD_BLOCK64_ERASE:
+				{
+					if(!this->status_register.bits.WEL) break;
+					this->address /= W25X20CL_BLOCK64_SIZE;
+					this->address *= W25X20CL_BLOCK64_SIZE;
+					memset(this->flash + this->address, 0xFF, W25X20CL_BLOCK64_SIZE);
+				} break;
+			}
+		}
 		this->state = W25X20CL_STATE_IDLE;
 	}
 }
@@ -210,7 +301,8 @@ void w25x20cl_init(
 	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_BYTE_IN, w25x20cl_spi_in_hook, p);
 	avr_irq_register_notify(p->irq + IRQ_W25X20CL_SPI_CSEL, w25x20cl_csel_in_hook, p);
 	
-	p->status_register = 0b00000000; //SREG default values
+	p->status_register.byte = 0b00000000; //SREG default values
+	p->UID = 0xDEADBEEFDEADBEEF;
 }
 
 int w25x20cl_load(

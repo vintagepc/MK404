@@ -150,7 +150,8 @@ tmc2130_init(
     avr_irq_register_notify(p->irq + IRQ_TMC2130_ENABLE_IN, tmc2130_enable_in_hook, p);
     avr_connect_irq(p->irq + IRQ_TMC2130_DIAG_OUT,
 		avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),iDiagPort));	
+
     avr_raise_irq(p->irq + IRQ_TMC2130_DIAG_OUT,0);
-    //avr_irq_register_notify(p->irq + IRQ_TMC2130_DIAG_TRIGGER_IN, tmc2130_diag_read_hook,p);
+
 }
 

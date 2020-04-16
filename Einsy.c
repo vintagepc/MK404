@@ -96,7 +96,7 @@ struct hw_t {
 	fan_t fExtruder,fPrint;
 	heater_t hExtruder, hBed;
 	w25x20cl_t spiFlash;
-	tmc2130_t X;
+	tmc2130_t X, Y, Z, E;
 } hw;
 
 unsigned char guKey = 0;
@@ -338,12 +338,12 @@ void setupLCD()
 
 void setupSerial()
 {
-	//uart_pty_init(avr, &hw.UART0);
+	uart_pty_init(avr, &hw.UART0);
 	uart_pty_init(avr, &hw.UART1);
 	uart_pty_init(avr, &hw.UART2);
 	uart_pty_init(avr, &hw.UART3);
 
-	w25x20cl_init(avr, &hw.spiFlash);
+	//w25x20cl_init(avr, &hw.spiFlash);
 
 //	uart_pty_connect(&hw.UART0, '0');
 
@@ -396,11 +396,53 @@ void setupHeaters()
 
 void setupDrivers()
 {
-	tmc2130_init(avr, &hw.X, 'X', 2);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT),
-		hw.X.irq + IRQ_TMC2130_SPI_BYTE_IN);
+	// Fake an external pullup on the diag pin so it can be detected:
+    avr_ioport_external_t ex;
+	ex.mask = 0b11001100; // DIAG pins.
+	ex.value = 0;
+	ex.name = 'K';
+	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
+
+	tmc2130_init(avr, &hw.X, 'X',2); // Init takes care of the SPI wiring.
 	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),0),
 		hw.X.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),0),
+		hw.X.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),0),
+		hw.X.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),7),
+		hw.X.irq + IRQ_TMC2130_ENABLE_IN);
+
+
+	tmc2130_init(avr, &hw.Y, 'Y', 7); // Init takes care of the SPI wiring.
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),2),
+		hw.Y.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),1),
+		hw.Y.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),1),
+		hw.Y.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),6),
+		hw.Y.irq + IRQ_TMC2130_ENABLE_IN);
+
+	// tmc2130_init(avr, &hw.Z, 'Z', 6); // Init takes care of the SPI wiring.
+	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),5),
+	// 	hw.Z.irq + IRQ_TMC2130_SPI_CSEL);
+	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),2),
+	// 	hw.Z.irq + IRQ_TMC2130_DIR_IN);
+	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),2),
+	// 	hw.Z.irq + IRQ_TMC2130_STEP_IN);
+	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),5),
+	// 	hw.Z.irq + IRQ_TMC2130_ENABLE_IN);
+
+	// tmc2130_init(avr, &hw.E, 'E', 3); // Init takes care of the SPI wiring.
+	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),4),
+	// 	hw.E.irq + IRQ_TMC2130_SPI_CSEL);
+	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),6),
+	// 	hw.E.irq + IRQ_TMC2130_DIR_IN);
+	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),3),
+	// 	hw.E.irq + IRQ_TMC2130_STEP_IN);
+	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),4),
+	// 	hw.E.irq + IRQ_TMC2130_ENABLE_IN);
 }
 
 
@@ -462,6 +504,7 @@ void fix_serial(avr_t *avr, uint8_t val, void *p)
 	if (bSerialFixed) return;
 	avr_regbit_t r = AVR_IO_REGBITS(val,0,0xFF);
 	uint8_t val2 = avr_regbit_get(avr,r);
+	//printf("regval: %02x\n");
 	if (val2==0x02) // Marlin is done setting up UCSRA0...
 	{
 		bSerialFixed = true;
@@ -575,7 +618,7 @@ int main(int argc, char *argv[])
 
 	setupTimers(avr);
 
-	avr_register_io_write(avr,0xC0,fix_serial,NULL); // UCSRA0
+	avr_register_io_write(avr,0xC0,fix_serial,(void*)NULL); // UCSRA0
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");
@@ -588,7 +631,6 @@ int main(int argc, char *argv[])
 	ex.name = 'E';
 
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
-
 
 	/*
 	 * OpenGL init, can be ignored

@@ -174,8 +174,6 @@ avr_run_thread(
 	printf("Starting AVR execution...\n");
 	int state = cpu_Running;
 	while ((state != cpu_Done) && (state != cpu_Crashed)){
-		
-	
 		// Interactive key handling:
 		if (guKey) {
 			switch (guKey) {
@@ -221,9 +219,7 @@ avr_run_thread(
 		if (gbPrintPC)
 			printf("PC: %x\n",avr->pc);
 		state = avr_run(avr);
-		
 	}
-
 	printf("Writing flash state...\n");
 	avr_terminate(avr);
 	printf("AVR finished.\n");
@@ -349,7 +345,7 @@ void setupSerial()
 	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT), hw.spiFlash.irq + IRQ_W25X20CL_SPI_BYTE_IN);
 	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),5),hw.spiFlash.irq + IRQ_W25X20CL_SPI_CSEL);
 
-	//uart_pty_connect(&hw.UART0, '0');
+//	uart_pty_connect(&hw.UART0, '0');
 
 	// Setup UART1. 
 
@@ -395,7 +391,7 @@ void setupHeaters()
 			avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),5));
 
 		avr_connect_irq(hw.hExtruder.irq + IRQ_HEATER_TEMP_OUT,hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
-		avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
+	//	avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
 }
 
 void setupTimers(avr_t* avr)
@@ -430,8 +426,6 @@ void setupTimers(avr_t* avr)
 	// TIMSK2
 	avr_regbit_setto(avr,rb,0x01);
 
-
-
 	//rb.reg++;
 	//rb.mask= 0b00001111;
 	// TIMSK3
@@ -453,6 +447,20 @@ void setupTimers(avr_t* avr)
 	// avr_regbit_setto(avr, rb, 0x03); // B */
 
 }
+bool bSerialFixed = false;
+void fix_serial(avr_t *avr, uint8_t val, void *p)
+{
+	if (bSerialFixed) return;
+	avr_regbit_t r = AVR_IO_REGBITS(val,0,0xFF);
+	uint8_t val2 = avr_regbit_get(avr,r);
+	if (val2==0x02) // Marlin is done setting up UCSRA0...
+	{
+		bSerialFixed = true;
+		avr_regbit_t r = AVR_IO_REGBIT(val,5); // UDRE0
+		avr_regbit_set(avr,r);
+	}
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -554,6 +562,8 @@ int main(int argc, char *argv[])
 	setupLCD();
 
 	setupTimers(avr);
+
+	avr_register_io_write(avr,0xC0,fix_serial,NULL); // UCSRA0
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");

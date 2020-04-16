@@ -261,7 +261,6 @@ static void w25x20cl_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void *
 					if(!this->status_register.bits.WEL) break;
 					this->address /= W25X20CL_SECTOR_SIZE;
 					this->address *= W25X20CL_SECTOR_SIZE;
-					printf("_CMD_SECTOR_ERASE: %05x\n", this->address);
 					memset(this->flash + this->address, 0xFF, W25X20CL_SECTOR_SIZE);
 				} break;
 				case _CMD_BLOCK32_ERASE:

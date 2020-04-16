@@ -38,13 +38,27 @@ enum w25x20cl_states{
 typedef struct w25x20cl_t {
 	avr_irq_t *	irq;		// irq list
 	uint8_t flash[W25X20CL_TOTAL_SIZE];
+	uint8_t pageBuffer[W25X20CL_PAGE_SIZE];
 	uint8_t cmdIn[5];
 	uint8_t rxCnt;
 	uint8_t cmdOut;
 	uint8_t command;
 	uint32_t address;
-	uint8_t page_pointer;
-	uint8_t status_register;
+	uint64_t UID;
+	union
+	{
+		uint8_t byte;
+		struct
+		{
+			uint8_t BUSY :1;
+			uint8_t WEL :1;
+			uint8_t BP :2;
+			uint8_t RES4 :1;
+			uint8_t TB :1;
+			uint8_t RES6 :1;
+			uint8_t SRP :1;
+		} bits;
+	} status_register;
 	int state;
 	int xflash_fd;
 	char filepath[1024];

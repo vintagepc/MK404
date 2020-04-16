@@ -22,9 +22,7 @@ You currently cannot run an as-is Marlin build. See the following notes on the s
 
 ![](images/W25X20CL.png)
 
-- Bootloop issue (#11) in MarlinSerial::write. Therefore, the MK3S.afx file has been altered to output on UART1 which works fine (!!#@%??!?) But, you *can* still talk to the bootloader over serial, if you connect the uart-pty in setupSerial(). It's disconnected because it prints to console by default, and I was getting annoyed by having to close the terminal windows all the time.
-
-- Bypassing serial as noted results in a boot:
+- Full boot (Serial bug fixed)
 
 ![](https://user-images.githubusercontent.com/53943260/78808917-1f91f000-7994-11ea-87ae-fd7fa096972b.png)
 

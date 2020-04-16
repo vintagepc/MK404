@@ -262,6 +262,7 @@ static void w25x20cl_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void *
 					this->address /= W25X20CL_SECTOR_SIZE;
 					this->address *= W25X20CL_SECTOR_SIZE;
 					memset(this->flash + this->address, 0xFF, W25X20CL_SECTOR_SIZE);
+					this->status_register.bits.WEL = 0;
 				} break;
 				case _CMD_BLOCK32_ERASE:
 				{
@@ -269,6 +270,7 @@ static void w25x20cl_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void *
 					this->address /= W25X20CL_BLOCK32_SIZE;
 					this->address *= W25X20CL_BLOCK32_SIZE;
 					memset(this->flash + this->address, 0xFF, W25X20CL_BLOCK32_SIZE);
+					this->status_register.bits.WEL = 0;
 				} break;
 				case _CMD_BLOCK64_ERASE:
 				{
@@ -276,6 +278,7 @@ static void w25x20cl_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void *
 					this->address /= W25X20CL_BLOCK64_SIZE;
 					this->address *= W25X20CL_BLOCK64_SIZE;
 					memset(this->flash + this->address, 0xFF, W25X20CL_BLOCK64_SIZE);
+					this->status_register.bits.WEL = 0;
 				} break;
 			}
 		}

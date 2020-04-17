@@ -15,10 +15,7 @@ Remaining To-Dos of note:
 
 
 *Current state of affairs*:
-- Bootloader works:
-
-![](images/bootloader.png)
-
+- Bootloader works
 - LCD works 99% of the way. Brightness support has been fixed.
 - Encoder and buttons are simulated
 - Power panic (fake button) is wired up
@@ -34,3 +31,5 @@ Remaining To-Dos of note:
 - The timer bug has been resolved using a customized build of SimAVR.
 - bootloader can be run with `-b` but is off by default for faster boot times.
 - Einsy eeprom is persisted between reboots.
+- TMC2130s in progress. They already work partially:
+![vokoscreen-2020-04-17_18-58-17](https://user-images.githubusercontent.com/53943260/79620422-d6e9dd80-80dd-11ea-944b-fbb778201bbf.gif)

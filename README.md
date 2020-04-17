@@ -32,4 +32,5 @@ Remaining To-Dos of note:
 - bootloader can be run with `-b` but is off by default for faster boot times.
 - Einsy eeprom is persisted between reboots.
 - TMC2130s in progress. They already work partially:
+
 ![vokoscreen-2020-04-17_18-58-17](https://user-images.githubusercontent.com/53943260/79620422-d6e9dd80-80dd-11ea-944b-fbb778201bbf.gif)

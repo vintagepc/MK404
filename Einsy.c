@@ -152,9 +152,9 @@ void avr_special_deinit( avr_t* avr, void * data)
 
 void displayCB(void)		/* function called whenever redisplay needed */
 {
-	if (hd44780_get_flag(&hw.lcd, HD44780_FLAG_DIRTY)==0 && 
-		hd44780_get_flag(&hw.lcd, HD44780_FLAG_CRAM_DIRTY == 0))
-		return;
+	//if (hd44780_get_flag(&hw.lcd, HD44780_FLAG_DIRTY)==0 && 
+	//	hd44780_get_flag(&hw.lcd, HD44780_FLAG_CRAM_DIRTY == 0))
+	//	return;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW); // Select modelview matrix
 	glPushMatrix();
@@ -167,6 +167,30 @@ void displayCB(void)		/* function called whenever redisplay needed */
 			colors[1], /* character background */
 			colors[2], /* text */
 			colors[3] /* shadow */ );
+	glPopMatrix();
+
+	// Do something for the motors...
+	float fX = (5 + hw.lcd.w * 6)*4;
+	glPushMatrix();
+		glColor3f(0,0,0);
+		glLoadIdentity();		
+		glScalef(fX/350,4,1);
+		glTranslatef(0,5 + hw.lcd.h * 9,0);
+		tmc2130_draw_glut(&hw.X);
+	glPopMatrix();
+	glPushMatrix();
+		glColor3f(0,0,0);
+		glLoadIdentity();
+		glScalef(fX/350,4,1);
+		glTranslatef(0,(5 + hw.lcd.h * 9) +10,0);
+		tmc2130_draw_glut(&hw.Y);
+	glPopMatrix();
+	glPushMatrix();
+		glColor3f(0,0,0);
+		glLoadIdentity();
+		glScalef(fX/350,4,1);
+		glTranslatef(0,(5 + hw.lcd.h * 9) +20,0);
+		tmc2130_draw_glut(&hw.Z);
 	glPopMatrix();
 	glutSwapBuffers();
 }
@@ -266,7 +290,7 @@ void timerCB(int i)
 {
 	//static int oldstate = -1;
 	// restart timer
-	glutTimerFunc(1000, timerCB, 0);
+	glutTimerFunc(50, timerCB, 0);
 	glutPostRedisplay();
 	//hd44780_print(&hd44780);
 }
@@ -424,28 +448,33 @@ void setupDrivers()
 	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),6),
 		hw.Y.irq + IRQ_TMC2130_ENABLE_IN);
 
-	// tmc2130_init(avr, &hw.Z, 'Z', 6); // Init takes care of the SPI wiring.
-	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),5),
-	// 	hw.Z.irq + IRQ_TMC2130_SPI_CSEL);
-	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),2),
-	// 	hw.Z.irq + IRQ_TMC2130_DIR_IN);
-	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),2),
-	// 	hw.Z.irq + IRQ_TMC2130_STEP_IN);
-	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),5),
-	// 	hw.Z.irq + IRQ_TMC2130_ENABLE_IN);
+	tmc2130_init(avr, &hw.Z, 'Z', 6); // Init takes care of the SPI wiring.
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),5),
+		hw.Z.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),2),
+		hw.Z.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),2),
+		hw.Z.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),5),
+		hw.Z.irq + IRQ_TMC2130_ENABLE_IN);
+	// Just wire up the PINDA to the z endstop for now:
+	ex.mask = 1<<4; // DIAG pins.
+	ex.value = 0;
+	ex.name = 'B';
+	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
+	avr_connect_irq(hw.Z.irq + IRQ_TMC2130_MIN_OUT,avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('B'),4));
 
-	// tmc2130_init(avr, &hw.E, 'E', 3); // Init takes care of the SPI wiring.
-	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),4),
-	// 	hw.E.irq + IRQ_TMC2130_SPI_CSEL);
-	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),6),
-	// 	hw.E.irq + IRQ_TMC2130_DIR_IN);
-	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),3),
-	// 	hw.E.irq + IRQ_TMC2130_STEP_IN);
-	// avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),4),
-	// 	hw.E.irq + IRQ_TMC2130_ENABLE_IN);
+
+ 	tmc2130_init(avr, &hw.E, 'E', 3); // Init takes care of the SPI wiring.
+	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),4),
+	 	hw.E.irq + IRQ_TMC2130_SPI_CSEL);
+	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),6),
+	 	hw.E.irq + IRQ_TMC2130_DIR_IN);
+	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),3),
+	 	hw.E.irq + IRQ_TMC2130_STEP_IN);
+	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),4),
+	 	hw.E.irq + IRQ_TMC2130_ENABLE_IN);
 }
-
-
 void setupTimers(avr_t* avr)
 {
 	 avr_regbit_t rb = AVR_IO_REGBITS(0xB0,0,0xFF);
@@ -639,6 +668,7 @@ int main(int argc, char *argv[])
 
 	int w = 5 + hw.lcd.w * 6;
 	int h = 5 + hw.lcd.h * 9;
+	h+=40;
 	int pixsize = 4;
 
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);

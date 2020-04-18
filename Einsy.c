@@ -62,6 +62,7 @@
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
 #include "w25x20cl.h"
+#include "TMC2130.h"
 #include "Firmware/eeprom.h"
 #include "Einsy_EEPROM.h"
 #include "stdbool.h"
@@ -97,6 +98,7 @@ struct hw_t {
 	heater_t hExtruder, hBed;
 	w25x20cl_t spiFlash;
 	sd_card_t sd_card;
+	tmc2130_t X, Y, Z, E;
 } hw;
 
 unsigned char guKey = 0;
@@ -123,6 +125,8 @@ void avr_special_init( avr_t * avr, void * data)
 		perror(flash_data->avr_flash_path);
 		exit(1);
 	}
+
+	// Do the same for the EEPROM
 }
 
 // avr special flash deinitalization
@@ -152,9 +156,9 @@ void avr_special_deinit( avr_t* avr, void * data)
 
 void displayCB(void)		/* function called whenever redisplay needed */
 {
-	if (hd44780_get_flag(&hw.lcd, HD44780_FLAG_DIRTY)==0 && 
-		hd44780_get_flag(&hw.lcd, HD44780_FLAG_CRAM_DIRTY == 0))
-		return;
+	//if (hd44780_get_flag(&hw.lcd, HD44780_FLAG_DIRTY)==0 && 
+	//	hd44780_get_flag(&hw.lcd, HD44780_FLAG_CRAM_DIRTY == 0))
+	//	return;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW); // Select modelview matrix
 	glPushMatrix();
@@ -167,6 +171,37 @@ void displayCB(void)		/* function called whenever redisplay needed */
 			colors[1], /* character background */
 			colors[2], /* text */
 			colors[3] /* shadow */ );
+	glPopMatrix();
+
+	// Do something for the motors...
+	float fX = (5 + hw.lcd.w * 6)*4;
+	glPushMatrix();
+		glColor3f(0,0,0);
+		glLoadIdentity();		
+		glScalef(fX/350,4,1);
+		glTranslatef(0,5 + hw.lcd.h * 9,0);
+		tmc2130_draw_glut(&hw.X);
+	glPopMatrix();
+	glPushMatrix();
+		glColor3f(0,0,0);
+		glLoadIdentity();
+		glScalef(fX/350,4,1);
+		glTranslatef(0,(5 + hw.lcd.h * 9) +10,0);
+		tmc2130_draw_glut(&hw.Y);
+	glPopMatrix();
+	glPushMatrix();
+		glColor3f(0,0,0);
+		glLoadIdentity();
+		glScalef(fX/350,4,1);
+		glTranslatef(0,(5 + hw.lcd.h * 9) +20,0);
+		tmc2130_draw_glut(&hw.Z);
+	glPopMatrix();
+	glPushMatrix();
+		glColor3f(0,0,0);
+		glLoadIdentity();
+		glScalef(fX/350,4,1);
+		glTranslatef(0,(5 + hw.lcd.h * 9) +30,0);
+		tmc2130_draw_position_glut(&hw.E);
 	glPopMatrix();
 	glutSwapBuffers();
 }
@@ -198,6 +233,7 @@ avr_run_thread(
 					printf("RESET/KILL\n");
 					// RESET BUTTON
 					avr_reset(avr);
+					// Resetting the AVR kills the auto-release timer - so return the pin to LOW.
 					avr_raise_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN, 0);
 					break;
 				case 't':
@@ -205,11 +241,6 @@ avr_run_thread(
 					// Hold the button during boot to get factory reset menu
 					avr_reset(avr);
 					rotenc_button_press_hold(&hw.encoder);
-					break;
-				case 'f':
-					printf("Forcing display redraw\n");
-					hd44780_set_flag(&hw.lcd, HD44780_FLAG_DIRTY,1) ;
-					displayCB();
 					break;
 				case 'q':
 					gbStop = 1;
@@ -266,7 +297,7 @@ void timerCB(int i)
 {
 	//static int oldstate = -1;
 	// restart timer
-	glutTimerFunc(1000, timerCB, 0);
+	glutTimerFunc(50, timerCB, 0);
 	glutPostRedisplay();
 	//hd44780_print(&hd44780);
 }
@@ -326,7 +357,6 @@ void setupLCD()
 			hw.lcd.irq + IRQ_HD44780_BRIGHTNESS);
 
 	rotenc_init(avr, &hw.encoder);
-
 	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_A_PIN,
 	avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),1));
 
@@ -362,11 +392,12 @@ void setupSerial()
 
 	w25x20cl_init(avr, &hw.spiFlash);
 
-//	uart_pty_connect(&hw.UART0, '0');
-
-	// Setup UART1. 
-
-	//uart_pty_connect(&hwUART1,'1');
+	// Uncomment these to get a pseudoterminal you can connect to
+	// using any serial terminal program. Will print to console by default.
+    //uart_pty_connect(&hw.UART0, '0');
+	//uart_pty_connect(&hw.UART1,'1');
+	//uart_pty_connect(&hw.UART0, '2');
+	//uart_pty_connect(&hw.UART1,'3');
 }
 
 void setupHeaters()
@@ -411,9 +442,65 @@ void setupHeaters()
 	//	avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
 }
 
+void setupDrivers()
+{
+	// Fake an external pullup on the diag pin so it can be detected:
+    avr_ioport_external_t ex;
+	ex.mask = 0b11001100; // DIAG pins.
+	ex.value = 0;
+	ex.name = 'K';
+	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
+
+	tmc2130_init(avr, &hw.X, 'X',2); // Init takes care of the SPI wiring.
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),0),
+		hw.X.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),0),
+		hw.X.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),0),
+		hw.X.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),7),
+		hw.X.irq + IRQ_TMC2130_ENABLE_IN);
+
+
+	tmc2130_init(avr, &hw.Y, 'Y', 7); // Init takes care of the SPI wiring.
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),2),
+		hw.Y.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),1),
+		hw.Y.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),1),
+		hw.Y.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),6),
+		hw.Y.irq + IRQ_TMC2130_ENABLE_IN);
+
+	tmc2130_init(avr, &hw.Z, 'Z', 6); // Init takes care of the SPI wiring.
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),5),
+		hw.Z.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),2),
+		hw.Z.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),2),
+		hw.Z.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),5),
+		hw.Z.irq + IRQ_TMC2130_ENABLE_IN);
+	// Just wire up the PINDA to the z endstop for now:
+	ex.mask = 1<<4; // DIAG pins.
+	ex.value = 0;
+	ex.name = 'B';
+	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
+	avr_connect_irq(hw.Z.irq + IRQ_TMC2130_MIN_OUT,avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('B'),4));
+
+
+ 	tmc2130_init(avr, &hw.E, 'E', 3); // Init takes care of the SPI wiring.
+	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),4),
+	 	hw.E.irq + IRQ_TMC2130_SPI_CSEL);
+	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),6),
+	 	hw.E.irq + IRQ_TMC2130_DIR_IN);
+	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),3),
+	 	hw.E.irq + IRQ_TMC2130_STEP_IN);
+	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),4),
+	 	hw.E.irq + IRQ_TMC2130_ENABLE_IN);
+}
 void setupTimers(avr_t* avr)
 {
-
 	 avr_regbit_t rb = AVR_IO_REGBITS(0xB0,0,0xFF);
 	 //	avr_regbit_setto(avr, rb, 0x03);
 	//	rb.reg++;
@@ -470,6 +557,7 @@ void fix_serial(avr_t *avr, uint8_t val, void *p)
 	if (bSerialFixed) return;
 	avr_regbit_t r = AVR_IO_REGBITS(val,0,0xFF);
 	uint8_t val2 = avr_regbit_get(avr,r);
+	//printf("regval: %02x\n");
 	if (val2==0x02) // Marlin is done setting up UCSRA0...
 	{
 		bSerialFixed = true;
@@ -507,6 +595,7 @@ int main(int argc, char *argv[])
 	}
 
 	avr = avr_make_mcu_by_name(mmcu);
+
 	hw.mcu = avr;
 	if (!avr) {
 		fprintf(stderr, "%s: Error creating the AVR core\n", argv[0]);
@@ -549,7 +638,6 @@ int main(int argc, char *argv[])
 	avr->vcc = 5000;
 	avr->aref = 0;
 	avr->avcc = 5000;
-
 	memcpy(avr->flash + boot_base, boot, boot_size);
 	printf("Boot base at:%u\n",boot_base);
 	free(boot);
@@ -581,9 +669,11 @@ int main(int argc, char *argv[])
 
 	setupLCD();
 
+	setupDrivers();
+
 	setupTimers(avr);
 
-	avr_register_io_write(avr,0xC0,fix_serial,NULL); // UCSRA0
+	avr_register_io_write(avr,0xC0,fix_serial,(void*)NULL); // UCSRA0
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");
@@ -597,7 +687,6 @@ int main(int argc, char *argv[])
 
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
-
 	/*
 	 * OpenGL init, can be ignored
 	 */
@@ -605,6 +694,7 @@ int main(int argc, char *argv[])
 
 	int w = 5 + hw.lcd.w * 6;
 	int h = 5 + hw.lcd.h * 9;
+	h+=40;
 	int pixsize = 4;
 
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);

@@ -63,6 +63,7 @@ ${board} : ${OBJ}/hd44780.o
 ${board} : ${OBJ}/hd44780_glut.o
 ${board} : ${OBJ}/thermistor.o
 ${board} : ${OBJ}/w25x20cl.o
+${board} : ${OBJ}/sd_card.o
 ${board} : ${OBJ}/Einsy_EEPROM.o
 ${board} : ${OBJ}/${target}.o
 

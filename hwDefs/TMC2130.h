@@ -24,7 +24,7 @@ enum {
     IRQ_TMC2130_ENABLE_IN,
     IRQ_TMC2130_DIAG_OUT,
     IRQ_TMC2130_MIN_OUT,
-    IRQ_TMC2130_DIAG_TRIGGER_IN,
+    IRQ_TMC2130_POSITION_OUT,
     //IRQ_TMC2130_COIL_A1_OUT,
     //IRQ_TMC2130_COIL_A2_OUT,
     //IRQ_TMC2130_COIL_B1_OUT,
@@ -92,7 +92,7 @@ typedef union
             uint8_t drv_err :1;
             uint8_t uv_cp   :1;
         } GSTAT;
-        uint32_t _undefined[109];   // 0x02 - 0x6E
+        uint32_t _unimplemented[110];   // 0x02 - 0x6E
         struct                      //0x6F
         {
             uint16_t SG_RESULT   :10;
@@ -116,18 +116,19 @@ typedef struct tmc2130_t {
 	avr_irq_t *	irq;		// irq list
     char axis; // Useful for print debugging.
 	tmc2130_flags_t flags;
-    int8_t byteIndex;
     uint16_t iStepsPerMM;
     uint32_t iMaxPos;
     uint32_t iCurStep;
     float fCurPos; // Tracks position in float for gl
     tmc2130_cmd_t cmdIn;
+    tmc2130_cmd_t cmdProc;
     tmc2130_cmd_t cmdOut; // the previous data for output.
     tmc2130_registers_t regs;
 	// TODO...
 } tmc2130_t;
 
 void tmc2130_draw_glut(tmc2130_t *p);
+void tmc2130_draw_position_glut(tmc2130_t *p);
 
 void
 tmc2130_init(

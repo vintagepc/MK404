@@ -29,6 +29,7 @@ enum {
 	IRQ_SD_CARD_MOSI = 0,	/**< Byte input port. Serial; normally low. */
 	IRQ_SD_CARD_MISO,	/**< Byte output port. Serial; normally low. */
 	IRQ_SD_CARD_nSS,	/**< Slave select port. Input; active low. */
+	IRQ_SD_CARD_PRESENT, // Card detect out, toggles with mount/unmount of image.
 	IRQ_SD_CARD_COUNT
 };
 

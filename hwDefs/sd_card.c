@@ -450,6 +450,7 @@ static const char *_irq_names[IRQ_SD_CARD_COUNT] = {
 	[IRQ_SD_CARD_MOSI] = "8<sdcard.mosi",
 	[IRQ_SD_CARD_MISO] = "8>sdcard.miso",
 	[IRQ_SD_CARD_nSS] = "<sdcard.nss",
+	[IRQ_SD_CARD_PRESENT] = ">sdcard.present"
 };
 
 /* Set the C_SIZE field of the CSD register. Reference: JESD84-A44, Section 8.3. */
@@ -574,6 +575,8 @@ int sd_card_mount_file (struct avr_t *avr, sd_card_t *self, const char *filename
 
 	_sd_card_set_csd_c_size (self, c_size, c_size_mult);
 
+	avr_raise_irq(self->irq + IRQ_SD_CARD_PRESENT,1);
+
 	return 0;
 
 error:
@@ -609,6 +612,6 @@ int sd_card_unmount_file (struct avr_t *avr, sd_card_t *self)
 	self->data_fd = -1;
 
 	_sd_card_set_csd_c_size (self, 0, 0);
-
+	avr_raise_irq(self->irq + IRQ_SD_CARD_PRESENT,0);
 	return 0;
 }

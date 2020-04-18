@@ -192,6 +192,13 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		glTranslatef(0,(5 + hw.lcd.h * 9) +20,0);
 		tmc2130_draw_glut(&hw.Z);
 	glPopMatrix();
+	glPushMatrix();
+		glColor3f(0,0,0);
+		glLoadIdentity();
+		glScalef(fX/350,4,1);
+		glTranslatef(0,(5 + hw.lcd.h * 9) +30,0);
+		tmc2130_draw_position_glut(&hw.E);
+	glPopMatrix();
 	glutSwapBuffers();
 }
 
@@ -222,6 +229,7 @@ avr_run_thread(
 					printf("RESET/KILL\n");
 					// RESET BUTTON
 					avr_reset(avr);
+					// Resetting the AVR kills the auto-release timer - so return the pin to LOW.
 					avr_raise_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN, 0);
 					break;
 				case 't':
@@ -229,11 +237,6 @@ avr_run_thread(
 					// Hold the button during boot to get factory reset menu
 					avr_reset(avr);
 					rotenc_button_press_hold(&hw.encoder);
-					break;
-				case 'f':
-					printf("Forcing display redraw\n");
-					hd44780_set_flag(&hw.lcd, HD44780_FLAG_DIRTY,1) ;
-					displayCB();
 					break;
 				case 'q':
 					gbStop = 1;
@@ -367,13 +370,14 @@ void setupSerial()
 	uart_pty_init(avr, &hw.UART2);
 	uart_pty_init(avr, &hw.UART3);
 
-	//w25x20cl_init(avr, &hw.spiFlash);
+	w25x20cl_init(avr, &hw.spiFlash);
 
-//	uart_pty_connect(&hw.UART0, '0');
-
-	// Setup UART1. 
-
+	// Uncomment these to get a pseudoterminal you can connect to
+	// using any serial terminal program. Will print to console by default.
+    //uart_pty_connect(&hw.UART0, '0');
 	//uart_pty_connect(&hw.UART1,'1');
+	//uart_pty_connect(&hw.UART0, '2');
+	//uart_pty_connect(&hw.UART1,'3');
 }
 
 void setupHeaters()

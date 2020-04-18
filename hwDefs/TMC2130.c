@@ -71,12 +71,45 @@ void tmc2130_draw_glut(tmc2130_t *this)
 		glPopMatrix();
 }
 
+
+void tmc2130_draw_position_glut(tmc2130_t *this)
+{
+        if (!this->iStepsPerMM)
+            return; // Motors not ready yet.
+        float fEnd = this->iMaxPos/this->iStepsPerMM;
+	    glBegin(GL_QUADS);
+			glVertex3f(0,0,0);
+			glVertex3f(350,0,0);
+			glVertex3f(350,10,0);
+			glVertex3f(0,10,0);
+		glEnd();
+        glColor3f(1,1,1);
+        glPushMatrix();
+            glTranslatef(3,7,0);
+            glScalef(0.09,-0.05,0);
+            glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,this->axis);
+        glPopMatrix();
+        glPushMatrix();
+            glTranslatef(30,7,0);
+            glScalef(0.09,-0.05,0);
+            char pos[7];
+            sprintf(pos,"%3.02f",this->fCurPos);
+            for (int i=0; i<7; i++)
+                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,pos[i]);
+
+        glPopMatrix();
+}
+
 static void tmc2130_create_reply(tmc2130_t *this)
 {
-    if (!this->cmdOut.bitsIn.RW) // Last in was a read.
+    this->cmdOut.all = 0x00; // Copy over.
+    if (this->cmdProc.bitsIn.RW == 0) // Last in was a read.
     {
-        this->cmdOut.bitsOut.data = this->regs.raw[this->cmdOut.bitsIn.address];
+        this->cmdOut.bitsOut.data = this->regs.raw[this->cmdProc.bitsIn.address];
+        TRACE(printf("Reading out %x (%10lx)", this->cmdProc.bitsIn.address, this->cmdOut.bitsOut.data));
     }
+    else
+        this->cmdOut.bitsOut.data = this->cmdProc.bitsOut.data;
     // If the last was a write, the old data is left intact.
 
     // Set the status bits on the reply:
@@ -84,24 +117,24 @@ static void tmc2130_create_reply(tmc2130_t *this)
     this->cmdOut.bitsOut.reset_flag = this->regs.defs.GSTAT.reset;
     this->cmdOut.bitsOut.sg2 = this->regs.defs.DRV_STATUS.stallGuard;
     this->cmdOut.bitsOut.standstill = this->regs.defs.DRV_STATUS.stst;
-    TRACE(printf("Reply built: %10lx\n",this->cmdOut.all));
+    //(printf("Reply built: %10lx\n",this->cmdOut.all));
 }
 
 // Called when a full command is ready to process. 
 static void tmc2130_process_command(tmc2130_t *this)
 {
-    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08x\n",this->axis, this->cmdIn.bitsIn.RW, this->cmdIn.bitsIn.address, this->cmdIn.bitsIn.data));
-    if (this->cmdIn.bitsIn.RW)
+    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08x\n",this->axis, this->cmdProc.bitsIn.RW, this->cmdProc.bitsIn.address, this->cmdProc.bitsIn.data));
+    if (this->cmdProc.bitsIn.RW)
     {
-        this->regs.raw[this->cmdIn.bitsIn.address] = this->cmdIn.bitsIn.data;
+        this->regs.raw[this->cmdProc.bitsIn.address] = this->cmdProc.bitsIn.data;
         //printf("REG %c %02x set to: %010x\n", this->axis, this->cmdIn.bitsIn.address, this->cmdIn.bitsIn.data);
     }
     else
     {
-        TRACE(printf("Read command on register: %02x\n", this->cmdIn.bitsIn.address));
+        TRACE(printf("Read command on register: %02x\n", this->cmdProc.bitsIn.address));
     }
     tmc2130_create_reply(this);
-    this->cmdOut = this->cmdIn;
+
 }
 
 /*
@@ -112,11 +145,11 @@ static void tmc2130_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * p
     tmc2130_t* this = (tmc2130_t*)param;
     if (!this->flags.bits.selected)
         return;
-    // Clock out a reply byte:
+    // Clock out a reply byte, MSB first
     uint8_t byte = this->cmdOut.bytes[4];
     this->cmdOut.all<<=8;
     avr_raise_irq(this->irq + IRQ_TMC2130_SPI_BYTE_OUT,byte);
-    TRACE(printf("TMC2130 %c: Clocking out %02x\n",this->axis,byte));
+    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",this->axis,this->cmdOut.all,byte));
 
     this->cmdIn.all<<=8; // Shift bits up
     this->cmdIn.bytes[0] = value;
@@ -129,7 +162,7 @@ static void tmc2130_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * p
 static void tmc2130_check_diag(tmc2130_t *this)
 {
     bool bDiag = this->regs.defs.DRV_STATUS.stallGuard && this->regs.defs.GCONF.diag0_stall;
-    printf("Diag: %01x\n",bDiag);
+    //printf("Diag: %01x\n",bDiag);
     if (bDiag)
         avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT, bDiag^ this->regs.defs.GCONF.diag0_int_pushpull);
 }
@@ -138,10 +171,13 @@ static void tmc2130_check_diag(tmc2130_t *this)
 static void tmc2130_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
     tmc2130_t* this = (tmc2130_t*)param;
-	//TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",this->axis,value));
+	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",this->axis,value));
     this->flags.bits.selected = (value==0); // NOTE: active low!
     if (value == 1) // Just finished a CSEL
+    {
+        this->cmdProc = this->cmdIn;
         tmc2130_process_command(this);
+    }
 }
 
 // Called when DIR pin changes.
@@ -174,12 +210,14 @@ static void tmc2130_step_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
         this->iCurStep = this->iMaxPos;
         bStall = true;
     }
+    // TODO: get rid of this hackery once there's a real PINDA.
     if (this->iCurStep==200)
            avr_raise_irq(this->irq + IRQ_TMC2130_MIN_OUT, 1);
     else if (this->iCurStep == 201)
            avr_raise_irq(this->irq + IRQ_TMC2130_MIN_OUT, 0);
 
     this->fCurPos = (float)this->iCurStep/(float)this->iStepsPerMM;
+    avr_raise_irq(this->irq + IRQ_TMC2130_POSITION_OUT, this->fCurPos);
     TRACE(printf("cur pos: %f (%u)\n",this->fCurPos,this->iCurStep));
     if (bStall)
         avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT, 1);
@@ -201,12 +239,13 @@ static const char * irq_names[IRQ_TMC2130_COUNT] = {
 		[IRQ_TMC2130_SPI_BYTE_IN] = "8<tmc2130.spi.in",
 		[IRQ_TMC2130_SPI_BYTE_OUT] = "8>tmc2130.chain",
         [IRQ_TMC2130_SPI_COMMAND_IN] = "40<tmc2130.cmd",
-        [IRQ_TMC2130_SPI_CSEL] = "tmc2130.csel",
-        [IRQ_TMC2130_STEP_IN] = "tmc2130.step",
-        [IRQ_TMC2130_DIR_IN] = "tmc2130.dir",
-        [IRQ_TMC2130_ENABLE_IN] = "tmc2130.enable",
-        [IRQ_TMC2130_DIAG_OUT] = "tmc2130.diag",
-        [IRQ_TMC2130_DIAG_TRIGGER_IN] = "tmc2130.diagReq"
+        [IRQ_TMC2130_SPI_CSEL] = "<tmc2130.csel",
+        [IRQ_TMC2130_STEP_IN] = "<tmc2130.step",
+        [IRQ_TMC2130_DIR_IN] = "<tmc2130.dir",
+        [IRQ_TMC2130_ENABLE_IN] = "<tmc2130.enable",
+        [IRQ_TMC2130_DIAG_OUT] = ">tmc2130.diag",
+        [IRQ_TMC2130_POSITION_OUT] = ">tmc2130.position",
+        [IRQ_TMC2130_MIN_OUT] = ">tmc2130.min",
 };
 
 void
@@ -218,9 +257,10 @@ tmc2130_init(
 	this->irq = avr_alloc_irq(&avr->irq_pool, 0, IRQ_TMC2130_COUNT, irq_names);
     this->axis = axis;
     memset(&this->cmdIn, 0, sizeof(this->cmdIn));
-    this->byteIndex = 4;
+    memset(&this->regs.raw, 0, sizeof(this->regs.raw));
     this->fCurPos =25.0f; // start position.
     int iMaxMM = -1;
+    // TODO: get steps/mm from the EEPROM?
     switch (axis)
     {
         case 'Y':
@@ -237,7 +277,7 @@ tmc2130_init(
             iMaxMM = 210;
             break;
         case 'E':
-            this->iCurStep = 0;
+            this->fCurPos = 0.0f;
             this->iStepsPerMM = 490;
             break;
     }
@@ -249,6 +289,12 @@ tmc2130_init(
     this->iCurStep = this->fCurPos*this->iStepsPerMM; // We track in "steps" to avoid the cumulative floating point error of adding fractions of a mm to each pos.
 
     this->regs.defs.DRV_STATUS.SG_RESULT = 250;
+
+    //for (int i=0; i<128; i++)
+    //{
+    //    if (this->regs.raw[i])
+    //        printf("REG DUMP: %02x : %10lx",i,this->regs.raw[i]);
+    //}
 
     // Just wire right up to the AVR SPI
     avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT),

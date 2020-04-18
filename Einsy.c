@@ -375,7 +375,7 @@ void setupSDcard(char * mmcu)
 	avr_raise_irq(avr_io_getirq(hw.mcu,AVR_IOCTL_IOPORT_GETIRQ('C'),1),0);
 	
 	// wire up the SD present signal.
-	avr_connect_irq(&hw.sd_card.irq + IRQ_SD_CARD_PRESENT, avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),0));
+	avr_connect_irq(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),0));
 	avr_ioport_external_t ex;
 	ex.name = 'J';
 	ex.value = 0;

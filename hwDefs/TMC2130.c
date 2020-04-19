@@ -92,8 +92,8 @@ void tmc2130_draw_position_glut(tmc2130_t *this)
         glPushMatrix();
             glTranslatef(30,7,0);
             glScalef(0.09,-0.05,0);
-            char pos[7];
-            sprintf(pos,"%3.02f",this->fCurPos);
+            char pos[10];
+            sprintf(pos,"%7.02f",this->fCurPos);
             for (int i=0; i<7; i++)
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,pos[i]);
 
@@ -200,12 +200,12 @@ static void tmc2130_step_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
     else
         this->iCurStep++;
     bool bStall = false;
-    if (this->iCurStep==-1)
+    if (this->iCurStep==-1 && this->axis != 'E')
     {
         this->iCurStep = 0;
         bStall = true;
     }
-    else if (this->iCurStep>this->iMaxPos)
+    else if (this->iCurStep>this->iMaxPos && this->axis != 'E')
     {
         this->iCurStep = this->iMaxPos;
         bStall = true;
@@ -277,8 +277,9 @@ tmc2130_init(
             iMaxMM = 210;
             break;
         case 'E':
+            this->flags.bits.inverted = 1;
             this->fCurPos = 0.0f;
-            this->iStepsPerMM = 490;
+            this->iStepsPerMM = 280;
             break;
     }
     if (iMaxMM==-1)

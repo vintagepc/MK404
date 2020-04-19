@@ -118,7 +118,7 @@ typedef struct tmc2130_t {
 	tmc2130_flags_t flags;
     uint16_t iStepsPerMM;
     uint32_t iMaxPos;
-    uint32_t iCurStep;
+    int32_t iCurStep;
     float fCurPos; // Tracks position in float for gl
     tmc2130_cmd_t cmdIn;
     tmc2130_cmd_t cmdProc;

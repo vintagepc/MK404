@@ -107,9 +107,9 @@ typedef struct hd44780_t
 	// uint16_t oldstate;			/// previous pins
 	uint8_t	 datapins;			// composite of 4 high bits, or 8 bits
 	uint8_t  readpins;
-
 	uint16_t flags;				// LCD flags ( HD44780_FLAG_*)
 	uint8_t bInCGRAM;
+	uint8_t iPWMVal;
 	uint8_t iBrightness;
 } hd44780_t;
 

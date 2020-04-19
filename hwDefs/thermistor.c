@@ -83,6 +83,7 @@ static const char * irq_names[IRQ_TERM_COUNT] = {
 	[IRQ_TERM_ADC_TRIGGER_IN] = "8<thermistor.trigger",
 	[IRQ_TERM_TEMP_VALUE_OUT] = "16>thermistor.out",
 	[IRQ_TERM_TEMP_VALUE_IN] = "16<thermistor.in",
+	[IRQ_TERM_ADC_VALUE_OUT] = "16>thermistor.valout"
 };
 
 void

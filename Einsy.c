@@ -349,9 +349,6 @@ void setupLCD()
 		avr_io_getirq(avr, iIRQ[0], 7),
 		hw.lcd.irq + IRQ_HD44780_E);
 
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),3),
-			hw.lcd.irq + IRQ_HD44780_BRIGHTNESS);
-
 	rotenc_init(avr, &hw.encoder);
 	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_A_PIN,
 	avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),1));
@@ -656,14 +653,6 @@ int main(int argc, char *argv[])
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");
 	//avr_raise_irq(hwPowerPanic.irq + IRQ_BUTTON_OUT, 0);
-
-	// Fake an external pullup on the BL pin so it can be detected:
-	avr_ioport_external_t ex;
-	ex.mask = 1<<3;
-	ex.value = 0;
-	ex.name = 'E';
-
-	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
 	/*
 	 * OpenGL init, can be ignored

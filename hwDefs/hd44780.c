@@ -389,7 +389,7 @@ hd44780_brightness_changed_hook(
         void *param)
 {
 	hd44780_t *b = (hd44780_t *) param;
-	printf("Brightness pin changed value: %u\n",value);
+	TRACE(printf("Brightness pin changed value: %u\n",value));
 	b->iPWMVal = value;
 	b->iBrightness = value;
 	hd44780_set_flag(b,HD44780_FLAG_DIRTY,1);
@@ -408,7 +408,7 @@ hd44780_brightness_digital_hook(
 		b->iBrightness = b->iPWMVal;
 		return;
 	}
-	printf("Brightness digital pin changed: %02x\n",value);
+	TRACE(printf("Brightness digital pin changed: %02x\n",value));
 	if (value)
 		b->iBrightness = 0xFF;
 	else

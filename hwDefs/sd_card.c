@@ -127,13 +127,9 @@ static void CRC_ADD(const uint8_t data, void *param) {
 #define DEBUG(m, ...) do{}while(0)
 #endif
 
-#define SDv1
+// #define SDv1
 // #define SDv2
-// #define SDHC //high capacity
-
-#if defined(SDv1) || defined(SDv2)
-	#define SDSC //standard capacity
-#endif
+#define SDHC //high capacity
 
 /* Convert from an address as received in a command header, to a byte offset into the data array. */
 static off_t _sd_card_input_address_to_data_index (off_t input_address)

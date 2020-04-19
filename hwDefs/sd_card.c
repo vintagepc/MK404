@@ -194,19 +194,6 @@ static sd_card_state_t _sd_card_process_command (struct avr_t *avr, sd_card_t *s
 			self->command_response.data[0] = 0x00;
 			self->command_response.data[1] = 0x00;
 			self->command_response.length = 2;
-/* 
-			static uint8_t status[64] = { 0, };
-
-			COMMAND_RESPONSE_R1 (0x00);
-
-			next_state = SD_CARD_DATA_READ_TOKEN;
-			self->read_bytes_remaining = 64;
-			self->read_ptr = status;
-
-			log2(Erase block size) is the MS 4b of byte 10. Reference: JESD84-A44, Section 8.3, 'ERASE_GRP_SIZE'.
-			 The value '1' gives a minimum of 32 blocks erased in a single transaction.
-			status[10] = (1 << 4);
- */
 			break;
 		}
 		case CMD16: {

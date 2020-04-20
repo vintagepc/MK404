@@ -67,6 +67,7 @@
 #include "Firmware/eeprom.h"
 #include "Einsy_EEPROM.h"
 #include "stdbool.h"
+#include "sd_card.h"
 
 avr_t * avr = NULL;
 avr_vcd_t vcd_file;
@@ -97,6 +98,7 @@ struct hw_t {
 	fan_t fExtruder,fPrint;
 	heater_t hExtruder, hBed;
 	w25x20cl_t spiFlash;
+	sd_card_t sd_card;
 	tmc2130_t X, Y, Z, E;
 	voltage_t vMain, vBed, vIR;
 } hw;
@@ -147,6 +149,8 @@ void avr_special_deinit( avr_t* avr, void * data)
 	einsy_eeprom_save(avr, flash_data->avr_eeprom_path, flash_data->avr_eeprom_fd);
 	
 	w25x20cl_save(hw.spiFlash.filepath, &hw.spiFlash);
+	
+	sd_card_unmount_file (avr, &hw.sd_card);
 
 	uart_pty_stop(&hw.UART0);
 	uart_pty_stop(&hw.UART1);
@@ -360,6 +364,28 @@ void setupLCD()
 
 	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN,
 	avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('H'),6));
+}
+
+void setupSDcard(char * mmcu)
+{
+	sd_card_init (avr, &hw.sd_card);
+	sd_card_attach (avr, &hw.sd_card, AVR_IOCTL_SPI_GETIRQ (0), avr_io_getirq (avr, AVR_IOCTL_IOPORT_GETIRQ ('J'), 6));
+	
+	// wire up the SD present signal.
+	avr_connect_irq(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),0));
+	avr_ioport_external_t ex;
+	ex.name = 'J';
+	ex.value = 0;
+	ex.mask = 0x1;
+	avr_ioctl(avr,AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name),&ex);
+
+	snprintf(hw.sd_card.filepath, sizeof(hw.sd_card.filepath), "Einsy_%s_SDcard.bin", mmcu);
+	int mount_error = sd_card_mount_file (avr, &hw.sd_card, hw.sd_card.filepath, 128450560);
+
+	if (mount_error != 0) {
+		fprintf (stderr, "SD card image ‘%s’ could not be mounted (error %i).\n", hw.sd_card.filepath, mount_error);
+		exit (2);
+	}
 }
 
 void setupSerial(bool bConnectS0)
@@ -651,6 +677,8 @@ int main(int argc, char *argv[])
 		avr_extint_set_strict_lvl_trig(avr,i,false);
 
 	setupSerial(bConnectS0);
+	
+	setupSDcard(mmcu);
 
 	setupHeaters();
 

@@ -65,6 +65,7 @@ ${board} : ${OBJ}/thermistor.o
 ${board} : ${OBJ}/voltage.o
 ${board} : ${OBJ}/TMC2130.o
 ${board} : ${OBJ}/w25x20cl.o
+${board} : ${OBJ}/sd_card.o
 ${board} : ${OBJ}/Einsy_EEPROM.o
 ${board} : ${OBJ}/${target}.o
 

@@ -58,6 +58,7 @@
 #include "heater.h"
 #include "rotenc.h"
 #include "button.h"
+#include "voltage.h"
 #include "thermistor.h"
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
@@ -97,6 +98,7 @@ struct hw_t {
 	heater_t hExtruder, hBed;
 	w25x20cl_t spiFlash;
 	tmc2130_t X, Y, Z, E;
+	voltage_t vMain, vBed, vIR;
 } hw;
 
 unsigned char guKey = 0;
@@ -420,6 +422,14 @@ void setupHeaters()
 	//	avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
 }
 
+void setupVoltages()
+{
+	float fScale24v = 1.0f/26.097f; // Based on rSense voltage divider outputting 5v
+	voltage_init(avr, &hw.vBed,9,fScale24v,23.9);
+	voltage_init(avr, &hw.vMain,4,fScale24v,24.0);
+	voltage_init(avr, &hw.vIR,8,1.0/5.0f,4.2f);
+}
+
 void setupDrivers()
 {
 	// Fake an external pullup on the diag pin so it can be detected:
@@ -649,6 +659,8 @@ int main(int argc, char *argv[])
 	setupDrivers();
 
 	setupTimers(avr);
+
+	setupVoltages();
 
 	avr_register_io_write(avr,0xC0,fix_serial,(void*)NULL); // UCSRA0
 

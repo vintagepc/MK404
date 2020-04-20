@@ -32,11 +32,22 @@ void tmc2130_draw_glut(tmc2130_t *this)
 			glVertex3f(0,10,0);
 		glEnd();
         glColor3f(1,1,1);
+        if (this->flags.bits.enable)
+        {
+            glBegin(GL_QUADS);
+                glVertex3f(3,8,0);
+                glVertex3f(13,8,0);
+                glVertex3f(13,1,0);
+                glVertex3f(3,1,0);
+            glEnd();
+            glColor3f(0,0,0);
+        }   
         glPushMatrix();
             glTranslatef(3,7,0);
             glScalef(0.09,-0.05,0);
             glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,this->axis);
         glPopMatrix();
+        glColor3f(1,1,1);
         glPushMatrix();
             glTranslatef(280,7,0);
             glScalef(0.09,-0.05,0);

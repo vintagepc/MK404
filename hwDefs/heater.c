@@ -8,7 +8,7 @@
 #include "avr_ioport.h"
 #include "math.h"
 
-#define TRACE(_w)_w
+//#define TRACE(_w)_w
 #ifndef TRACE
 #define TRACE(_w)
 #endif

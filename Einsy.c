@@ -528,19 +528,15 @@ void setupTimers(avr_t* avr)
 	// avr_regbit_setto(avr, rb, 0x03); // B */
 
 }
-bool bSerialFixed = false;
-void fix_serial(avr_t *avr, uint8_t val, void *p)
+
+void fix_serial(avr_t * avr, avr_io_addr_t addr, uint8_t v, void * param)
 {
-	if (bSerialFixed) return;
-	avr_regbit_t r = AVR_IO_REGBITS(val,0,0xFF);
-	uint8_t val2 = avr_regbit_get(avr,r);
-	//printf("regval: %02x\n");
-	if (val2==0x02) // Marlin is done setting up UCSRA0...
+	if (v==0x02)// Marlin is done setting up UCSRA0...
 	{
-		bSerialFixed = true;
-		avr_regbit_t r = AVR_IO_REGBIT(val,5); // UDRE0
-		avr_regbit_set(avr,r);
+		v|=(1<<5); // leave the UDRE0 alone
+		printf("Reset UDRE0 after serial config changed\n");
 	}
+	avr_core_watch_write(avr,addr,v);	
 }
 
 

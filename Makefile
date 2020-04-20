@@ -62,6 +62,7 @@ ${board} : ${OBJ}/uart_pty.o
 ${board} : ${OBJ}/hd44780.o
 ${board} : ${OBJ}/hd44780_glut.o
 ${board} : ${OBJ}/thermistor.o
+${board} : ${OBJ}/voltage.o
 ${board} : ${OBJ}/TMC2130.o
 ${board} : ${OBJ}/w25x20cl.o
 ${board} : ${OBJ}/sd_card.o

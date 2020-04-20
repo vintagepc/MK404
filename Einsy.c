@@ -58,6 +58,7 @@
 #include "heater.h"
 #include "rotenc.h"
 #include "button.h"
+#include "voltage.h"
 #include "thermistor.h"
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
@@ -99,6 +100,7 @@ struct hw_t {
 	w25x20cl_t spiFlash;
 	sd_card_t sd_card;
 	tmc2130_t X, Y, Z, E;
+	voltage_t vMain, vBed, vIR;
 } hw;
 
 unsigned char guKey = 0;
@@ -218,11 +220,11 @@ avr_run_thread(
 		if (guKey) {
 			switch (guKey) {
 				case 'w':
-					printf("CCW turn\n");
+					printf("<");
 					rotenc_twist(&hw.encoder, ROTENC_CCW_CLICK);
 					break;
 				case 's':
-					printf("CW turn\n");
+					printf(">");
 					rotenc_twist(&hw.encoder, ROTENC_CW_CLICK);
 					break;
 				case 0xd:
@@ -265,7 +267,7 @@ avr_run_thread(
 void keyCB(
 		unsigned char key, int x, int y)	/* called on key press */
 {
-	printf("Keypress: %x\n",key);
+	//printf("Keypress: %x\n",key);
 	switch (key) {
 		case 'q':
 			//glutLeaveMainLoop();
@@ -353,9 +355,6 @@ void setupLCD()
 		avr_io_getirq(avr, iIRQ[0], 7),
 		hw.lcd.irq + IRQ_HD44780_E);
 
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),3),
-			hw.lcd.irq + IRQ_HD44780_BRIGHTNESS);
-
 	rotenc_init(avr, &hw.encoder);
 	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_A_PIN,
 	avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),1));
@@ -389,7 +388,7 @@ void setupSDcard(char * mmcu)
 	}
 }
 
-void setupSerial()
+void setupSerial(bool bConnectS0)
 {
 	uart_pty_init(avr, &hw.UART0);
 	uart_pty_init(avr, &hw.UART1);
@@ -400,7 +399,8 @@ void setupSerial()
 
 	// Uncomment these to get a pseudoterminal you can connect to
 	// using any serial terminal program. Will print to console by default.
-    //uart_pty_connect(&hw.UART0, '0');
+	if (bConnectS0)
+    	uart_pty_connect(&hw.UART0, '0');
 	//uart_pty_connect(&hw.UART1,'1');
 	//uart_pty_connect(&hw.UART0, '2');
 	//uart_pty_connect(&hw.UART1,'3');
@@ -446,6 +446,14 @@ void setupHeaters()
 
 		avr_connect_irq(hw.hExtruder.irq + IRQ_HEATER_TEMP_OUT,hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
 	//	avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
+}
+
+void setupVoltages()
+{
+	float fScale24v = 1.0f/26.097f; // Based on rSense voltage divider outputting 5v
+	voltage_init(avr, &hw.vBed,9,fScale24v,23.9);
+	voltage_init(avr, &hw.vMain,4,fScale24v,24.0);
+	voltage_init(avr, &hw.vIR,8,1.0/5.0f,4.2f);
 }
 
 void setupDrivers()
@@ -557,25 +565,21 @@ void setupTimers(avr_t* avr)
 	// avr_regbit_setto(avr, rb, 0x03); // B */
 
 }
-bool bSerialFixed = false;
-void fix_serial(avr_t *avr, uint8_t val, void *p)
+
+void fix_serial(avr_t * avr, avr_io_addr_t addr, uint8_t v, void * param)
 {
-	if (bSerialFixed) return;
-	avr_regbit_t r = AVR_IO_REGBITS(val,0,0xFF);
-	uint8_t val2 = avr_regbit_get(avr,r);
-	//printf("regval: %02x\n");
-	if (val2==0x02) // Marlin is done setting up UCSRA0...
+	if (v==0x02)// Marlin is done setting up UCSRA0...
 	{
-		bSerialFixed = true;
-		avr_regbit_t r = AVR_IO_REGBIT(val,5); // UDRE0
-		avr_regbit_set(avr,r);
+		v|=(1<<5); // leave the UDRE0 alone
+		printf("Reset UDRE0 after serial config changed\n");
 	}
+	avr_core_watch_write(avr,addr,v);	
 }
 
 
 int main(int argc, char *argv[])
 {
-	bool bBootloader = false;
+	bool bBootloader = false, bConnectS0 = false, bWait = false;
 
 	struct avr_flash flash_data;
 	char boot_path[1024] = "stk500boot_v2_mega2560.hex";
@@ -594,6 +598,10 @@ int main(int argc, char *argv[])
 			verbose++;
 		else if (!strcmp(argv[i], "-b"))
 			bBootloader = true;
+		else if (!strcmp(argv[i], "-w"))
+			bWait = true;
+		else if (!strcmp(argv[i], "-S0"))
+			bConnectS0 = true;
 		else {
 			fprintf(stderr, "%s: invalid argument %s\n", argv[0], argv[i]);
 			exit(1);
@@ -650,8 +658,9 @@ int main(int argc, char *argv[])
 	if (bBootloader)
 	{
 		avr->pc = boot_base;
-		avr->reset_pc = boot_base;
 	}
+	// Always set to bootloader or DTR/watchdog will definitely fail.
+	avr->reset_pc = boot_base; 
 	/* end of flash, remember we are writing /code/ */
 	avr->codeend = avr->flashend;
 	avr->log = 1 + verbose;
@@ -667,7 +676,7 @@ int main(int argc, char *argv[])
 	for (int i=0; i<8; i++)
 		avr_extint_set_strict_lvl_trig(avr,i,false);
 
-	setupSerial();
+	setupSerial(bConnectS0);
 	
 	setupSDcard(mmcu);
 
@@ -679,19 +688,21 @@ int main(int argc, char *argv[])
 
 	setupTimers(avr);
 
+	setupVoltages();
+
 	avr_register_io_write(avr,0xC0,fix_serial,(void*)NULL); // UCSRA0
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");
 	//avr_raise_irq(hwPowerPanic.irq + IRQ_BUTTON_OUT, 0);
 
-	// Fake an external pullup on the BL pin so it can be detected:
-	avr_ioport_external_t ex;
-	ex.mask = 1<<3;
-	ex.value = 0;
-	ex.name = 'E';
-
-	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
+	// Useful for getting serial pipes/taps setup, the node exists so you can
+	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.
+	if (bWait) 
+	{
+		printf("Paused - press any key to resume execution\n");
+		getchar();
+	}
 
 	/*
 	 * OpenGL init, can be ignored
@@ -705,7 +716,7 @@ int main(int argc, char *argv[])
 
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
-	window = glutCreateWindow("Press 'q' to quit");	/* create window */
+	window = glutCreateWindow("('q' to quit)");	/* create window */
 
 	initGL(w * pixsize, h * pixsize);
 

@@ -25,6 +25,8 @@
 #include <string.h>
 #include "sim_time.h"
 #include "avr_timer.h"
+#include "avr_ioport.h"
+#include "sim_io.h"
 #include "hd44780.h"
 
 //#define TRACE(_w) _w
@@ -387,11 +389,34 @@ hd44780_brightness_changed_hook(
         void *param)
 {
 	hd44780_t *b = (hd44780_t *) param;
-	TRACE(printf("Brightness pin changed value: %u\n",value));
-	b->iBrightness = (uint8_t)value;
-	avr_raise_irq(b->irq + IRQ_HD44780_BRIGHTNESS_OUT,0); // Force low to enable detect.
+	printf("Brightness pin changed value: %u\n",value);
+	b->iPWMVal = value;
+	b->iBrightness = value;
 	hd44780_set_flag(b,HD44780_FLAG_DIRTY,1);
 }
+
+static void
+hd44780_brightness_digital_hook(
+		struct avr_irq_t * irq,
+		uint32_t value,
+        void *param)
+{
+	hd44780_t *b = (hd44780_t *) param;
+	avr_regbit_t rb = AVR_IO_REGBIT(0x90,7); // COM3A1
+	if (avr_regbit_get(b->avr,rb)) // Restore PWM value if being PWM-driven
+	{
+		b->iBrightness = b->iPWMVal;
+		return;
+	}
+	printf("Brightness digital pin changed: %02x\n",value);
+	if (value)
+		b->iBrightness = 0xFF;
+	else
+		b->iBrightness = 0x00;
+	hd44780_set_flag(b,HD44780_FLAG_DIRTY,1);
+	
+}
+
 
 static void
 hd44780_pin_changed_hook(
@@ -470,8 +495,16 @@ hd44780_init(
 	for (int i = 0; i < IRQ_HD44780_INPUT_COUNT; i++)
 		avr_irq_register_notify(b->irq + i, hd44780_pin_changed_hook, b);
 
+	avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),3),hd44780_brightness_digital_hook,b);
 	// Attach to PWM control signal
 	avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_TIMER_GETIRQ('3'),TIMER_IRQ_OUT_PWM0),hd44780_brightness_changed_hook,b);
+
+	avr_ioport_external_t ex;
+	ex.mask = 1<<3;
+	ex.value = 0; // Sets pullup to 0 if input, restore to 
+	ex.name = 'E';
+
+	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
 	_hd44780_reset_cursor(b);
 	_hd44780_clear_screen(b);

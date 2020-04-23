@@ -136,7 +136,8 @@ hd44780_gl_draw(
 
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_BLEND);
-	float r = 2.0/255.0,g = 196.0/255.0,blue = 251.0/255.0;
+	uint8_t* iBG = (uint8_t*)&background;
+	float r = iBG[3]/255.0,g = iBG[2]/255.0,blue = iBG[1]/255.0;
 	float fScale = (float)b->iBrightness/255.0;
 	glColor4f(r*fScale,g*fScale,blue*fScale,1.0f);
 	glTranslatef(border, border, 0);

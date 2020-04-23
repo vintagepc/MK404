@@ -54,6 +54,7 @@
 #include "sim_gdb.h"
 #include "uart_pty.h"
 #include "hd44780_glut.h"
+#include "PINDA.h"
 #include "fan.h"
 #include "heater.h"
 #include "rotenc.h"
@@ -68,6 +69,7 @@
 #include "Einsy_EEPROM.h"
 #include "stdbool.h"
 #include "sd_card.h"
+#include "Firmware/Configuration_prusa.h"
 
 avr_t * avr = NULL;
 avr_vcd_t vcd_file;
@@ -84,8 +86,11 @@ struct avr_flash {
 
 int window;
 
-uint32_t colors[4] = {
-		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055 
+int iScheme = 0;
+
+uint32_t colors[8] = {
+		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
+		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055
 };
 
 struct hw_t {
@@ -101,6 +106,7 @@ struct hw_t {
 	sd_card_t sd_card;
 	tmc2130_t X, Y, Z, E;
 	voltage_t vMain, vBed, vIR;
+	pinda_t pinda;
 } hw;
 
 unsigned char guKey = 0;
@@ -169,10 +175,10 @@ void displayCB(void)		/* function called whenever redisplay needed */
 
 	hd44780_gl_draw(
 		&hw.lcd,
-			colors[0], /* background */
-			colors[1], /* character background */
-			colors[2], /* text */
-			colors[3] /* shadow */ );
+			colors[(4*iScheme) + 0], /* background */
+			colors[(4*iScheme) + 1], /* character background */
+			colors[(4*iScheme) + 2], /* text */
+			colors[(4*iScheme) + 3] /* shadow */ );
 	glPopMatrix();
 
 	// Do something for the motors...
@@ -244,6 +250,10 @@ avr_run_thread(
 					avr_reset(avr);
 					rotenc_button_press_hold(&hw.encoder);
 					break;
+				case 'y':
+					hw.pinda.bIsSheetPresent ^=1;
+					printf("Steel sheet: %s\n", hw.pinda.bIsSheetPresent? "INSTALLED" : "REMOVED");
+					break;
 				case 'q':
 					gbStop = 1;
 					break;
@@ -280,6 +290,8 @@ void keyCB(
 		case 'd':
 			gbPrintPC = gbPrintPC==0;
 			break;
+		case '1':
+			iScheme ^=1;
 		/* case 'r':
 			printf("Starting VCD trace; press 's' to stop\n");
 			avr_vcd_start(&vcd_file);
@@ -495,13 +507,15 @@ void setupDrivers()
 		hw.Z.irq + IRQ_TMC2130_STEP_IN);
 	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),5),
 		hw.Z.irq + IRQ_TMC2130_ENABLE_IN);
-	// Just wire up the PINDA to the z endstop for now:
 	ex.mask = 1<<4; // DIAG pins.
 	ex.value = 0;
 	ex.name = 'B';
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
-	avr_connect_irq(hw.Z.irq + IRQ_TMC2130_MIN_OUT,avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('B'),4));
+	
+	pinda_init(avr, &hw.pinda ,X_PROBE_OFFSET_FROM_EXTRUDER, Y_PROBE_OFFSET_FROM_EXTRUDER,
+		hw.X.irq + IRQ_TMC2130_POSITION_OUT, hw.Y.irq + IRQ_TMC2130_POSITION_OUT, hw.Z.irq + IRQ_TMC2130_POSITION_OUT);
 
+	avr_connect_irq(hw.pinda.irq + IRQ_PINDA_TRIGGER_OUT ,avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('B'),4));
 
  	tmc2130_init(avr, &hw.E, 'E', 3); // Init takes care of the SPI wiring.
 	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),4),
@@ -716,7 +730,7 @@ int main(int argc, char *argv[])
 
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
-	window = glutCreateWindow("('q' to quit)");	/* create window */
+	window = glutCreateWindow("Prusa MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
 
 	initGL(w * pixsize, h * pixsize);
 

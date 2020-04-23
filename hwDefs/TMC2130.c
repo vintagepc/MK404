@@ -221,14 +221,15 @@ static void tmc2130_step_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
         this->iCurStep = this->iMaxPos;
         bStall = true;
     }
-    // TODO: get rid of this hackery once there's a real PINDA.
-    if (this->iCurStep==200)
-           avr_raise_irq(this->irq + IRQ_TMC2130_MIN_OUT, 1);
-    else if (this->iCurStep == 201)
-           avr_raise_irq(this->irq + IRQ_TMC2130_MIN_OUT, 0);
+//    // TODO: get rid of this hackery once there's a real PINDA.
+//    if (this->iCurStep==200)
+//           avr_raise_irq(this->irq + IRQ_TMC2130_MIN_OUT, 1);
+//    else if (this->iCurStep == 201)
+//           avr_raise_irq(this->irq + IRQ_TMC2130_MIN_OUT, 0);
 
     this->fCurPos = (float)this->iCurStep/(float)this->iStepsPerMM;
-    avr_raise_irq(this->irq + IRQ_TMC2130_POSITION_OUT, this->fCurPos);
+    uint32_t* posOut = (uint32_t*)(&this->fCurPos); // both 32 bits, just mangle it for sending over the wire.
+    avr_raise_irq(this->irq + IRQ_TMC2130_POSITION_OUT, posOut[0]);
     TRACE(printf("cur pos: %f (%u)\n",this->fCurPos,this->iCurStep));
     if (bStall)
         avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT, 1);
@@ -269,7 +270,7 @@ tmc2130_init(
     this->axis = axis;
     memset(&this->cmdIn, 0, sizeof(this->cmdIn));
     memset(&this->regs.raw, 0, sizeof(this->regs.raw));
-    this->fCurPos =25.0f; // start position.
+    this->fCurPos =15.0f; // start position.
     int iMaxMM = -1;
     // TODO: get steps/mm from the EEPROM?
     switch (axis)
@@ -285,7 +286,7 @@ tmc2130_init(
             break;
         case 'Z': 
             this->iStepsPerMM = 400;
-            iMaxMM = 210;
+            iMaxMM = 219;
             break;
         case 'E':
             this->flags.bits.inverted = 1;

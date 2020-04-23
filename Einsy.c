@@ -221,6 +221,7 @@ avr_run_thread(
 {
 	printf("Starting AVR execution...\n");
 	int state = cpu_Running;
+	float fNew;
 	while ((state != cpu_Done) && (state != cpu_Crashed)){
 		// Interactive key handling:
 		if (guKey) {
@@ -253,6 +254,19 @@ avr_run_thread(
 				case 'y':
 					hw.pinda.bIsSheetPresent ^=1;
 					printf("Steel sheet: %s\n", hw.pinda.bIsSheetPresent? "INSTALLED" : "REMOVED");
+					break;
+				case 'f':
+					if (hw.vIR.fCurrent > 2.5 )
+					{
+						printf("Filament PRESENT\n");
+						fNew = 1.3;
+					}
+					else
+					{
+						printf("Filament REMOVED\n");
+						fNew = 4.2;
+					}
+					avr_raise_irq(hw.vIR.irq + IRQ_VOLT_VALUE_IN, fNew*256);
 					break;
 				case 'q':
 					gbStop = 1;

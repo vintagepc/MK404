@@ -28,6 +28,7 @@ typedef struct heater_t {
 	float fCurrentTemp;
     float fAmbientTemp;
     uint16_t iPWM;
+    bool bIsBed;
     float fThermalMass;
     heater_flags_t flags;
 } heater_t;

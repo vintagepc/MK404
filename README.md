@@ -5,12 +5,8 @@ I figured that I'd just start something separate to share status updates, ideas,
 
 *Summary status:* Mostly functional, should now be able to boot stock Prusa Marlin build for MK3S. 
 Remaining To-Dos of note:
-- PINDA
-- SD Card
 - Filament sensor
-- TMC2130
 - Beeper
-- Motors/positioning
 - Better visuals
 
 
@@ -23,6 +19,11 @@ Remaining To-Dos of note:
 - Thermistors are defined for the bed, PINDA, ambient and hotend. Bed/PINDA read higher than expected over 40C due to code in the official firmware (prusa3d#2601)
 - Fans have been attached, and can be controlled by the PWM output (or manually overridden to simulate conditions). 
 - Heater behaviour has been implemented. A Hotend heater is attached and appears functional, but the bed heating still has some issues to work out (#45)
+- PINDA simulation is present for both MBL and xyz cal
+- Simulated SD card, some improvements pending
+- TMC2130s are sufficiently simulated for general operations. 
+- Motor/positioning tracking present, but crude.
+- SPI flash is present. Still some issues to work out with using it and writing it.
 
 - Full boot (Serial bug fixed)
 
@@ -31,6 +32,4 @@ Remaining To-Dos of note:
 - The timer bug has been resolved using a customized build of SimAVR.
 - bootloader can be run with `-b` but is off by default for faster boot times.
 - Einsy eeprom is persisted between reboots.
-- TMC2130s in progress. They already work partially:
 
-![vokoscreen-2020-04-17_18-58-17](https://user-images.githubusercontent.com/53943260/79620422-d6e9dd80-80dd-11ea-944b-fbb778201bbf.gif)

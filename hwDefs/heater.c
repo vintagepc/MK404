@@ -59,26 +59,32 @@ static void heater_pwm_hook(
 {
     heater_t *this = (heater_t*) param;
 
-    if (this->flags.bAuto) // Only update RPM if auto (pwm-controlled). Else user supplied RPM.
+    if (this->flags.bAuto) // Only update if auto (pwm-controlled). Else user supplied RPM.
         this->iPWM = value;
-    TRACE(printf("New PWM value on heater: %u\n", this->iPWM));
+    //if (this->bIsBed) (printf("New PWM value on heater: %u\n", this->iPWM));
     if (this->iPWM > 0)
     {
         avr_cycle_timer_register_usec(this->avr,100000,heater_temp_change,this);
     }
-  //  else
-  //  {
-  //      avr_cycle_timer_cancel(this->avr,fan_tach_change,this);
-  //  }
 }
+
+//TCCR0A  _SFR_IO8(0x24)
+//#define COM0B0  4
 
 static void heater_digital_hook(
 		struct avr_irq_t * irq,
 		uint32_t value,
 		void * param )
 {
+    heater_t *this = (heater_t*) param;
+    avr_regbit_t inv = AVR_IO_REGBIT(0x24 + 32,4);
+    uint8_t COM0B0 = avr_regbit_get(this->avr, inv);
+    if (this->bIsBed) // The heatbed PWM is based on inverting mode trickery. We can just watch COM0B0 rather than the digital pin output.
+        value = COM0B0^1;
+
     if (value==1)
         value = 255;
+
     heater_pwm_hook(irq,value,param);
 }
 

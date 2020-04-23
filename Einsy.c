@@ -451,13 +451,15 @@ void setupHeaters()
 			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('H'),3),
 			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM0));
 
-	//	heater_init(avr, &hw.hBed, 0.25,NULL,//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('0'),TIMER_IRQ_OUT_PWM0), 
-	//		avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),5));
+		heater_init(avr, &hw.hBed, 0.25,25.0, NULL,//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('0'),TIMER_IRQ_OUT_PWM0), 
+			avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),5));
+		hw.hBed.bIsBed = true;
+		
 		heater_init(avr, &hw.hExtruder, 1.5, 25.0, NULL,//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('3'),TIMER_IRQ_OUT_PWM2), 
 			avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),5));
 
 		avr_connect_irq(hw.hExtruder.irq + IRQ_HEATER_TEMP_OUT,hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
-	//	avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
+		avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
 }
 
 void setupVoltages()

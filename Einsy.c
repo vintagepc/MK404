@@ -159,7 +159,7 @@ void avr_special_deinit( avr_t* avr, void * data)
 	sd_card_unmount_file (avr, &hw.sd_card);
 
 	uart_pty_stop(&hw.UART0);
-	uart_pty_stop(&hw.UART1);
+	//uart_pty_stop(&hw.UART1);
 }
 
 void displayCB(void)		/* function called whenever redisplay needed */
@@ -215,6 +215,21 @@ void displayCB(void)		/* function called whenever redisplay needed */
 }
 
 
+// This is for stuff that needs to happen before powerup and after resets...
+// things like resetting button states since that cancels any pending cycle timers.
+void powerup_and_reset_helper(avr_t *avr)
+{
+	// suppress continuous polling for low INT lines... major performance drain.
+	for (int i=0; i<8; i++)
+		avr_extint_set_strict_lvl_trig(avr,i,false);
+
+	// Restore powerpanic to high
+	avr_raise_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, 1);
+
+	//depress encoder knob
+	avr_raise_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN, 0);
+}
+
 static void *
 avr_run_thread(
 		void * ignore)
@@ -222,8 +237,21 @@ avr_run_thread(
 	printf("Starting AVR execution...\n");
 	int state = cpu_Running;
 	float fNew;
+	avr_regbit_t MCUSR = AVR_IO_REGBITS(0x34 + 32, 0, 0xFF);
+	uint8_t uiMCUSR = 0;
 	while ((state != cpu_Done) && (state != cpu_Crashed)){
 		// Interactive key handling:
+		// Check MCUSR for a reset:
+
+		if (uiMCUSR != avr_regbit_get(avr,MCUSR))
+		{
+			uiMCUSR = avr_regbit_get(avr,MCUSR);
+			if (uiMCUSR) // Don't do this when clearing the flag.
+			{
+				printf("RESET detected (%02x)!\n",uiMCUSR);
+				powerup_and_reset_helper(avr);
+			}
+		}
 		if (guKey) {
 			switch (guKey) {
 				case 'w':
@@ -242,14 +270,17 @@ avr_run_thread(
 					printf("RESET/KILL\n");
 					// RESET BUTTON
 					avr_reset(avr);
+					avr_regbit_set(avr, avr->reset_flags.extrf);
+					printf("RESET (%02x)!\n",avr_regbit_get(avr,MCUSR));
 					// Resetting the AVR kills the auto-release timer - so return the pin to LOW.
-					avr_raise_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN, 0);
 					break;
 				case 't':
 					printf("FACTORY_RESET\n");
 					// Hold the button during boot to get factory reset menu
 					avr_reset(avr);
 					rotenc_button_press_hold(&hw.encoder);
+					avr_regbit_set(avr, avr->reset_flags.extrf);
+					printf("RESET (%02x)!\n",avr_regbit_get(avr,MCUSR));
 					break;
 				case 'y':
 					hw.pinda.bIsSheetPresent ^=1;
@@ -596,6 +627,8 @@ void setupTimers(avr_t* avr)
 
 }
 
+
+
 void fix_serial(avr_t * avr, avr_io_addr_t addr, uint8_t v, void * param)
 {
 	if (v==0x02)// Marlin is done setting up UCSRA0...
@@ -702,9 +735,7 @@ int main(int argc, char *argv[])
 		avr_gdb_init(avr);
 	}
 
-	// suppress continuous polling for low INT lines... major performance drain.
-	for (int i=0; i<8; i++)
-		avr_extint_set_strict_lvl_trig(avr,i,false);
+
 
 	setupSerial(bConnectS0);
 	
@@ -725,7 +756,6 @@ int main(int argc, char *argv[])
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");
 	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),4));
-	avr_raise_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, 1);
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.

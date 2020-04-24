@@ -5,12 +5,16 @@ I figured that I'd just start something separate to share status updates, ideas,
 
 *Summary status:* Mostly functional, should now be able to boot stock Prusa Marlin build for MK3S. 
 Remaining To-Dos of note:
-- Filament sensor
+- Filament sensor (Works well enough for testing, better features to add)
 - Beeper
 - Better visuals
 
 
 *Current state of affairs*:
+- **The simulator can complete a self test!**
+
+![](https://user-images.githubusercontent.com/53943260/80157964-63404880-8595-11ea-9bfe-55668a0d4807.png)
+
 - Bootloader works
 - LCD works 99% of the way. Brightness support has been fixed.
 - Encoder and buttons are simulated

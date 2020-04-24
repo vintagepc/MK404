@@ -67,6 +67,7 @@
 #include "TMC2130.h"
 #include "Firmware/eeprom.h"
 #include "Einsy_EEPROM.h"
+#include "uart_logger.h"
 #include "stdbool.h"
 #include "sd_card.h"
 #include "Firmware/Configuration_prusa.h"
@@ -107,6 +108,7 @@ struct hw_t {
 	tmc2130_t X, Y, Z, E;
 	voltage_t vMain, vBed, vIR;
 	pinda_t pinda;
+	uart_logger_t logger;
 } hw;
 
 unsigned char guKey = 0;
@@ -159,6 +161,9 @@ void avr_special_deinit( avr_t* avr, void * data)
 	sd_card_unmount_file (avr, &hw.sd_card);
 
 	uart_pty_stop(&hw.UART0);
+
+	if (hw.logger.fdOut)
+		uart_logger_stop(&hw.logger);
 	//uart_pty_stop(&hw.UART1);
 }
 
@@ -219,6 +224,7 @@ void displayCB(void)		/* function called whenever redisplay needed */
 // things like resetting button states since that cancels any pending cycle timers.
 void powerup_and_reset_helper(avr_t *avr)
 {
+	printf("RESET\n");
 	// suppress continuous polling for low INT lines... major performance drain.
 	for (int i=0; i<8; i++)
 		avr_extint_set_strict_lvl_trig(avr,i,false);
@@ -237,21 +243,7 @@ avr_run_thread(
 	printf("Starting AVR execution...\n");
 	int state = cpu_Running;
 	float fNew;
-	avr_regbit_t MCUSR = AVR_IO_REGBITS(0x34 + 32, 0, 0xFF);
-	uint8_t uiMCUSR = 0;
 	while ((state != cpu_Done) && (state != cpu_Crashed)){
-		// Interactive key handling:
-		// Check MCUSR for a reset:
-
-		if (uiMCUSR != avr_regbit_get(avr,MCUSR))
-		{
-			uiMCUSR = avr_regbit_get(avr,MCUSR);
-			if (uiMCUSR) // Don't do this when clearing the flag.
-			{
-				printf("RESET detected (%02x)!\n",uiMCUSR);
-				powerup_and_reset_helper(avr);
-			}
-		}
 		if (guKey) {
 			switch (guKey) {
 				case 'w':
@@ -270,17 +262,12 @@ avr_run_thread(
 					printf("RESET/KILL\n");
 					// RESET BUTTON
 					avr_reset(avr);
-					avr_regbit_set(avr, avr->reset_flags.extrf);
-					printf("RESET (%02x)!\n",avr_regbit_get(avr,MCUSR));
-					// Resetting the AVR kills the auto-release timer - so return the pin to LOW.
 					break;
 				case 't':
 					printf("FACTORY_RESET\n");
 					// Hold the button during boot to get factory reset menu
 					avr_reset(avr);
 					rotenc_button_press_hold(&hw.encoder);
-					avr_regbit_set(avr, avr->reset_flags.extrf);
-					printf("RESET (%02x)!\n",avr_regbit_get(avr,MCUSR));
 					break;
 				case 'y':
 					hw.pinda.bIsSheetPresent ^=1;
@@ -445,7 +432,7 @@ void setupSDcard(char * mmcu)
 	}
 }
 
-void setupSerial(bool bConnectS0)
+void setupSerial(bool bConnectS0, uint8_t uiLog)
 {
 	uart_pty_init(avr, &hw.UART0);
 //	uart_pty_init(avr, &hw.UART1);
@@ -454,10 +441,15 @@ void setupSerial(bool bConnectS0)
 
 	w25x20cl_init(avr, &hw.spiFlash);
 
+	uart_logger_init(avr, &hw.logger);
+
 	// Uncomment these to get a pseudoterminal you can connect to
 	// using any serial terminal program. Will print to console by default.
 	if (bConnectS0)
     	uart_pty_connect(&hw.UART0, '0');
+
+	if (uiLog=='0' || uiLog == '2')
+		uart_logger_connect(&hw.logger,uiLog);
 	//uart_pty_connect(&hw.UART1,'1');
 	//uart_pty_connect(&hw.UART0, '2');
 	//uart_pty_connect(&hw.UART1,'3');
@@ -651,6 +643,7 @@ int main(int argc, char *argv[])
 	char * mmcu = "atmega2560";
 	uint32_t freq = 16000000;
 	int debug = 0;
+	uint8_t chrLogSerial = ' ';
 	int verbose = 1;
 	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i] + strlen(argv[i]) - 4, ".hex"))
@@ -665,6 +658,8 @@ int main(int argc, char *argv[])
 			bWait = true;
 		else if (!strcmp(argv[i], "-S0"))
 			bConnectS0 = true;
+		else if (!strncmp(argv[i], "-l",2))
+			chrLogSerial = argv[i][2];
 		else {
 			fprintf(stderr, "%s: invalid argument %s\n", argv[0], argv[i]);
 			exit(1);
@@ -707,6 +702,7 @@ int main(int argc, char *argv[])
 	avr->custom.deinit = avr_special_deinit;
 	avr->custom.data = &flash_data;
 	avr_init(avr);
+	avr->reset = powerup_and_reset_helper;
 	flash_data.avr_eeprom_fd = einsy_eeprom_load(avr, flash_data.avr_eeprom_path);
 	hw.spiFlash.xflash_fd = w25x20cl_load(hw.spiFlash.filepath, &hw.spiFlash);
 
@@ -737,7 +733,7 @@ int main(int argc, char *argv[])
 
 
 
-	setupSerial(bConnectS0);
+	setupSerial(bConnectS0, chrLogSerial);
 	
 	setupSDcard(mmcu);
 

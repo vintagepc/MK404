@@ -299,7 +299,7 @@ void keyCB(
 			break;
 		case 'p':
 			printf("SIMULATING POWER PANIC\n");
-			avr_raise_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, 1);
+			button_press(&hw.powerPanic, 500);
 			break;
 		case 'd':
 			gbPrintPC = gbPrintPC==0;
@@ -417,9 +417,9 @@ void setupSDcard(char * mmcu)
 void setupSerial(bool bConnectS0)
 {
 	uart_pty_init(avr, &hw.UART0);
-	uart_pty_init(avr, &hw.UART1);
+//	uart_pty_init(avr, &hw.UART1);
 	uart_pty_init(avr, &hw.UART2);
-	uart_pty_init(avr, &hw.UART3);
+//	uart_pty_init(avr, &hw.UART3);
 
 	w25x20cl_init(avr, &hw.spiFlash);
 
@@ -724,7 +724,8 @@ int main(int argc, char *argv[])
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");
-	//avr_raise_irq(hwPowerPanic.irq + IRQ_BUTTON_OUT, 0);
+	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),4));
+	avr_raise_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, 1);
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.

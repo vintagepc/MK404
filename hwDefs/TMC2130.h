@@ -133,6 +133,6 @@ void tmc2130_draw_position_glut(tmc2130_t *p);
 void
 tmc2130_init(
 		struct avr_t * avr,
-		tmc2130_t *p, char axis, uint8_t iDiagADC);
+		tmc2130_t *p, char axis, uint8_t iDiagPin);
 
 #endif

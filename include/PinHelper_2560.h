@@ -4,8 +4,19 @@
 		This has been unceremoniously lifed from the pins_arduino.h file in the Prusa board definition for the Einsy.
 */
 
+#ifndef __PINHELPER_H__
+#define __PINHELPER_H__
+
+// Returns a char representation of the port, e.g. 'A'
 #define PORT(n)digital_pin_to_port_PGM[n]
+
+// Returns the port index/bitshift for the pin.
 #define PIN(n)digital_pin_to_bit_mask_PGM[n]
+
+// Get Char rep of the timer port. 
+#define TIMER_CHAR(n) '0' + (digital_pin_to_timer_PGM[n]>>4)
+// Get inde of the timer 
+#define TIMER_IDX(n) digital_pin_to_timer_PGM[n] &0x0F 
 
 // Shortcuts to make it easy to copy-paste tables rather than 
 // having to alter every entry:
@@ -21,10 +32,28 @@
 #define PK 'K'
 #define PL 'L'
 
+// Timers defined with 4 MSBs as the port, 4 LSB as the PWM index
+#define NOT_ON_TIMER 0xFF
+#define TIMER0A 0x00
+#define TIMER0B 0x01
+#define TIMER1A 0x10
+#define TIMER1B 0x11
+#define TIMER2A 0x20
+#define TIMER2B 0x21
+#define TIMER3A 0x30
+#define TIMER3B 0x31
+#define TIMER3C 0x32
+#define TIMER4A 0x40
+#define TIMER4B 0x41
+#define TIMER4C 0x42
+#define TIMER5A 0x50
+#define TIMER5B 0x51
+#define TIMER5C 0x52
+
 #define _BV(w)w
 
 
-const char digital_pin_to_port_PGM[] = {
+ static const char digital_pin_to_port_PGM[] = {
 	// PORTLIST		
 	// -------------------------------------------		
 	PE	, // PE 0 ** 0 ** USART0_RX	
@@ -115,7 +144,7 @@ const char digital_pin_to_port_PGM[] = {
 	PH 	, // PH 7 ** 85 ** D85
 };
 
-const char digital_pin_to_bit_mask_PGM[] = {
+static const char digital_pin_to_bit_mask_PGM[] = {
 	// PIN IN PORT		
 	// -------------------------------------------		
 	_BV( 0 )	, // PE 0 ** 0 ** USART0_RX	
@@ -205,3 +234,97 @@ const char digital_pin_to_bit_mask_PGM[] = {
 	_BV( 2 ) 	, // PH 2 ** 84 ** D84
 	_BV( 7 ) 	, // PH 7 ** 85 ** D85
 };
+
+
+static const char const digital_pin_to_timer_PGM[] = {
+	// TIMERS		
+	// -------------------------------------------		
+	NOT_ON_TIMER	, // PE 0 ** 0 ** USART0_RX	
+	NOT_ON_TIMER	, // PE 1 ** 1 ** USART0_TX	
+	TIMER3B	, // PE 4 ** 2 ** PWM2	
+	TIMER3C	, // PE 5 ** 3 ** PWM3	
+	TIMER0B	, // PG 5 ** 4 ** PWM4	
+	TIMER3A	, // PE 3 ** 5 ** PWM5	
+	TIMER4A	, // PH 3 ** 6 ** PWM6	
+	TIMER4B	, // PH 4 ** 7 ** PWM7	
+	TIMER4C	, // PH 5 ** 8 ** PWM8	
+	TIMER2B	, // PH 6 ** 9 ** PWM9	
+	TIMER2A	, // PB 4 ** 10 ** PWM10	
+	TIMER1A	, // PB 5 ** 11 ** PWM11	
+	TIMER1B	, // PB 6 ** 12 ** PWM12	
+	TIMER0A	, // PB 7 ** 13 ** PWM13	
+	NOT_ON_TIMER	, // PJ 1 ** 14 ** USART3_TX	
+	NOT_ON_TIMER	, // PJ 0 ** 15 ** USART3_RX	
+	NOT_ON_TIMER	, // PH 1 ** 16 ** USART2_TX	
+	NOT_ON_TIMER	, // PH 0 ** 17 ** USART2_RX	
+	NOT_ON_TIMER	, // PD 3 ** 18 ** USART1_TX	
+	NOT_ON_TIMER	, // PD 2 ** 19 ** USART1_RX	
+	NOT_ON_TIMER	, // PD 1 ** 20 ** I2C_SDA	
+	NOT_ON_TIMER	, // PD 0 ** 21 ** I2C_SCL	
+	NOT_ON_TIMER	, // PA 0 ** 22 ** D22	
+	NOT_ON_TIMER	, // PA 1 ** 23 ** D23	
+	NOT_ON_TIMER	, // PA 2 ** 24 ** D24	
+	NOT_ON_TIMER	, // PA 3 ** 25 ** D25	
+	NOT_ON_TIMER	, // PA 4 ** 26 ** D26	
+	NOT_ON_TIMER	, // PA 5 ** 27 ** D27	
+	NOT_ON_TIMER	, // PA 6 ** 28 ** D28	
+	NOT_ON_TIMER	, // PA 7 ** 29 ** D29	
+	NOT_ON_TIMER	, // PC 7 ** 30 ** D30	
+	NOT_ON_TIMER	, // PC 6 ** 31 ** D31	
+	NOT_ON_TIMER	, // PC 5 ** 32 ** D32	
+	NOT_ON_TIMER	, // PC 4 ** 33 ** D33	
+	NOT_ON_TIMER	, // PC 3 ** 34 ** D34	
+	NOT_ON_TIMER	, // PC 2 ** 35 ** D35	
+	NOT_ON_TIMER	, // PC 1 ** 36 ** D36	
+	NOT_ON_TIMER	, // PC 0 ** 37 ** D37	
+	NOT_ON_TIMER	, // PD 7 ** 38 ** D38	
+	NOT_ON_TIMER	, // PG 2 ** 39 ** D39	
+	NOT_ON_TIMER	, // PG 1 ** 40 ** D40	
+	NOT_ON_TIMER	, // PG 0 ** 41 ** D41	
+	NOT_ON_TIMER	, // PL 7 ** 42 ** D42	
+	NOT_ON_TIMER	, // PL 6 ** 43 ** D43	
+	TIMER5C	, // PL 5 ** 44 ** D44	
+	TIMER5B	, // PL 4 ** 45 ** D45	
+	TIMER5A	, // PL 3 ** 46 ** D46	
+	NOT_ON_TIMER	, // PL 2 ** 47 ** D47	
+	NOT_ON_TIMER	, // PL 1 ** 48 ** D48	
+	NOT_ON_TIMER	, // PL 0 ** 49 ** D49	
+	NOT_ON_TIMER	, // PB 3 ** 50 ** SPI_MISO	
+	NOT_ON_TIMER	, // PB 2 ** 51 ** SPI_MOSI	
+	NOT_ON_TIMER	, // PB 1 ** 52 ** SPI_SCK	
+	NOT_ON_TIMER	, // PB 0 ** 53 ** SPI_SS	
+	NOT_ON_TIMER	, // PF 0 ** 54 ** A0	
+	NOT_ON_TIMER	, // PF 1 ** 55 ** A1	
+	NOT_ON_TIMER	, // PF 2 ** 56 ** A2	
+	NOT_ON_TIMER	, // PF 3 ** 57 ** A3	
+	NOT_ON_TIMER	, // PF 4 ** 58 ** A4	
+	NOT_ON_TIMER	, // PF 5 ** 59 ** A5	
+	NOT_ON_TIMER	, // PF 6 ** 60 ** A6	
+	NOT_ON_TIMER	, // PF 7 ** 61 ** A7	
+	NOT_ON_TIMER	, // PK 0 ** 62 ** A8	
+	NOT_ON_TIMER	, // PK 1 ** 63 ** A9	
+	NOT_ON_TIMER	, // PK 2 ** 64 ** A10	
+	NOT_ON_TIMER	, // PK 3 ** 65 ** A11	
+	NOT_ON_TIMER	, // PK 4 ** 66 ** A12	
+	NOT_ON_TIMER	, // PK 5 ** 67 ** A13	
+	NOT_ON_TIMER	, // PK 6 ** 68 ** A14	
+	NOT_ON_TIMER	, // PK 7 ** 69 ** A15	
+	NOT_ON_TIMER	, // PG 4 ** 70 ** D70
+	NOT_ON_TIMER	, // PG 3 ** 71 ** D71
+	NOT_ON_TIMER	, // PJ 2 ** 72 ** D72
+	NOT_ON_TIMER	, // PJ 3 ** 73 ** D73
+	NOT_ON_TIMER	, // PJ 7 ** 74 ** D74
+	NOT_ON_TIMER	, // PJ 4 ** 75 ** D75
+	NOT_ON_TIMER	, // PJ 5 ** 76 ** D76
+	NOT_ON_TIMER	, // PJ 6 ** 77 ** D77
+	NOT_ON_TIMER	, // PE 2 ** 78 ** D78
+	NOT_ON_TIMER	, // PE 6 ** 79 ** D79
+	NOT_ON_TIMER	, // PE 7 ** 80 ** D80
+	NOT_ON_TIMER	, // PD 4 ** 81 ** D81
+	NOT_ON_TIMER 	, // PD 5 ** 82 ** D82
+	NOT_ON_TIMER 	, // PD 6 ** 83 ** D83
+	NOT_ON_TIMER 	, // PH 2 ** 84 ** D84
+	NOT_ON_TIMER 	, // PH 7 ** 85 ** D85
+};
+
+#endif

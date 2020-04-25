@@ -14,6 +14,7 @@
 #include "TMC2130.h"
 #include "stdbool.h"
 #include "GL/glut.h"
+#include "Macros.h"
 //#define TRACE(_w) _w
 #ifndef TRACE
 #define TRACE(_w)
@@ -264,7 +265,7 @@ void
 tmc2130_init(
 		struct avr_t * avr,
 		tmc2130_t *this,
-        char axis, avr_irq_t *irqDiag) 
+        char axis, uint8_t uiDiagPin) 
 {
 	this->irq = avr_alloc_irq(&avr->irq_pool, 0, IRQ_TMC2130_COUNT, irq_names);
     this->axis = axis;
@@ -320,7 +321,7 @@ tmc2130_init(
     avr_irq_register_notify(this->irq + IRQ_TMC2130_DIR_IN, tmc2130_dir_in_hook, this);
     avr_irq_register_notify(this->irq + IRQ_TMC2130_STEP_IN, tmc2130_step_in_hook, this);
     avr_irq_register_notify(this->irq + IRQ_TMC2130_ENABLE_IN, tmc2130_enable_in_hook, this);
-    avr_connect_irq(this->irq + IRQ_TMC2130_DIAG_OUT, irqDiag);	
+    avr_connect_irq(this->irq + IRQ_TMC2130_DIAG_OUT, DIRQLU(avr, uiDiagPin));	
 
     avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT,0);
 

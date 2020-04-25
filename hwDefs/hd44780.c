@@ -28,6 +28,7 @@
 #include "avr_ioport.h"
 #include "sim_io.h"
 #include "hd44780.h"
+#include "Macros.h"
 
 //#define TRACE(_w) _w
 #ifndef TRACE
@@ -403,7 +404,7 @@ hd44780_brightness_digital_hook(
 {
 	hd44780_t *b = (hd44780_t *) param;
 	avr_regbit_t rb = AVR_IO_REGBIT(0x90,7); // COM3A1
-	if (avr_regbit_get(b->avr,rb)) // Restore PWM value if being PWM-driven
+	if (avr_regbit_get(b->avr,rb)) // Restore PWM value if being PWM-driven again after a digitalwrite
 	{
 		b->iBrightness = b->iPWMVal;
 		return;
@@ -481,7 +482,8 @@ hd44780_init(
 		struct avr_t *avr,
 		struct hd44780_t * b,
 		int width,
-		int height )
+		int height,
+		uint8_t uiBrightnessPin)
 {
 	memset(b, 0, sizeof(*b));
 	b->avr = avr;
@@ -495,16 +497,15 @@ hd44780_init(
 	for (int i = 0; i < IRQ_HD44780_INPUT_COUNT; i++)
 		avr_irq_register_notify(b->irq + i, hd44780_pin_changed_hook, b);
 
-	avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),3),hd44780_brightness_digital_hook,b);
-	// Attach to PWM control signal
-	avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_TIMER_GETIRQ('3'),TIMER_IRQ_OUT_PWM0),hd44780_brightness_changed_hook,b);
+	if (uiBrightnessPin)
+	{
+		avr_irq_register_notify(DIRQLU(avr, uiBrightnessPin),hd44780_brightness_digital_hook,b);
+		avr_irq_register_notify(DPWMLU(avr, uiBrightnessPin), hd44780_brightness_changed_hook,b);
 
-	avr_ioport_external_t ex;
-	ex.mask = 1<<3;
-	ex.value = 0; // Sets pullup to 0 if input, restore to 
-	ex.name = 'E';
+		avr_ioport_external_t ex = {.name = PORT(uiBrightnessPin), .value = 0, .mask = 1 << PIN(uiBrightnessPin)};
+		avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
+	}
 
-	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
 	_hd44780_reset_cursor(b);
 	_hd44780_clear_screen(b);

@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <libgen.h>
+#include "Macros.h"
 
 #if __APPLE__
 #include <GLUT/glut.h>
@@ -43,6 +44,7 @@
 #define TERMISTOR_TABLE(num) \
 		_TERMISTOR_TABLE(num)
 
+#include "Macros.h"
 #include "sim_avr.h"
 #include "avr_ioport.h"
 #include "avr_spi.h"
@@ -73,6 +75,11 @@
 #include "sd_card.h"
 #include "mmu.h"
 #include "Firmware/Configuration_prusa.h"
+
+#define __AVR_ATmega2560__
+#include "Firmware/pins_Einsy_1_0.h"
+
+#include "Firmware/config.h"
 
 avr_t * avr = NULL;
 avr_vcd_t vcd_file;
@@ -384,50 +391,37 @@ int initGL(int w, int h)
 
 void setupLCD()
 {
-	hd44780_init(avr, &hw.lcd, 20,4);
+	hd44780_init(avr, &hw.lcd, 20,4, LCD_BL_PIN);
 	hd44780_set_flag(&hw.lcd, HD44780_FLAG_LOWNIBBLE, 0);
 	// D4-D7,
-	int iPin[4] = {5,4,7,3};
-	int iIRQ[5] = {AVR_IOCTL_IOPORT_GETIRQ('F'),AVR_IOCTL_IOPORT_GETIRQ('G'),
-		AVR_IOCTL_IOPORT_GETIRQ('H'),AVR_IOCTL_IOPORT_GETIRQ('G'),
-		AVR_IOCTL_IOPORT_GETIRQ('D')};
+	avr_irq_t *irqLCD[4] = {	DIRQLU(avr, LCD_PINS_D4),
+							DIRQLU(avr, LCD_PINS_D5),
+							DIRQLU(avr, LCD_PINS_D6),
+							DIRQLU(avr, LCD_PINS_D7)};
 	for (int i = 0; i < 4; i++) {
-		avr_irq_t * iavr = avr_io_getirq(avr, iIRQ[i], iPin[i]);
 		avr_irq_t * ilcd = hw.lcd.irq + IRQ_HD44780_D4 + i;
 		// AVR -> LCD
-		avr_connect_irq(iavr, ilcd);
+		avr_connect_irq(irqLCD[i], ilcd);
 		// LCD -> AVR
-		avr_connect_irq(ilcd, iavr);
+		avr_connect_irq(ilcd, irqLCD[i]);
 	}
-	avr_connect_irq(
-		avr_io_getirq(avr, iIRQ[4], 5),
-		hw.lcd.irq + IRQ_HD44780_RS);
-	avr_connect_irq(
-		avr_io_getirq(avr, iIRQ[0], 7),
-		hw.lcd.irq + IRQ_HD44780_E);
+	avr_connect_irq( DIRQLU(avr,LCD_PINS_RS), 		hw.lcd.irq + IRQ_HD44780_RS);
+	avr_connect_irq( DIRQLU(avr, LCD_PINS_ENABLE),	hw.lcd.irq + IRQ_HD44780_E);
 
 	rotenc_init(avr, &hw.encoder);
-	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_A_PIN,
-	avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),1));
-
-	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_B_PIN,
-	avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),2));
-
-	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN,
-	avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('H'),6));
+	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_A_PIN,		DIRQLU(avr, BTN_EN2));
+	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_B_PIN,		DIRQLU(avr, BTN_EN1));
+	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN,	DIRQLU(avr,BTN_ENC));
 }
 
 void setupSDcard(char * mmcu)
 {
 	sd_card_init (avr, &hw.sd_card);
-	sd_card_attach (avr, &hw.sd_card, AVR_IOCTL_SPI_GETIRQ (0), avr_io_getirq (avr, AVR_IOCTL_IOPORT_GETIRQ ('J'), 6));
+	sd_card_attach (avr, &hw.sd_card, AVR_IOCTL_SPI_GETIRQ (0), DIRQLU(avr, SDSS));
 	
 	// wire up the SD present signal.
-	avr_connect_irq(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('J'),0));
-	avr_ioport_external_t ex;
-	ex.name = 'J';
-	ex.value = 0;
-	ex.mask = 0x1;
+	avr_connect_irq(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, DIRQLU(avr,SDCARDDETECT));
+	avr_ioport_external_t ex = {.name = PORT(SDCARDDETECT), .value = 0, .mask = 1<<PIN(SDCARDDETECT)};
 	avr_ioctl(avr,AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name),&ex);
 
 	snprintf(hw.sd_card.filepath, sizeof(hw.sd_card.filepath), "Einsy_%s_SDcard.bin", mmcu);
@@ -445,8 +439,7 @@ void setupSerial(bool bConnectS0, uint8_t uiLog)
 	uart_pty_init(avr, &hw.UART2);
 
 
-	w25x20cl_init(avr, &hw.spiFlash);
-
+	w25x20cl_init(avr, &hw.spiFlash, DIRQLU(avr, W25X20CL_PIN_CS));
 	uart_logger_init(avr, &hw.logger);
 
 	// Uncomment these to get a pseudoterminal you can connect to
@@ -462,43 +455,34 @@ void setupSerial(bool bConnectS0, uint8_t uiLog)
 
 void setupHeaters()
 {
-	thermistor_init(avr, &hw.tExtruder, 0,
+	thermistor_init(avr, &hw.tExtruder, TEMP_0_PIN,
 		(short*)TERMISTOR_TABLE(TEMP_SENSOR_0),
 		sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(short) / 2,
 		OVERSAMPLENR, 25.0f);
 
-		 thermistor_init(avr, &hw.tBed, 2,
+		 thermistor_init(avr, &hw.tBed, TEMP_BED_PIN,
 		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
 		 OVERSAMPLENR, 23.0f);
 
 		// same table as bed.
-		thermistor_init(avr, &hw.tPinda, 3,
+		thermistor_init(avr, &hw.tPinda, TEMP_PINDA_PIN,
 		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
 		 OVERSAMPLENR, 24.0f);
 
-		thermistor_init(avr, &hw.tAmbient, 6,
+		thermistor_init(avr, &hw.tAmbient, TEMP_AMBIENT_PIN,
 		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
-		 OVERSAMPLENR, 21.0f);
+		 OVERSAMPLENR, 21.0f);		
 
-		fan_init(avr, &hw.fExtruder,3300, 
-			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),6),
-			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('H'),5),
-			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM2));
+		fan_init(avr, &hw.fExtruder,3300, 	DIRQLU(avr, TACH_0), 	DIRQLU(avr, EXTRUDER_0_AUTO_FAN_PIN), 	DPWMLU(avr,EXTRUDER_0_AUTO_FAN_PIN));
+		fan_init(avr, &hw.fPrint,4500, 		DIRQLU(avr, TACH_1), 	DIRQLU(avr, FAN_PIN),					DPWMLU(avr, FAN_PIN));
 
-		fan_init(avr, &hw.fPrint,4500, 
-			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('E'),7),
-			avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('H'),3),
-			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM0));
-
-		heater_init(avr, &hw.hBed, 0.25,25.0, NULL,//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('0'),TIMER_IRQ_OUT_PWM0), 
-			avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),5));
+		heater_init(avr, &hw.hBed, 0.25,25.0, NULL,			DIRQLU(avr,HEATER_BED_PIN));
 		hw.hBed.bIsBed = true;
-		
-		heater_init(avr, &hw.hExtruder, 1.5, 25.0, NULL,//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('3'),TIMER_IRQ_OUT_PWM2), 
-			avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),5));
+
+		heater_init(avr, &hw.hExtruder, 1.5, 25.0, NULL,	DIRQLU(avr, HEATER_0_PIN));
 
 		avr_connect_irq(hw.hExtruder.irq + IRQ_HEATER_TEMP_OUT,hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
 		avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
@@ -507,69 +491,58 @@ void setupHeaters()
 void setupVoltages()
 {
 	float fScale24v = 1.0f/26.097f; // Based on rSense voltage divider outputting 5v
-	voltage_init(avr, &hw.vBed,9,fScale24v,23.9);
-	voltage_init(avr, &hw.vMain,4,fScale24v,24.0);
-	voltage_init(avr, &hw.vIR,8,1.0/5.0f,4.2f);
+	voltage_init(avr, &hw.vBed,		VOLT_BED_PIN,	fScale24v,	23.9);
+	voltage_init(avr, &hw.vMain,	VOLT_PWR_PIN,	fScale24v,	24.0);
+	voltage_init(avr, &hw.vIR,		VOLT_IR_PIN,	1.0/5.0f,	4.2f);
 }
 
 void setupDrivers()
 {
-	// Fake an external pullup on the diag pin so it can be detected:
-    avr_ioport_external_t ex;
-	ex.mask = 0b11001100; // DIAG pins.
-	ex.value = 0;
-	ex.name = 'K';
+	// Fake an external pullup on the diag pins so it can be detected:
+	// Note we can't do this inside the init because it clobbers others, so only the last
+	// one that you set would stick.
+
+	uint8_t uiDiagMask = 1<<PIN(X_TMC2130_DIAG) | 1 << PIN(Y_TMC2130_DIAG) | 1 << PIN(Z_TMC2130_DIAG) | 1 << PIN(E0_TMC2130_DIAG);
+	printf( "Diag mask: %02x\n",uiDiagMask);
+    avr_ioport_external_t ex = {.value = 0, .name = 'K', .mask = uiDiagMask};
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
-	tmc2130_init(avr, &hw.X, 'X',2); // Init takes care of the SPI wiring.
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),0),
-		hw.X.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),0),
-		hw.X.irq + IRQ_TMC2130_DIR_IN);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),0),
-		hw.X.irq + IRQ_TMC2130_STEP_IN);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),7),
-		hw.X.irq + IRQ_TMC2130_ENABLE_IN);
+	tmc2130_init(avr, &hw.X, 'X', X_TMC2130_DIAG); // Init takes care of the SPI wiring.
+	avr_connect_irq(	DIRQLU(avr,X_TMC2130_CS), 	hw.X.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(	DIRQLU(avr,X_DIR_PIN),		hw.X.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(	DIRQLU(avr,X_STEP_PIN),		hw.X.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(	DIRQLU(avr,X_ENABLE_PIN),	hw.X.irq + IRQ_TMC2130_ENABLE_IN);
 
 
-	tmc2130_init(avr, &hw.Y, 'Y', 7); // Init takes care of the SPI wiring.
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('G'),2),
-		hw.Y.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),1),
-		hw.Y.irq + IRQ_TMC2130_DIR_IN);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),1),
-		hw.Y.irq + IRQ_TMC2130_STEP_IN);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),6),
-		hw.Y.irq + IRQ_TMC2130_ENABLE_IN);
+	tmc2130_init(avr, &hw.Y, 'Y', Y_TMC2130_DIAG); // Init takes care of the SPI wiring.
+	avr_connect_irq(	DIRQLU(avr,Y_TMC2130_CS), 	hw.Y.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(	DIRQLU(avr,Y_DIR_PIN),		hw.Y.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(	DIRQLU(avr,Y_STEP_PIN),		hw.Y.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(	DIRQLU(avr,Y_ENABLE_PIN),	hw.Y.irq + IRQ_TMC2130_ENABLE_IN);
 
-	tmc2130_init(avr, &hw.Z, 'Z', 6); // Init takes care of the SPI wiring.
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),5),
-		hw.Z.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),2),
-		hw.Z.irq + IRQ_TMC2130_DIR_IN);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),2),
-		hw.Z.irq + IRQ_TMC2130_STEP_IN);
-	avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),5),
-		hw.Z.irq + IRQ_TMC2130_ENABLE_IN);
-	ex.mask = 1<<4; // DIAG pins.
-	ex.value = 0;
-	ex.name = 'B';
+	tmc2130_init(avr, &hw.Z, 'Z', Z_TMC2130_DIAG); // Init takes care of the SPI wiring.
+	avr_connect_irq(	DIRQLU(avr,Z_TMC2130_CS), 	hw.Z.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(	DIRQLU(avr,Z_DIR_PIN),		hw.Z.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(	DIRQLU(avr,Z_STEP_PIN),		hw.Z.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(	DIRQLU(avr,Z_ENABLE_PIN),	hw.Z.irq + IRQ_TMC2130_ENABLE_IN);
+
+ 	tmc2130_init(avr, &hw.E, 'E', E0_TMC2130_DIAG); // Init takes care of the SPI wiring.
+	avr_connect_irq(	DIRQLU(avr,E0_TMC2130_CS), 	hw.E.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(	DIRQLU(avr,E0_DIR_PIN),		hw.E.irq + IRQ_TMC2130_DIR_IN);
+	avr_connect_irq(	DIRQLU(avr,E0_STEP_PIN),	hw.E.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(	DIRQLU(avr,E0_ENABLE_PIN),	hw.E.irq + IRQ_TMC2130_ENABLE_IN);
+
+
+	ex.mask = 1<<PIN(Z_MIN_PIN); // DIAG pins. 
+	ex.name = PORT(Z_MIN_PIN); // Value should already be 0 from above.
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 	
 	pinda_init(avr, &hw.pinda ,X_PROBE_OFFSET_FROM_EXTRUDER, Y_PROBE_OFFSET_FROM_EXTRUDER,
 		hw.X.irq + IRQ_TMC2130_POSITION_OUT, hw.Y.irq + IRQ_TMC2130_POSITION_OUT, hw.Z.irq + IRQ_TMC2130_POSITION_OUT);
 
-	avr_connect_irq(hw.pinda.irq + IRQ_PINDA_TRIGGER_OUT ,avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('B'),4));
+	avr_connect_irq(hw.pinda.irq + IRQ_PINDA_TRIGGER_OUT ,DIRQLU(avr, Z_MIN_PIN));
 
- 	tmc2130_init(avr, &hw.E, 'E', 3); // Init takes care of the SPI wiring.
-	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),4),
-	 	hw.E.irq + IRQ_TMC2130_SPI_CSEL);
-	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('L'),6),
-	 	hw.E.irq + IRQ_TMC2130_DIR_IN);
-	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('C'),3),
-	 	hw.E.irq + IRQ_TMC2130_STEP_IN);
-	 avr_connect_irq(avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('A'),4),
-	 	hw.E.irq + IRQ_TMC2130_ENABLE_IN);
+
 }
 void setupTimers(avr_t* avr)
 {
@@ -737,7 +710,7 @@ int main(int argc, char *argv[])
 		avr_gdb_init(avr);
 	}
 
-
+	
 
 	setupSerial(bConnectS0, chrLogSerial);
 	
@@ -757,7 +730,7 @@ int main(int argc, char *argv[])
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");
-	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),4));
+	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, DIRQLU(avr, 2)); // Note - PP is not defined in pins_einsy.
 
 	hw.mmu = mmu_init(avr,  avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('2'), UART_IRQ_OUTPUT), 
 		avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('2'), UART_IRQ_INPUT), avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('J'),5));
@@ -769,6 +742,7 @@ int main(int argc, char *argv[])
 		printf("Paused - press any key to resume execution\n");
 		getchar();
 	}
+	powerup_and_reset_helper(avr);
 
 	/*
 	 * OpenGL init, can be ignored
@@ -782,7 +756,7 @@ int main(int argc, char *argv[])
 
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
-	window = glutCreateWindow("Prusa MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
+	window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
 
 	initGL(w * pixsize, h * pixsize);
 

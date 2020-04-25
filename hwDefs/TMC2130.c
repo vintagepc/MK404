@@ -264,7 +264,7 @@ void
 tmc2130_init(
 		struct avr_t * avr,
 		tmc2130_t *this,
-        char axis, uint8_t iDiagPort) 
+        char axis, avr_irq_t *irqDiag) 
 {
 	this->irq = avr_alloc_irq(&avr->irq_pool, 0, IRQ_TMC2130_COUNT, irq_names);
     this->axis = axis;
@@ -320,8 +320,7 @@ tmc2130_init(
     avr_irq_register_notify(this->irq + IRQ_TMC2130_DIR_IN, tmc2130_dir_in_hook, this);
     avr_irq_register_notify(this->irq + IRQ_TMC2130_STEP_IN, tmc2130_step_in_hook, this);
     avr_irq_register_notify(this->irq + IRQ_TMC2130_ENABLE_IN, tmc2130_enable_in_hook, this);
-    avr_connect_irq(this->irq + IRQ_TMC2130_DIAG_OUT,
-		avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('K'),iDiagPort));	
+    avr_connect_irq(this->irq + IRQ_TMC2130_DIAG_OUT, irqDiag);	
 
     avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT,0);
 

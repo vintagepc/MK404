@@ -72,7 +72,7 @@ void timerMMU(int i)
 	//static int oldstate = -1;
 	// restart timer
 	glutTimerFunc(100, timerMMU, 0);
-	glutPostRedisplay();
+	displayMMU();
 	//hd44780_print(&hd44780);
 }
 
@@ -141,7 +141,6 @@ static void start_mmu_hook(
 		uint32_t value,
 		void * param)
 {
-return;
 	printf("MMU RESET: %02x\n",value);
     mmu_t *pMMU = (mmu_t*) param;
 	if (value==0)

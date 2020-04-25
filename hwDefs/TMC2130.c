@@ -199,7 +199,7 @@ static void tmc2130_dir_in_hook(struct avr_irq_t * irq, uint32_t value, void * p
     if (irq->value == value)
         return;
     tmc2130_t* this = (tmc2130_t*)param;
-	TRACE2(printf("TMC2130 %c: DIR changed to %02x\n",this->axis,value));
+	TRACE(printf("TMC2130 %c: DIR changed to %02x\n",this->axis,value));
     this->flags.bits.dir = value^this->flags.bits.inverted; // XOR
 }
 
@@ -234,7 +234,7 @@ static void tmc2130_step_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
     this->fCurPos = (float)this->iCurStep/(float)this->iStepsPerMM;
     uint32_t* posOut = (uint32_t*)(&this->fCurPos); // both 32 bits, just mangle it for sending over the wire.
     avr_raise_irq(this->irq + IRQ_TMC2130_POSITION_OUT, posOut[0]);
-    TRACE2(printf("cur pos: %f (%u)\n",this->fCurPos,this->iCurStep));
+    TRACE(printf("cur pos: %f (%u)\n",this->fCurPos,this->iCurStep));
     if (bStall)
         avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT, 1);
     else if (!bStall && this->regs.defs.DRV_STATUS.stallGuard)

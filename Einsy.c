@@ -489,6 +489,7 @@ void setupVoltages()
 	voltage_init(avr, &hw.vBed,		VOLT_BED_PIN,	fScale24v,	23.9);
 	voltage_init(avr, &hw.vMain,	VOLT_PWR_PIN,	fScale24v,	24.0);
 	voltage_init(avr, &hw.vIR,		VOLT_IR_PIN,	1.0/5.0f,	4.2f);
+	avr_connect_irq(hw.vIR.irq + IRQ_VOLT_DIGITAL_OUT, DIRQLU(avr,IR_SENSOR_PIN));
 }
 
 void setupDrivers()

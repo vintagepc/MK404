@@ -50,7 +50,12 @@ static void voltage_adc_hook(
 
 	uint32_t iVOut =  (this->fCurrent*this->fvScale)*1000*5;
     avr_raise_irq(this->irq + IRQ_VOLT_ADC_VALUE_OUT,iVOut);
-	//printf("VOLT out: %u\n",iVOut);
+	if (iVOut>2200) // 2.2V, logic H
+		avr_raise_irq(this->irq + IRQ_VOLT_DIGITAL_OUT,1);
+	else if (iVOut < 800) // 0.8v. L
+		avr_raise_irq(this->irq + IRQ_VOLT_DIGITAL_OUT,0);
+	else
+		avr_raise_irq_float(this->irq + IRQ_VOLT_DIGITAL_OUT,0,1); 
     return;
 
 }
@@ -65,7 +70,7 @@ static void voltage_in_hook(
 
 static const char * irq_names[IRQ_VOLT_COUNT] = {
 	[IRQ_VOLT_ADC_TRIGGER_IN] = "8<volt.trigger",
-	//[IRQ_TERM_TEMP_VALUE_OUT] = "16>thermistor.out",
+	[IRQ_VOLT_DIGITAL_OUT] = ">volt.digitalOut",
 	[IRQ_VOLT_VALUE_IN] = "16<volt.in",
 	[IRQ_VOLT_ADC_VALUE_OUT] = "16>volt.valout"
 };

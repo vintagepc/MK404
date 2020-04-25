@@ -16,6 +16,7 @@
 #include "GL/glut.h"
 #include "Macros.h"
 //#define TRACE(_w) _w
+#define TRACE2(_w) if (this->axis=='I') _w
 #ifndef TRACE
 #define TRACE(_w)
 #endif
@@ -195,18 +196,20 @@ static void tmc2130_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 // Called when DIR pin changes.
 static void tmc2130_dir_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
+    if (irq->value == value)
+        return;
     tmc2130_t* this = (tmc2130_t*)param;
-	TRACE(printf("TMC2130 %c: DIR changed to %02x\n",this->axis,value));
+	TRACE2(printf("TMC2130 %c: DIR changed to %02x\n",this->axis,value));
     this->flags.bits.dir = value^this->flags.bits.inverted; // XOR
 }
 
 // Called when STEP is triggered.
 static void tmc2130_step_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
-    if (!value) return; // Only step on rising pulse
+    if (!value || irq->value) return; // Only step on rising pulse
     tmc2130_t* this = (tmc2130_t*)param;
     if (!this->flags.bits.enable) return;
-	TRACE(printf("TMC2130 %c: STEP changed to %02x\n",this->axis,value));
+	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",this->axis,value));
     if (this->flags.bits.dir)    
         this->iCurStep--;
     else
@@ -231,7 +234,7 @@ static void tmc2130_step_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
     this->fCurPos = (float)this->iCurStep/(float)this->iStepsPerMM;
     uint32_t* posOut = (uint32_t*)(&this->fCurPos); // both 32 bits, just mangle it for sending over the wire.
     avr_raise_irq(this->irq + IRQ_TMC2130_POSITION_OUT, posOut[0]);
-    TRACE(printf("cur pos: %f (%u)\n",this->fCurPos,this->iCurStep));
+    TRACE2(printf("cur pos: %f (%u)\n",this->fCurPos,this->iCurStep));
     if (bStall)
         avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT, 1);
     else if (!bStall && this->regs.defs.DRV_STATUS.stallGuard)
@@ -243,8 +246,10 @@ static void tmc2130_step_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 // Called when DRV_EN is triggered.
 static void tmc2130_enable_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
+    if (irq->value == value)
+        return;
     tmc2130_t* this = (tmc2130_t*)param;
-	TRACE(printf("TMC2130 %c: EN changed to %02x\n",this->axis,value));
+	TRACE2(printf("TMC2130 %c: EN changed to %02x\n",this->axis,value));
     this->flags.bits.enable = value==0; // active low, i.e motors off when high.
 }
 
@@ -294,6 +299,10 @@ tmc2130_init(
             this->fCurPos = 0.0f;
             this->iStepsPerMM = 280;
             break;
+        default:
+            this->fCurPos = 0.0f;
+            this->iStepsPerMM = 400;
+            iMaxMM = 120;
     }
     if (iMaxMM==-1)
         this->iMaxPos = -1;

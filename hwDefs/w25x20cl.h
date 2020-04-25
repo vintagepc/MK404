@@ -67,7 +67,8 @@ typedef struct w25x20cl_t {
 
 void w25x20cl_init(
 		struct avr_t * avr,
-		w25x20cl_t *p);
+		w25x20cl_t *p,
+		avr_irq_t *irqCS);
 
 int w25x20cl_load(
 		const char* path,

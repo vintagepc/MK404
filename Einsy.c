@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <libgen.h>
+#include "Macros.h"
 
 #if __APPLE__
 #include <GLUT/glut.h>
@@ -42,7 +43,6 @@
 		temptable_##num
 #define TERMISTOR_TABLE(num) \
 		_TERMISTOR_TABLE(num)
-
 
 #include "Macros.h"
 #include "sim_avr.h"
@@ -76,6 +76,8 @@
 
 #define __AVR_ATmega2560__
 #include "Firmware/pins_Einsy_1_0.h"
+
+#include "Firmware/config.h"
 
 avr_t * avr = NULL;
 avr_vcd_t vcd_file;
@@ -382,7 +384,7 @@ int initGL(int w, int h)
 
 void setupLCD()
 {
-	hd44780_init(avr, &hw.lcd, 20,4);
+	hd44780_init(avr, &hw.lcd, 20,4, LCD_BL_PIN);
 	hd44780_set_flag(&hw.lcd, HD44780_FLAG_LOWNIBBLE, 0);
 	// D4-D7,
 	avr_irq_t *irqLCD[4] = {	DIRQLU(avr, LCD_PINS_D4),
@@ -400,8 +402,8 @@ void setupLCD()
 	avr_connect_irq( DIRQLU(avr, LCD_PINS_ENABLE),	hw.lcd.irq + IRQ_HD44780_E);
 
 	rotenc_init(avr, &hw.encoder);
-	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_A_PIN,		DIRQLU(avr, BTN_EN1));
-	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_B_PIN,		DIRQLU(avr, BTN_EN2));
+	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_A_PIN,		DIRQLU(avr, BTN_EN2));
+	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_B_PIN,		DIRQLU(avr, BTN_EN1));
 	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN,	DIRQLU(avr,BTN_ENC));
 }
 
@@ -431,8 +433,7 @@ void setupSerial(bool bConnectS0, uint8_t uiLog)
 	uart_pty_init(avr, &hw.UART2);
 //	uart_pty_init(avr, &hw.UART3);
 
-	w25x20cl_init(avr, &hw.spiFlash);
-
+	w25x20cl_init(avr, &hw.spiFlash, DIRQLU(avr, W25X20CL_PIN_CS));
 	uart_logger_init(avr, &hw.logger);
 
 	// Uncomment these to get a pseudoterminal you can connect to
@@ -470,18 +471,13 @@ void setupHeaters()
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
 		 OVERSAMPLENR, 21.0f);		
 
-		fan_init(avr, &hw.fExtruder,3300, DIRQLU(avr, TACH_0), IOIRQ(avr,'H',5),
-			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM2));
+		fan_init(avr, &hw.fExtruder,3300, 	DIRQLU(avr, TACH_0), 	DIRQLU(avr, EXTRUDER_0_AUTO_FAN_PIN), 	DPWMLU(avr,EXTRUDER_0_AUTO_FAN_PIN));
+		fan_init(avr, &hw.fPrint,4500, 		DIRQLU(avr, TACH_1), 	DIRQLU(avr, FAN_PIN),					DPWMLU(avr, FAN_PIN));
 
-		fan_init(avr, &hw.fPrint,4500, DIRQLU(avr, TACH_1), DIRQLU(avr, FAN_PIN),
-			avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('4'),TIMER_IRQ_OUT_PWM0));
-
-		heater_init(avr, &hw.hBed, 0.25,25.0, NULL,//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('0'),TIMER_IRQ_OUT_PWM0), 
-			DIRQLU(avr,HEATER_BED_PIN));
+		heater_init(avr, &hw.hBed, 0.25,25.0, NULL,			DIRQLU(avr,HEATER_BED_PIN));
 		hw.hBed.bIsBed = true;
-		
-		heater_init(avr, &hw.hExtruder, 1.5, 25.0, NULL,//avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ('3'),TIMER_IRQ_OUT_PWM2), 
-			DIRQLU(avr, HEATER_0_PIN));
+
+		heater_init(avr, &hw.hExtruder, 1.5, 25.0, NULL,	DIRQLU(avr, HEATER_0_PIN));
 
 		avr_connect_irq(hw.hExtruder.irq + IRQ_HEATER_TEMP_OUT,hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
 		avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
@@ -497,41 +493,43 @@ void setupVoltages()
 
 void setupDrivers()
 {
-	// Fake an external pullup on the diag pin so it can be detected:
-    avr_ioport_external_t ex;
-	ex.mask = 0b11001100; // DIAG pins.
-	ex.value = 0;
-	ex.name = 'K';
+	// Fake an external pullup on the diag pins so it can be detected:
+	// Note we can't do this inside the init because it clobbers others, so only the last
+	// one that you set would stick.
+
+	uint8_t uiDiagMask = 1<<PIN(X_TMC2130_DIAG) | 1 << PIN(Y_TMC2130_DIAG) | 1 << PIN(Z_TMC2130_DIAG) | 1 << PIN(E0_TMC2130_DIAG);
+	printf( "Diag mask: %02x\n",uiDiagMask);
+    avr_ioport_external_t ex = {.value = 0, .name = 'K', .mask = uiDiagMask};
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
-	tmc2130_init(avr, &hw.X, 'X',DIRQLU(avr, X_TMC2130_DIAG)); // Init takes care of the SPI wiring.
+	tmc2130_init(avr, &hw.X, 'X', X_TMC2130_DIAG); // Init takes care of the SPI wiring.
 	avr_connect_irq(	DIRQLU(avr,X_TMC2130_CS), 	hw.X.irq + IRQ_TMC2130_SPI_CSEL);
 	avr_connect_irq(	DIRQLU(avr,X_DIR_PIN),		hw.X.irq + IRQ_TMC2130_DIR_IN);
 	avr_connect_irq(	DIRQLU(avr,X_STEP_PIN),		hw.X.irq + IRQ_TMC2130_STEP_IN);
 	avr_connect_irq(	DIRQLU(avr,X_ENABLE_PIN),	hw.X.irq + IRQ_TMC2130_ENABLE_IN);
 
 
-	tmc2130_init(avr, &hw.Y, 'Y', DIRQLU(avr, Y_TMC2130_DIAG)); // Init takes care of the SPI wiring.
+	tmc2130_init(avr, &hw.Y, 'Y', Y_TMC2130_DIAG); // Init takes care of the SPI wiring.
 	avr_connect_irq(	DIRQLU(avr,Y_TMC2130_CS), 	hw.Y.irq + IRQ_TMC2130_SPI_CSEL);
 	avr_connect_irq(	DIRQLU(avr,Y_DIR_PIN),		hw.Y.irq + IRQ_TMC2130_DIR_IN);
 	avr_connect_irq(	DIRQLU(avr,Y_STEP_PIN),		hw.Y.irq + IRQ_TMC2130_STEP_IN);
 	avr_connect_irq(	DIRQLU(avr,Y_ENABLE_PIN),	hw.Y.irq + IRQ_TMC2130_ENABLE_IN);
 
-	tmc2130_init(avr, &hw.Z, 'Z', DIRQLU(avr, Z_TMC2130_DIAG)); // Init takes care of the SPI wiring.
+	tmc2130_init(avr, &hw.Z, 'Z', Z_TMC2130_DIAG); // Init takes care of the SPI wiring.
 	avr_connect_irq(	DIRQLU(avr,Z_TMC2130_CS), 	hw.Z.irq + IRQ_TMC2130_SPI_CSEL);
 	avr_connect_irq(	DIRQLU(avr,Z_DIR_PIN),		hw.Z.irq + IRQ_TMC2130_DIR_IN);
 	avr_connect_irq(	DIRQLU(avr,Z_STEP_PIN),		hw.Z.irq + IRQ_TMC2130_STEP_IN);
 	avr_connect_irq(	DIRQLU(avr,Z_ENABLE_PIN),	hw.Z.irq + IRQ_TMC2130_ENABLE_IN);
 
- 	tmc2130_init(avr, &hw.E, 'E', DIRQLU(avr, E0_TMC2130_DIAG)); // Init takes care of the SPI wiring.
+ 	tmc2130_init(avr, &hw.E, 'E', E0_TMC2130_DIAG); // Init takes care of the SPI wiring.
 	avr_connect_irq(	DIRQLU(avr,E0_TMC2130_CS), 	hw.E.irq + IRQ_TMC2130_SPI_CSEL);
 	avr_connect_irq(	DIRQLU(avr,E0_DIR_PIN),		hw.E.irq + IRQ_TMC2130_DIR_IN);
 	avr_connect_irq(	DIRQLU(avr,E0_STEP_PIN),	hw.E.irq + IRQ_TMC2130_STEP_IN);
 	avr_connect_irq(	DIRQLU(avr,E0_ENABLE_PIN),	hw.E.irq + IRQ_TMC2130_ENABLE_IN);
 
-	ex.mask = 1<<4; // DIAG pins.
-	ex.value = 0;
-	ex.name = 'B';
+
+	ex.mask = 1<<PIN(Z_MIN_PIN); // DIAG pins. 
+	ex.name = PORT(Z_MIN_PIN); // Value should already be 0 from above.
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 	
 	pinda_init(avr, &hw.pinda ,X_PROBE_OFFSET_FROM_EXTRUDER, Y_PROBE_OFFSET_FROM_EXTRUDER,
@@ -706,7 +704,7 @@ int main(int argc, char *argv[])
 		avr_gdb_init(avr);
 	}
 
-
+	
 
 	setupSerial(bConnectS0, chrLogSerial);
 	
@@ -726,7 +724,7 @@ int main(int argc, char *argv[])
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");
-	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, DIRQLU(avr, 2));
+	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, DIRQLU(avr, 2)); // Note - PP is not defined in pins_einsy.
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.
@@ -735,6 +733,7 @@ int main(int argc, char *argv[])
 		printf("Paused - press any key to resume execution\n");
 		getchar();
 	}
+	powerup_and_reset_helper(avr);
 
 	/*
 	 * OpenGL init, can be ignored
@@ -748,7 +747,7 @@ int main(int argc, char *argv[])
 
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
-	window = glutCreateWindow("Prusa MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
+	window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
 
 	initGL(w * pixsize, h * pixsize);
 

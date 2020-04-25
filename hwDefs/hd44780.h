@@ -50,6 +50,7 @@
 
 #include "sim_irq.h"
 
+
 enum {
     IRQ_HD44780_ALL = 0,	// Only if (msb) RW:E:RS:D7:D6:D5:D4 (lsb)  configured
     IRQ_HD44780_RS,
@@ -119,7 +120,8 @@ hd44780_init(
 		struct avr_t *avr,
 		struct hd44780_t * b,
 		int width,
-		int height );
+		int height,
+		uint8_t uiBrightnessPin);
 void
 hd44780_print(
 		struct hd44780_t *b);

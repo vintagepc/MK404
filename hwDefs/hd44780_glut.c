@@ -80,7 +80,7 @@ glputchar(char c,
 		uiData = &pCGRAM[(c & 7) <<3];
 	else
 	{
-		uiData = &hd44780_ROM_AOO.data[c*hd44780_ROM_AOO.h];
+		uiData = (uint8_t*)&hd44780_ROM_AOO.data[c*hd44780_ROM_AOO.h];
 		rows = 7;
 	}
 		

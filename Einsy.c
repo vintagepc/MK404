@@ -359,7 +359,7 @@ void timerCB(int i)
 	//static int oldstate = -1;
 	// restart timer
 	glutTimerFunc(50, timerCB, 0);
-	glutPostRedisplay();
+	displayCB();
 	//hd44780_print(&hd44780);
 }
 

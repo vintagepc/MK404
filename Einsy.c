@@ -186,6 +186,7 @@ void displayCB(void)		/* function called whenever redisplay needed */
 	//if (hd44780_get_flag(&hw.lcd, HD44780_FLAG_DIRTY)==0 && 
 	//	hd44780_get_flag(&hw.lcd, HD44780_FLAG_CRAM_DIRTY == 0))
 	//	return;
+	glutSetWindow(window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW); // Select modelview matrix
 	glPushMatrix();
@@ -730,10 +731,11 @@ int main(int argc, char *argv[])
 
 	// Setup PP
 	button_init(avr, &hw.powerPanic,"PowerPanic");
+	
 	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, DIRQLU(avr, 2)); // Note - PP is not defined in pins_einsy.
 
 	hw.mmu = mmu_init(avr,  avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('2'), UART_IRQ_OUTPUT), 
-		avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('2'), UART_IRQ_INPUT), avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('J'),5));
+		avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('2'), UART_IRQ_INPUT), IOIRQ(avr,'J',5));
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.
@@ -760,7 +762,7 @@ int main(int argc, char *argv[])
 
 	initGL(w * pixsize, h * pixsize);
 
-	//mmu_start(hw.mmu);
+	mmu_startGL(hw.mmu);
 
 	pthread_t run;
 	pthread_create(&run, NULL, avr_run_thread, NULL);

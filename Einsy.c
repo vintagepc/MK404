@@ -52,6 +52,7 @@
 #include "sim_elf.h"
 #include "sim_hex.h"
 #include "sim_gdb.h"
+#include "avr_uart.h"
 #include "uart_pty.h"
 #include "hd44780_glut.h"
 #include "PINDA.h"
@@ -70,6 +71,7 @@
 #include "uart_logger.h"
 #include "stdbool.h"
 #include "sd_card.h"
+#include "mmu.h"
 #include "Firmware/Configuration_prusa.h"
 
 avr_t * avr = NULL;
@@ -99,7 +101,7 @@ struct hw_t {
 	hd44780_t lcd;
 	rotenc_t encoder;
 	button_t powerPanic;
-	uart_pty_t UART0, UART1, UART2, UART3;
+	uart_pty_t UART0, UART2;
 	thermistor_t tExtruder, tBed, tPinda, tAmbient;
 	fan_t fExtruder,fPrint;
 	heater_t hExtruder, hBed;
@@ -109,6 +111,7 @@ struct hw_t {
 	voltage_t vMain, vBed, vIR;
 	pinda_t pinda;
 	uart_logger_t logger;
+	mmu_t *mmu;
 } hw;
 
 unsigned char guKey = 0;
@@ -164,7 +167,11 @@ void avr_special_deinit( avr_t* avr, void * data)
 
 	if (hw.logger.fdOut)
 		uart_logger_stop(&hw.logger);
-	//uart_pty_stop(&hw.UART1);
+	else
+		uart_pty_stop(&hw.UART2);
+
+	if(hw.mmu->bStarted)
+		mmu_stop(hw.mmu);
 }
 
 void displayCB(void)		/* function called whenever redisplay needed */
@@ -435,9 +442,8 @@ void setupSDcard(char * mmcu)
 void setupSerial(bool bConnectS0, uint8_t uiLog)
 {
 	uart_pty_init(avr, &hw.UART0);
-//	uart_pty_init(avr, &hw.UART1);
 	uart_pty_init(avr, &hw.UART2);
-//	uart_pty_init(avr, &hw.UART3);
+
 
 	w25x20cl_init(avr, &hw.spiFlash);
 
@@ -450,9 +456,8 @@ void setupSerial(bool bConnectS0, uint8_t uiLog)
 
 	if (uiLog=='0' || uiLog == '2')
 		uart_logger_connect(&hw.logger,uiLog);
-	//uart_pty_connect(&hw.UART1,'1');
-	//uart_pty_connect(&hw.UART0, '2');
-	//uart_pty_connect(&hw.UART1,'3');
+	else
+		uart_pty_connect(&hw.UART2, '2');
 }
 
 void setupHeaters()
@@ -634,6 +639,7 @@ void fix_serial(avr_t * avr, avr_io_addr_t addr, uint8_t v, void * param)
 
 int main(int argc, char *argv[])
 {
+
 	bool bBootloader = false, bConnectS0 = false, bWait = false;
 
 	struct avr_flash flash_data;
@@ -753,6 +759,9 @@ int main(int argc, char *argv[])
 	button_init(avr, &hw.powerPanic,"PowerPanic");
 	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('E'),4));
 
+	hw.mmu = mmu_init(avr,  avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('2'), UART_IRQ_OUTPUT), 
+		avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('2'), UART_IRQ_INPUT), avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ('J'),5));
+
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.
 	if (bWait) 
@@ -777,12 +786,15 @@ int main(int argc, char *argv[])
 
 	initGL(w * pixsize, h * pixsize);
 
+	//mmu_start(hw.mmu);
+
 	pthread_t run;
 	pthread_create(&run, NULL, avr_run_thread, NULL);
 
 	glutMainLoop();
 
 	pthread_join(run,NULL);
+
 	printf("Done");
 
 }

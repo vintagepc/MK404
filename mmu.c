@@ -22,6 +22,11 @@ avr_run_thread(
 	printf("Starting MMU2 execution...\n");
 	int state = cpu_Running;
 	while ((state != cpu_Done) && (state != cpu_Crashed) && !mmu.bQuit){	
+		if (mmu.bReset)
+		{
+			mmu.bReset = 0;
+			avr_reset(mmu.avr);
+		}
 		//if (gbPrintPC)
 		//	printf("PC: %x\n",mmu->pc);
 		state = avr_run(mmu.avr);
@@ -37,29 +42,44 @@ void displayMMU()		/* function called whenever redisplay needed */
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW); // Select modelview matrix
 	glPushMatrix();
-	glLoadIdentity(); // Start with an identity matrix
-	glScalef(4, 4, 1);
-	glPopMatrix();
-
-	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();		
-		glScalef(width/350,4,1);
+		glScalef((width)*1.05/350,4,1);
 		tmc2130_draw_glut(&mmu.Sel);
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();		
-		glScalef(width/350,4,1);
+		glScalef(width*1.05/350,4,1);
 		glTranslatef(0,10,0);
 		tmc2130_draw_glut(&mmu.Idl);
 	glPopMatrix();
-		glPushMatrix();
+	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();		
-		glScalef(width/350,4,1);
+		glScalef(width*1.05/350,4,1);
 		glTranslatef(0,20,0);
-		tmc2130_draw_glut(&mmu.Extr);
+		tmc2130_draw_position_glut(&mmu.Extr);
+	glPopMatrix();
+	glPushMatrix();
+		glColor3f(0,0,0);
+		glLoadIdentity();		
+		glScalef(width*2.8/350,4,1);
+		glTranslatef(0,30,0);
+		glBegin(GL_QUADS);
+			glVertex3f(0,0,0);
+			glVertex3f(350,0,0);
+			glVertex3f(350,10,0);
+			glVertex3f(0,10,0);
+		glEnd();
+		for (int i=0; i<5; i++)
+		{
+			drawLED_gl(&mmu.lRed[i]);
+			glTranslatef(12,0,0);
+			drawLED_gl(&mmu.lGreen[i]);
+			glTranslatef(12,0,0);
+		}
+
 	glPopMatrix();
 
 	glutSwapBuffers();
@@ -71,7 +91,7 @@ void timerMMU(int i)
 {
 	//static int oldstate = -1;
 	// restart timer
-	glutTimerFunc(100, timerMMU, 0);
+	glutTimerFunc(50, timerMMU, 0);
 	displayMMU();
 	//hd44780_print(&hd44780);
 }
@@ -86,7 +106,7 @@ int initMMUGL(int w, int h)
 	glTranslatef(0, -1 * h, 0);
 
 	glutDisplayFunc(displayMMU);		/* set window's display callback */
-	glutTimerFunc(1000, timerMMU, 0);
+	glutTimerFunc(100, timerMMU, 0);
 
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
@@ -100,40 +120,77 @@ int initMMUGL(int w, int h)
 	return 1;
 }
 
-static void onMotorLatch(struct avr_irq_t * irq, uint32_t value, void * param)
+static void onShiftLatch(struct avr_irq_t * irq, uint32_t value, void * param)
 {
-	//printf("Latch %02x\n",value & 0xff);
+	if (value & 0)//0b101010)
+	{
+		printf("LATCH 5-0:");
+		for (int i=5; i>=0; i--)
+			printf("%x", value>>i & 1);
+		printf("\n");
+	}
 	// Just clock out the various pins to the drivers.
-	avr_raise_irq(mmu.Sel.irq + IRQ_TMC2130_DIR_IN, value & 1);
-	avr_raise_irq(mmu.Sel.irq + IRQ_TMC2130_ENABLE_IN, value>>2 & 1);
-	avr_raise_irq(mmu.Idl.irq + IRQ_TMC2130_DIR_IN, value>>3 & 1);
-	avr_raise_irq(mmu.Idl.irq + IRQ_TMC2130_ENABLE_IN, value >> 4 & 1);
-	avr_raise_irq(mmu.Extr.irq + IRQ_TMC2130_DIR_IN, value >>5 &1);
-	avr_raise_irq(mmu.Extr.irq + IRQ_TMC2130_ENABLE_IN, value>>6 &1);
+	hc595_data_t v;	
+	v.raw = value;
+
+	avr_raise_irq(mmu.Extr.irq + IRQ_TMC2130_DIR_IN, 	v.bits.b0);
+	avr_raise_irq(mmu.Extr.irq + IRQ_TMC2130_ENABLE_IN, v.bits.b1);
+	avr_raise_irq(mmu.Sel.irq + IRQ_TMC2130_DIR_IN, 	v.bits.b2);
+	avr_raise_irq(mmu.Sel.irq + IRQ_TMC2130_ENABLE_IN, 	v.bits.b3);
+	avr_raise_irq(mmu.Idl.irq + IRQ_TMC2130_DIR_IN, 	v.bits.b4);
+	avr_raise_irq(mmu.Idl.irq + IRQ_TMC2130_ENABLE_IN,	v.bits.b5);
+	avr_raise_irq(mmu.lGreen[0].irq + IRQ_LED_IN, 		v.bits.b6);
+	avr_raise_irq(mmu.lRed[0].irq + IRQ_LED_IN, 		v.bits.b7);
+	avr_raise_irq(mmu.lGreen[4].irq + IRQ_LED_IN, 		v.bits.b8);
+	avr_raise_irq(mmu.lRed[4].irq + IRQ_LED_IN, 		v.bits.b9);
+	avr_raise_irq(mmu.lGreen[3].irq + IRQ_LED_IN, 		v.bits.b10);
+	avr_raise_irq(mmu.lRed[3].irq + IRQ_LED_IN, 		v.bits.b11);
+	avr_raise_irq(mmu.lGreen[2].irq + IRQ_LED_IN, 		v.bits.b12);
+	avr_raise_irq(mmu.lRed[2].irq + IRQ_LED_IN, 		v.bits.b13);
+	avr_raise_irq(mmu.lGreen[1].irq + IRQ_LED_IN, 		v.bits.b14);
+	avr_raise_irq(mmu.lRed[1].irq + IRQ_LED_IN, 		v.bits.b15);
 }
 
 static void setupMotors()
 {
-	hc595_init(mmu.avr, &mmu.shiftMotors);
+	//There's only one shift register here that's 16 bits wide.
+	// There are two on the MMU but they're chained, to the same effect.
+	hc595_init(mmu.avr, &mmu.shift);
+	avr_irq_register_notify(mmu.shift.irq + IRQ_HC595_OUT, onShiftLatch,NULL);
 
-	avr_irq_register_notify(mmu.shiftMotors.irq + IRQ_HC595_OUT, onMotorLatch,NULL);
+	avr_ioport_external_t ex = {.name = 'F', .value=0, .mask=0b10011};
+	avr_ioctl(mmu.avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name),&ex);
 
-	avr_connect_irq(IOIRQ(mmu.avr, 'D',6), 			mmu.shiftMotors.irq + IRQ_HC595_IN_LATCH);
-	avr_connect_irq(IOIRQ(mmu.avr, 'B',5), 			mmu.shiftMotors.irq + IRQ_HC595_IN_DATA);
-	avr_connect_irq(IOIRQ(mmu.avr, 'C',7), 			mmu.shiftMotors.irq + IRQ_HC595_IN_CLOCK);
+	avr_connect_irq(IOIRQ(mmu.avr, 'B',6), 			mmu.shift.irq + IRQ_HC595_IN_LATCH);
+	avr_connect_irq(IOIRQ(mmu.avr, 'B',5), 			mmu.shift.irq + IRQ_HC595_IN_DATA);
+	avr_connect_irq(IOIRQ(mmu.avr, 'C',7), 			mmu.shift.irq + IRQ_HC595_IN_CLOCK);
 
-	tmc2130_init(mmu.avr, &mmu.Sel, 'S', 30); // Init takwrkes care of the SPI wiring.
-	avr_connect_irq(	IOIRQ(mmu.avr,'C',6),		mmu.Sel.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(	IOIRQ(mmu.avr,'B',4),		mmu.Sel.irq + IRQ_TMC2130_STEP_IN);
+	tmc2130_init(mmu.avr, &mmu.Extr, 'P', 30); // Init takwrkes care of the SPI wiring.
+	avr_connect_irq(	IOIRQ(mmu.avr,'C',6),		mmu.Extr.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(	IOIRQ(mmu.avr,'B',4),		mmu.Extr.irq + IRQ_TMC2130_STEP_IN);
+
+	tmc2130_init(mmu.avr, &mmu.Sel, 'S', 30); // Init takes care of the SPI wiring.
+	avr_connect_irq(	IOIRQ(mmu.avr,'D',7),		mmu.Sel.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(	IOIRQ(mmu.avr,'D',4),		mmu.Sel.irq + IRQ_TMC2130_STEP_IN);
 
 	tmc2130_init(mmu.avr, &mmu.Idl, 'I', 30); // Init takes care of the SPI wiring.
-	avr_connect_irq(	IOIRQ(mmu.avr,'D',7),		mmu.Idl.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(	IOIRQ(mmu.avr,'D',4),		mmu.Idl.irq + IRQ_TMC2130_STEP_IN);
+	avr_connect_irq(	IOIRQ(mmu.avr,'B',7),		mmu.Idl.irq + IRQ_TMC2130_SPI_CSEL);
+	avr_connect_irq(	IOIRQ(mmu.avr,'D',6),		mmu.Idl.irq + IRQ_TMC2130_STEP_IN);
 
-	tmc2130_init(mmu.avr, &mmu.Extr, 'E', 30); // Init takes care of the SPI wiring.
-	avr_connect_irq(	IOIRQ(mmu.avr,'B',7),		mmu.Extr.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(	IOIRQ(mmu.avr,'D',6),		mmu.Extr.irq + IRQ_TMC2130_STEP_IN);
+}
 
+void setupLEDs()
+{
+	
+	mmu_buttons_init(mmu.avr, &mmu.buttons,5);
+
+	for (int i=0; i<5; i++)
+	{
+		led_init(mmu.avr, &mmu.lRed[i], 0xFF0000FF);
+		led_init(mmu.avr,&mmu.lGreen[i],0x00FF00FF);
+	}
+
+	avr_raise_irq(IOIRQ(mmu.avr,'F',6),0);
 }
 
 static void start_mmu_hook(
@@ -141,13 +198,23 @@ static void start_mmu_hook(
 		uint32_t value,
 		void * param)
 {
-	printf("MMU RESET: %02x\n",value);
+	//printf("MMU RESET: %02x\n",value);
     mmu_t *pMMU = (mmu_t*) param;
-	if (value==0)
+	if (!value && !pMMU->bStarted)
 		mmu_start(pMMU);
-    else
-        printf("MMU RESET (TODO)\n");
+    else if (irq->value && !value)
+        pMMU->bReset = true;
 }
+int32_t imax =0, imin = 0;
+static void mmu_FINDA_hook(
+		struct avr_irq_t * irq,
+		uint32_t value,
+		void * param)
+{
+	float* posOut = (float*)(&value);
+   	avr_raise_irq(IOIRQ(mmu.avr,'F',6),posOut[0]>24.0f);
+}
+
 
 static void mmu_tx_hook(
 		struct avr_irq_t * irq,
@@ -220,7 +287,7 @@ mmu_t* mmu_init(avr_t *host, avr_irq_t *hostTX, avr_irq_t *hostRX,  avr_irq_t *i
 	avr->gdb_port = 1234;
 	
 	// suppress continuous polling for low INT lines... major performance drain.
-	for (int i=0; i<8; i++)
+	for (int i=0; i<5; i++)
 		avr_extint_set_strict_lvl_trig(avr,i,false);
 
     uart_pty_init(avr, &mmu.UART0);
@@ -235,6 +302,9 @@ mmu_t* mmu_init(avr_t *host, avr_irq_t *hostTX, avr_irq_t *hostRX,  avr_irq_t *i
     uart_pty_connect(&mmu.UART0,'1');
 
 	setupMotors();
+	setupLEDs();
+
+	avr_irq_register_notify(mmu.Extr.irq + IRQ_TMC2130_POSITION_OUT, mmu_FINDA_hook, NULL );
 
     return &mmu;
 }

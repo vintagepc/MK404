@@ -44,16 +44,16 @@ static void hc595_spi_in_hook(struct avr_irq_t * irq, uint32_t value, void * par
 static void hc595_data_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
 	hc595_t * this = (hc595_t*)param;
-	this->uiCurBit = value;
+	this->uiCurBit = value&1;
 }
 
 static void hc595_clock_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
 	hc595_t * this = (hc595_t*)param;
-	if (!irq->value && value)
+	if (irq->value && !value)
 	{
-		this->value<<=1;
-		this->value ^= this->uiCurBit;	
+		this->value = this->value<<1 | (this->uiCurBit);	
+		//printf("CLK:%08x\n",this->value);
 	}
 }
 
@@ -63,7 +63,7 @@ static void hc595_clock_in_hook(struct avr_irq_t * irq, uint32_t value, void * p
 static void hc595_latch_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
 	hc595_t * p = (hc595_t*)param;
-	if (irq->value && !value) {	// falling edge
+	if (!irq->value && value) {	// rising edge
 		p->latch = p->value;
 		avr_raise_irq(p->irq + IRQ_HC595_OUT, p->latch);
 	}

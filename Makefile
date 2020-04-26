@@ -68,7 +68,11 @@ ${board} : ${OBJ}/IRSensor.o
 ${board} : ${OBJ}/uart_logger.o
 ${board} : ${OBJ}/TMC2130.o
 ${board} : ${OBJ}/w25x20cl.o
+${board} : ${OBJ}/hc595.o
 ${board} : ${OBJ}/sd_card.o
+${board} : ${OBJ}/mmu.o
+${board} : ${OBJ}/mmu_buttons.o
+${board} : ${OBJ}/led.o
 ${board} : ${OBJ}/Einsy_EEPROM.o
 ${board} : ${OBJ}/${target}.o
 

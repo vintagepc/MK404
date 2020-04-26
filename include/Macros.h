@@ -7,7 +7,7 @@
 #ifndef __MACROS_H__
 #define __MACROS_H__
 
-#include "include/PinHelper_2560.h"
+#include "PinHelper_2560.h"
 
 // Shorthand to get IRQ for a digital IO port.
 #define IOIRQ(avr,port,number) avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ(port),number)

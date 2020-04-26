@@ -1,0 +1,77 @@
+cmake_minimum_required(VERSION 3.10)
+set(CMAKE_DEBUG_POSTFIX d)
+
+project(Einsy VERSION 0.1)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+set( EINSY_SOURCES
+    hwDefs/button.c
+    hwDefs/button.h
+    hwDefs/Einsy_EEPROM.c
+    hwDefs/Einsy_EEPROM.h
+    hwDefs/fan.c
+    hwDefs/fan.h
+    hwDefs/hc595.c
+    hwDefs/hc595.h
+    hwDefs/hd44780.c
+    hwDefs/hd44780_charROM.h
+    hwDefs/hd44780_glut.c
+    hwDefs/hd44780_glut.h
+    hwDefs/hd44780.h
+    hwDefs/heater.c
+    hwDefs/heater.h
+    hwDefs/IRSensor.c
+    hwDefs/IRSensor.h
+    hwDefs/led.c
+    hwDefs/led.h
+    hwDefs/mmu_buttons.c
+    hwDefs/mmu_buttons.h
+    hwDefs/PINDA.c
+    hwDefs/PINDA.h
+    hwDefs/rotenc.c
+    hwDefs/rotenc.h
+    hwDefs/sd_card.c
+    hwDefs/sd_card.h
+    hwDefs/stepper.c
+    hwDefs/stepper.h
+    hwDefs/thermistor.c
+    hwDefs/thermistor.h
+    hwDefs/thermistortables.h
+    hwDefs/TMC2130.c
+    hwDefs/TMC2130.h
+    hwDefs/uart_logger.c
+    hwDefs/uart_logger.h
+    hwDefs/uart_pty.c
+    hwDefs/uart_pty.h
+    hwDefs/voltage.c
+    hwDefs/voltage.h
+    hwDefs/w25x20cl.c
+    hwDefs/w25x20cl.h
+    mmu.c
+    mmu.h
+    include/Macros.h
+    include/PinHelper_2560.h
+    )
+
+
+
+add_executable(Einsy Einsy.c ${EINSY_SOURCES})
+
+#//add_subdirectory(Hardware)
+
+target_include_directories (Einsy PUBLIC 
+                            "${PROJECT_BINARY_DIR}"
+                            "${PROJECT_SOURCE_DIR}/../../simavr/sim"
+                            "${PROJECT_SOURCE_DIR}/../../simavr/cores"
+                            "${PROJECT_SOURCE_DIR}/hwDefs"
+                            "${PROJECT_SOURCE_DIR}/include"
+                         )
+
+find_library(LIBSIMAVR
+            simavr
+            HINTS "${PROJECT_SOURCE_DIR}/../../simavr/*")
+
+
+target_link_libraries(Einsy pthread util glut GL GLU m elf ${LIBSIMAVR} ) 

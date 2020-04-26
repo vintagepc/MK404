@@ -6,6 +6,12 @@ project(Einsy VERSION 0.1)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set (FIRMWARE
+    MM-control-01.hex
+    MK3S.afx
+    stk500boot_v2_mega2560.hex
+    )
+
 set( EINSY_SOURCES
     hwDefs/button.c
     hwDefs/button.h
@@ -57,7 +63,7 @@ set( EINSY_SOURCES
 
 
 
-add_executable(Einsy Einsy.c ${EINSY_SOURCES})
+add_executable(Einsy Einsy.c ${EINSY_SOURCES} ${FIRMWARE})
 
 #//add_subdirectory(Hardware)
 
@@ -75,3 +81,18 @@ find_library(LIBSIMAVR
 
 
 target_link_libraries(Einsy pthread util glut GL GLU m elf ${LIBSIMAVR} ) 
+
+add_custom_command(TARGET Einsy POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/MM-control-01.hex"
+                    "${PROJECT_BINARY_DIR}/MM-control-01.hex")
+add_custom_command(TARGET Einsy POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/MK3S.afx"
+                    "${PROJECT_BINARY_DIR}/MK3S.afx")
+add_custom_command(TARGET Einsy POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/stk500boot_v2_mega2560.hex"
+                    "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
+
+

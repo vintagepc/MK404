@@ -62,6 +62,7 @@
 #include "rotenc.h"
 #include "button.h"
 #include "voltage.h"
+#include "IRSensor.h"
 #include "thermistor.h"
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
@@ -113,7 +114,8 @@ struct hw_t {
 	w25x20cl_t spiFlash;
 	sd_card_t sd_card;
 	tmc2130_t X, Y, Z, E;
-	voltage_t vMain, vBed, vIR;
+	voltage_t vMain, vBed;
+	irsensor_t IR;
 	pinda_t pinda;
 	uart_logger_t logger;
 } hw;
@@ -281,17 +283,16 @@ avr_run_thread(
 					printf("Steel sheet: %s\n", hw.pinda.bIsSheetPresent? "INSTALLED" : "REMOVED");
 					break;
 				case 'f':
-					if (hw.vIR.fCurrent > 2.5 )
+					if (hw.IR.eCurrent == IR_NO_FILAMENT)
 					{
 						printf("Filament PRESENT\n");
-						fNew = 1.3;
+						irsensor_set(&hw.IR, IR_FILAMENT_PRESENT);
 					}
 					else
 					{
 						printf("Filament REMOVED\n");
-						fNew = 4.2;
+						irsensor_set(&hw.IR, IR_NO_FILAMENT);
 					}
-					avr_raise_irq(hw.vIR.irq + IRQ_VOLT_VALUE_IN, fNew*256);
 					break;
 				case 'q':
 					gbStop = 1;
@@ -488,8 +489,9 @@ void setupVoltages()
 	float fScale24v = 1.0f/26.097f; // Based on rSense voltage divider outputting 5v
 	voltage_init(avr, &hw.vBed,		VOLT_BED_PIN,	fScale24v,	23.9);
 	voltage_init(avr, &hw.vMain,	VOLT_PWR_PIN,	fScale24v,	24.0);
-	voltage_init(avr, &hw.vIR,		VOLT_IR_PIN,	1.0/5.0f,	4.2f);
-	avr_connect_irq(hw.vIR.irq + IRQ_VOLT_DIGITAL_OUT, DIRQLU(avr,IR_SENSOR_PIN));
+	irsensor_init(avr, &hw.IR,		VOLT_IR_PIN);
+	irsensor_set(&hw.IR, IR_NO_FILAMENT);
+	avr_connect_irq(hw.IR.irq + IRQ_IRSENSOR_DIGITAL_OUT, DIRQLU(avr,IR_SENSOR_PIN));
 }
 
 void setupDrivers()

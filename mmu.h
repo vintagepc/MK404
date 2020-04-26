@@ -13,9 +13,16 @@
 #include "mmu_buttons.h"
 #include "led.h"
 #include "TMC2130.h"
+#include "sim_irq.h"
+
+enum {
+    IRQ_MMU_FEED_DISTANCE = 0,
+    IRQ_MMU_COUNT
+};
 
 typedef struct mmu_t{
     avr_t *avr;
+    avr_irq_t *irq;
     bool bQuit;
     bool bStarted;
     bool bReset;
@@ -50,13 +57,11 @@ typedef union hc595_data_t{
     }bits;
 }hc595_data_t;
 
-mmu_t* mmu_init(avr_t *host, avr_irq_t *hostTX, avr_irq_t *hostRX, avr_irq_t *irqReset);
+mmu_t* mmu_init(avr_t *host, avr_irq_t *irqReset);
 
 void mmu_start(mmu_t* p);
 
 void mmu_startGL(mmu_t* p);
-
-//void displayMMU(mmu_t *p);
 
 void mmu_stop(mmu_t* p);
 

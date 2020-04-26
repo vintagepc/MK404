@@ -285,7 +285,7 @@ tmc2130_init(
     memset(&this->regs.raw, 0, sizeof(this->regs.raw));
     this->fCurPos =15.0f; // start position.
     int iMaxMM = -1;
-    // TODO: get steps/mm from the EEPROM?
+    // TODO: get steps/mm from the EEPROM? Move this stuff outside this file for sure...
     switch (axis)
     {
         case 'Y':
@@ -313,6 +313,7 @@ tmc2130_init(
         case 'I':
             this->iStepsPerMM = 10;
             this->fCurPos = 0;
+            iMaxMM = 200; // Maybe? this kinda seems to correspond to degrees...
             break;
         case 'E':
             this->flags.bits.inverted = 1;

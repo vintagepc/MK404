@@ -30,13 +30,15 @@ enum {
 typedef struct led_t {
 	avr_irq_t *	irq;		// irq list
 	float fColor[3];
+	char chrLabel;
 	bool bOn;
 } led_t;
+
 
 void
 led_init(avr_t * avr,
 		led_t *p,
-	    uint32_t uiHexColor);
+	    uint32_t uiHexColor, char chrLabel);
 
 void drawLED_gl(led_t *this);
 #endif /* __LED_H___ */

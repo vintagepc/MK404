@@ -64,6 +64,7 @@ ${board} : ${OBJ}/hd44780_glut.o
 ${board} : ${OBJ}/thermistor.o
 ${board} : ${OBJ}/PINDA.o
 ${board} : ${OBJ}/voltage.o
+${board} : ${OBJ}/IRSensor.o
 ${board} : ${OBJ}/uart_logger.o
 ${board} : ${OBJ}/TMC2130.o
 ${board} : ${OBJ}/w25x20cl.o

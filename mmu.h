@@ -31,7 +31,7 @@ typedef struct mmu_t{
     uart_pty_t *UARTHost;
     hc595_t shift;
     tmc2130_t Sel, Idl, Extr;
-    led_t lGreen[5], lRed[5];
+    led_t lGreen[5], lRed[5], lFINDA;
     buttons_t buttons;
 } mmu_t;
 

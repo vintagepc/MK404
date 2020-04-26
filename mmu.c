@@ -75,25 +75,21 @@ void displayMMU()		/* function called whenever redisplay needed */
 		for (int i=0; i<5; i++)
 		{
 			drawLED_gl(&mmu.lRed[i]);
-			glTranslatef(12,0,0);
+			glTranslatef(11,0,0);
 			drawLED_gl(&mmu.lGreen[i]);
 			glTranslatef(12,0,0);
 		}
-
+		drawLED_gl(&mmu.lFINDA);
 	glPopMatrix();
 
 	glutSwapBuffers();
 
 }
 
-// gl timer. if the lcd is dirty, refresh display
 void timerMMU(int i)
 {
-	//static int oldstate = -1;
-	// restart timer
 	glutTimerFunc(50, timerMMU, 0);
 	displayMMU();
-	//hd44780_print(&hd44780);
 }
 
 int initMMUGL(int w, int h)
@@ -122,13 +118,6 @@ int initMMUGL(int w, int h)
 
 static void onShiftLatch(struct avr_irq_t * irq, uint32_t value, void * param)
 {
-	if (value & 0)//0b101010)
-	{
-		printf("LATCH 5-0:");
-		for (int i=5; i>=0; i--)
-			printf("%x", value>>i & 1);
-		printf("\n");
-	}
 	// Just clock out the various pins to the drivers.
 	hc595_data_t v;	
 	v.raw = value;
@@ -186,10 +175,11 @@ void setupLEDs()
 
 	for (int i=0; i<5; i++)
 	{
-		led_init(mmu.avr, &mmu.lRed[i], 0xFF0000FF);
-		led_init(mmu.avr,&mmu.lGreen[i],0x00FF00FF);
+		led_init(mmu.avr, &mmu.lRed[i], 0xFF0000FF, ' ');
+		led_init(mmu.avr,&mmu.lGreen[i],0x00FF00FF, ' ');
 	}
-
+	led_init(mmu.avr, &mmu.lFINDA,0xFFCC00FF,'F');
+	avr_connect_irq(IOIRQ(mmu.avr, 'F',6), mmu.lFINDA.irq + IRQ_LED_IN);
 	avr_raise_irq(IOIRQ(mmu.avr,'F',6),0);
 }
 

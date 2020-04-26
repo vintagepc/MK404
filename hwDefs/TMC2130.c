@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "avr_ioport.h"
+#include "sim_irq.h"
 #include "sim_avr.h"
 #include "avr_spi.h"
 #include "avr_adc.h"
@@ -16,6 +17,7 @@
 #include "GL/glut.h"
 #include "Macros.h"
 //#define TRACE(_w) _w
+#define TRACE2(_w) if (this->axis=='S' || this->axis=='I') _w
 #ifndef TRACE
 #define TRACE(_w)
 #endif
@@ -118,6 +120,8 @@ static void tmc2130_create_reply(tmc2130_t *this)
     if (this->cmdProc.bitsIn.RW == 0) // Last in was a read.
     {
         this->cmdOut.bitsOut.data = this->regs.raw[this->cmdProc.bitsIn.address];
+        if (this->cmdProc.bitsIn.address == 0x01)
+            this->regs.raw[0x01] = 0; // GSTAT is cleared after read.
         TRACE(printf("Reading out %x (%10lx)", this->cmdProc.bitsIn.address, this->cmdOut.bitsOut.data));
     }
     else
@@ -195,6 +199,8 @@ static void tmc2130_csel_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 // Called when DIR pin changes.
 static void tmc2130_dir_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
+    if (irq->value == value)
+        return;
     tmc2130_t* this = (tmc2130_t*)param;
 	TRACE(printf("TMC2130 %c: DIR changed to %02x\n",this->axis,value));
     this->flags.bits.dir = value^this->flags.bits.inverted; // XOR
@@ -203,39 +209,43 @@ static void tmc2130_dir_in_hook(struct avr_irq_t * irq, uint32_t value, void * p
 // Called when STEP is triggered.
 static void tmc2130_step_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
-    if (!value) return; // Only step on rising pulse
+    if (!value || irq->value) return; // Only step on rising pulse
     tmc2130_t* this = (tmc2130_t*)param;
     if (!this->flags.bits.enable) return;
-	TRACE(printf("TMC2130 %c: STEP changed to %02x\n",this->axis,value));
+	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",this->axis,value));
     if (this->flags.bits.dir)    
         this->iCurStep--;
     else
         this->iCurStep++;
     bool bStall = false;
-    if (this->iCurStep==-1 && this->axis != 'E')
+    if (this->axis != 'E' && this->axis != 'P')
     {
-        this->iCurStep = 0;
-        bStall = true;
+        if (this->iCurStep==-1)
+        {
+            this->iCurStep = 0;
+            bStall = true;
+        }
+        else if (this->iCurStep>this->iMaxPos)
+        {
+            this->iCurStep = this->iMaxPos;
+            bStall = true;
+        }
     }
-    else if (this->iCurStep>this->iMaxPos && this->axis != 'E')
-    {
-        this->iCurStep = this->iMaxPos;
-        bStall = true;
-    }
-//    // TODO: get rid of this hackery once there's a real PINDA.
-//    if (this->iCurStep==200)
-//           avr_raise_irq(this->irq + IRQ_TMC2130_MIN_OUT, 1);
-//    else if (this->iCurStep == 201)
-//           avr_raise_irq(this->irq + IRQ_TMC2130_MIN_OUT, 0);
 
     this->fCurPos = (float)this->iCurStep/(float)this->iStepsPerMM;
     uint32_t* posOut = (uint32_t*)(&this->fCurPos); // both 32 bits, just mangle it for sending over the wire.
     avr_raise_irq(this->irq + IRQ_TMC2130_POSITION_OUT, posOut[0]);
     TRACE(printf("cur pos: %f (%u)\n",this->fCurPos,this->iCurStep));
     if (bStall)
+    {
         avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT, 1);
+        this->regs.defs.DRV_STATUS.SG_RESULT = 0;
+    }
     else if (!bStall && this->regs.defs.DRV_STATUS.stallGuard)
+    {
           avr_raise_irq(this->irq + IRQ_TMC2130_DIAG_OUT, 0);
+          this->regs.defs.DRV_STATUS.SG_RESULT = 250;
+    }
     this->regs.defs.DRV_STATUS.stallGuard = bStall;
     //tmc2130_check_diag(this);
 }
@@ -244,7 +254,9 @@ static void tmc2130_step_in_hook(struct avr_irq_t * irq, uint32_t value, void * 
 static void tmc2130_enable_in_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
     tmc2130_t* this = (tmc2130_t*)param;
-	TRACE(printf("TMC2130 %c: EN changed to %02x\n",this->axis,value));
+    if (irq->value == value && this->flags.bits.enable == (value==0))
+        return;
+	TRACE2(printf("TMC2130 %c: EN changed to %02x\n",this->axis,value));
     this->flags.bits.enable = value==0; // active low, i.e motors off when high.
 }
 
@@ -273,7 +285,7 @@ tmc2130_init(
     memset(&this->regs.raw, 0, sizeof(this->regs.raw));
     this->fCurPos =15.0f; // start position.
     int iMaxMM = -1;
-    // TODO: get steps/mm from the EEPROM?
+    // TODO: get steps/mm from the EEPROM? Move this stuff outside this file for sure...
     switch (axis)
     {
         case 'Y':
@@ -289,11 +301,29 @@ tmc2130_init(
             this->iStepsPerMM = 400;
             iMaxMM = 219;
             break;
+        case 'S':
+            this->flags.bits.inverted = 1;
+            this->iStepsPerMM = 20;
+            iMaxMM = 200;
+            break;
+        case 'P':
+            this->iStepsPerMM = 25;
+            this->fCurPos = 0;
+            break;
+        case 'I':
+            this->iStepsPerMM = 10;
+            this->fCurPos = 0;
+            iMaxMM = 200; // Maybe? this kinda seems to correspond to degrees...
+            break;
         case 'E':
             this->flags.bits.inverted = 1;
             this->fCurPos = 0.0f;
             this->iStepsPerMM = 280;
             break;
+        default:
+            this->fCurPos = 20.0f;
+            this->iStepsPerMM = 400;
+            iMaxMM = 120;
     }
     if (iMaxMM==-1)
         this->iMaxPos = -1;
@@ -301,8 +331,9 @@ tmc2130_init(
         this->iMaxPos = iMaxMM*this->iStepsPerMM;
 
     this->iCurStep = this->fCurPos*this->iStepsPerMM; // We track in "steps" to avoid the cumulative floating point error of adding fractions of a mm to each pos.
-
+    this->flags.bits.enable = 1;
     this->regs.defs.DRV_STATUS.SG_RESULT = 250;
+    this->regs.defs.GSTAT.reset = 1; // signal reset
 
     //for (int i=0; i<128; i++)
     //{

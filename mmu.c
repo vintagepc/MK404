@@ -213,27 +213,9 @@ static void mmu_FINDA_hook(
 {
 	float* posOut = (float*)(&value);
    	avr_raise_irq(IOIRQ(mmu.avr,'F',6),posOut[0]>24.0f);
-}
-
-
-static void mmu_tx_hook(
-		struct avr_irq_t * irq,
-		uint32_t value,
-		void * param)
-{
-    //printf("MMU said: %02x\n",value);
-    avr_irq_t *pHostRX = (avr_irq_t*) param;
-    avr_raise_irq(pHostRX,value);
-}
-
-static void mmu_host_tx_hook(
-		struct avr_irq_t * irq,
-		uint32_t value,
-		void * param)
-{
-    //printf("Host said: %02x\n",value);
-    mmu_t *pMMU = (mmu_t*) param;
-    avr_raise_irq(avr_io_getirq(pMMU->avr, AVR_IOCTL_UART_GETIRQ('1'), UART_IRQ_INPUT),value);
+	mmu_t *pMMU = (mmu_t*) param;
+	// Reflect the distance out for IR sensor triggering.
+	avr_raise_irq(pMMU->irq + IRQ_MMU_FEED_DISTANCE, value);
 }
 
 void mmu_startGL(mmu_t* this)
@@ -248,7 +230,11 @@ void mmu_startGL(mmu_t* this)
 }
 
 
-mmu_t* mmu_init(avr_t *host, avr_irq_t *hostTX, avr_irq_t *hostRX,  avr_irq_t *irqReset)
+static const char * irq_names[IRQ_MMU_COUNT] = {
+	[IRQ_MMU_FEED_DISTANCE] = ">MMU.feed_distance"
+};
+
+mmu_t* mmu_init(avr_t *host, avr_irq_t *irqReset)
 {
 	uint32_t boot_base, boot_size;
 	char * mmcu = "atmega32u4";
@@ -272,6 +258,8 @@ mmu_t* mmu_init(avr_t *host, avr_irq_t *hostTX, avr_irq_t *hostRX,  avr_irq_t *i
 	 printf("%s f/w 0x%05x: %d bytes\n", mmcu, boot_base, boot_size);
 	avr_init(avr);
 
+	mmu.irq = avr_alloc_irq(&avr->irq_pool, 0, IRQ_MMU_COUNT, irq_names);
+
 	avr->frequency = freq;
 	avr->vcc = 5000;
 	avr->aref = 0;
@@ -293,10 +281,6 @@ mmu_t* mmu_init(avr_t *host, avr_irq_t *hostTX, avr_irq_t *hostRX,  avr_irq_t *i
     uart_pty_init(avr, &mmu.UART0);
 
 	avr_irq_register_notify(irqReset, start_mmu_hook, &mmu);
-    //avr_irq_register_notify(hostTX, mmu_host_tx_hook, &mmu);
-
-    //avr_irq_register_notify(avr_io_getirq(mmu.avr, AVR_IOCTL_UART_GETIRQ('1'), UART_IRQ_OUTPUT), mmu_tx_hook, hostRX);
-
 
     printf("MMU UART:\n");
     uart_pty_connect(&mmu.UART0,'1');
@@ -304,7 +288,7 @@ mmu_t* mmu_init(avr_t *host, avr_irq_t *hostTX, avr_irq_t *hostRX,  avr_irq_t *i
 	setupMotors();
 	setupLEDs();
 
-	avr_irq_register_notify(mmu.Extr.irq + IRQ_TMC2130_POSITION_OUT, mmu_FINDA_hook, NULL );
+	avr_irq_register_notify(mmu.Extr.irq + IRQ_TMC2130_POSITION_OUT, mmu_FINDA_hook, &mmu );
 
     return &mmu;
 }
@@ -318,6 +302,7 @@ void mmu_start(mmu_t *this)
 }
 
 void mmu_stop(mmu_t *this){
+	printf("MMU_stop()\n");
     uart_pty_stop(&mmu.UART0);
     if (!this->bStarted)
         return;

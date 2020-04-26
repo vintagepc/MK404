@@ -21,12 +21,14 @@
 
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/select.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <libgen.h>
 #include "Macros.h"
+#include <errno.h>
 
 #if __APPLE__
 #include <GLUT/glut.h>
@@ -177,7 +179,7 @@ void avr_special_deinit( avr_t* avr, void * data)
 	else
 		uart_pty_stop(&hw.UART2);
 
-	if(hw.mmu->bStarted)
+	if(hw.mmu && hw.mmu->bStarted)
 		mmu_stop(hw.mmu);
 }
 
@@ -600,6 +602,83 @@ void setupTimers(avr_t* avr)
 }
 
 
+static void *
+serial_pipe_thread(
+		void * ignore)
+{
+	// Not much to see here, we just open the ports and shuttle characters back and forth across them.
+	printf("Starting serial transfer thread...\n");
+	int fdPort[2]; 
+	fd_set fdsIn, fdsErr;
+	unsigned char chrIn;
+	int iLastFd = 0, iReadyRead, iChrRd;
+	bool bQuit = false;
+	if ((fdPort[0]=open(hw.UART2.pty.slavename, O_RDWR | O_NONBLOCK)) == -1)
+	{
+		fprintf(stderr, "Could not open %s.\n",hw.UART2.pty.slavename);
+		perror(hw.UART2.pty.slavename);
+		bQuit = true;
+	}
+	if ((fdPort[1]=open(hw.mmu->UART0.pty.slavename, O_RDWR | O_NONBLOCK)) == -1)
+	{
+		fprintf(stderr, "Could not open %s.\n",hw.mmu->UART0.pty.slavename);
+		perror(hw.mmu->UART0.pty.slavename);
+		bQuit = true;
+	}
+	if (fdPort[0]>fdPort[1])
+		iLastFd = fdPort[0];
+	else
+		iLastFd = fdPort[1];
+		
+	while (!bQuit)
+	{
+		FD_ZERO(&fdsIn);
+		FD_ZERO(&fdsErr);
+		FD_SET(fdPort[0], &fdsIn);
+		FD_SET(fdPort[1], &fdsIn);
+		FD_SET(fdPort[0], &fdsErr);
+		FD_SET(fdPort[1], &fdsErr);
+		if ((iReadyRead = select(iLastFd+1,&fdsIn, NULL, &fdsErr,NULL))<0)
+		{
+			printf("Select ERR.\n");
+			bQuit = true;
+			break;
+		}
+
+		if (FD_ISSET(fdPort[0],&fdsIn))
+		{
+			while ((iChrRd = read(fdPort[0], &chrIn,1))>0)
+				write(fdPort[1],&chrIn,1);
+			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
+			{
+				bQuit = true; 
+				break;
+			}
+		}
+		if (FD_ISSET(fdPort[1],&fdsIn))
+		{
+			while ((iChrRd = read(fdPort[1], &chrIn,1))>0)
+				write(fdPort[0],&chrIn,1);
+			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
+			{
+				bQuit = true; 
+				break;
+			}
+		}
+		if (FD_ISSET(fdPort[0], &fdsErr) || FD_ISSET(fdPort[1], &fdsErr))
+		{
+			fprintf(stderr,"Exception reading PTY. Quit.\n");
+			bQuit = true; 
+			break;
+		}
+		
+	}
+
+	// cleanup.
+	for (int i=0; i<2; i++)
+		close(fdPort[i]);
+	return 0;
+}
 
 void fix_serial(avr_t * avr, avr_io_addr_t addr, uint8_t v, void * param)
 {
@@ -615,8 +694,8 @@ void fix_serial(avr_t * avr, avr_io_addr_t addr, uint8_t v, void * param)
 int main(int argc, char *argv[])
 {
 
-	bool bBootloader = false, bConnectS0 = false, bWait = false;
-
+	bool bBootloader = false, bConnectS0 = false, bWait = false, bMMU = false;
+	hw.mmu = NULL;
 	struct avr_flash flash_data;
 	char boot_path[1024] = "stk500boot_v2_mega2560.hex";
 	//char boot_path[1024] = "atmega2560_PFW.axf";
@@ -637,6 +716,8 @@ int main(int argc, char *argv[])
 			bBootloader = true;
 		else if (!strcmp(argv[i], "-w"))
 			bWait = true;
+		else if (!strcmp(argv[i], "-m"))
+			bMMU = true;
 		else if (!strcmp(argv[i], "-S0"))
 			bConnectS0 = true;
 		else if (!strncmp(argv[i], "-l",2))
@@ -735,8 +816,12 @@ int main(int argc, char *argv[])
 	
 	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, DIRQLU(avr, 2)); // Note - PP is not defined in pins_einsy.
 
-	hw.mmu = mmu_init(avr,  avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('2'), UART_IRQ_OUTPUT), 
-		avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('2'), UART_IRQ_INPUT), IOIRQ(avr,'J',5));
+	if (bMMU)
+		hw.mmu = mmu_init(avr,IOIRQ(avr,'J',5));
+
+	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
+	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
+	// rather than having to roll our own internal FIFO. As an added bonus you can tap the ports for debugging.
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.
@@ -747,7 +832,7 @@ int main(int argc, char *argv[])
 	}
 	powerup_and_reset_helper(avr);
 
-	/*
+	/*	
 	 * OpenGL init, can be ignored
 	 */
 	glutInit(&argc, argv);		/* initialize GLUT system */
@@ -763,14 +848,21 @@ int main(int argc, char *argv[])
 
 	initGL(w * pixsize, h * pixsize);
 
-	mmu_startGL(hw.mmu);
+	pthread_t run[2];
 
-	pthread_t run;
-	pthread_create(&run, NULL, avr_run_thread, NULL);
+	if (bMMU)
+	{
+		mmu_startGL(hw.mmu);
+		pthread_create(&run[1], NULL, serial_pipe_thread, NULL);
+	}
+	pthread_create(&run[0], NULL, avr_run_thread, NULL);
+
 
 	glutMainLoop();
 
-	pthread_join(run,NULL);
+	pthread_join(run[0],NULL);
+	if (bMMU)
+		pthread_join(run[1],NULL);
 
 	printf("Done");
 

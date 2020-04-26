@@ -261,7 +261,6 @@ avr_run_thread(
 {
 	printf("Starting AVR execution...\n");
 	int state = cpu_Running;
-	float fNew;
 	while ((state != cpu_Done) && (state != cpu_Crashed)){
 		if (guKey) {
 			switch (guKey) {
@@ -436,6 +435,14 @@ void setupSDcard(char * mmcu)
 		exit (2);
 	}
 }
+
+// Helper for MMU IR sensor triggering.
+static void mmu_irsensor_hook(struct avr_irq_t * irq, uint32_t value, void * param)
+{
+	float *fVal = (float*)&value;
+	irsensor_auto_input(&hw.IR, fVal[0]>400); // Trigger IR if MMU P pos > 400mm
+}
+
 
 void setupSerial(bool bConnectS0, uint8_t uiLog)
 {
@@ -856,6 +863,8 @@ int main(int argc, char *argv[])
 	{
 		mmu_startGL(hw.mmu);
 		pthread_create(&run[1], NULL, serial_pipe_thread, NULL);
+		irsensor_set(&hw.IR, IR_AUTO);
+		avr_irq_register_notify(hw.mmu->irq + IRQ_MMU_FEED_DISTANCE, mmu_irsensor_hook, avr);
 	}
 	pthread_create(&run[0], NULL, avr_run_thread, NULL);
 

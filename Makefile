@@ -29,6 +29,7 @@ IPATH += ${simavr}/simavr/cores
 
 VPATH = .
 VPATH += ./hwDefs
+VPATH += ./Include
 
 
 LDFLAGS += -lpthread -lutil

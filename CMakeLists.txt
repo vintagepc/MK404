@@ -79,8 +79,11 @@ find_library(LIBSIMAVR
             simavr
             HINTS "${PROJECT_SOURCE_DIR}/../../simavr/*")
 
+find_library(LIBELF
+            elf
+            )
 
-target_link_libraries(Einsy pthread util glut GL GLU m elf ${LIBSIMAVR} ) 
+target_link_libraries(Einsy pthread util glut GL GLU m ${LIBELF} ${LIBSIMAVR} ) 
 
 add_custom_command(TARGET Einsy POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different

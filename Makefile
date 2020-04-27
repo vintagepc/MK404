@@ -23,13 +23,14 @@ simavr = ../../
 
 IPATH = .
 IPATH += ./hwDefs // Custom parts first..
+IPATH += ./include
 IPATH += ${simavr}/include
 IPATH += ${simavr}/simavr/sim
 IPATH += ${simavr}/simavr/cores
 
 VPATH = .
 VPATH += ./hwDefs
-VPATH += ./Include
+VPATH += ./include
 
 
 LDFLAGS += -lpthread -lutil

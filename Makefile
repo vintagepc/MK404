@@ -83,4 +83,4 @@ ${target}: ${board}
 	@echo $@ done
 
 clean: clean-${OBJ}
-	rm -rf *.a *.axf ${target} *.vcd .*.swo .*.swp .*.swm .*.swn
+	rm -rf *.a *.axf ${target} *.vcd .*.swo .*.swp .*.swm .*.swn Einsy_atmega2560_*.bin

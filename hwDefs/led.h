@@ -40,5 +40,5 @@ led_init(avr_t * avr,
 		led_t *p,
 	    uint32_t uiHexColor, char chrLabel);
 
-void drawLED_gl(led_t *this);
+void drawLED_gl(led_t *p);
 #endif /* __LED_H___ */

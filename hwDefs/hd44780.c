@@ -28,7 +28,7 @@
 #include "avr_ioport.h"
 #include "sim_io.h"
 #include "hd44780.h"
-#include "Macros.h"
+#include "Util.h"
 
 //#define TRACE(_w) _w
 #ifndef TRACE

@@ -46,6 +46,6 @@ fan_init(
         avr_irq_t *irqPWM);
 
 void fan_stall(fan_t *p, bool bStall);
-void fan_set_rpm(fan_t *this, uint16_t iRPM);
-void fan_resume_auto(fan_t *this);
+void fan_set_rpm(fan_t *p, uint16_t iRPM);
+void fan_resume_auto(fan_t *p);
 #endif /* __BUTTON_H__*/

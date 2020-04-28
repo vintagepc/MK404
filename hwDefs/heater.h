@@ -43,6 +43,6 @@ heater_init(
         avr_irq_t *irqPWM,
         avr_irq_t *irqDigital);
 
-void heater_set_pwm(heater_t *this, uint8_t iPWM); // Use this to override PWM, e.g. shorted or open MOSFET
-void heater_resume_auto(heater_t *this); //Resume auto control after using set_pwm.
+void heater_set_pwm(heater_t *p, uint8_t iPWM); // Use this to override PWM, e.g. shorted or open MOSFET
+void heater_resume_auto(heater_t *p); //Resume auto control after using set_pwm.
 #endif /* __HEATER_H__*/

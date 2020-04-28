@@ -6,6 +6,8 @@ project(Einsy VERSION 0.1)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 set (FIRMWARE
     MM-control-01.hex
     MK3S.afx
@@ -79,11 +81,11 @@ find_library(LIBSIMAVR
             simavr
             HINTS "${PROJECT_SOURCE_DIR}/../../simavr/*")
 
-find_library(LIBELF
-            elf
-            )
+find_package(LibElf REQUIRED)
+include_directories(${LIBELF_INCLUDE_DIRS})
 
-target_link_libraries(Einsy pthread util glut GL GLU m ${LIBELF} ${LIBSIMAVR} ) 
+
+target_link_libraries(Einsy pthread util glut GL GLU m ${LIBSIMAVR} ${LIBELF_LIBRARIES}) 
 
 add_custom_command(TARGET Einsy POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different

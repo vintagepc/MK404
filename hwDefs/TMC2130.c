@@ -15,7 +15,7 @@
 #include "TMC2130.h"
 #include "stdbool.h"
 #include "GL/glut.h"
-#include "Macros.h"
+#include "Util.h"
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (this->axis=='S' || this->axis=='I') _w
 #ifndef TRACE

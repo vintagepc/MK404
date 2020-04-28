@@ -30,7 +30,7 @@ set( EINSY_SOURCES
     hwDefs/hd44780.h
     hwDefs/heater.c
     hwDefs/heater.h
-    hwDefs/IRSensor.c
+    hwDefs/IRSensor.cpp
     hwDefs/IRSensor.h
     hwDefs/led.c
     hwDefs/led.h
@@ -53,19 +53,20 @@ set( EINSY_SOURCES
     hwDefs/uart_logger.h
     hwDefs/uart_pty.c
     hwDefs/uart_pty.h
-    hwDefs/voltage.c
-    hwDefs/voltage.h
+    hwDefs/VoltageSrc.cpp
+    hwDefs/VoltageSrc.h
     hwDefs/w25x20cl.c
     hwDefs/w25x20cl.h
     mmu.c
     mmu.h
-    include/Macros.h
     include/PinHelper_2560.h
+    include/Util.h
+    include/BasePeripheral.h
     )
 
 
 
-add_executable(Einsy Einsy.c ${EINSY_SOURCES} ${FIRMWARE})
+add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${FIRMWARE})
 
 #//add_subdirectory(Hardware)
 
@@ -83,6 +84,7 @@ find_library(LIBSIMAVR
 
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
+            )
 
 
 target_link_libraries(Einsy pthread util glut GL GLU m ${LIBSIMAVR} ${LIBELF_LIBRARIES}) 

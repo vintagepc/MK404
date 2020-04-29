@@ -61,7 +61,6 @@
 extern "C" {
 #include "uart_pty.h"
 #include "hd44780_glut.h"
-#include "PINDA.h"
 #include "rotenc.h"
 #include "thermistor.h"
 #include "thermistortables.h"
@@ -82,6 +81,7 @@ extern "C" {
 #include "Fan.h"
 #include "Heater.h"
 #include "IRSensor.h"
+#include "PINDA.h"
 #include "VoltageSrc.h"
 
 #include "Firmware/Configuration_prusa.h"
@@ -126,7 +126,7 @@ struct hw_t {
 	tmc2130_t X, Y, Z, E;
     VoltageSrc *vMain, *vBed;
 	IRSensor *IR;
-	pinda_t pinda;
+	PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
 	uart_logger_t logger;
 	mmu_t *mmu;
 	Einsy_EEPROM *EEPROM;
@@ -295,8 +295,7 @@ avr_run_thread(
 					rotenc_button_press_hold(&hw.encoder);
 					break;
 				case 'y':
-					hw.pinda.bIsSheetPresent ^=1;
-					printf("Steel sheet: %s\n", hw.pinda.bIsSheetPresent? "INSTALLED" : "REMOVED");
+					hw.pinda.ToggleSheet();
 					break;
 				case 'f':
 					hw.IR->Toggle();
@@ -555,10 +554,10 @@ void setupDrivers()
 	ex.name = PORT(Z_MIN_PIN); // Value should already be 0 from above.
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 	
-	pinda_init(avr, &hw.pinda ,X_PROBE_OFFSET_FROM_EXTRUDER, Y_PROBE_OFFSET_FROM_EXTRUDER,
-		hw.X.irq + IRQ_TMC2130_POSITION_OUT, hw.Y.irq + IRQ_TMC2130_POSITION_OUT, hw.Z.irq + IRQ_TMC2130_POSITION_OUT);
+	// TODO once the drivers are setup.
+	//hw.pinda.Init(hw.X.irq + IRQ_TMC2130_POSITION_OUT, hw.Y.irq + IRQ_TMC2130_POSITION_OUT, hw.Z.irq + IRQ_TMC2130_POSITION_OUT);
 
-	avr_connect_irq(hw.pinda.irq + IRQ_PINDA_TRIGGER_OUT ,DIRQLU(avr, Z_MIN_PIN));
+	hw.pinda.ConnectTo(PINDA::TRIGGER_OUT ,DIRQLU(avr, Z_MIN_PIN));
 
 
 }

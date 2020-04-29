@@ -38,6 +38,7 @@ void VoltageSrc::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 		return;
 
     uint32_t iVOut =  (m_fCurrentV*m_fVScale)*1000*5;
+	SendToADC(iVOut);
 }
 
 void VoltageSrc::SendToADC(uint32_t uiVOut)
@@ -65,24 +66,9 @@ void VoltageSrc::Init(struct avr_t * avr )
 {
     m_pAVR = avr;
     m_pIrq = avr_alloc_irq(&avr->irq_pool, 0, COUNT, _IRQNAMES);
-
-
-	// Use lambdas to expose something that can be called from C, but returns to our C++ object
-   auto fcnSetVal = [](struct avr_irq_t *irq, uint32_t value, void* param) {
-	   		VoltageSrc* p = (VoltageSrc*) param;
-           	p->OnInput(irq,value); 
-        };
-
-
-   auto fcnRead = [](struct avr_irq_t *irq, uint32_t value, void* param) {
-	   		VoltageSrc* p = (VoltageSrc*) param;
-           	p->OnADCRead(irq,value); 
-        };
-
-	RegisterNotify(ADC_TRIGGER_IN, &VoltageSrc::OnADCRead);
-
-    avr_irq_register_notify(m_pIrq + ADC_TRIGGER_IN, fcnRead, this);
-    avr_irq_register_notify(m_pIrq + VALUE_IN, fcnSetVal, this);
+	
+    avr_irq_register_notify(m_pIrq + ADC_TRIGGER_IN, MAKE_C_CALLBACK(VoltageSrc,OnADCRead), this);
+    avr_irq_register_notify(m_pIrq + VALUE_IN, MAKE_C_CALLBACK(VoltageSrc,OnInput), this);
     avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_OUT_TRIGGER);
     avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, m_uiMuxNr);
 	if (src && dst) {

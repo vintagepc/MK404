@@ -43,8 +43,9 @@ void IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 	SendToADC(iVOut);
 }
 
-IRSensor::IRSensor(uint8_t uiMux):VoltageSrc{uiMux}
-{	
+IRSensor::IRSensor(uint8_t uiMux):VoltageSrc(uiMux)
+{
+
 }
 
 void IRSensor::Toggle()

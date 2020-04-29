@@ -38,7 +38,7 @@ set(EINSY_SOURCES
     hwDefs/led.h
     hwDefs/mmu_buttons.c
     hwDefs/mmu_buttons.h
-    hwDefs/PINDA.c
+    hwDefs/PINDA.cpp
     hwDefs/PINDA.h
     hwDefs/rotenc.c
     hwDefs/rotenc.h

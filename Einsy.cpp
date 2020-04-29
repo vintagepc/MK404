@@ -64,8 +64,6 @@ extern "C" {
 #include "PINDA.h"
 #include "heater.h"
 #include "rotenc.h"
-#include "button.h"
-
 #include "thermistor.h"
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
@@ -80,6 +78,7 @@ extern "C" {
 #include "mmu.h"
 }
 
+#include "Button.h"
 #include "Einsy_EEPROM.h"
 #include "Fan.h"
 #include "IRSensor.h"
@@ -117,7 +116,7 @@ struct hw_t {
 	avr_t *mcu;
 	hd44780_t lcd;
 	rotenc_t encoder;
-	button_t powerPanic;
+	Button *PowerPanic;
 	uart_pty_t UART0, UART2;
 	thermistor_t tExtruder, tBed, tPinda, tAmbient;
 	Fan *fExtruder,*fPrint;
@@ -257,7 +256,7 @@ void powerup_and_reset_helper(avr_t *avr)
 		avr_extint_set_strict_lvl_trig(avr,i,false);
 
 	// Restore powerpanic to high
-	avr_raise_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, 1);
+	hw.PowerPanic->Press(1);
 
 	//depress encoder knob
 	avr_raise_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN, 0);
@@ -330,7 +329,7 @@ void keyCB(
 			break;
 		case 'p':
 			printf("SIMULATING POWER PANIC\n");
-			button_press(&hw.powerPanic, 500);
+			hw.PowerPanic->Press(500);
 			break;
 		case 'd':
 			gbPrintPC = gbPrintPC==0;
@@ -832,9 +831,9 @@ int main(int argc, char *argv[])
 	avr_register_io_write(avr,0xC0,fix_serial,(void*)NULL); // UCSRA0
 
 	// Setup PP
-	button_init(avr, &hw.powerPanic,"PowerPanic");
-	
-	avr_connect_irq(hw.powerPanic.irq + IRQ_BUTTON_OUT, DIRQLU(avr, 2)); // Note - PP is not defined in pins_einsy.
+	hw.PowerPanic = new Button("PowerPanic");
+	hw.PowerPanic->Init(avr);
+	hw.PowerPanic->ConnectTo(Button::BUTTON_OUT, DIRQLU(avr,2)); // Note - PP is not defined in pins_einsy, it's an EXTINT.
 
 	if (bMMU)
 		hw.mmu = mmu_init(avr, IOIRQ(avr,'J',5));

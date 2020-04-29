@@ -32,6 +32,8 @@ set(EINSY_SOURCES
     hwDefs/heater.h
     hwDefs/IRSensor.cpp
     hwDefs/IRSensor.h
+    hwDefs/LED.cpp
+    hwDefs/LED.h
     hwDefs/led.c
     hwDefs/led.h
     hwDefs/mmu_buttons.c

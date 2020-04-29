@@ -53,11 +53,14 @@ class BasePeripheral
 
     protected:
 
-        // Sets up the IRQs
+        // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
         template<class C>
-        void _Init(avr_t *avr, C *p) {
+        void _Init(avr_t *avr, C *p, const char** IRQNAMES = nullptr) {
             m_pAVR = avr;
-            m_pIrq = avr_alloc_irq(&avr->irq_pool,0,p->COUNT,p->_IRQNAMES);
+            if (IRQNAMES)
+                m_pIrq = avr_alloc_irq(&avr->irq_pool,0,p->COUNT,IRQNAMES);
+            else
+                m_pIrq = avr_alloc_irq(&avr->irq_pool,0,p->COUNT,p->_IRQNAMES);
          };
 
         // Raises your own IRQ
@@ -65,6 +68,14 @@ class BasePeripheral
 
         template <class C>
         void inline RegisterNotify(unsigned int eSrc, avr_irq_notify_t func, C* pObj) { avr_irq_register_notify(m_pIrq + eSrc, func, pObj); };
+
+        // Cancels a registered cycle timer.
+        template <class C>
+        void inline CancelTimer(avr_cycle_timer_t func, C* pObj) { avr_cycle_timer_cancel(m_pAVR, func, pObj); };
+
+        // Registers a callback for a cycle timer.
+        template <class C>
+        void inline RegisterTimerUsec(avr_cycle_timer_t func, uint32_t uiUsec, C* pObj) { avr_cycle_timer_register_usec(m_pAVR, uiUsec, func, pObj); };
 
         // Template to easily register and deal with C-ifying a member function.
         //typedef void (BasePeripheral::*BasePeripheralFcn)(avr_irq_t * irq, uint32_t value);

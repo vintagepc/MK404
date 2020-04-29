@@ -15,8 +15,8 @@ set (FIRMWARE
     )
 
 set(EINSY_SOURCES
-    hwDefs/button.c
-    hwDefs/button.h
+    hwDefs/Button.cpp
+    hwDefs/Button.h
     hwDefs/Einsy_EEPROM.cpp
     hwDefs/Einsy_EEPROM.h
     hwDefs/Fan.cpp

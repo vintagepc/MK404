@@ -75,12 +75,12 @@ extern "C" {
 #undef __cplusplus // Needed to dodge some unwanted includes...
 #include "Firmware/eeprom.h"
 #define __cplusplus __cppOld
-#include "Einsy_EEPROM.h"
 #include "uart_logger.h"
 #include "sd_card.h"
 #include "mmu.h"
 }
 
+#include "Einsy_EEPROM.h"
 #include "Fan.h"
 #include "IRSensor.h"
 #include "VoltageSrc.h"
@@ -102,7 +102,6 @@ struct avr_flash {
 	char avr_flash_path[1024];
 	int avr_flash_fd;
 	char avr_eeprom_path[1024];
-	int avr_eeprom_fd;
 };
 
 int window;
@@ -131,6 +130,7 @@ struct hw_t {
 	pinda_t pinda;
 	uart_logger_t logger;
 	mmu_t *mmu;
+	Einsy_EEPROM *EEPROM;
 } hw;
 
 unsigned char guKey = 0;
@@ -176,7 +176,7 @@ void avr_special_deinit( avr_t* avr, void * data)
 	}
 	close(flash_data->avr_flash_fd);
 
-	einsy_eeprom_save(avr, flash_data->avr_eeprom_path, flash_data->avr_eeprom_fd);
+	hw.EEPROM->Save();
 	
 	w25x20cl_save(hw.spiFlash.filepath, &hw.spiFlash);
 	
@@ -785,7 +785,7 @@ int main(int argc, char *argv[])
 	avr->custom.data = &flash_data;
 	avr_init(avr);
 	avr->reset = powerup_and_reset_helper;
-	flash_data.avr_eeprom_fd = einsy_eeprom_load(avr, flash_data.avr_eeprom_path);
+	hw.EEPROM = new Einsy_EEPROM(avr, flash_data.avr_eeprom_path);
 	hw.spiFlash.xflash_fd = w25x20cl_load(hw.spiFlash.filepath, &hw.spiFlash);
 
 	avr_load_firmware(avr,&f);

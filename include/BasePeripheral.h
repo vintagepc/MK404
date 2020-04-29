@@ -1,7 +1,31 @@
+/*
+	BasePeripheral.h
+
+	Copyright 2020 VintagePC <https://github.com/vintagepc/>
+
+ 	This file is part of MK3SIM.
+
+	MK3SIM is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	MK3SIM is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 #include <sim_irq.h>
 
 // Use lambdas to expose something that can be called from C, but returns to our C++ object
 // TODO: find a way to ditch the macro. I tried and failed, see the template blocks below...
+
+// Generates a lambda function inline that can be called from SimAVR's C code.
 #define MAKE_C_CALLBACK(class, function) \
    [](struct avr_irq_t *irq, uint32_t value, void* param) {class *p = (class*) param; p->function(irq,value); }
 

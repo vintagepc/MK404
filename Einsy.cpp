@@ -62,7 +62,6 @@ extern "C" {
 #include "uart_pty.h"
 #include "hd44780_glut.h"
 #include "PINDA.h"
-#include "heater.h"
 #include "rotenc.h"
 #include "thermistor.h"
 #include "thermistortables.h"
@@ -81,6 +80,7 @@ extern "C" {
 #include "Button.h"
 #include "Einsy_EEPROM.h"
 #include "Fan.h"
+#include "Heater.h"
 #include "IRSensor.h"
 #include "VoltageSrc.h"
 
@@ -120,7 +120,7 @@ struct hw_t {
 	uart_pty_t UART0, UART2;
 	thermistor_t tExtruder, tBed, tPinda, tAmbient;
 	Fan *fExtruder,*fPrint;
-	heater_t hExtruder, hBed;
+	Heater *hExtruder, *hBed;
 	w25x20cl_t spiFlash;
 	sd_card_t sd_card;
 	tmc2130_t X, Y, Z, E;
@@ -490,13 +490,13 @@ void setupHeaters()
 		hw.fPrint = new Fan(5000);
 		hw.fPrint->Init(avr, DIRQLU(avr, TACH_1), 	DIRQLU(avr, FAN_PIN),	DPWMLU(avr, FAN_PIN));
 
-		heater_init(avr, &hw.hBed, 0.25,25.0, NULL,			DIRQLU(avr,HEATER_BED_PIN));
-		hw.hBed.bIsBed = true;
+		hw.hBed = new Heater(0.25, 25, true);
+		hw.hBed->Init(avr, NULL, DIRQLU(avr,HEATER_BED_PIN));
+		hw.hBed->ConnectTo(hw.hBed->TEMP_OUT, hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
 
-		heater_init(avr, &hw.hExtruder, 1.5, 25.0, NULL,	DIRQLU(avr, HEATER_0_PIN));
-
-		avr_connect_irq(hw.hExtruder.irq + IRQ_HEATER_TEMP_OUT,hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
-		avr_connect_irq(hw.hBed.irq + IRQ_HEATER_TEMP_OUT,hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
+		hw.hExtruder = new Heater(1.5,25.0);
+		hw.hExtruder->Init(avr, NULL, DIRQLU(avr, HEATER_0_PIN));
+		hw.hExtruder->ConnectTo(hw.hBed->TEMP_OUT, hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
 }
 
 void setupVoltages()

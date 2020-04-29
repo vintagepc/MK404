@@ -64,11 +64,10 @@ VoltageSrc::VoltageSrc(uint8_t adc_mux_number, float fVScale,float fStart):m_fCu
 
 void VoltageSrc::Init(struct avr_t * avr )
 {
-    m_pAVR = avr;
-    m_pIrq = avr_alloc_irq(&avr->irq_pool, 0, COUNT, _IRQNAMES);
+    _Init(avr,this);
 	
-    avr_irq_register_notify(m_pIrq + ADC_TRIGGER_IN, MAKE_C_CALLBACK(VoltageSrc,OnADCRead), this);
-    avr_irq_register_notify(m_pIrq + VALUE_IN, MAKE_C_CALLBACK(VoltageSrc,OnInput), this);
+    RegisterNotify(ADC_TRIGGER_IN, MAKE_C_CALLBACK(VoltageSrc,OnADCRead), this);
+    RegisterNotify(VALUE_IN, MAKE_C_CALLBACK(VoltageSrc,OnInput), this);
     avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_OUT_TRIGGER);
     avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, m_uiMuxNr);
 	if (src && dst) {
@@ -81,5 +80,5 @@ void VoltageSrc::Init(struct avr_t * avr )
 void VoltageSrc::Set(float fVal)
 {
     uint32_t value = fVal * 256;
-	RasieIRQ(VALUE_IN, value);
+	RaiseIRQ(VALUE_IN, value);
 }

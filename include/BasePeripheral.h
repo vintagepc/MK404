@@ -20,30 +20,51 @@
  */
 
 
+#include <sim_avr.h>
 #include <sim_irq.h>
+
+#ifndef __BASE_PERIPHERAL_H__
+#define __BASE_PERIPHERAL_H__
 
 // Use lambdas to expose something that can be called from C, but returns to our C++ object
 // TODO: find a way to ditch the macro. I tried and failed, see the template blocks below...
 
-// Generates a lambda function inline that can be called from SimAVR's C code.
+// Generates a lambda function inline that can be called from SimAVR's C IRQ code.
 #define MAKE_C_CALLBACK(class, function) \
    [](struct avr_irq_t *irq, uint32_t value, void* param) {class *p = (class*) param; p->function(irq,value); }
+
+// Generates an inline lambda for use with aver_cycle_timer
+#define MAKE_C_TIMER_CALLBACK(class, function) \
+   [](avr_t * avr, avr_cycle_count_t when, void* param) {class *p = (class*) param; return p->function(avr,when); }
+
 
 class BasePeripheral 
 {
     public:
 
-        // Connects internal IRQ to an external one.
+        // Returns actual IRQ for a given enum value.
+        inline avr_irq_t * GetIRQ(unsigned int eDest) {return m_pIrq + eDest;}
+
+          // Connects internal IRQ to an external one.
         inline void ConnectTo(unsigned int eSrc, avr_irq_t *irqDest) {avr_connect_irq(m_pIrq + eSrc, irqDest);}
 
         // Connects external IRQ to internal one.
         inline void ConnectFrom(avr_irq_t *irqSrc, unsigned int eDest) {avr_connect_irq(irqSrc, m_pIrq + eDest);}
 
-        // Returns actual IRQ for a given enum value.
-        inline avr_irq_t * GetIRQ(unsigned int eDest) {return m_pIrq + eDest;}
+    protected:
+
+        // Sets up the IRQs
+        template<class C>
+        void _Init(avr_t *avr, C *p) {
+            m_pAVR = avr;
+            m_pIrq = avr_alloc_irq(&avr->irq_pool,0,p->COUNT,p->_IRQNAMES);
+         };
 
         // Raises your own IRQ
-        void inline RasieIRQ(unsigned int eDest, uint32_t value) { avr_raise_irq(m_pIrq + eDest, value);}
+        void inline RaiseIRQ(unsigned int eDest, uint32_t value) { avr_raise_irq(m_pIrq + eDest, value);}
+
+        template <class C>
+        void inline RegisterNotify(unsigned int eSrc, avr_irq_notify_t func, C* pObj) { avr_irq_register_notify(m_pIrq + eSrc, func, pObj); };
 
         // Template to easily register and deal with C-ifying a member function.
         //typedef void (BasePeripheral::*BasePeripheralFcn)(avr_irq_t * irq, uint32_t value);
@@ -85,6 +106,9 @@ class BasePeripheral
              }; */
              
     protected: 
-        avr_irq_t *m_pIrq = nullptr;
+        struct avr_t *m_pAVR = nullptr;
+        avr_irq_t * m_pIrq = nullptr;
 
 };
+
+#endif /* __BASE_PERIPHERAL_H__ */

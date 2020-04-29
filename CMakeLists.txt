@@ -28,8 +28,8 @@ set(EINSY_SOURCES
     hwDefs/hd44780_glut.c
     hwDefs/hd44780_glut.h
     hwDefs/hd44780.h
-    hwDefs/heater.c
-    hwDefs/heater.h
+    hwDefs/Heater.cpp
+    hwDefs/Heater.h
     hwDefs/IRSensor.cpp
     hwDefs/IRSensor.h
     hwDefs/LED.cpp

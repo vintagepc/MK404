@@ -44,8 +44,6 @@ set(EINSY_SOURCES
     hwDefs/rotenc.h
     hwDefs/sd_card.c
     hwDefs/sd_card.h
-    hwDefs/stepper.c
-    hwDefs/stepper.h
     hwDefs/thermistor.c
     hwDefs/thermistor.h
     hwDefs/thermistortables.h

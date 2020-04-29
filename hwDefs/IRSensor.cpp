@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include "IRSensor.h"
+#include "avr_adc.h"
 
 // ADC read trigger. 
 void IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)

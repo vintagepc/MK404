@@ -19,13 +19,13 @@ Remaining To-Dos of note:
 - LCD works 99% of the way. Brightness support has been fixed.
 - Encoder and buttons are simulated
 - Power panic (fake button) is wired up
-- 4 UARTS are defined but not attached externally.
+- 4 UARTS are defined but not attached externally by default. Can be enabled by passing "-S0"
 - Thermistors are defined for the bed, PINDA, ambient and hotend. Bed/PINDA read higher than expected over 40C due to code in the official firmware (prusa3d#2601)
 - Fans have been attached, and can be controlled by the PWM output (or manually overridden to simulate conditions). 
-- Heater behaviour has been implemented. A Hotend heater is attached and appears functional, but the bed heating still has some issues to work out (#45)
-- PINDA simulation is present for both MBL and xyz cal
-- Simulated SD card, some improvements pending
-- TMC2130s are sufficiently simulated for general operations. 
+- Heater behaviour has been implemented. A Hotend heater is attached and appears functional. Same goes for the heatbed.
+- PINDA simulation is present for both MBL and xyz cal. Toggle "sheet on bed" flag with the 'Y' key.
+- Simulated SD card, some improvements pending (#71)
+- TMC2130s are sufficiently simulated for general operations.
 - Motor/positioning tracking present, but crude.
 - SPI flash is present. Still some issues to work out with using it and writing it.
 

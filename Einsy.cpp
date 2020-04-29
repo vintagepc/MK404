@@ -506,8 +506,8 @@ void setupVoltages()
     hw.vMain = new VoltageSrc(VOLT_PWR_PIN,	fScale24v,	24.0);
     hw.vMain->Init(avr);
 	hw.IR = new IRSensor(VOLT_IR_PIN);
+	hw.IR->Init(avr);
 	hw.IR->ConnectTo(IRSensor::DIGITAL_OUT, DIRQLU(avr, IR_SENSOR_PIN));
-	//avr_connect_irq(hw.IR.irq + IRQ_IRSENSOR_DIGITAL_OUT, DIRQLU(avr,IR_SENSOR_PIN));
 }
 
 void setupDrivers()

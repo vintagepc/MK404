@@ -84,8 +84,6 @@ find_library(LIBSIMAVR
 
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
-            )
-
 
 target_link_libraries(Einsy pthread util glut GL GLU m ${LIBSIMAVR} ${LIBELF_LIBRARIES}) 
 

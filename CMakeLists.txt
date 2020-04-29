@@ -14,13 +14,13 @@ set (FIRMWARE
     stk500boot_v2_mega2560.hex
     )
 
-set( EINSY_SOURCES
+set(EINSY_SOURCES
     hwDefs/button.c
     hwDefs/button.h
     hwDefs/Einsy_EEPROM.c
     hwDefs/Einsy_EEPROM.h
-    hwDefs/fan.c
-    hwDefs/fan.h
+    hwDefs/Fan.cpp
+    hwDefs/Fan.h
     hwDefs/hc595.c
     hwDefs/hc595.h
     hwDefs/hd44780.c

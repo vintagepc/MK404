@@ -62,7 +62,6 @@ extern "C" {
 #include "uart_pty.h"
 #include "hd44780_glut.h"
 #include "PINDA.h"
-#include "fan.h"
 #include "heater.h"
 #include "rotenc.h"
 #include "button.h"
@@ -82,8 +81,9 @@ extern "C" {
 #include "mmu.h"
 }
 
-#include "VoltageSrc.h"
+#include "Fan.h"
 #include "IRSensor.h"
+#include "VoltageSrc.h"
 
 #include "Firmware/Configuration_prusa.h"
 
@@ -121,7 +121,7 @@ struct hw_t {
 	button_t powerPanic;
 	uart_pty_t UART0, UART2;
 	thermistor_t tExtruder, tBed, tPinda, tAmbient;
-	fan_t fExtruder,fPrint;
+	Fan *fExtruder,*fPrint;
 	heater_t hExtruder, hBed;
 	w25x20cl_t spiFlash;
 	sd_card_t sd_card;
@@ -486,8 +486,10 @@ void setupHeaters()
 		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
 		 OVERSAMPLENR, 21.0f);		
 
-		fan_init(avr, &hw.fExtruder,3300, 	DIRQLU(avr, TACH_0), 	DIRQLU(avr, EXTRUDER_0_AUTO_FAN_PIN), 	DPWMLU(avr,EXTRUDER_0_AUTO_FAN_PIN));
-		fan_init(avr, &hw.fPrint,4500, 		DIRQLU(avr, TACH_1), 	DIRQLU(avr, FAN_PIN),					DPWMLU(avr, FAN_PIN));
+		hw.fExtruder = new Fan(3300);
+		hw.fExtruder->Init(avr, DIRQLU(avr, TACH_0), 	DIRQLU(avr, EXTRUDER_0_AUTO_FAN_PIN), 	DPWMLU(avr,EXTRUDER_0_AUTO_FAN_PIN));
+		hw.fPrint = new Fan(5000);
+		hw.fPrint->Init(avr, DIRQLU(avr, TACH_1), 	DIRQLU(avr, FAN_PIN),	DPWMLU(avr, FAN_PIN));
 
 		heater_init(avr, &hw.hBed, 0.25,25.0, NULL,			DIRQLU(avr,HEATER_BED_PIN));
 		hw.hBed.bIsBed = true;

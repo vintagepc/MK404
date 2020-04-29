@@ -59,7 +59,6 @@ protected:
     // Send helper to reply to the ADC read query.
     void SendToADC(uint32_t uiVOut);
 
-    struct avr_t *m_pAVR = nullptr;
     uint8_t m_uiMuxNr = -1;
     float m_fVScale = 1.0f;
     float m_fCurrentV = 0.0f;

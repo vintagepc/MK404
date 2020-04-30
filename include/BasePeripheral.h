@@ -73,9 +73,13 @@ class BasePeripheral
         template <class C>
         void inline CancelTimer(avr_cycle_timer_t func, C* pObj) { avr_cycle_timer_cancel(m_pAVR, func, pObj); };
 
-        // Registers a callback for a cycle timer.
+        // Registers a callback for a cycle timer, in usec
         template <class C>
         void inline RegisterTimerUsec(avr_cycle_timer_t func, uint32_t uiUsec, C* pObj) { avr_cycle_timer_register_usec(m_pAVR, uiUsec, func, pObj); };
+
+        // Registers a callback for a cycle timer, in cycles.
+        template <class C>
+        void inline RegisterTimer(avr_cycle_timer_t func, uint32_t uiCycles, C* pObj) { avr_cycle_timer_register(m_pAVR, uiCycles, func, pObj); };
 
         // Template to easily register and deal with C-ifying a member function.
         //typedef void (BasePeripheral::*BasePeripheralFcn)(avr_irq_t * irq, uint32_t value);

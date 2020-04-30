@@ -47,7 +47,7 @@ set(EINSY_SOURCES
     hwDefs/thermistor.c
     hwDefs/thermistor.h
     hwDefs/thermistortables.h
-    hwDefs/TMC2130.c
+    hwDefs/TMC2130.cpp
     hwDefs/TMC2130.h
     hwDefs/uart_logger.c
     hwDefs/uart_logger.h
@@ -57,8 +57,8 @@ set(EINSY_SOURCES
     hwDefs/VoltageSrc.h
     hwDefs/w25x20cl.c
     hwDefs/w25x20cl.h
-    mmu.c
-    mmu.h
+    #mmu.c
+    #mmu.h
     include/PinHelper_2560.h
     include/Util.h
     include/BasePeripheral.h

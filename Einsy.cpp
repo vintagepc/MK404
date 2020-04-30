@@ -539,6 +539,7 @@ void setupDrivers()
 	cfg.uiStepsPerMM = 400;
 	cfg.iMaxMM = 219;
 	cfg.cAxis = 'Z';
+	cfg.uiDiagPin = Z_TMC2130_DIAG;
 
 	hw.Z = new TMC2130(cfg);
 	hw.Z->Init(avr);
@@ -551,6 +552,7 @@ void setupDrivers()
 	cfg.uiStepsPerMM = 100;
 	cfg.cAxis = 'Y';
 	cfg.iMaxMM = 220;
+	cfg.uiDiagPin = Y_TMC2130_DIAG;
 
 	hw.Y = new TMC2130(cfg);
 	hw.Y->Init(avr);
@@ -562,6 +564,7 @@ void setupDrivers()
 	cfg.bHasNoEndStops = true;
 	cfg.fStartPos = 0;
 	cfg.uiStepsPerMM = 280;
+	cfg.uiDiagPin = E0_TMC2130_DIAG;
 
 	hw.E = new TMC2130(cfg);
 	hw.E->Init(avr);

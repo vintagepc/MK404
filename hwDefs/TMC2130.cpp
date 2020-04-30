@@ -22,7 +22,7 @@
 
 void TMC2130::Draw()
 {
-        if (!cfg.uiStepsPerMM)
+        if (!m_pAVR)
             return; // Motors not ready yet.
         float fEnd = m_uiMaxPos/cfg.uiStepsPerMM;
 	    glBegin(GL_QUADS);
@@ -206,6 +206,7 @@ avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *avr, avr_cycle_count_t whe
 // Called when STEP is triggered.
 void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 {
+    CancelTimer(MAKE_C_TIMER_CALLBACK(TMC2130,OnStandStillTimeout),this);
     if (!value || irq->value) return; // Only step on rising pulse
     if (!m_bEnable) return;
 	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",cfg.cAxis,value));
@@ -221,9 +222,9 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
             m_iCurStep = 0;
             bStall = true;
         }
-        else if (m_iCurStep>cfg.iMaxMM)
+        else if (m_iCurStep>m_uiMaxPos)
         {
-            m_iCurStep = cfg.iMaxMM;
+            m_iCurStep = m_uiMaxPos;
             bStall = true;
         }
     }
@@ -263,64 +264,15 @@ TMC2130::TMC2130(TMC2130_cfg_t cfgIn):cfg(cfgIn)
     m_regs.defs.DRV_STATUS.stst = true;
     m_regs.defs.DRV_STATUS.SG_RESULT = 250;
     m_regs.defs.GSTAT.reset = 1; // signal reset
+
+    m_iCurStep = cfg.fStartPos*cfg.uiStepsPerMM;
+    m_uiMaxPos = cfg.iMaxMM*cfg.uiStepsPerMM;
+    m_fCurPos = cfg.fStartPos;
 }
 
 void TMC2130::Init(struct avr_t * avr) 
 {
     _Init(avr, this);
-
-
-
-
-    // TODO: get steps/mm from the EEPROM? Move this stuff outside this file for sure...
-/*     switch (axis)
-    {
-        case 'Y':
-            cfg.bInverted = 1;
-            cfg.uiStepsPerMM = 100;
-            iMaxMM = 220;
-            break;
-        case 'X':
-            cfg.uiStepsPerMM = 100;
-            iMaxMM = 255;
-            break;
-        case 'Z': 
-            cfg.uiStepsPerMM = 400;
-            iMaxMM = 219;
-            break;
-        case 'S':
-            cfg.bInverted = 1;
-            cfg.uiStepsPerMM = 20;
-            iMaxMM = 200;
-            break;
-        case 'P':
-            cfg.uiStepsPerMM = 25;
-            m_fCurPos = 0;
-            break;
-        case 'I':
-            cfg.uiStepsPerMM = 10;
-            m_fCurPos = 0;
-            iMaxMM = 200; // Maybe? this kinda seems to correspond to degrees...
-            break;
-        case 'E':
-            cfg.bInverted = 1;
-            m_fCurPos = 0.0f;
-            cfg.uiStepsPerMM = 280;
-            break;
-        default:
-            m_fCurPos = 20.0f;
-            cfg.uiStepsPerMM = 400;
-            iMaxMM = 120;
-    } */
-    m_uiMaxPos = cfg.iMaxMM*cfg.uiStepsPerMM;
-
-    m_iCurStep = m_fCurPos*cfg.uiStepsPerMM; // We track in "steps" to avoid the cumulative floating point error of adding fractions of a mm to each pos.
-
-    //for (int i=0; i<128; i++)
-    //{
-    //    if (m_regs.raw[i])
-    //        printf("REG DUMP: %02x : %10lx",i,m_regs.raw[i]);
-    //}
 
     // Just wire right up to the AVR SPI
     ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT),SPI_BYTE_IN);

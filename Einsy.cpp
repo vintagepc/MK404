@@ -66,14 +66,13 @@ extern "C" {
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
 #include "w25x20cl.h"
-#include "TMC2130.h"
 #define __cppOld __cplusplus
 #undef __cplusplus // Needed to dodge some unwanted includes...
 #include "Firmware/eeprom.h"
 #define __cplusplus __cppOld
 #include "uart_logger.h"
 #include "sd_card.h"
-#include "mmu.h"
+//#include "mmu.h"
 }
 
 #include "Button.h"
@@ -82,6 +81,7 @@ extern "C" {
 #include "Heater.h"
 #include "IRSensor.h"
 #include "PINDA.h"
+#include "TMC2130.h"
 #include "VoltageSrc.h"
 
 #include "Firmware/Configuration_prusa.h"
@@ -111,7 +111,7 @@ uint32_t colors[8] = {
 		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
 		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055
 };
-
+#undef TMC2130
 struct hw_t {
 	avr_t *mcu;
 	hd44780_t lcd;
@@ -123,12 +123,12 @@ struct hw_t {
 	Heater *hExtruder, *hBed;
 	w25x20cl_t spiFlash;
 	sd_card_t sd_card;
-	tmc2130_t X, Y, Z, E;
+	TMC2130 *X, *Y, *Z, *E;
     VoltageSrc *vMain, *vBed;
 	IRSensor *IR;
 	PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
 	uart_logger_t logger;
-	mmu_t *mmu;
+	//mmu_t *mmu;
 	Einsy_EEPROM *EEPROM;
 } hw;
 
@@ -188,8 +188,8 @@ void avr_special_deinit( avr_t* avr, void * data)
 	else
 		uart_pty_stop(&hw.UART2);
 
-	if(hw.mmu && hw.mmu->bStarted)
-		mmu_stop(hw.mmu);
+	//if(hw.mmu && hw.mmu->bStarted)
+	//	mmu_stop(hw.mmu);
 }
 
 void displayCB(void)		/* function called whenever redisplay needed */
@@ -219,28 +219,28 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		glLoadIdentity();		
 		glScalef(fX/350,4,1);
 		glTranslatef(0,5 + hw.lcd.h * 9,0);
-		tmc2130_draw_glut(&hw.X);
+		hw.X->Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();
 		glScalef(fX/350,4,1);
 		glTranslatef(0,(5 + hw.lcd.h * 9) +10,0);
-		tmc2130_draw_glut(&hw.Y);
+		hw.Y->Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();
 		glScalef(fX/350,4,1);
 		glTranslatef(0,(5 + hw.lcd.h * 9) +20,0);
-		tmc2130_draw_glut(&hw.Z);
+		hw.Z->Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();
 		glScalef(fX/350,4,1);
 		glTranslatef(0,(5 + hw.lcd.h * 9) +30,0);
-		tmc2130_draw_position_glut(&hw.E);
+		hw.E->Draw_Simple();
 	glPopMatrix();
 	glutSwapBuffers();
 }
@@ -524,30 +524,53 @@ void setupDrivers()
     ex.mask = uiDiagMask;
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
-	tmc2130_init(avr, &hw.X, 'X', X_TMC2130_DIAG); // Init takes care of the SPI wiring.
-	avr_connect_irq(	DIRQLU(avr,X_TMC2130_CS), 	hw.X.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(	DIRQLU(avr,X_DIR_PIN),		hw.X.irq + IRQ_TMC2130_DIR_IN);
-	avr_connect_irq(	DIRQLU(avr,X_STEP_PIN),		hw.X.irq + IRQ_TMC2130_STEP_IN);
-	avr_connect_irq(	DIRQLU(avr,X_ENABLE_PIN),	hw.X.irq + IRQ_TMC2130_ENABLE_IN);
+	struct TMC2130::TMC2130_cfg_t cfg;
+	cfg.iMaxMM = 255;
+	cfg.cAxis = 'X';
+	cfg.uiDiagPin = X_TMC2130_DIAG;
+
+	hw.X = new TMC2130(cfg);
+	hw.X->Init(avr);
+	hw.X->ConnectFrom(DIRQLU(avr,X_TMC2130_CS), 	TMC2130::SPI_CSEL);
+	hw.X->ConnectFrom(DIRQLU(avr,X_DIR_PIN),		TMC2130::DIR_IN);
+	hw.X->ConnectFrom(DIRQLU(avr,X_STEP_PIN),		TMC2130::STEP_IN);
+	hw.X->ConnectFrom(DIRQLU(avr,X_ENABLE_PIN),		TMC2130::ENABLE_IN);
+
+	cfg.uiStepsPerMM = 400;
+	cfg.iMaxMM = 219;
+	cfg.cAxis = 'Z';
+
+	hw.Z = new TMC2130(cfg);
+	hw.Z->Init(avr);
+	hw.Z->ConnectFrom(DIRQLU(avr,Z_TMC2130_CS), 	TMC2130::SPI_CSEL);
+	hw.Z->ConnectFrom(DIRQLU(avr,Z_DIR_PIN),		TMC2130::DIR_IN);
+	hw.Z->ConnectFrom(DIRQLU(avr,Z_STEP_PIN),		TMC2130::STEP_IN);
+	hw.Z->ConnectFrom(DIRQLU(avr,Z_ENABLE_PIN),		TMC2130::ENABLE_IN);
+
+	cfg.bInverted = true;
+	cfg.uiStepsPerMM = 100;
+	cfg.cAxis = 'Y';
+	cfg.iMaxMM = 220;
+
+	hw.Y = new TMC2130(cfg);
+	hw.Y->Init(avr);
+	hw.Y->ConnectFrom(DIRQLU(avr,Y_TMC2130_CS), 	TMC2130::SPI_CSEL);
+	hw.Y->ConnectFrom(DIRQLU(avr,Y_DIR_PIN),		TMC2130::DIR_IN);
+	hw.Y->ConnectFrom(DIRQLU(avr,Y_STEP_PIN),		TMC2130::STEP_IN);
+	hw.Y->ConnectFrom(DIRQLU(avr,Y_ENABLE_PIN),		TMC2130::ENABLE_IN);
+
+	cfg.bHasNoEndStops = true;
+	cfg.fStartPos = 0;
+	cfg.uiStepsPerMM = 280;
+
+	hw.E = new TMC2130(cfg);
+	hw.E->Init(avr);
+	hw.E->ConnectFrom(DIRQLU(avr,E0_TMC2130_CS), 	TMC2130::SPI_CSEL);
+	hw.E->ConnectFrom(DIRQLU(avr,E0_DIR_PIN),		TMC2130::DIR_IN);
+	hw.E->ConnectFrom(DIRQLU(avr,E0_STEP_PIN),		TMC2130::STEP_IN);
+	hw.E->ConnectFrom(DIRQLU(avr,E0_ENABLE_PIN),	TMC2130::ENABLE_IN);
 
 
-	tmc2130_init(avr, &hw.Y, 'Y', Y_TMC2130_DIAG); // Init takes care of the SPI wiring.
-	avr_connect_irq(	DIRQLU(avr,Y_TMC2130_CS), 	hw.Y.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(	DIRQLU(avr,Y_DIR_PIN),		hw.Y.irq + IRQ_TMC2130_DIR_IN);
-	avr_connect_irq(	DIRQLU(avr,Y_STEP_PIN),		hw.Y.irq + IRQ_TMC2130_STEP_IN);
-	avr_connect_irq(	DIRQLU(avr,Y_ENABLE_PIN),	hw.Y.irq + IRQ_TMC2130_ENABLE_IN);
-
-	tmc2130_init(avr, &hw.Z, 'Z', Z_TMC2130_DIAG); // Init takes care of the SPI wiring.
-	avr_connect_irq(	DIRQLU(avr,Z_TMC2130_CS), 	hw.Z.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(	DIRQLU(avr,Z_DIR_PIN),		hw.Z.irq + IRQ_TMC2130_DIR_IN);
-	avr_connect_irq(	DIRQLU(avr,Z_STEP_PIN),		hw.Z.irq + IRQ_TMC2130_STEP_IN);
-	avr_connect_irq(	DIRQLU(avr,Z_ENABLE_PIN),	hw.Z.irq + IRQ_TMC2130_ENABLE_IN);
-
- 	tmc2130_init(avr, &hw.E, 'E', E0_TMC2130_DIAG); // Init takes care of the SPI wiring.
-	avr_connect_irq(	DIRQLU(avr,E0_TMC2130_CS), 	hw.E.irq + IRQ_TMC2130_SPI_CSEL);
-	avr_connect_irq(	DIRQLU(avr,E0_DIR_PIN),		hw.E.irq + IRQ_TMC2130_DIR_IN);
-	avr_connect_irq(	DIRQLU(avr,E0_STEP_PIN),	hw.E.irq + IRQ_TMC2130_STEP_IN);
-	avr_connect_irq(	DIRQLU(avr,E0_ENABLE_PIN),	hw.E.irq + IRQ_TMC2130_ENABLE_IN);
 
 
 	ex.mask = 1<<PIN(Z_MIN_PIN); // DIAG pins. 
@@ -555,8 +578,7 @@ void setupDrivers()
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 	
 	// TODO once the drivers are setup.
-	//hw.pinda.Init(hw.X.irq + IRQ_TMC2130_POSITION_OUT, hw.Y.irq + IRQ_TMC2130_POSITION_OUT, hw.Z.irq + IRQ_TMC2130_POSITION_OUT);
-
+	hw.pinda.Init(avr, hw.X->GetIRQ(TMC2130::POSITION_OUT),  hw.Y->GetIRQ(TMC2130::POSITION_OUT),  hw.Z->GetIRQ(TMC2130::POSITION_OUT));
 	hw.pinda.ConnectTo(PINDA::TRIGGER_OUT ,DIRQLU(avr, Z_MIN_PIN));
 
 
@@ -632,10 +654,10 @@ serial_pipe_thread(
 		perror(hw.UART2.pty.slavename);
 		bQuit = true;
 	}
-	if ((fdPort[1]=open(hw.mmu->UART0.pty.slavename, O_RDWR | O_NONBLOCK)) == -1)
+	//if ((fdPort[1]=open(hw.mmu->UART0.pty.slavename, O_RDWR | O_NONBLOCK)) == -1)
 	{
-		fprintf(stderr, "Could not open %s.\n",hw.mmu->UART0.pty.slavename);
-		perror(hw.mmu->UART0.pty.slavename);
+	//	fprintf(stderr, "Could not open %s.\n",hw.mmu->UART0.pty.slavename);
+		//perror(hw.mmu->UART0.pty.slavename);
 		bQuit = true;
 	}
 	if (fdPort[0]>fdPort[1])
@@ -713,7 +735,7 @@ int main(int argc, char *argv[])
 {
 
 	bool bBootloader = false, bConnectS0 = false, bWait = false, bMMU = false;
-	hw.mmu = NULL;
+//	hw.mmu = NULL;
 	struct avr_flash flash_data;
 	char boot_path[1024] = "stk500boot_v2_mega2560.hex";
 	//char boot_path[1024] = "atmega2560_PFW.axf";
@@ -834,8 +856,8 @@ int main(int argc, char *argv[])
 	hw.PowerPanic->Init(avr);
 	hw.PowerPanic->ConnectTo(Button::BUTTON_OUT, DIRQLU(avr,2)); // Note - PP is not defined in pins_einsy, it's an EXTINT.
 
-	if (bMMU)
-		hw.mmu = mmu_init(avr, IOIRQ(avr,'J',5));
+	//if (bMMU)
+		//hw.mmu = mmu_init(avr, IOIRQ(avr,'J',5));
 
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
 	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
@@ -870,10 +892,10 @@ int main(int argc, char *argv[])
 
 	if (bMMU)
 	{
-		mmu_startGL(hw.mmu);
+	//	mmu_startGL(hw.mmu);
         pthread_create(&run[2], NULL, serial_pipe_thread, NULL);
 		hw.IR->Set(IRSensor::IR_AUTO);
-		avr_irq_register_notify(hw.mmu->irq + IRQ_MMU_FEED_DISTANCE, mmu_irsensor_hook, avr);
+		//avr_irq_register_notify(hw.mmu->irq + IRQ_MMU_FEED_DISTANCE, mmu_irsensor_hook, avr);
 	}
 	pthread_create(&run[0], NULL, avr_run_thread, NULL);
     pthread_create(&run[1], NULL, glutThread, NULL);

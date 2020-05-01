@@ -21,8 +21,8 @@ set(EINSY_SOURCES
     hwDefs/Einsy_EEPROM.h
     hwDefs/Fan.cpp
     hwDefs/Fan.h
-    hwDefs/hc595.c
-    hwDefs/hc595.h
+    hwDefs/HC595.cpp
+    hwDefs/HC595.h
     hwDefs/hd44780.c
     hwDefs/hd44780_charROM.h
     hwDefs/hd44780_glut.c
@@ -57,8 +57,8 @@ set(EINSY_SOURCES
     hwDefs/VoltageSrc.h
     hwDefs/w25x20cl.c
     hwDefs/w25x20cl.h
-    #mmu.c
-    #mmu.h
+    MMU2.cpp
+    MMU2.h
     include/PinHelper_2560.h
     include/Util.h
     include/BasePeripheral.h

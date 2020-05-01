@@ -98,7 +98,7 @@ void* MMU2::Run()
 {
 	printf("Starting MMU2 execution...\n");
 	int state = cpu_Running;
-	while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){	
+	while ((state != cpu_Done) && (state != cpu_Crashed) && m_bQuit){	
 		if (m_bReset)
 		{
 			m_bReset = 0;
@@ -111,6 +111,11 @@ void* MMU2::Run()
 	avr_terminate(m_pAVR);
 	printf("MMU finished.\n");
 	return NULL;
+}
+
+char* MMU2::GetSerialPort()
+{
+	return m_UART0.pty.slavename;
 }
 
 void MMU2::Draw()		/* function called whenever redisplay needed */
@@ -165,7 +170,8 @@ void MMU2::Draw()		/* function called whenever redisplay needed */
 
 void MMU2::OnDisplayTimer(int i)
 {
-	//glutTimerFunc(50, timerMMU, 0);
+	auto fcnTimer = [](int i){g_pMMU->OnDisplayTimer(i);};
+	glutTimerFunc(50, fcnTimer, 0);
 	Draw();
 }
 
@@ -293,7 +299,7 @@ void MMU2::Start()
 
 	auto fRunCB =[](void * param) { MMU2* p = (MMU2*)param; return p->Run();};
 
-	pthread_create(&m_tRun, NULL, fRunCB, NULL);
+	pthread_create(&m_tRun, NULL, fRunCB, this);
 }
 
 void MMU2::Stop()

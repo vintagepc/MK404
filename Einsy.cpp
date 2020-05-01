@@ -123,7 +123,7 @@ struct hw_t {
 	Heater *hExtruder, *hBed;
 	w25x20cl_t spiFlash;
 	sd_card_t sd_card;
-	TMC2130 *X, *Y, *Z, *E;
+	TMC2130 X, Y, Z, E;
     VoltageSrc *vMain, *vBed;
 	IRSensor *IR;
 	PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
@@ -218,28 +218,28 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		glLoadIdentity();		
 		glScalef(fX/350,4,1);
 		glTranslatef(0,5 + hw.lcd.h * 9,0);
-		hw.X->Draw();
+		hw.X.Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();
 		glScalef(fX/350,4,1);
 		glTranslatef(0,(5 + hw.lcd.h * 9) +10,0);
-		hw.Y->Draw();
+		hw.Y.Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();
 		glScalef(fX/350,4,1);
 		glTranslatef(0,(5 + hw.lcd.h * 9) +20,0);
-		hw.Z->Draw();
+		hw.Z.Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();
 		glScalef(fX/350,4,1);
 		glTranslatef(0,(5 + hw.lcd.h * 9) +30,0);
-		hw.E->Draw_Simple();
+		hw.E.Draw_Simple();
 	glPopMatrix();
 	glutSwapBuffers();
 }
@@ -528,24 +528,24 @@ void setupDrivers()
 	cfg.cAxis = 'X';
 	cfg.uiDiagPin = X_TMC2130_DIAG;
 
-	hw.X = new TMC2130(cfg);
-	hw.X->Init(avr);
-	hw.X->ConnectFrom(DIRQLU(avr,X_TMC2130_CS), 	TMC2130::SPI_CSEL);
-	hw.X->ConnectFrom(DIRQLU(avr,X_DIR_PIN),		TMC2130::DIR_IN);
-	hw.X->ConnectFrom(DIRQLU(avr,X_STEP_PIN),		TMC2130::STEP_IN);
-	hw.X->ConnectFrom(DIRQLU(avr,X_ENABLE_PIN),		TMC2130::ENABLE_IN);
+	hw.X.SetConfig(cfg);
+	hw.X.Init(avr);
+	hw.X.ConnectFrom(DIRQLU(avr,X_TMC2130_CS), 	TMC2130::SPI_CSEL);
+	hw.X.ConnectFrom(DIRQLU(avr,X_DIR_PIN),		TMC2130::DIR_IN);
+	hw.X.ConnectFrom(DIRQLU(avr,X_STEP_PIN),		TMC2130::STEP_IN);
+	hw.X.ConnectFrom(DIRQLU(avr,X_ENABLE_PIN),		TMC2130::ENABLE_IN);
 
 	cfg.uiStepsPerMM = 400;
 	cfg.iMaxMM = 219;
 	cfg.cAxis = 'Z';
 	cfg.uiDiagPin = Z_TMC2130_DIAG;
 
-	hw.Z = new TMC2130(cfg);
-	hw.Z->Init(avr);
-	hw.Z->ConnectFrom(DIRQLU(avr,Z_TMC2130_CS), 	TMC2130::SPI_CSEL);
-	hw.Z->ConnectFrom(DIRQLU(avr,Z_DIR_PIN),		TMC2130::DIR_IN);
-	hw.Z->ConnectFrom(DIRQLU(avr,Z_STEP_PIN),		TMC2130::STEP_IN);
-	hw.Z->ConnectFrom(DIRQLU(avr,Z_ENABLE_PIN),		TMC2130::ENABLE_IN);
+	hw.Z.SetConfig(cfg);
+	hw.Z.Init(avr);
+	hw.Z.ConnectFrom(DIRQLU(avr,Z_TMC2130_CS), 	TMC2130::SPI_CSEL);
+	hw.Z.ConnectFrom(DIRQLU(avr,Z_DIR_PIN),		TMC2130::DIR_IN);
+	hw.Z.ConnectFrom(DIRQLU(avr,Z_STEP_PIN),		TMC2130::STEP_IN);
+	hw.Z.ConnectFrom(DIRQLU(avr,Z_ENABLE_PIN),		TMC2130::ENABLE_IN);
 
 	cfg.bInverted = true;
 	cfg.uiStepsPerMM = 100;
@@ -553,24 +553,24 @@ void setupDrivers()
 	cfg.iMaxMM = 220;
 	cfg.uiDiagPin = Y_TMC2130_DIAG;
 
-	hw.Y = new TMC2130(cfg);
-	hw.Y->Init(avr);
-	hw.Y->ConnectFrom(DIRQLU(avr,Y_TMC2130_CS), 	TMC2130::SPI_CSEL);
-	hw.Y->ConnectFrom(DIRQLU(avr,Y_DIR_PIN),		TMC2130::DIR_IN);
-	hw.Y->ConnectFrom(DIRQLU(avr,Y_STEP_PIN),		TMC2130::STEP_IN);
-	hw.Y->ConnectFrom(DIRQLU(avr,Y_ENABLE_PIN),		TMC2130::ENABLE_IN);
+	hw.Y.SetConfig(cfg);
+	hw.Y.Init(avr);
+	hw.Y.ConnectFrom(DIRQLU(avr,Y_TMC2130_CS), 	TMC2130::SPI_CSEL);
+	hw.Y.ConnectFrom(DIRQLU(avr,Y_DIR_PIN),		TMC2130::DIR_IN);
+	hw.Y.ConnectFrom(DIRQLU(avr,Y_STEP_PIN),		TMC2130::STEP_IN);
+	hw.Y.ConnectFrom(DIRQLU(avr,Y_ENABLE_PIN),		TMC2130::ENABLE_IN);
 
 	cfg.bHasNoEndStops = true;
 	cfg.fStartPos = 0;
 	cfg.uiStepsPerMM = 280;
 	cfg.uiDiagPin = E0_TMC2130_DIAG;
 
-	hw.E = new TMC2130(cfg);
-	hw.E->Init(avr);
-	hw.E->ConnectFrom(DIRQLU(avr,E0_TMC2130_CS), 	TMC2130::SPI_CSEL);
-	hw.E->ConnectFrom(DIRQLU(avr,E0_DIR_PIN),		TMC2130::DIR_IN);
-	hw.E->ConnectFrom(DIRQLU(avr,E0_STEP_PIN),		TMC2130::STEP_IN);
-	hw.E->ConnectFrom(DIRQLU(avr,E0_ENABLE_PIN),	TMC2130::ENABLE_IN);
+	hw.E.SetConfig(cfg);
+	hw.E.Init(avr);
+	hw.E.ConnectFrom(DIRQLU(avr,E0_TMC2130_CS), 	TMC2130::SPI_CSEL);
+	hw.E.ConnectFrom(DIRQLU(avr,E0_DIR_PIN),		TMC2130::DIR_IN);
+	hw.E.ConnectFrom(DIRQLU(avr,E0_STEP_PIN),		TMC2130::STEP_IN);
+	hw.E.ConnectFrom(DIRQLU(avr,E0_ENABLE_PIN),	TMC2130::ENABLE_IN);
 
 
 
@@ -580,7 +580,7 @@ void setupDrivers()
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 	
 	// TODO once the drivers are setup.
-	hw.pinda.Init(avr, hw.X->GetIRQ(TMC2130::POSITION_OUT),  hw.Y->GetIRQ(TMC2130::POSITION_OUT),  hw.Z->GetIRQ(TMC2130::POSITION_OUT));
+	hw.pinda.Init(avr, hw.X.GetIRQ(TMC2130::POSITION_OUT),  hw.Y.GetIRQ(TMC2130::POSITION_OUT),  hw.Z.GetIRQ(TMC2130::POSITION_OUT));
 	hw.pinda.ConnectTo(PINDA::TRIGGER_OUT ,DIRQLU(avr, Z_MIN_PIN));
 
 
@@ -685,7 +685,9 @@ serial_pipe_thread(
 		if (FD_ISSET(fdPort[0],&fdsIn))
 		{
 			while ((iChrRd = read(fdPort[0], &chrIn,1))>0)
+			{
 				write(fdPort[1],&chrIn,1);
+			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
 			{
 				bQuit = true; 
@@ -695,7 +697,9 @@ serial_pipe_thread(
 		if (FD_ISSET(fdPort[1],&fdsIn))
 		{
 			while ((iChrRd = read(fdPort[1], &chrIn,1))>0)
+			{
 				write(fdPort[0],&chrIn,1);
+			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
 			{
 				bQuit = true; 
@@ -857,20 +861,6 @@ int main(int argc, char *argv[])
 	hw.PowerPanic->Init(avr);
 	hw.PowerPanic->ConnectTo(Button::BUTTON_OUT, DIRQLU(avr,2)); // Note - PP is not defined in pins_einsy, it's an EXTINT.
 
-	if (bMMU)
-		hw.mmu.ConnectFrom(IOIRQ(avr,'J',5),MMU2::RESET);
-
-	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
-	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
-	// rather than having to roll our own internal FIFO. As an added bonus you can tap the ports for debugging.
-
-	// Useful for getting serial pipes/taps setup, the node exists so you can
-	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.
-	if (bWait) 
-	{
-		printf("Paused - press any key to resume execution\n");
-		getchar();
-	}
 	powerup_and_reset_helper(avr);
 
 	/*	
@@ -889,25 +879,42 @@ int main(int argc, char *argv[])
 
 	initGL(w * pixsize, h * pixsize);
 
-    pthread_t run[3];
-
+	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
+	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
+	// rather than having to roll our own internal FIFO. As an added bonus you can tap the ports for debugging.
 	if (bMMU)
 	{
+		hw.mmu.Init();
 		hw.mmu.StartGL();
-        pthread_create(&run[2], NULL, serial_pipe_thread, NULL);
+		hw.mmu.ConnectFrom(IOIRQ(avr,'J',5),MMU2::RESET);
 		hw.IR->Set(IRSensor::IR_AUTO);
-		//avr_irq_register_notify(hw.mmu->irq + IRQ_MMU_FEED_DISTANCE, mmu_irsensor_hook, avr);
+		avr_irq_register_notify(hw.mmu.GetIRQ(MMU2::FEED_DISTANCE), mmu_irsensor_hook, avr);
 	}
+
+	// Useful for getting serial pipes/taps setup, the node exists so you can
+	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.
+	if (bWait) 
+	{
+		printf("Paused - press any key to resume execution\n");
+		getchar();
+	}
+
+    pthread_t run[3];
+
+	if (bMMU) // SPin up the serial pipe
+        pthread_create(&run[2], NULL, serial_pipe_thread, NULL);
+
 	pthread_create(&run[0], NULL, avr_run_thread, NULL);
     pthread_create(&run[1], NULL, glutThread, NULL);
 
 	pthread_join(run[0],NULL);
-    pthread_cancel(run[1]); // Kill the GL thread.
-	if (bMMU)
-        pthread_join(run[2],NULL);
-    printf("Writing flash state...\n");
+	pthread_cancel(run[1]); // Kill the GL thread.
+ 	printf("Writing flash state...\n");
     avr_terminate(avr);
     printf("AVR finished.\n");
+	if (bMMU)
+        pthread_join(run[2],NULL);
+   
 
 	printf("Done");
 

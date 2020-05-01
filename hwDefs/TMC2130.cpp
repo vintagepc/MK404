@@ -266,12 +266,6 @@ TMC2130::TMC2130()
     m_regs.defs.GSTAT.reset = 1; // signal reset
 }
 
-TMC2130::TMC2130(TMC2130_cfg_t cfgIn)
-{
-    TMC2130();
-    SetConfig(cfgIn);
-}
-
 void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)
 {
     cfg = cfgIn;

@@ -55,9 +55,6 @@ class TMC2130: public BasePeripheral
         // Default constructor.
         TMC2130();
 
-        // Creates a new TMC2130 as configured in cfg
-        TMC2130(TMC2130_cfg_t cfg);
-
         void SetConfig(TMC2130_cfg_t cfg);
 
         void Init(avr_t *avr);
@@ -86,7 +83,7 @@ class TMC2130: public BasePeripheral
 
         bool m_bSelected = false;
         bool m_bDir  = 0;
-        bool m_bEnable = false; 
+        bool m_bEnable = true; 
         
         TMC2130_cfg_t cfg;
 

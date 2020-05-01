@@ -55,7 +55,7 @@ void HC595::OnLatchIn(struct avr_irq_t * irq, uint32_t value)
 		RaiseIRQ(OUT, m_uiLatch);
 		for (int i=0; i<32; i++)
 			if (uiChanged & (1<<i))
-				RaiseIRQ(BIT0+i,(uiChanged>>i) & 1);
+				RaiseIRQ(BIT0+i,(m_uiLatch>>i) & 1);
 
 	}
 }

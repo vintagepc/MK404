@@ -15,7 +15,30 @@ MMU2 *MMU2::g_pMMU = nullptr;
 MMU2::MMU2()
 {
 
-	if (g_pMMU)
+}
+
+void* MMU2::Run()
+{
+	printf("Starting MMU2 execution...\n");
+	int state = cpu_Running;
+	while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){	
+		if (m_bReset)
+		{
+			m_bReset = 0;
+			avr_reset(m_pAVR);
+		}
+		//if (gbPrintPC)
+		//	printf("PC: %x\n",mmu->pc);
+		state = avr_run(m_pAVR);
+	}
+	avr_terminate(m_pAVR);
+	printf("MMU finished.\n");
+	return NULL;
+}
+
+void MMU2::Init()
+{
+		if (g_pMMU)
 	{
 		fprintf(stderr,"Error: Cannot have multiple MMU instances due to freeglut limitations\n");
 		exit(1);
@@ -79,38 +102,18 @@ MMU2::MMU2()
 	cfg.cAxis = 'P';
 	cfg.bHasNoEndStops = true;
 	cfg.uiDiagPin = 30; // filler, not used.
-	m_Extr = TMC2130(cfg);
+	m_Extr.SetConfig(cfg);
 
 	cfg.uiStepsPerMM = 10;
 	cfg.iMaxMM = 200;
 	cfg.cAxis = 'I';
 	cfg.bHasNoEndStops = false;
-	m_Idl = TMC2130(cfg);
+	m_Idl.SetConfig(cfg);
 
 	cfg.uiStepsPerMM = 20;
 	cfg.cAxis = 'S';
 	cfg.bInverted = true;
-	m_Sel = TMC2130(cfg);
-
-}
-
-void* MMU2::Run()
-{
-	printf("Starting MMU2 execution...\n");
-	int state = cpu_Running;
-	while ((state != cpu_Done) && (state != cpu_Crashed) && m_bQuit){	
-		if (m_bReset)
-		{
-			m_bReset = 0;
-			avr_reset(m_pAVR);
-		}
-		//if (gbPrintPC)
-		//	printf("PC: %x\n",mmu->pc);
-		state = avr_run(m_pAVR);
-	}
-	avr_terminate(m_pAVR);
-	printf("MMU finished.\n");
-	return NULL;
+	m_Sel.SetConfig(cfg);
 }
 
 char* MMU2::GetSerialPort()
@@ -231,10 +234,11 @@ void MMU2::SetupHardware()
 	{
 		m_lGreen[i] = LED(0x00FF00FF);
 		m_lGreen[i].Init(m_pAVR);
-		m_lGreen[i] = LED(0xFF0000FF);
+		m_lRed[i] = LED(0xFF0000FF);
 		m_lRed[i].Init(m_pAVR);
 	}
 	m_lFINDA = LED(0xFFCC00FF,'F');
+	m_lFINDA.Init(m_pAVR);
 	m_lFINDA.ConnectFrom(IOIRQ(m_pAVR, 'F',6), LED::LED_IN);
 
 	avr_raise_irq(IOIRQ(m_pAVR,'F',6),0);

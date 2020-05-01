@@ -26,7 +26,7 @@ class MMU2: public BasePeripheral
 
         MMU2();
 
-        void Init(avr_t *host);
+        void Init();
 
         void Start();
 

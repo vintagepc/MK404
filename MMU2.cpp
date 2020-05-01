@@ -1,3 +1,23 @@
+/*
+	MMU2.cpp - A Missing-materials-unit for MK404
+
+	Copyright 2020 VintagePC <https://github.com/vintagepc/>
+
+ 	This file is part of MK3SIM.
+
+	MK3SIM is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	MK3SIM is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "Util.h"
 #include "MMU2.h"
@@ -10,6 +30,8 @@
 #include "avr_uart.h"
 #include "GL/glut.h"
 
+// Yes yes, globals are bad. But we don't have any choice because freeglut calls 
+// don't have parameter void pointers to retain the c++ class pointer. :-/
 MMU2 *MMU2::g_pMMU = nullptr;
 
 MMU2::MMU2()
@@ -260,7 +282,7 @@ void MMU2::SetupHardware()
 	m_lGreen[1].ConnectFrom(m_shift.GetIRQ(HC595::BIT14), LED::LED_IN);
 	m_lRed[1].ConnectFrom(	m_shift.GetIRQ(HC595::BIT15), LED::LED_IN);
 
-	mmu_buttons_init(m_pAVR, &m_buttons,5);
+	m_buttons.Init(m_pAVR,5);
 
 }
 

@@ -72,7 +72,6 @@ extern "C" {
 #define __cplusplus __cppOld
 #include "uart_logger.h"
 #include "sd_card.h"
-//#include "mmu.h"
 }
 
 #include "Button.h"
@@ -657,10 +656,10 @@ serial_pipe_thread(
 		perror(hw.UART2.pty.slavename);
 		bQuit = true;
 	}
-	//if ((fdPort[1]=open(hw.mmu->UART0.pty.slavename, O_RDWR | O_NONBLOCK)) == -1)
+	if ((fdPort[1]=open(hw.mmu.GetSerialPort(), O_RDWR | O_NONBLOCK)) == -1)
 	{
-	//	fprintf(stderr, "Could not open %s.\n",hw.mmu->UART0.pty.slavename);
-		//perror(hw.mmu->UART0.pty.slavename);
+		fprintf(stderr, "Could not open %s.\n",hw.mmu.GetSerialPort());
+		perror(hw.mmu.GetSerialPort());
 		bQuit = true;
 	}
 	if (fdPort[0]>fdPort[1])

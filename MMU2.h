@@ -34,6 +34,8 @@ class MMU2: public BasePeripheral
 
         void Stop();
 
+        char* GetSerialPort();
+
     private:
 
         void* Run();

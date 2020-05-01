@@ -15,6 +15,8 @@ set (FIRMWARE
     )
 
 set(EINSY_SOURCES
+    hwDefs/ADC_Buttons.cpp
+    hwDefs/ADC_Buttons.h
     hwDefs/Button.cpp
     hwDefs/Button.h
     hwDefs/Einsy_EEPROM.cpp
@@ -36,8 +38,6 @@ set(EINSY_SOURCES
     hwDefs/LED.h
     hwDefs/led.c
     hwDefs/led.h
-    hwDefs/mmu_buttons.c
-    hwDefs/mmu_buttons.h
     hwDefs/PINDA.cpp
     hwDefs/PINDA.h
     hwDefs/rotenc.c

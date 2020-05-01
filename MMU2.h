@@ -1,6 +1,23 @@
-// mmu.h
+/*
+	MMU2.h - A Missing-materials-unit for MK404
 
-// A Missing-materials-unit for MK404
+	Copyright 2020 VintagePC <https://github.com/vintagepc/>
+
+ 	This file is part of MK3SIM.
+
+	MK3SIM is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	MK3SIM is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef __MMU_H___
 #define __MMU_H___
@@ -9,8 +26,8 @@
 extern "C"
 {
 #include "uart_pty.h"
-#include "mmu_buttons.h"
 }
+#include "ADC_Buttons.h"
 #include "HC595.h"
 #include "LED.h"
 #include "TMC2130.h"
@@ -60,7 +77,7 @@ class MMU2: public BasePeripheral
         HC595 m_shift;
         TMC2130 m_Sel, m_Idl, m_Extr;
         LED m_lGreen[5], m_lRed[5], m_lFINDA;
-        buttons_t m_buttons;
+        ADC_Buttons m_buttons;
         int m_iWindow = 0, m_iWinW = 0, m_iWinH = 0;
 
         static MMU2 *g_pMMU; // Needed for GL

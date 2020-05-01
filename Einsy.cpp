@@ -80,6 +80,7 @@ extern "C" {
 #include "Fan.h"
 #include "Heater.h"
 #include "IRSensor.h"
+#include "MMU2.h"
 #include "PINDA.h"
 #include "TMC2130.h"
 #include "VoltageSrc.h"
@@ -128,7 +129,7 @@ struct hw_t {
 	IRSensor *IR;
 	PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
 	uart_logger_t logger;
-	//mmu_t *mmu;
+	MMU2 mmu;
 	Einsy_EEPROM *EEPROM;
 } hw;
 
@@ -188,8 +189,7 @@ void avr_special_deinit( avr_t* avr, void * data)
 	else
 		uart_pty_stop(&hw.UART2);
 
-	//if(hw.mmu && hw.mmu->bStarted)
-	//	mmu_stop(hw.mmu);
+	hw.mmu.Stop();
 }
 
 void displayCB(void)		/* function called whenever redisplay needed */
@@ -738,7 +738,6 @@ int main(int argc, char *argv[])
 {
 
 	bool bBootloader = false, bConnectS0 = false, bWait = false, bMMU = false;
-//	hw.mmu = NULL;
 	struct avr_flash flash_data;
 	char boot_path[1024] = "stk500boot_v2_mega2560.hex";
 	//char boot_path[1024] = "atmega2560_PFW.axf";
@@ -859,8 +858,8 @@ int main(int argc, char *argv[])
 	hw.PowerPanic->Init(avr);
 	hw.PowerPanic->ConnectTo(Button::BUTTON_OUT, DIRQLU(avr,2)); // Note - PP is not defined in pins_einsy, it's an EXTINT.
 
-	//if (bMMU)
-		//hw.mmu = mmu_init(avr, IOIRQ(avr,'J',5));
+	if (bMMU)
+		hw.mmu.ConnectFrom(IOIRQ(avr,'J',5),MMU2::RESET);
 
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
 	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
@@ -895,7 +894,7 @@ int main(int argc, char *argv[])
 
 	if (bMMU)
 	{
-	//	mmu_startGL(hw.mmu);
+		hw.mmu.StartGL();
         pthread_create(&run[2], NULL, serial_pipe_thread, NULL);
 		hw.IR->Set(IRSensor::IR_AUTO);
 		//avr_irq_register_notify(hw.mmu->irq + IRQ_MMU_FEED_DISTANCE, mmu_irsensor_hook, avr);

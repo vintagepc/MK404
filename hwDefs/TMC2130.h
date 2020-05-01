@@ -52,8 +52,13 @@ class TMC2130: public BasePeripheral
             bool bHasNoEndStops;
         } TMC2130_cfg_t;
         
+        // Default constructor.
+        TMC2130();
+
         // Creates a new TMC2130 as configured in cfg
         TMC2130(TMC2130_cfg_t cfg);
+
+        void SetConfig(TMC2130_cfg_t cfg);
 
         void Init(avr_t *avr);
 

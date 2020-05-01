@@ -258,13 +258,23 @@ void TMC2130::OnEnableIn(struct avr_irq_t * irq, uint32_t value)
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
-TMC2130::TMC2130(TMC2130_cfg_t cfgIn):cfg(cfgIn) 
+TMC2130::TMC2130()
 {
     memset(&m_regs.raw, 0, sizeof(m_regs.raw));
     m_regs.defs.DRV_STATUS.stst = true;
     m_regs.defs.DRV_STATUS.SG_RESULT = 250;
     m_regs.defs.GSTAT.reset = 1; // signal reset
+}
 
+TMC2130::TMC2130(TMC2130_cfg_t cfgIn)
+{
+    TMC2130();
+    SetConfig(cfgIn);
+}
+
+void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)
+{
+    cfg = cfgIn;
     m_iCurStep = cfg.fStartPos*cfg.uiStepsPerMM;
     m_uiMaxPos = cfg.iMaxMM*cfg.uiStepsPerMM;
     m_fCurPos = cfg.fStartPos;

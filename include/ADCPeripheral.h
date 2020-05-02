@@ -20,6 +20,9 @@
  */
 
 
+#ifndef __ADC_PERIPHERAL_H__
+#define __ADC_PERIPHERAL_H__
+
 #include "BasePeripheral.h"
 #include <avr_adc.h>
 
@@ -60,3 +63,5 @@ class ADCPeripheral: public BasePeripheral
          
         uint8_t m_uiMux = 0;
 };
+
+#endif

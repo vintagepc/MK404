@@ -1,3 +1,6 @@
+// Prusa Marlin thermistor tables header.
+
+
 #ifndef THERMISTORTABLES_H_
 #define THERMISTORTABLES_H_
 

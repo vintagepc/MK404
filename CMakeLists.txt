@@ -42,9 +42,8 @@ set(EINSY_SOURCES
     hwDefs/rotenc.h
     hwDefs/sd_card.c
     hwDefs/sd_card.h
-    hwDefs/thermistor.c
-    hwDefs/thermistor.h
-    hwDefs/thermistortables.h
+    hwDefs/Thermistor.cpp
+    hwDefs/Thermistor.h
     hwDefs/TMC2130.cpp
     hwDefs/TMC2130.h
     hwDefs/uart_logger.c
@@ -57,9 +56,11 @@ set(EINSY_SOURCES
     hwDefs/w25x20cl.h
     MMU2.cpp
     MMU2.h
+    include/ADCPeripheral.h
+    include/BasePeripheral.h
     include/PinHelper_2560.h
     include/Util.h
-    include/BasePeripheral.h
+    include/thermistortables.h
     )
 
 

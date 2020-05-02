@@ -151,21 +151,18 @@ void TMC2130::ProcessCommand()
 }
 
 /*
- * called when a SPI byte is received
+ * called when a SPI byte is received. It's guarded by the SPIPeripheral CSEL check.
  */
-void TMC2130::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
+uint8_t TMC2130::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 {
-    if (!m_bSelected)
-        return;
-    // Clock out a reply byte, MSB first
-    uint8_t byte = m_cmdOut.bytes[4];
-    m_cmdOut.all<<=8;
-    RaiseIRQ(SPI_BYTE_OUT,byte);
-    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",cfg.cAxis,m_cmdOut.all,byte));
-
     m_cmdIn.all<<=8; // Shift bits up
     m_cmdIn.bytes[0] = value;
     TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",cfg.cAxis,value, m_cmdIn.all));
+    // Clock out a reply byte, MSB first
+    uint8_t byte = m_cmdOut.bytes[4];
+    m_cmdOut.all<<=8;
+    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",cfg.cAxis,m_cmdOut.all,byte));
+    return byte; // SPIPeripheral takes care of the reply.
 }
 
 void TMC2130::CheckDiagOut()
@@ -180,7 +177,6 @@ void TMC2130::CheckDiagOut()
 void TMC2130::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 {
 	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",cfg.cAxis,value));
-    m_bSelected = (value==0); // NOTE: active low!
     if (value == 1) // Just finished a CSEL
     {
         m_cmdProc = m_cmdIn;
@@ -278,12 +274,6 @@ void TMC2130::Init(struct avr_t * avr)
 {
     _Init(avr, this);
 
-    // Just wire right up to the AVR SPI
-    ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT),SPI_BYTE_IN);
-    ConnectTo(SPI_BYTE_OUT,avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_INPUT));
-    
-	RegisterNotify(SPI_BYTE_IN, MAKE_C_CALLBACK(TMC2130,OnSPIIn), this);
-    RegisterNotify(SPI_CSEL,    MAKE_C_CALLBACK(TMC2130,OnCSELIn), this);
     RegisterNotify(DIR_IN,      MAKE_C_CALLBACK(TMC2130,OnDirIn), this);
     RegisterNotify(STEP_IN,     MAKE_C_CALLBACK(TMC2130,OnStepIn), this);
     RegisterNotify(ENABLE_IN,   MAKE_C_CALLBACK(TMC2130,OnEnableIn), this);

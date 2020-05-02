@@ -23,9 +23,9 @@
 #ifndef __TMC2130_H__
 #define __TMC2130_H__
 
-#include "BasePeripheral.h"
+#include "SPIPeripheral.h"
 
-class TMC2130: public BasePeripheral
+class TMC2130: public SPIPeripheral
 {
     public:
         #define IRQPAIRS \
@@ -66,8 +66,9 @@ class TMC2130: public BasePeripheral
 
     private:
 
-        void OnSPIIn(avr_irq_t *irq, uint32_t value);
-        void OnCSELIn(avr_irq_t *irq, uint32_t value);
+        uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;
+        void OnCSELIn(avr_irq_t *irq, uint32_t value) override;
+
         void OnDirIn(avr_irq_t *irq, uint32_t value);
         void OnStepIn(avr_irq_t *irq, uint32_t value);
         void OnEnableIn(avr_irq_t *irq, uint32_t value);
@@ -80,8 +81,6 @@ class TMC2130: public BasePeripheral
 
         void CheckDiagOut();
 
-
-        bool m_bSelected = false;
         bool m_bDir  = 0;
         bool m_bEnable = true; 
         

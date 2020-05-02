@@ -52,7 +52,7 @@ set(EINSY_SOURCES
     hwDefs/uart_pty.h
     hwDefs/VoltageSrc.cpp
     hwDefs/VoltageSrc.h
-    hwDefs/w25x20cl.c
+    hwDefs/w25x20cl.cpp
     hwDefs/w25x20cl.h
     MMU2.cpp
     MMU2.h

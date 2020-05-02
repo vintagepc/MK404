@@ -23,9 +23,9 @@
 #ifndef __ADC_BUTTONS_H___
 #define __ADC_BUTTONS_H___
 
-#include "BasePeripheral.h"
+#include "ADCPeripheral.h"
 
-class ADC_Buttons:public BasePeripheral
+class ADC_Buttons:public ADCPeripheral
 {
 	public:
 		#define IRQPAIRS _IRQ(ADC_TRIGGER_IN,"<adc.trigger") _IRQ(ADC_VALUE_OUT,">adc.out")
@@ -33,16 +33,15 @@ class ADC_Buttons:public BasePeripheral
 
 
 		// TODO.. extend this with flexibility for any number of buttons/voltage levels.
-		
+
 		void Init(avr_t *avr, uint8_t uiMux);
 
 		// Pushes a given button: 1= left, 2 = middle, 3= right, 0 = none.
 		void Push(uint8_t uiBtn);
 	private:
 
-		void OnADCRead(struct avr_irq_t * irq, uint32_t value);
+		void OnADCRead(struct avr_irq_t * irq, uint32_t value) override;
 
-		uint8_t	m_uiMux;
 		uint8_t m_uiCurBtn;
 
 };

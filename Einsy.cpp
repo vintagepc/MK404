@@ -62,7 +62,7 @@ extern "C" {
 #include "uart_pty.h"
 #include "hd44780_glut.h"
 #include "rotenc.h"
-#include "thermistor.h"
+
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
 #include "w25x20cl.h"
@@ -81,6 +81,7 @@ extern "C" {
 #include "IRSensor.h"
 #include "MMU2.h"
 #include "PINDA.h"
+#include "Thermistor.h"
 #include "TMC2130.h"
 #include "VoltageSrc.h"
 
@@ -118,7 +119,7 @@ struct hw_t {
 	rotenc_t encoder;
 	Button *PowerPanic;
 	uart_pty_t UART0, UART2;
-	thermistor_t tExtruder, tBed, tPinda, tAmbient;
+	Thermistor tExtruder, tBed, tPinda, tAmbient;
 	Fan *fExtruder,*fPrint;
 	Heater *hExtruder, *hBed;
 	w25x20cl_t spiFlash;
@@ -462,26 +463,27 @@ void setupSerial(bool bConnectS0, uint8_t uiLog)
 
 void setupHeaters()
 {
-	thermistor_init(avr, &hw.tExtruder, TEMP_0_PIN,
-		(short*)TERMISTOR_TABLE(TEMP_SENSOR_0),
-		sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(short) / 2,
-		OVERSAMPLENR, 25.0f);
 
-		 thermistor_init(avr, &hw.tBed, TEMP_BED_PIN,
-		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
-		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
-		 OVERSAMPLENR, 23.0f);
+		hw.tExtruder.Init(avr, TEMP_0_PIN);
+		hw.tExtruder.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_0),
+								sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(short) / 2,
+								OVERSAMPLENR);
+
+		hw.tBed.Init(avr, TEMP_BED_PIN);
+		hw.tBed.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
+							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
+							OVERSAMPLENR);
 
 		// same table as bed.
-		thermistor_init(avr, &hw.tPinda, TEMP_PINDA_PIN,
-		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
-		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
-		 OVERSAMPLENR, 24.0f);
+		hw.tPinda.Init(avr, TEMP_PINDA_PIN);
+		hw.tPinda.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
+							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
+							OVERSAMPLENR);
 
-		thermistor_init(avr, &hw.tAmbient, TEMP_AMBIENT_PIN,
-		 (short*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
-		 sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
-		 OVERSAMPLENR, 21.0f);		
+		hw.tAmbient.Init(avr, TEMP_AMBIENT_PIN);
+		hw.tAmbient.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
+		 						sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
+		 						OVERSAMPLENR);		
 
 		hw.fExtruder = new Fan(3300);
 		hw.fExtruder->Init(avr, DIRQLU(avr, TACH_0), 	DIRQLU(avr, EXTRUDER_0_AUTO_FAN_PIN), 	DPWMLU(avr,EXTRUDER_0_AUTO_FAN_PIN));
@@ -490,11 +492,11 @@ void setupHeaters()
 
 		hw.hBed = new Heater(0.25, 25, true);
 		hw.hBed->Init(avr, NULL, DIRQLU(avr,HEATER_BED_PIN));
-		hw.hBed->ConnectTo(hw.hBed->TEMP_OUT, hw.tBed.irq + IRQ_TERM_TEMP_VALUE_IN);
+		hw.hBed->ConnectTo(hw.hBed->TEMP_OUT, hw.tBed.GetIRQ(Thermistor::TEMP_IN));
 
 		hw.hExtruder = new Heater(1.5,25.0);
 		hw.hExtruder->Init(avr, NULL, DIRQLU(avr, HEATER_0_PIN));
-		hw.hExtruder->ConnectTo(hw.hBed->TEMP_OUT, hw.tExtruder.irq + IRQ_TERM_TEMP_VALUE_IN);
+		hw.hExtruder->ConnectTo(hw.hBed->TEMP_OUT, hw.tExtruder.GetIRQ(Thermistor::TEMP_IN));
 }
 
 void setupVoltages()

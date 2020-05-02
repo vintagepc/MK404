@@ -38,8 +38,8 @@ set(EINSY_SOURCES
     hwDefs/LED.h
     hwDefs/PINDA.cpp
     hwDefs/PINDA.h
-    hwDefs/rotenc.c
-    hwDefs/rotenc.h
+    hwDefs/RotaryEncoder.cpp
+    hwDefs/RotaryEncoder.h
     hwDefs/sd_card.c
     hwDefs/sd_card.h
     hwDefs/Thermistor.cpp

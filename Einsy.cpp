@@ -61,8 +61,6 @@
 extern "C" {
 #include "uart_pty.h"
 #include "hd44780_glut.h"
-#include "rotenc.h"
-
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
 #define __cppOld __cplusplus
@@ -80,6 +78,7 @@ extern "C" {
 #include "IRSensor.h"
 #include "MMU2.h"
 #include "PINDA.h"
+#include "RotaryEncoder.h"
 #include "Thermistor.h"
 #include "TMC2130.h"
 #include "VoltageSrc.h"
@@ -116,7 +115,7 @@ uint32_t colors[8] = {
 struct hw_t {
 	avr_t *mcu;
 	hd44780_t lcd;
-	rotenc_t encoder;
+	RotaryEncoder encoder;
 	Button *PowerPanic;
 	uart_pty_t UART0, UART2;
 	Thermistor tExtruder, tBed, tPinda, tAmbient;
@@ -259,7 +258,7 @@ void powerup_and_reset_helper(avr_t *avr)
 	hw.PowerPanic->Press(1);
 
 	//depress encoder knob
-	avr_raise_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN, 0);
+	avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 0);
 }
 
 static void *
@@ -273,15 +272,15 @@ avr_run_thread(
 			switch (guKey) {
 				case 'w':
 					printf("<");
-					rotenc_twist(&hw.encoder, ROTENC_CCW_CLICK);
+					hw.encoder.Twist(RotaryEncoder::CCW_CLICK);
 					break;
 				case 's':
 					printf(">");
-					rotenc_twist(&hw.encoder, ROTENC_CW_CLICK);
+					hw.encoder.Twist(RotaryEncoder::CW_CLICK);
 					break;
 				case 0xd:
 					printf("ENTER pushed\n");
-					rotenc_button_press(&hw.encoder);
+					hw.encoder.Push();
 					break;
 				case 'r':
 					printf("RESET/KILL\n");
@@ -292,7 +291,7 @@ avr_run_thread(
 					printf("FACTORY_RESET\n");
 					// Hold the button during boot to get factory reset menu
 					avr_reset(avr);
-					rotenc_button_press_hold(&hw.encoder);
+					hw.encoder.PushAndHold();
 					break;
 				case 'y':
 					hw.pinda.ToggleSheet();
@@ -405,10 +404,11 @@ void setupLCD()
 	avr_connect_irq( DIRQLU(avr,LCD_PINS_RS), 		hw.lcd.irq + IRQ_HD44780_RS);
 	avr_connect_irq( DIRQLU(avr, LCD_PINS_ENABLE),	hw.lcd.irq + IRQ_HD44780_E);
 
-	rotenc_init(avr, &hw.encoder);
-	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_A_PIN,		DIRQLU(avr, BTN_EN2));
-	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_B_PIN,		DIRQLU(avr, BTN_EN1));
-	avr_connect_irq(hw.encoder.irq + IRQ_ROTENC_OUT_BUTTON_PIN,	DIRQLU(avr,BTN_ENC));
+	hw.encoder.Init(avr);
+	hw.encoder.ConnectTo(RotaryEncoder::OUT_A, DIRQLU(avr, BTN_EN2));
+	hw.encoder.ConnectTo(RotaryEncoder::OUT_B, DIRQLU(avr, BTN_EN1));
+	hw.encoder.ConnectTo(RotaryEncoder::OUT_BUTTON, DIRQLU(avr,BTN_ENC));
+	
 }
 
 void setupSDcard(char * mmcu)

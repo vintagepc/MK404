@@ -30,15 +30,6 @@
 
 void ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
-	union {
-		avr_adc_mux_t v;
-		uint32_t l;
-	} u = { .l = value };
-	avr_adc_mux_t v = u.v;
-
-	if (v.src != m_uiMux)
-		return;
-
     //if (raw < 50) return Btn::right;
 	//if (raw > 80 && raw < 100) return Btn::middle;
 	//if (raw > 160 && raw < 180) return Btn::left;
@@ -56,18 +47,8 @@ void ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 
 void ADC_Buttons::Init(struct avr_t * avr, uint8_t adc_mux_number)
 {
-	_Init(avr, this);
+	_Init(avr, adc_mux_number, MAKE_C_CALLBACK(ADC_Buttons,OnADCReadGuard), this);
 
-	RegisterNotify(ADC_TRIGGER_IN, MAKE_C_CALLBACK(ADC_Buttons,OnADCRead), this);
-
-	m_uiMux = adc_mux_number;
-	
-	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_OUT_TRIGGER);
-	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, adc_mux_number);
-	if (src && dst) {
-		ConnectFrom(src, ADC_TRIGGER_IN);
-		ConnectTo(ADC_VALUE_OUT, dst);
-    }
 }
 
 void ADC_Buttons::Push(uint8_t uiBtn)

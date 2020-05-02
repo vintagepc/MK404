@@ -36,8 +36,6 @@ set(EINSY_SOURCES
     hwDefs/IRSensor.h
     hwDefs/LED.cpp
     hwDefs/LED.h
-    hwDefs/led.c
-    hwDefs/led.h
     hwDefs/PINDA.cpp
     hwDefs/PINDA.h
     hwDefs/rotenc.c

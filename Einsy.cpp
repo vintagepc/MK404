@@ -65,7 +65,6 @@ extern "C" {
 
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
-#include "w25x20cl.h"
 #define __cppOld __cplusplus
 #undef __cplusplus // Needed to dodge some unwanted includes...
 #include "Firmware/eeprom.h"
@@ -84,6 +83,7 @@ extern "C" {
 #include "Thermistor.h"
 #include "TMC2130.h"
 #include "VoltageSrc.h"
+#include "w25x20cl.h"
 
 #include "Firmware/Configuration_prusa.h"
 
@@ -122,7 +122,7 @@ struct hw_t {
 	Thermistor tExtruder, tBed, tPinda, tAmbient;
 	Fan *fExtruder,*fPrint;
 	Heater *hExtruder, *hBed;
-	w25x20cl_t spiFlash;
+	w25x20cl spiFlash;
 	sd_card_t sd_card;
 	TMC2130 X, Y, Z, E;
     VoltageSrc *vMain, *vBed;
@@ -178,7 +178,7 @@ void avr_special_deinit( avr_t* avr, void * data)
 
 	hw.EEPROM->Save();
 	
-	w25x20cl_save(hw.spiFlash.filepath, &hw.spiFlash);
+	hw.spiFlash.Save();
 	
 	sd_card_unmount_file (avr, &hw.sd_card);
 
@@ -447,7 +447,7 @@ void setupSerial(bool bConnectS0, uint8_t uiLog)
 	uart_pty_init(avr, &hw.UART2);
 
 
-	w25x20cl_init(avr, &hw.spiFlash, DIRQLU(avr, W25X20CL_PIN_CS));
+	hw.spiFlash.Init(avr, DIRQLU(avr, W25X20CL_PIN_CS));
 	uart_logger_init(avr, &hw.logger);
 
 	// Uncomment these to get a pseudoterminal you can connect to
@@ -803,9 +803,9 @@ int main(int argc, char *argv[])
 	snprintf(flash_data.avr_eeprom_path, sizeof(flash_data.avr_eeprom_path),
 			"Einsy_%s_eeprom.bin", mmcu);
 	flash_data.avr_flash_fd = 0;
-	snprintf(hw.spiFlash.filepath, sizeof(hw.spiFlash.filepath),
+	char strXFlashPath[1024];
+	snprintf(strXFlashPath, sizeof(strXFlashPath),
 			"Einsy_%s_xflash.bin", mmcu);
-	hw.spiFlash.xflash_fd = 0;
 	// register our own functions
 	avr->custom.init = avr_special_init;
 	avr->custom.deinit = avr_special_deinit;
@@ -813,7 +813,7 @@ int main(int argc, char *argv[])
 	avr_init(avr);
 	avr->reset = powerup_and_reset_helper;
 	hw.EEPROM = new Einsy_EEPROM(avr, flash_data.avr_eeprom_path);
-	hw.spiFlash.xflash_fd = w25x20cl_load(hw.spiFlash.filepath, &hw.spiFlash);
+	hw.spiFlash.Load(strXFlashPath);
 
 	avr_load_firmware(avr,&f);
 	avr->frequency = freq;

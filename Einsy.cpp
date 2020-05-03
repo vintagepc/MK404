@@ -59,7 +59,6 @@
 #include "sim_gdb.h"
 #include "avr_uart.h"
 extern "C" {
-#include "uart_pty.h"
 //#include "hd44780_glut.h"
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
@@ -70,7 +69,7 @@ extern "C" {
 #include "uart_logger.h"
 #include "sd_card.h"
 }
-
+#include "uart_pty.h"
 #include "Button.h"
 #include "Einsy_EEPROM.h"
 #include "Fan.h"
@@ -118,7 +117,7 @@ struct hw_t {
 	HD44780GL lcd;
 	RotaryEncoder encoder;
 	Button *PowerPanic;
-	uart_pty_t UART0, UART2;
+	uart_pty UART0, UART2;
 	Thermistor tExtruder, tBed, tPinda, tAmbient;
 	Fan *fExtruder,*fPrint;
 	Heater *hExtruder, *hBed;
@@ -183,12 +182,12 @@ void avr_special_deinit( avr_t* avr, void * data)
 	
 	sd_card_unmount_file(avr, &hw.sd_card);
 
-	uart_pty_stop(&hw.UART0);
+	hw.UART0.~uart_pty();
 
 	if (hw.logger.fdOut)
 		uart_logger_stop(&hw.logger);
 	else
-		uart_pty_stop(&hw.UART2);
+		hw.UART2.~uart_pty();
 
 	hw.mmu.Stop();
 }
@@ -448,8 +447,8 @@ static void mmu_irsensor_hook(struct avr_irq_t * irq, uint32_t value, void * par
 
 void setupSerial(bool bConnectS0, uint8_t uiLog)
 {
-	uart_pty_init(avr, &hw.UART0);
-	uart_pty_init(avr, &hw.UART2);
+	hw.UART0.Init(avr);
+	hw.UART2.Init(avr);
 
 
 	hw.spiFlash.Init(avr, DIRQLU(avr, W25X20CL_PIN_CS));
@@ -458,12 +457,12 @@ void setupSerial(bool bConnectS0, uint8_t uiLog)
 	// Uncomment these to get a pseudoterminal you can connect to
 	// using any serial terminal program. Will print to console by default.
 	if (bConnectS0)
-    	uart_pty_connect(&hw.UART0, '0');
+    	hw.UART0.Connect('0');
 
 	if (uiLog=='0' || uiLog == '2')
 		uart_logger_connect(&hw.logger,uiLog);
 	else
-		uart_pty_connect(&hw.UART2, '2');
+		hw.UART2.Connect('2');
 }
 
 void setupHeaters()
@@ -663,10 +662,10 @@ serial_pipe_thread(
 	unsigned char chrIn;
 	int iLastFd = 0, iReadyRead, iChrRd;
 	bool bQuit = false;
-	if ((fdPort[0]=open(hw.UART2.pty.slavename, O_RDWR | O_NONBLOCK)) == -1)
+	if ((fdPort[0]=open(hw.UART2.GetSlaveName(), O_RDWR | O_NONBLOCK)) == -1)
 	{
-		fprintf(stderr, "Could not open %s.\n",hw.UART2.pty.slavename);
-		perror(hw.UART2.pty.slavename);
+		fprintf(stderr, "Could not open %s.\n",hw.UART2.GetSlaveName());
+		perror(hw.UART2.GetSlaveName());
 		bQuit = true;
 	}
 	if ((fdPort[1]=open(hw.mmu.GetSerialPort(), O_RDWR | O_NONBLOCK)) == -1)

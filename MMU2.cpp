@@ -105,10 +105,10 @@ void MMU2::Init()
 	for (int i=0; i<5; i++)
 		avr_extint_set_strict_lvl_trig(avr,i,false);
 
-    uart_pty_init(avr, &m_UART0);
+    m_UART0.Init(avr);
 
     printf("MMU UART:\n");
-    uart_pty_connect(&m_UART0,'1');
+    m_UART0.Connect('1');
 
 	SetupHardware();
 
@@ -138,9 +138,9 @@ void MMU2::Init()
 	m_Sel.SetConfig(cfg);
 }
 
-char* MMU2::GetSerialPort()
+const char* MMU2::GetSerialPort()
 {
-	return m_UART0.pty.slavename;
+	return m_UART0.GetSlaveName();
 }
 
 void MMU2::Draw()		/* function called whenever redisplay needed */
@@ -331,7 +331,7 @@ void MMU2::Start()
 void MMU2::Stop()
 {
 	printf("MMU_stop()\n");
-    uart_pty_stop(&m_UART0);
+   	m_UART0.~uart_pty();
     if (!m_bStarted)
         return;
     m_bQuit = true;

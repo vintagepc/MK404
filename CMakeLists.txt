@@ -56,6 +56,8 @@ set(EINSY_SOURCES
     hwDefs/w25x20cl.h
     MMU2.cpp
     MMU2.h
+    include/SerialPipe.cpp
+    include/SerialPipe.h
     include/ADCPeripheral.h
     include/BasePeripheral.h
     include/PinHelper_2560.h

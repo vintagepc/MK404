@@ -14,60 +14,65 @@ set (FIRMWARE
     stk500boot_v2_mega2560.hex
     )
 
-set(EINSY_SOURCES
-    hwDefs/ADC_Buttons.cpp
+set(H_FILES
     hwDefs/ADC_Buttons.h
-    hwDefs/Button.cpp
     hwDefs/Button.h
-    hwDefs/Einsy_EEPROM.cpp
     hwDefs/Einsy_EEPROM.h
-    hwDefs/Fan.cpp
     hwDefs/Fan.h
-    hwDefs/HC595.cpp
     hwDefs/HC595.h
-    hwDefs/HD44780.cpp
     hwDefs/hd44780_charROM.h
-    hwDefs/HD44780GL.cpp
     hwDefs/HD44780GL.h
     hwDefs/HD44780.h
-    hwDefs/Heater.cpp
     hwDefs/Heater.h
-    hwDefs/IRSensor.cpp
     hwDefs/IRSensor.h
-    hwDefs/LED.cpp
     hwDefs/LED.h
-    hwDefs/PINDA.cpp
     hwDefs/PINDA.h
-    hwDefs/RotaryEncoder.cpp
     hwDefs/RotaryEncoder.h
-    hwDefs/sd_card.c
     hwDefs/sd_card.h
-    hwDefs/Thermistor.cpp
     hwDefs/Thermistor.h
-    hwDefs/TMC2130.cpp
     hwDefs/TMC2130.h
-    hwDefs/UART_Logger.cpp
     hwDefs/UART_Logger.h
-    hwDefs/uart_pty.cpp
     hwDefs/uart_pty.h
-    hwDefs/VoltageSrc.cpp
     hwDefs/VoltageSrc.h
-    hwDefs/w25x20cl.cpp
     hwDefs/w25x20cl.h
-    MMU2.cpp
     MMU2.h
-    include/SerialPipe.cpp
+)
+
+set(INCLUDE_FILES
     include/SerialPipe.h
     include/ADCPeripheral.h
     include/BasePeripheral.h
     include/PinHelper_2560.h
     include/Util.h
     include/thermistortables.h
-    )
+)
 
 
+set(EINSY_SOURCES
+    hwDefs/ADC_Buttons.cpp
+    hwDefs/Button.cpp
+    hwDefs/Einsy_EEPROM.cpp
+    hwDefs/Fan.cpp
+    hwDefs/HC595.cpp
+    hwDefs/HD44780.cpp
+    hwDefs/HD44780GL.cpp
+    hwDefs/Heater.cpp
+    hwDefs/IRSensor.cpp
+    hwDefs/LED.cpp
+    hwDefs/PINDA.cpp
+    hwDefs/RotaryEncoder.cpp
+    hwDefs/sd_card.c
+    hwDefs/Thermistor.cpp
+    hwDefs/TMC2130.cpp
+    hwDefs/UART_Logger.cpp
+    hwDefs/uart_pty.cpp
+    hwDefs/VoltageSrc.cpp
+    hwDefs/w25x20cl.cpp
+    MMU2.cpp
+    include/SerialPipe.cpp  
+)
 
-add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${FIRMWARE})
+add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${H_FILES} ${INCLUDE_FILES} ${FIRMWARE})
 
 #//add_subdirectory(Hardware)
 

@@ -66,7 +66,6 @@ extern "C" {
 #undef __cplusplus // Needed to dodge some unwanted includes...
 #include "Firmware/eeprom.h"
 #define __cplusplus __cppOld
-#include "uart_logger.h"
 #include "sd_card.h"
 }
 #include "uart_pty.h"
@@ -81,6 +80,7 @@ extern "C" {
 #include "RotaryEncoder.h"
 #include "Thermistor.h"
 #include "TMC2130.h"
+#include "UART_Logger.h"
 #include "VoltageSrc.h"
 #include "w25x20cl.h"
 
@@ -129,7 +129,7 @@ struct hw_t {
     VoltageSrc *vMain, *vBed;
 	IRSensor IR;
 	PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
-	uart_logger_t logger;
+	UART_Logger logger;
 	MMU2 mmu;
 	LED lPINDA, lIR;
 	Einsy_EEPROM *EEPROM;
@@ -186,11 +186,6 @@ void avr_special_deinit( avr_t* avr, void * data)
 	sd_card_unmount_file(avr, &hw.sd_card);
 
 	hw.mmu.Stop();
-
-	if (hw.logger.fdOut)
-		uart_logger_stop(&hw.logger);
-
-
 
 }
 
@@ -454,7 +449,6 @@ void setupSerial(bool bConnectS0, uint8_t uiLog)
 
 
 	hw.spiFlash.Init(avr, DIRQLU(avr, W25X20CL_PIN_CS));
-	uart_logger_init(avr, &hw.logger);
 
 	// Uncomment these to get a pseudoterminal you can connect to
 	// using any serial terminal program. Will print to console by default.
@@ -462,9 +456,9 @@ void setupSerial(bool bConnectS0, uint8_t uiLog)
     	hw.UART0.Connect('0');
 
 	if (uiLog=='0' || uiLog == '2')
-		uart_logger_connect(&hw.logger,uiLog);
-	else
-		hw.UART2.Connect('2');
+		hw.logger.Init(avr,uiLog);
+	
+	hw.UART2.Connect('2');
 }
 
 void setupHeaters()
@@ -582,8 +576,6 @@ void setupDrivers()
 	hw.E.ConnectFrom(DIRQLU(avr,E0_DIR_PIN),		TMC2130::DIR_IN);
 	hw.E.ConnectFrom(DIRQLU(avr,E0_STEP_PIN),		TMC2130::STEP_IN);
 	hw.E.ConnectFrom(DIRQLU(avr,E0_ENABLE_PIN),	TMC2130::ENABLE_IN);
-
-
 
 
 	ex.mask = 1<<PIN(Z_MIN_PIN); // DIAG pins. 

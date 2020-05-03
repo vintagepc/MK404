@@ -46,8 +46,8 @@ set(EINSY_SOURCES
     hwDefs/Thermistor.h
     hwDefs/TMC2130.cpp
     hwDefs/TMC2130.h
-    hwDefs/uart_logger.c
-    hwDefs/uart_logger.h
+    hwDefs/UART_Logger.cpp
+    hwDefs/UART_Logger.h
     hwDefs/uart_pty.cpp
     hwDefs/uart_pty.h
     hwDefs/VoltageSrc.cpp

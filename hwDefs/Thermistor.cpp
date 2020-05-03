@@ -32,8 +32,7 @@ Thermistor::Thermistor(float fStartTemp):m_fCurrentTemp(fStartTemp)
 
 }
 
-
-void Thermistor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+uint32_t Thermistor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
 	short *t = m_pTable, *lt = NULL;
 	for (int ei = 0; ei < m_uiTableEntries; ei++, lt = t, t += 2) {
@@ -48,12 +47,13 @@ void Thermistor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 			}
 			// if (m_adc_mux_number==-1)
 			// 	printf("simAVR ADC out value: %u\n",((tt / m_oversampling) * 5000) / 0x3ff);
-			RaiseIRQ(ADC_VALUE_OUT, ((tt / m_iOversampling) * 5000) / 0x3ff);
-			return;
+			uint32_t uiVal = (((tt / m_iOversampling) * 5000) / 0x3ff);
+			return uiVal;
 		}
 	}
 	printf("%s(%d) temperature out of range (%.2f), we're screwed\n",
 			__func__, m_uiMux, m_fCurrentTemp);
+	return UINT32_MAX;
 }
 
 void Thermistor::OnTempIn(struct avr_irq_t * irq, uint32_t value)
@@ -67,7 +67,7 @@ void Thermistor::OnTempIn(struct avr_irq_t * irq, uint32_t value)
 void Thermistor::Init(struct avr_t * avr, uint8_t uiMux)
 {
 	
-	_Init(avr, uiMux, MAKE_C_CALLBACK(Thermistor,OnADCReadGuard),this);
+	_Init(avr, uiMux,this);
 
 	printf("%s on ADC %d start %.2f\n", __func__, m_uiMux, m_fCurrentTemp);
 }

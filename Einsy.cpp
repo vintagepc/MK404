@@ -126,7 +126,7 @@ struct hw_t {
 	sd_card_t sd_card;
 	TMC2130 X, Y, Z, E;
     VoltageSrc *vMain, *vBed;
-	IRSensor *IR;
+	IRSensor IR;
 	PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
 	uart_logger_t logger;
 	MMU2 mmu;
@@ -297,7 +297,7 @@ avr_run_thread(
 					hw.pinda.ToggleSheet();
 					break;
 				case 'f':
-					hw.IR->Toggle();
+					hw.IR.Toggle();
 					break;
 				case 'q':
 					gbStop = 1;
@@ -437,7 +437,7 @@ void setupSDcard(char * mmcu)
 static void mmu_irsensor_hook(struct avr_irq_t * irq, uint32_t value, void * param)
 {
 	float *fVal = (float*)&value;
-	hw.IR->Auto_Input(fVal[0]>400); // Trigger IR if MMU P pos > 400mm
+	hw.IR.Auto_Input(fVal[0]>400); // Trigger IR if MMU P pos > 400mm
 }
 
 
@@ -502,13 +502,12 @@ void setupHeaters()
 void setupVoltages()
 {
 	float fScale24v = 1.0f/26.097f; // Based on rSense voltage divider outputting 5v
-    hw.vBed = new VoltageSrc(VOLT_BED_PIN,	fScale24v,	23.9);
-    hw.vBed->Init(avr);
-    hw.vMain = new VoltageSrc(VOLT_PWR_PIN,	fScale24v,	24.0);
-    hw.vMain->Init(avr);
-	hw.IR = new IRSensor(VOLT_IR_PIN);
-	hw.IR->Init(avr);
-	hw.IR->ConnectTo(IRSensor::DIGITAL_OUT, DIRQLU(avr, IR_SENSOR_PIN));
+    hw.vBed = new VoltageSrc(fScale24v,	23.9);
+    hw.vBed->Init(avr,VOLT_BED_PIN);
+    hw.vMain = new VoltageSrc(fScale24v,	24.0);
+    hw.vMain->Init(avr,VOLT_PWR_PIN);
+	hw.IR.Init(avr,VOLT_IR_PIN);
+	hw.IR.ConnectTo(IRSensor::DIGITAL_OUT, DIRQLU(avr, IR_SENSOR_PIN));
 }
 
 void setupDrivers()
@@ -889,7 +888,7 @@ int main(int argc, char *argv[])
 		hw.mmu.Init();
 		hw.mmu.StartGL();
 		hw.mmu.ConnectFrom(IOIRQ(avr,'J',5),MMU2::RESET);
-		hw.IR->Set(IRSensor::IR_AUTO);
+		hw.IR.Set(IRSensor::IR_AUTO);
 		avr_irq_register_notify(hw.mmu.GetIRQ(MMU2::FEED_DISTANCE), mmu_irsensor_hook, avr);
 	}
 

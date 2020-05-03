@@ -28,7 +28,7 @@
 
 #include "ADC_Buttons.h"
 
-void ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+uint ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
     //if (raw < 50) return Btn::right;
 	//if (raw > 80 && raw < 100) return Btn::middle;
@@ -42,12 +42,12 @@ void ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
     else if (m_uiCurBtn ==3)
         iVOut = 25;
 
-    RaiseIRQ(ADC_VALUE_OUT,iVOut);
+    return iVOut;
 }
 
 void ADC_Buttons::Init(struct avr_t * avr, uint8_t adc_mux_number)
 {
-	_Init(avr, adc_mux_number, MAKE_C_CALLBACK(ADC_Buttons,OnADCReadGuard), this);
+	_Init(avr, adc_mux_number, this);
 
 }
 

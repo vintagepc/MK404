@@ -39,7 +39,7 @@ public:
 	}IRState;
 
 	// Constructs a new IRSensor on ADC mux uiMux
-    IRSensor(uint8_t uiMux);
+    IRSensor();
 
 
 	// Flips the state between filament and no filament. 
@@ -53,7 +53,7 @@ public:
 
 private:
 	// ADC read trigger
- 	void OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
+ 	uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
 	// LUT for states to voltage readouts.
 	float m_fIRVals[IR_AUTO] = 

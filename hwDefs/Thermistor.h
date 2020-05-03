@@ -32,7 +32,7 @@ class Thermistor: public ADCPeripheral
 
 	public:
 
-		#define IRQPAIRS _IRQ(ADC_TRIGGER_IN,"<adc.trigger") _IRQ(ADC_VALUE_OUT,">adc.out") _IRQ(TEMP_OUT,">temp.out") _IRQ(TEMP_IN, "<temp.in")
+		#define IRQPAIRS _IRQ(ADC_TRIGGER_IN,"<adc.trigger") _IRQ(ADC_VALUE_OUT,">adc.out") _IRQ(TEMP_OUT,">temp.out") _IRQ(TEMP_IN, "<temp.in") _IRQ(DIGITAL_OUT,">temp.digital_out")
 		#include "IRQHelper.h"
 
 		Thermistor(float fStartTemp = 25);
@@ -45,7 +45,7 @@ class Thermistor: public ADCPeripheral
 
 	private:
 
-		void OnADCRead(avr_irq_t *irq, uint32_t value);
+		uint32_t OnADCRead(avr_irq_t *irq, uint32_t value);
 
 		void OnTempIn(avr_irq_t *irq, uint32_t value);
 

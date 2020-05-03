@@ -197,7 +197,9 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 					m_address = ((m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE) + ((m_address + 1) & 0xFF);
 				} break;
 			}
+			break;
 		}
+		
 		case STATE_IDLE:
 		default:
 		{

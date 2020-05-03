@@ -60,7 +60,7 @@
 #include "avr_uart.h"
 extern "C" {
 #include "uart_pty.h"
-#include "hd44780_glut.h"
+//#include "hd44780_glut.h"
 #include "thermistortables.h"
 #include "sim_vcd_file.h"
 #define __cppOld __cplusplus
@@ -74,6 +74,7 @@ extern "C" {
 #include "Button.h"
 #include "Einsy_EEPROM.h"
 #include "Fan.h"
+#include "HD44780GL.h"
 #include "Heater.h"
 #include "IRSensor.h"
 #include "MMU2.h"
@@ -114,7 +115,7 @@ uint32_t colors[8] = {
 #undef TMC2130
 struct hw_t {
 	avr_t *mcu;
-	hd44780_t lcd;
+	HD44780GL lcd;
 	RotaryEncoder encoder;
 	Button *PowerPanic;
 	uart_pty_t UART0, UART2;
@@ -203,42 +204,41 @@ void displayCB(void)		/* function called whenever redisplay needed */
 	glLoadIdentity(); // Start with an identity matrix
 	glScalef(4, 4, 1);
 
-	hd44780_gl_draw(
-		&hw.lcd,
-			colors[(4*iScheme) + 0], /* background */
+	hw.lcd.Draw(colors[(4*iScheme) + 0], /* background */
 			colors[(4*iScheme) + 1], /* character background */
 			colors[(4*iScheme) + 2], /* text */
 			colors[(4*iScheme) + 3] /* shadow */ );
 	glPopMatrix();
 
 	// Do something for the motors...
-	float fX = (5 + hw.lcd.w * 6)*4;
+	float fX = (5 + hw.lcd.GetWidth()* 6)*4;
+	float fY = (5 + hw.lcd.GetHeight() * 9);
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();		
 		glScalef(fX/350,4,1);
-		glTranslatef(0,5 + hw.lcd.h * 9,0);
+		glTranslatef(0,fY,0);
 		hw.X.Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();
 		glScalef(fX/350,4,1);
-		glTranslatef(0,(5 + hw.lcd.h * 9) +10,0);
+		glTranslatef(0, fY +10,0);
 		hw.Y.Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();
 		glScalef(fX/350,4,1);
-		glTranslatef(0,(5 + hw.lcd.h * 9) +20,0);
+		glTranslatef(0,fY +20,0);
 		hw.Z.Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glLoadIdentity();
 		glScalef(fX/350,4,1);
-		glTranslatef(0,(5 + hw.lcd.h * 9) +30,0);
+		glTranslatef(0,fY +30,0);
 		hw.E.Draw_Simple();
 	glPopMatrix();
 	glutSwapBuffers();
@@ -380,35 +380,35 @@ int initGL(int w, int h)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 
-	hd44780_gl_init();
-
 	return 1;
 }
 
 void setupLCD()
 {
-	hd44780_init(avr, &hw.lcd, 20,4, LCD_BL_PIN);
-	hd44780_set_flag(&hw.lcd, HD44780_FLAG_LOWNIBBLE, 0);
+	hw.lcd.Init(avr);
 	// D4-D7,
-	avr_irq_t *irqLCD[4] = {	DIRQLU(avr, LCD_PINS_D4),
+	avr_irq_t *irqLCD[4] = {DIRQLU(avr, LCD_PINS_D4),
 							DIRQLU(avr, LCD_PINS_D5),
 							DIRQLU(avr, LCD_PINS_D6),
 							DIRQLU(avr, LCD_PINS_D7)};
 	for (int i = 0; i < 4; i++) {
-		avr_irq_t * ilcd = hw.lcd.irq + IRQ_HD44780_D4 + i;
-		// AVR -> LCD
-		avr_connect_irq(irqLCD[i], ilcd);
-		// LCD -> AVR
-		avr_connect_irq(ilcd, irqLCD[i]);
+		hw.lcd.ConnectTo(HD44780::D4+i,irqLCD[i]);
+		hw.lcd.ConnectFrom(irqLCD[i], HD44780::D4+i);
+		
 	}
-	avr_connect_irq( DIRQLU(avr,LCD_PINS_RS), 		hw.lcd.irq + IRQ_HD44780_RS);
-	avr_connect_irq( DIRQLU(avr, LCD_PINS_ENABLE),	hw.lcd.irq + IRQ_HD44780_E);
+	hw.lcd.ConnectFrom(DIRQLU(avr,LCD_PINS_RS), HD44780::RS);
+	hw.lcd.ConnectFrom(DIRQLU(avr,LCD_PINS_ENABLE),HD44780::E);
+
+	hw.lcd.ConnectFrom(DIRQLU(avr, LCD_BL_PIN), HD44780::BRIGHTNESS_IN);
+	hw.lcd.ConnectFrom(DPWMLU(avr, LCD_BL_PIN), HD44780::BRIGHTNESS_PWM_IN);
+	avr_ioport_external_t ex = {.name = PORT(LCD_BL_PIN), .mask = (1UL << PIN(LCD_BL_PIN)), .value = 0UL};
+	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
 	hw.encoder.Init(avr);
 	hw.encoder.ConnectTo(RotaryEncoder::OUT_A, DIRQLU(avr, BTN_EN2));
 	hw.encoder.ConnectTo(RotaryEncoder::OUT_B, DIRQLU(avr, BTN_EN1));
 	hw.encoder.ConnectTo(RotaryEncoder::OUT_BUTTON, DIRQLU(avr,BTN_ENC));
-	
+
 }
 
 void setupSDcard(char * mmcu)
@@ -870,8 +870,8 @@ int main(int argc, char *argv[])
 	 */
 	glutInit(&argc, argv);		/* initialize GLUT system */
 
-	int w = 5 + hw.lcd.w * 6;
-	int h = 5 + hw.lcd.h * 9;
+	int w = 5 + hw.lcd.GetWidth() * 6;
+	int h = 5 + hw.lcd.GetHeight() * 9;
 	h+=40;
 	int pixsize = 4;
 

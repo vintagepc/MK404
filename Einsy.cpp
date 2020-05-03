@@ -130,6 +130,7 @@ struct hw_t {
 	PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
 	uart_logger_t logger;
 	MMU2 mmu;
+	LED lPINDA, lIR;
 	Einsy_EEPROM *EEPROM;
 } hw;
 
@@ -180,7 +181,7 @@ void avr_special_deinit( avr_t* avr, void * data)
 	
 	hw.spiFlash.Save();
 	
-	sd_card_unmount_file (avr, &hw.sd_card);
+	sd_card_unmount_file(avr, &hw.sd_card);
 
 	uart_pty_stop(&hw.UART0);
 
@@ -240,6 +241,10 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		glScalef(fX/350,4,1);
 		glTranslatef(0,fY +30,0);
 		hw.E.Draw_Simple();
+		glTranslatef(330,0,0);
+		hw.lPINDA.Draw();
+		glTranslatef(10,0,0);
+		hw.lIR.Draw();
 	glPopMatrix();
 	glutSwapBuffers();
 }
@@ -508,6 +513,9 @@ void setupVoltages()
     hw.vMain->Init(avr,VOLT_PWR_PIN);
 	hw.IR.Init(avr,VOLT_IR_PIN);
 	hw.IR.ConnectTo(IRSensor::DIGITAL_OUT, DIRQLU(avr, IR_SENSOR_PIN));
+	hw.lIR = LED(0xFFCC00FF,'I');
+	hw.lIR.Init(avr);
+	hw.lIR.ConnectFrom(hw.IR.GetIRQ(IRSensor::DIGITAL_OUT), LED::LED_IN);
 }
 
 void setupDrivers()
@@ -565,6 +573,7 @@ void setupDrivers()
 	cfg.fStartPos = 0;
 	cfg.uiStepsPerMM = 280;
 	cfg.uiDiagPin = E0_TMC2130_DIAG;
+	cfg.cAxis = 'E';
 
 	hw.E.SetConfig(cfg);
 	hw.E.Init(avr);
@@ -583,6 +592,9 @@ void setupDrivers()
 	// TODO once the drivers are setup.
 	hw.pinda.Init(avr, hw.X.GetIRQ(TMC2130::POSITION_OUT),  hw.Y.GetIRQ(TMC2130::POSITION_OUT),  hw.Z.GetIRQ(TMC2130::POSITION_OUT));
 	hw.pinda.ConnectTo(PINDA::TRIGGER_OUT ,DIRQLU(avr, Z_MIN_PIN));
+	hw.lPINDA = LED(0xFF0000FF,'P');
+	hw.lPINDA.Init(avr);
+	hw.lPINDA.ConnectFrom(hw.pinda.GetIRQ(PINDA::TRIGGER_OUT), LED::LED_IN);
 
 
 }

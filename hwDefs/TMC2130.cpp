@@ -95,6 +95,16 @@ void TMC2130::Draw_Simple()
 			glVertex3f(0,10,0);
 		glEnd();
         glColor3f(1,1,1);
+         if (m_bEnable)
+        {
+            glBegin(GL_QUADS);
+                glVertex3f(3,8,0);
+                glVertex3f(13,8,0);
+                glVertex3f(13,1,0);
+                glVertex3f(3,1,0);
+            glEnd();
+            glColor3f(0,0,0);
+        }   
         glPushMatrix();
             glTranslatef(3,7,0);
             glScalef(0.09,-0.05,0);
@@ -162,6 +172,7 @@ uint8_t TMC2130::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
     uint8_t byte = m_cmdOut.bytes[4];
     m_cmdOut.all<<=8;
     TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",cfg.cAxis,m_cmdOut.all,byte));
+    SetSendReplyFlag();
     return byte; // SPIPeripheral takes care of the reply.
 }
 
@@ -202,9 +213,9 @@ avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *avr, avr_cycle_count_t whe
 // Called when STEP is triggered.
 void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 {
-    CancelTimer(MAKE_C_TIMER_CALLBACK(TMC2130,OnStandStillTimeout),this);
     if (!value || irq->value) return; // Only step on rising pulse
     if (!m_bEnable) return;
+    CancelTimer(MAKE_C_TIMER_CALLBACK(TMC2130,OnStandStillTimeout),this);
 	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",cfg.cAxis,value));
     if (m_bDir)    
         m_iCurStep--;

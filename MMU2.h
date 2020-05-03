@@ -23,10 +23,8 @@
 #define __MMU_H___
 
 #include <pthread.h>
-extern "C"
-{
+
 #include "uart_pty.h"
-}
 #include "ADC_Buttons.h"
 #include "HC595.h"
 #include "LED.h"
@@ -51,7 +49,7 @@ class MMU2: public BasePeripheral
 
         void Stop();
 
-        char* GetSerialPort();
+        const char* GetSerialPort();
 
     private:
 
@@ -73,7 +71,7 @@ class MMU2: public BasePeripheral
         bool m_bStarted = false;
         bool m_bReset = false;
         pthread_t m_tRun;
-        uart_pty_t m_UART0;
+        uart_pty m_UART0;
         HC595 m_shift;
         TMC2130 m_Sel, m_Idl, m_Extr;
         LED m_lGreen[5], m_lRed[5], m_lFINDA;

@@ -48,7 +48,7 @@ set(EINSY_SOURCES
     hwDefs/TMC2130.h
     hwDefs/uart_logger.c
     hwDefs/uart_logger.h
-    hwDefs/uart_pty.c
+    hwDefs/uart_pty.cpp
     hwDefs/uart_pty.h
     hwDefs/VoltageSrc.cpp
     hwDefs/VoltageSrc.h

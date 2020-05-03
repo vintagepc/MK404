@@ -84,6 +84,8 @@ extern "C" {
 #include "VoltageSrc.h"
 #include "w25x20cl.h"
 
+#include "SerialPipe.h"
+
 #include "Firmware/Configuration_prusa.h"
 
 #define __AVR_ATmega2560__
@@ -131,6 +133,7 @@ struct hw_t {
 	MMU2 mmu;
 	LED lPINDA, lIR;
 	Einsy_EEPROM *EEPROM;
+	SerialPipe *spPipe;
 } hw;
 
 unsigned char guKey = 0;
@@ -182,14 +185,13 @@ void avr_special_deinit( avr_t* avr, void * data)
 	
 	sd_card_unmount_file(avr, &hw.sd_card);
 
-	hw.UART0.~uart_pty();
+	hw.mmu.Stop();
 
 	if (hw.logger.fdOut)
 		uart_logger_stop(&hw.logger);
-	else
-		hw.UART2.~uart_pty();
 
-	hw.mmu.Stop();
+
+
 }
 
 void displayCB(void)		/* function called whenever redisplay needed */
@@ -650,89 +652,6 @@ void setupTimers(avr_t* avr)
 
 }
 
-
-static void *
-serial_pipe_thread(
-		void * ignore)
-{
-	// Not much to see here, we just open the ports and shuttle characters back and forth across them.
-	printf("Starting serial transfer thread...\n");
-	int fdPort[2]; 
-	fd_set fdsIn, fdsErr;
-	unsigned char chrIn;
-	int iLastFd = 0, iReadyRead, iChrRd;
-	bool bQuit = false;
-	if ((fdPort[0]=open(hw.UART2.GetSlaveName(), O_RDWR | O_NONBLOCK)) == -1)
-	{
-		fprintf(stderr, "Could not open %s.\n",hw.UART2.GetSlaveName());
-		perror(hw.UART2.GetSlaveName());
-		bQuit = true;
-	}
-	if ((fdPort[1]=open(hw.mmu.GetSerialPort(), O_RDWR | O_NONBLOCK)) == -1)
-	{
-		fprintf(stderr, "Could not open %s.\n",hw.mmu.GetSerialPort());
-		perror(hw.mmu.GetSerialPort());
-		bQuit = true;
-	}
-	if (fdPort[0]>fdPort[1])
-		iLastFd = fdPort[0];
-	else
-		iLastFd = fdPort[1];
-		
-	while (!bQuit)
-	{
-		FD_ZERO(&fdsIn);
-		FD_ZERO(&fdsErr);
-		FD_SET(fdPort[0], &fdsIn);
-		FD_SET(fdPort[1], &fdsIn);
-		FD_SET(fdPort[0], &fdsErr);
-		FD_SET(fdPort[1], &fdsErr);
-		if ((iReadyRead = select(iLastFd+1,&fdsIn, NULL, &fdsErr,NULL))<0)
-		{
-			printf("Select ERR.\n");
-			bQuit = true;
-			break;
-		}
-
-		if (FD_ISSET(fdPort[0],&fdsIn))
-		{
-			while ((iChrRd = read(fdPort[0], &chrIn,1))>0)
-			{
-				write(fdPort[1],&chrIn,1);
-			}
-			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
-			{
-				bQuit = true; 
-				break;
-			}
-		}
-		if (FD_ISSET(fdPort[1],&fdsIn))
-		{
-			while ((iChrRd = read(fdPort[1], &chrIn,1))>0)
-			{
-				write(fdPort[0],&chrIn,1);
-			}
-			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
-			{
-				bQuit = true; 
-				break;
-			}
-		}
-		if (FD_ISSET(fdPort[0], &fdsErr) || FD_ISSET(fdPort[1], &fdsErr))
-		{
-			fprintf(stderr,"Exception reading PTY. Quit.\n");
-			bQuit = true; 
-			break;
-		}
-		
-	}
-
-	// cleanup.
-	for (int i=0; i<2; i++)
-		close(fdPort[i]);
-	return 0;
-}
-
 void fix_serial(avr_t * avr, avr_io_addr_t addr, uint8_t v, void * param)
 {
 	if (v==0x02)// Marlin is done setting up UCSRA0...
@@ -911,22 +830,22 @@ int main(int argc, char *argv[])
 		getchar();
 	}
 
-    pthread_t run[3];
+    pthread_t run[2];
 
 	if (bMMU) // SPin up the serial pipe
-        pthread_create(&run[2], NULL, serial_pipe_thread, NULL);
+        hw.spPipe = new SerialPipe(hw.UART2.GetSlaveName(), hw.mmu.GetSerialPort());
 
 	pthread_create(&run[0], NULL, avr_run_thread, NULL);
     pthread_create(&run[1], NULL, glutThread, NULL);
 
 	pthread_join(run[0],NULL);
 	pthread_cancel(run[1]); // Kill the GL thread.
+
  	printf("Writing flash state...\n");
     avr_terminate(avr);
     printf("AVR finished.\n");
 	if (bMMU)
-        pthread_join(run[2],NULL);
-   
+		delete hw.spPipe;		
 
 	printf("Done");
 

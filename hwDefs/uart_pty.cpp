@@ -133,7 +133,7 @@ void uart_pty::OnXOffIn(struct avr_irq_t * irq, uint32_t value)
 
 void* uart_pty::Run()
 {
-	while (1) {
+	while (!m_bQuit) {
 		fd_set read_set, write_set;
 		int max = 0;
 		FD_ZERO(&read_set);
@@ -239,8 +239,10 @@ void uart_pty::Init(struct avr_t * avr)
 // Shuts down the thread on destruction.
 uart_pty::~uart_pty()
 {
+	if (!m_thread)
+		return;
 	puts(__func__);
-	pthread_kill(m_thread, SIGINT);
+	m_bQuit = true; // Signal thread it's time to quit.
 	for (int ti = 0; ti < 2; ti++)
 		if (port[ti].s)
 			close(port[ti].s);

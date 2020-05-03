@@ -138,7 +138,7 @@ void MMU2::Init()
 	m_Sel.SetConfig(cfg);
 }
 
-const char* MMU2::GetSerialPort()
+std::string MMU2::GetSerialPort()
 {
 	return m_UART0.GetSlaveName();
 }
@@ -331,7 +331,6 @@ void MMU2::Start()
 void MMU2::Stop()
 {
 	printf("MMU_stop()\n");
-   	m_UART0.~uart_pty();
     if (!m_bStarted)
         return;
     m_bQuit = true;

@@ -27,6 +27,8 @@
 
 #include <pthread.h>
 
+#include <iostream>
+
 #include "fifo_declare.h"
 
 #include "BasePeripheral.h"
@@ -45,7 +47,7 @@ class uart_pty: public BasePeripheral
 
 		void Connect(char chrUART);
 		
-		const char* GetSlaveName() { return pty.slavename; };
+		const std::string GetSlaveName() { return std::string(pty.slavename); };
 
 	private:
 
@@ -57,8 +59,9 @@ class uart_pty: public BasePeripheral
 
 		void FlushData();
 
-		pthread_t	m_thread;
+		pthread_t	m_thread = 0;
 		bool		m_bXOn = false;
+		bool m_bQuit = false;
 
 
 		DECLARE_FIFO(uint8_t,uart_pty_fifo, 512);

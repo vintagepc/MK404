@@ -49,7 +49,7 @@ class MMU2: public BasePeripheral
 
         void Stop();
 
-        const char* GetSerialPort();
+        std::string GetSerialPort();
 
     private:
 

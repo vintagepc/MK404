@@ -64,7 +64,6 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t * avr,avr_cycle_count_
 			// Invalid direction
 			break;
 	}
-    printf("phase: %u\n",m_iPhase);
     RaiseIRQ(OUT_A, m_States[m_iPhase]>>1);
     RaiseIRQ(OUT_B, m_States[m_iPhase]&1);
 	

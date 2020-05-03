@@ -4,7 +4,7 @@ set(CMAKE_DEBUG_POSTFIX d)
 project(Einsy VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -25,11 +25,11 @@ set(EINSY_SOURCES
     hwDefs/Fan.h
     hwDefs/HC595.cpp
     hwDefs/HC595.h
-    hwDefs/hd44780.c
+    hwDefs/HD44780.cpp
     hwDefs/hd44780_charROM.h
-    hwDefs/hd44780_glut.c
-    hwDefs/hd44780_glut.h
-    hwDefs/hd44780.h
+    hwDefs/HD44780GL.cpp
+    hwDefs/HD44780GL.h
+    hwDefs/HD44780.h
     hwDefs/Heater.cpp
     hwDefs/Heater.h
     hwDefs/IRSensor.cpp

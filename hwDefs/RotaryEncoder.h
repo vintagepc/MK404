@@ -57,7 +57,7 @@ class RotaryEncoder:public BasePeripheral
 
         avr_cycle_count_t OnButtonReleaseTimer(avr_t * avr,avr_cycle_count_t when);
 
-        bool m_bVerbose = true;
+        bool m_bVerbose = false;
         uint8_t m_uiPulseCt = 0;
         Direction m_eDirection = CCW_CLICK;
         int m_iPhase = 0;			// current position

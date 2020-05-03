@@ -65,6 +65,7 @@ class BasePeripheral
 
         // Raises your own IRQ
         void inline RaiseIRQ(unsigned int eDest, uint32_t value) { avr_raise_irq(m_pIrq + eDest, value);}
+        void inline RaiseIRQFloat(unsigned int eDest, uint32_t value) { avr_raise_irq_float(m_pIrq + eDest, value,1);}
 
         template <class C>
         void inline RegisterNotify(unsigned int eSrc, avr_irq_notify_t func, C* pObj) { avr_irq_register_notify(m_pIrq + eSrc, func, pObj); };

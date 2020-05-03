@@ -30,17 +30,8 @@
 #include "avr_adc.h"
 
 // ADC read trigger. 
-void IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
-	union {
-		avr_adc_mux_t v;
-		uint32_t l;
-	} u = { .l = value };
-	avr_adc_mux_t v = u.v;
-
-    if (v.src != m_uiMuxNr)
-		return;
-		
     float fVal;
     if (m_eCurrent != IR_AUTO)
         fVal = m_fIRVals[m_eCurrent];
@@ -51,10 +42,10 @@ void IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
     
 	uint32_t iVOut =  (fVal)*1000;
 
-	SendToADC(iVOut);
+	return iVOut;
 }
 
-IRSensor::IRSensor(uint8_t uiMux):VoltageSrc(uiMux)
+IRSensor::IRSensor():VoltageSrc()
 {
 
 }

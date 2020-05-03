@@ -24,9 +24,9 @@
 #define __VOLTAGESRC_H___
 
 #include <string.h>
-#include <BasePeripheral.h>
+#include <ADCPeripheral.h>
 
-class VoltageSrc: public BasePeripheral {
+class VoltageSrc: public ADCPeripheral {
 public:
 
     // Macro to define a set of IRQs and string names. 
@@ -39,25 +39,21 @@ public:
     #include <IRQHelper.h>
 
     // Constructs a new VoltageSrc on ADC mux uiMux, with a v scale factor of fVScale and a starting reading of fStartV
-    VoltageSrc(uint8_t uiMux,
-            float fVScale = 1.0f, // voltage scale factor to bring it in line with the ADC 0-5v input.
+    VoltageSrc(float fVScale = 1.0f, // voltage scale factor to bring it in line with the ADC 0-5v input.
             float fStartV = 0.0f );
 
     // Initializes the source (connets it to supplied AVR's ADC)
-    void Init(struct avr_t * avr);
+    void Init(struct avr_t * avr, uint8_t uiMux);
 
     // Changes the voltage reading to fVal
     void Set(float fVal);
 
 protected:
     // ADC read trigger. 
-    virtual void OnADCRead(avr_irq_t *pIRQ, uint32_t value);
+    virtual uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
     // Input trigger
     void OnInput(avr_irq_t *pIRQ, uint32_t value);
-
-    // Send helper to reply to the ADC read query.
-    void SendToADC(uint32_t uiVOut);
 
     uint8_t m_uiMuxNr = -1;
     float m_fVScale = 1.0f;

@@ -29,7 +29,8 @@
 class ADCPeripheral: public BasePeripheral
 {
     protected:
-        void OnADCReadGuard(struct avr_irq_t * irq, uint32_t value)
+        template<class C>
+        void _OnADCRead(struct avr_irq_t * irq, uint32_t value)
         {
           	union {
                 avr_adc_mux_t v;
@@ -39,19 +40,34 @@ class ADCPeripheral: public BasePeripheral
 
             if (v.src != m_uiMux)
                 return;  
-            OnADCRead(irq,value);
+            uint32_t uiVal = OnADCRead(irq,value);
+            RaiseIRQ(C::ADC_VALUE_OUT,uiVal);
+            _SyncDigitalIRQ<C>(uiVal);
         };
 
-        virtual void OnADCRead(struct avr_irq_t * irq, uint32_t value) = 0;
+        template<class C>
+        void _SyncDigitalIRQ(uint32_t uiVOut)
+        {
+            if (uiVOut>2200) // 2.2V, logic H
+                RaiseIRQ(C::DIGITAL_OUT,1);
+            else if (uiVOut < 800) // 0.8v. L
+                RaiseIRQ(C::DIGITAL_OUT,0);
+            else
+                RaiseIRQFloat(C::DIGITAL_OUT,0);
+        };
+
+
+        // Override this with your own ADC implementation.
+        virtual uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) = 0;
 
         // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
         template<class C>
-        void _Init(avr_t *avr, uint8_t uiADC, avr_irq_notify_t fcn, C *p, const char** IRQNAMES = nullptr) {
+        void _Init(avr_t *avr, uint8_t uiADC, C *p, const char** IRQNAMES = nullptr) {
             BasePeripheral::_Init(avr,p);
 
             m_uiMux = uiADC;
 
-	        RegisterNotify(C::ADC_TRIGGER_IN, fcn, this);
+	        RegisterNotify(C::ADC_TRIGGER_IN, MAKE_C_CALLBACK(ADCPeripheral,_OnADCRead<C>), this);
 
             avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_OUT_TRIGGER);
             avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, uiADC);

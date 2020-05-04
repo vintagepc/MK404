@@ -3,7 +3,6 @@
 
 
 #include "Configuration_prusa.h"
-#include "pins.h"
 
 #define IR_SENSOR_ANALOG (defined(VOLT_IR_PIN) && defined(IR_SENSOR))
 

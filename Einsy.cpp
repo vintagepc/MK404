@@ -60,11 +60,11 @@
 #include "avr_uart.h"
 extern "C" {
 //#include "hd44780_glut.h"
-#include "thermistortables.h"
+#include "include/thermistortables.h"
 #include "sim_vcd_file.h"
 #define __cppOld __cplusplus
 #undef __cplusplus // Needed to dodge some unwanted includes...
-#include "Firmware/eeprom.h"
+#include "include/MK3/eeprom.h"
 #define __cplusplus __cppOld
 #include "sd_card.h"
 }
@@ -86,12 +86,12 @@ extern "C" {
 
 #include "SerialPipe.h"
 
-#include "Firmware/Configuration_prusa.h"
+#include "include/MK3/Configuration_prusa.h"
 
 #define __AVR_ATmega2560__
-#include "Firmware/pins_Einsy_1_0.h"
+#include "include/MK3/pins_Einsy_1_0.h"
 
-#include "Firmware/config.h"
+#include "include/MK3/config.h"
 
 avr_t * avr = NULL;
 avr_vcd_t vcd_file;

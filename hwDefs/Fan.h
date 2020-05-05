@@ -69,6 +69,8 @@ public:
 		uint16_t m_uiCurrentRPM = 0;
 		uint16_t m_uiUsecPulse = 0;
 
+		avr_cycle_timer_t m_fcnTachChange = MAKE_C_TIMER_CALLBACK(Fan,OnTachChange);
+
 };
 
 #endif /* __FAN_H__ */

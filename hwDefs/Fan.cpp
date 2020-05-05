@@ -34,7 +34,7 @@ Fan::Fan(uint16_t iMaxRPM):m_uiMaxRPM(iMaxRPM)
 avr_cycle_count_t Fan::OnTachChange(avr_t * avr, avr_cycle_count_t when)
 {
     RaiseIRQ(TACH_OUT, m_bPulseState^=1);
-    avr_cycle_timer_register_usec(m_pAVR, m_uiUsecPulse, MAKE_C_TIMER_CALLBACK(Fan,OnTachChange),this);
+    avr_cycle_timer_register_usec(m_pAVR, m_uiUsecPulse,m_fcnTachChange,this);
     return 0;
 }
 
@@ -49,14 +49,14 @@ void Fan::OnPWMChange(struct avr_irq_t * irq, uint32_t value)
     float fSecPerRev = 60.0f/(float)m_uiCurrentRPM;
     float fuSPerRev = 1000000*fSecPerRev;
     m_uiUsecPulse = fuSPerRev/4; // 4 pulses per rev.
-    TRACE(printf("New PWM(%u)/RPM/cyc: %u / %u / %u\n", m_uiMaxRPM, m_uiPWM, m_uiCurrentRPM, m_uiUsecPulse));
+    (printf("New PWM(%u)/RPM/cyc: %u / %u / %u\n", m_uiMaxRPM, m_uiPWM, m_uiCurrentRPM, m_uiUsecPulse));
     if (m_uiCurrentRPM>0)
     {
-        avr_cycle_timer_register_usec(m_pAVR,m_uiUsecPulse,MAKE_C_TIMER_CALLBACK(Fan,OnTachChange),this);
+        avr_cycle_timer_register_usec(m_pAVR,m_uiUsecPulse,m_fcnTachChange,this);
     }
     else
     {
-        avr_cycle_timer_cancel(m_pAVR,MAKE_C_TIMER_CALLBACK(Fan,OnTachChange),this);
+        avr_cycle_timer_cancel(m_pAVR,m_fcnTachChange,this);
     }
 }
 

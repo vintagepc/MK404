@@ -215,7 +215,7 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 {
     if (!value || irq->value) return; // Only step on rising pulse
     if (!m_bEnable) return;
-    CancelTimer(MAKE_C_TIMER_CALLBACK(TMC2130,OnStandStillTimeout),this);
+    CancelTimer(m_fcnStandstill,this);
 	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",cfg.cAxis,value));
     if (m_bDir)    
         m_iCurStep--;
@@ -253,7 +253,7 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     m_regs.defs.DRV_STATUS.stallGuard = bStall;
     m_regs.defs.DRV_STATUS.stst = false;
     // 2^20 comes from the datasheet.
-    RegisterTimer(MAKE_C_TIMER_CALLBACK(TMC2130,OnStandStillTimeout),2^20,this);
+    RegisterTimer(m_fcnStandstill,2^20,this);
 }
 
 // Called when DRV_EN is triggered.

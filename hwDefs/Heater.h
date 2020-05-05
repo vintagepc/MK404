@@ -57,6 +57,8 @@ public:
         // Function for a temperature "tick" to add or remove heat
         avr_cycle_count_t OnTempTick(avr_t * avr, avr_cycle_count_t when);
 
+        avr_cycle_timer_t m_fcnTempTick = MAKE_C_TIMER_CALLBACK(Heater,OnTempTick);
+
         bool m_bAuto = true;
         float m_fCurrentTemp = 25.0;
         float m_fAmbientTemp = 25.0;

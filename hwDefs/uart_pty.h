@@ -56,6 +56,7 @@ class uart_pty: public BasePeripheral
 		void OnXOnIn(avr_irq_t * irq, uint32_t value);
 		void OnXOffIn(avr_irq_t * irq, uint32_t value);
 		avr_cycle_count_t OnFlushTimer(struct avr_t * avr,avr_cycle_count_t when);
+		avr_cycle_timer_t m_fcnFlush = MAKE_C_TIMER_CALLBACK(uart_pty,OnFlushTimer);
 
 		void FlushData();
 

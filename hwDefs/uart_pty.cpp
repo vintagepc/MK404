@@ -118,7 +118,7 @@ void uart_pty::OnXOnIn(struct avr_irq_t * irq,uint32_t value)
 
 	// if the buffer is not flushed, try to do it later
 	if (m_bXOn)
-			RegisterTimer(MAKE_C_TIMER_CALLBACK(uart_pty,OnFlushTimer),avr_hz_to_cycles(m_pAVR, 1000),this);
+			RegisterTimer(m_fcnFlush,avr_hz_to_cycles(m_pAVR, 1000),this);
 }
 
 /*
@@ -128,7 +128,7 @@ void uart_pty::OnXOffIn(struct avr_irq_t * irq, uint32_t value)
 {
 	TRACE(if (m_bXOn) printf("uart_pty_xoff_hook\n");)
 	m_bXOn = false;
-	CancelTimer(MAKE_C_TIMER_CALLBACK(uart_pty,OnFlushTimer),this);
+	CancelTimer(m_fcnFlush,this);
 }
 
 void* uart_pty::Run()

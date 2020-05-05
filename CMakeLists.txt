@@ -106,4 +106,10 @@ add_custom_command(TARGET Einsy POST_BUILD
                     "${PROJECT_SOURCE_DIR}/stk500boot_v2_mega2560.hex"
                     "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
 
+add_custom_target(Build_Run COMMAND cd ${PROJECT_BINARY_DIR} && ./Einsy &)
+add_dependencies(Build_Run Einsy)
 
+add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR} 
+                            && ./build-fw.sh 
+                            && cp ../Prusa-Firmware-build/Firmware.ino.elf MK3S.afx
+                            && avr-objdump -d MK3S.afx > MK3S.txt)

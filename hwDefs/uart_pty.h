@@ -46,6 +46,9 @@ class uart_pty: public BasePeripheral
 		void Init(avr_t *avr);
 
 		void Connect(char chrUART);
+
+		// Resets the newline trap after a printer reset.
+		void Reset() { m_chrLast = '\n';}
 		
 		const std::string GetSlaveName() { return std::string(pty.slavename); };
 
@@ -64,6 +67,7 @@ class uart_pty: public BasePeripheral
 		bool		m_bXOn = false;
 		bool m_bQuit = false;
 
+		unsigned char m_chrLast = '\n';
 
 		DECLARE_FIFO(uint8_t,uart_pty_fifo, 512);
 

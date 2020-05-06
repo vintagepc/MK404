@@ -136,6 +136,8 @@ struct hw_t {
 	SerialPipe *spPipe;
 } hw;
 
+bool bFactoryReset = false;
+
 unsigned char guKey = 0;
 
 // avr special flash initalization
@@ -258,8 +260,17 @@ void powerup_and_reset_helper(avr_t *avr)
 	// Restore powerpanic to high
 	hw.PowerPanic->Press(1);
 
+	hw.UART0.Reset();
+
 	//depress encoder knob
-	avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 0);
+	if (!bFactoryReset)
+		avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 0);
+
+	bFactoryReset = false;
+
+	// TIMSK2
+	avr_regbit_t rb = AVR_IO_REGBITS(0x70, 0, 0b111);
+	avr_regbit_setto(avr,rb,0x01);
 }
 
 static void *
@@ -290,8 +301,10 @@ avr_run_thread(
 					break;
 				case 't':
 					printf("FACTORY_RESET\n");
+					bFactoryReset =true;
 					// Hold the button during boot to get factory reset menu
 					avr_reset(avr);
+				case 'h':
 					hw.encoder.PushAndHold();
 					break;
 				case 'y':
@@ -663,7 +676,7 @@ void * glutThread(void* p)
 int main(int argc, char *argv[])
 {
 
-	bool bBootloader = false, bConnectS0 = false, bWait = false, bMMU = false;
+	bool bBootloader = false, bConnectS0 = false, bWait = false, bMMU = false, bLoadFW= false;
 	struct avr_flash flash_data;
 	char boot_path[1024] = "stk500boot_v2_mega2560.hex";
 	//char boot_path[1024] = "atmega2560_PFW.axf";
@@ -684,6 +697,8 @@ int main(int argc, char *argv[])
 			bBootloader = true;
 		else if (!strcmp(argv[i], "-w"))
 			bWait = true;
+		else if (!strcmp(argv[i], "-l"))
+			bLoadFW = true;
 		else if (!strcmp(argv[i], "-m"))
 			bMMU = true;
 		else if (!strcmp(argv[i], "-S0"))
@@ -735,8 +750,8 @@ int main(int argc, char *argv[])
 	avr->reset = powerup_and_reset_helper;
 	hw.EEPROM = new Einsy_EEPROM(avr, flash_data.avr_eeprom_path);
 	hw.spiFlash.Load(strXFlashPath);
-
-	avr_load_firmware(avr,&f);
+	if (bLoadFW)
+		avr_load_firmware(avr,&f);
 	avr->frequency = freq;
 	avr->vcc = 5000;
 	avr->aref = 0;

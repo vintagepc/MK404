@@ -61,7 +61,7 @@ class RotaryEncoder:public BasePeripheral
 
         avr_cycle_timer_t m_fcnRelease = MAKE_C_TIMER_CALLBACK(RotaryEncoder,OnButtonReleaseTimer);
 
-        bool m_bVerbose = false;
+        bool m_bVerbose = true;
         uint8_t m_uiPulseCt = 0;
         Direction m_eDirection = CCW_CLICK;
         int m_iPhase = 0;			// current position

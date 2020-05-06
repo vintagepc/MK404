@@ -76,7 +76,15 @@ void uart_pty::FlushData()
 		TRACE(int r = p->pty.out.read;)
 		uint8_t byte = uart_pty_fifo_read(&pty.out);
 		TRACE(printf("uart_pty_flush_incoming send r %03d:%02x\n", r, byte);)
-		RaiseIRQ(BYTE_OUT, byte);
+		if (m_chrLast == '\n' && byte == '\n')
+			printf("Swallowing repeated newlines\n");
+		else
+		{
+			if (byte !='\n')
+				m_chrLast = byte;
+			RaiseIRQ(BYTE_OUT, byte);
+
+		}
 
 		if (tap.s) {
 			if (tap.crlf && byte == '\n')
@@ -93,8 +101,16 @@ void uart_pty::FlushData()
 			if (byte == '\n')
 				continue;
 			uart_pty_fifo_write(&tap.in, byte);
-			RaiseIRQ(BYTE_OUT, byte);
-		}
+			if (m_chrLast == '\n' && byte == '\n')
+				printf("2Swallowing repeated newlines\n");
+			else
+			{
+				if (byte !='\n')
+					m_chrLast = byte;
+				RaiseIRQ(BYTE_OUT, byte);
+
+			}
+			}
 	}
 }
 

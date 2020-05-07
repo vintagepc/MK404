@@ -274,7 +274,7 @@ avr_run_thread(
 		uint8_t uiMCUSR = avr_regbit_get(avr,MCUSR);
 		if (uiMCUSR != uiLastMCUSR)
 		{
-			uiLastMCUSR = uiMCUSR;
+			printf("MCUSR: %02x\n",uiLastMCUSR = uiMCUSR);
 			if (uiMCUSR) // only run on change and not changed to 0
 				powerup_and_reset_helper(avr);
 		}

@@ -247,7 +247,7 @@ void displayCB(void)		/* function called whenever redisplay needed */
 	glutSwapBuffers();
 }
 
-
+uint8_t uiLastMCUSR = 0;
 // This is for stuff that needs to happen before powerup and after resets...
 // things like resetting button states since that cancels any pending cycle timers.
 void powerup_and_reset_helper(avr_t *avr)
@@ -277,9 +277,18 @@ static void *
 avr_run_thread(
 		void * ignore)
 {
+	avr_regbit_t MCUSR = AVR_IO_REGBITS(0x34 + 32,0,0xFF);
 	printf("Starting AVR execution...\n");
 	int state = cpu_Running;
 	while ((state != cpu_Done) && (state != cpu_Crashed)){
+		// Re init the special workarounds we need after a reset.
+		uint8_t uiMCUSR = avr_regbit_get(avr,MCUSR);
+		if (uiMCUSR != uiLastMCUSR)
+		{
+			printf("MCUSR: %02x\n",uiLastMCUSR = uiMCUSR);
+			if (uiMCUSR) // only run on change and not changed to 0
+				powerup_and_reset_helper(avr);
+		}
 		if (guKey) {
 			switch (guKey) {
 				case 'w':
@@ -298,12 +307,14 @@ avr_run_thread(
 					printf("RESET/KILL\n");
 					// RESET BUTTON
 					avr_reset(avr);
+					avr_regbit_set(avr, avr->reset_flags.extrf);
 					break;
 				case 't':
 					printf("FACTORY_RESET\n");
 					bFactoryReset =true;
 					// Hold the button during boot to get factory reset menu
 					avr_reset(avr);
+					avr_regbit_set(avr, avr->reset_flags.extrf);
 				case 'h':
 					hw.encoder.PushAndHold();
 					break;

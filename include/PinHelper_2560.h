@@ -7,17 +7,6 @@
 #ifndef __PINHELPER_H__
 #define __PINHELPER_H__
 
-// Returns a char representation of the port, e.g. 'A'
-#define PORT(n)digital_pin_to_port_PGM[n]
-
-// Returns the port index/bitshift for the pin.
-#define PIN(n)digital_pin_to_bit_mask_PGM[n]
-
-// Get Char rep of the timer port. 
-#define TIMER_CHAR(n) '0' + (digital_pin_to_timer_PGM[n]>>4)
-// Get inde of the timer 
-#define TIMER_IDX(n) digital_pin_to_timer_PGM[n] &0x0F 
-
 // Shortcuts to make it easy to copy-paste tables rather than 
 // having to alter every entry:
 #define PA 'A'
@@ -53,7 +42,7 @@
 #define _BV(w)w
 
 
- static const char digital_pin_to_port_PGM[] = {
+ static const unsigned char digital_pin_to_port_PGM[] = {
 	// PORTLIST		
 	// -------------------------------------------		
 	PE	, // PE 0 ** 0 ** USART0_RX	
@@ -144,7 +133,7 @@
 	PH 	, // PH 7 ** 85 ** D85
 };
 
-static const char digital_pin_to_bit_mask_PGM[] = {
+static const unsigned char digital_pin_to_bit_mask_PGM[] = {
 	// PIN IN PORT		
 	// -------------------------------------------		
 	_BV( 0 )	, // PE 0 ** 0 ** USART0_RX	
@@ -236,7 +225,7 @@ static const char digital_pin_to_bit_mask_PGM[] = {
 };
 
 
-static const char const digital_pin_to_timer_PGM[] = {
+static const unsigned char digital_pin_to_timer_PGM[] = {
 	// TIMERS		
 	// -------------------------------------------		
 	NOT_ON_TIMER	, // PE 0 ** 0 ** USART0_RX	
@@ -326,5 +315,17 @@ static const char const digital_pin_to_timer_PGM[] = {
 	NOT_ON_TIMER 	, // PH 2 ** 84 ** D84
 	NOT_ON_TIMER 	, // PH 7 ** 85 ** D85
 };
+
+// Returns a char representation of the port, e.g. 'A'
+static inline unsigned char PORT(unsigned int n) {return digital_pin_to_port_PGM[n];}
+
+// Returns the port index/bitshift for the pin.
+static inline unsigned char PIN(unsigned int n) {return digital_pin_to_bit_mask_PGM[n];}
+
+// Get Char rep of the timer port. 
+static inline unsigned char TIMER_CHAR(unsigned int n) { return '0' + (digital_pin_to_timer_PGM[n]>>4); }
+
+// Get index of the timer 
+static inline unsigned char TIMER_IDX(unsigned int n) { return  digital_pin_to_timer_PGM[n]&0xF; }
 
 #endif

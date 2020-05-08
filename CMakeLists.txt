@@ -69,7 +69,8 @@ set(EINSY_SOURCES
     hwDefs/VoltageSrc.cpp
     hwDefs/w25x20cl.cpp
     MMU2.cpp
-    include/SerialPipe.cpp  
+    include/SerialPipe.cpp
+    utility/TestVis.cpp  
 )
 
 add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${H_FILES} ${INCLUDE_FILES} ${FIRMWARE})
@@ -82,6 +83,7 @@ target_include_directories (Einsy PUBLIC
                             "${PROJECT_SOURCE_DIR}/../../simavr/cores"
                             "${PROJECT_SOURCE_DIR}/hwDefs"
                             "${PROJECT_SOURCE_DIR}/include"
+                            "${PROJECT_SOURCE_DIR}/3rdParty"
                          )
 
 find_library(LIBSIMAVR

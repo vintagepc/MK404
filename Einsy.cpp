@@ -434,6 +434,8 @@ void InitGL2()
 	gluPerspective(45.0, (float)800 / (float)800, 0.01f, 100.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
 }
 
 void setupLCD()
@@ -857,12 +859,14 @@ int main(int argc, char *argv[])
 
 	initGL(w * pixsize, h * pixsize);
 
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH) ;
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
 	window2 = glutCreateWindow("FancyGraphics");	/* create window */
 
+	glewInit();
+
 	InitGL2();
 
-	printf("GLEW: %d\n", glewInit());
 
 	vis.Load();
 

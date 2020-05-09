@@ -69,7 +69,7 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t * avr,avr_cycle_count_
 	
     if(--m_uiPulseCt >0) // Continue ticking the encoder
 	{
-		RegisterTimerUsec(MAKE_C_TIMER_CALLBACK(RotaryEncoder,OnStateChangeTimer),PULSE_DURATION_US,this);
+		RegisterTimerUsec(m_fcnStateChange,PULSE_DURATION_US,this);
 	}
 	return 0;
 }
@@ -92,7 +92,7 @@ void RotaryEncoder::_Push(uint32_t uiDuration)
 	RaiseIRQ(OUT_BUTTON, 1);
 
 	// Pull up later
-	RegisterTimerUsec(MAKE_C_TIMER_CALLBACK(RotaryEncoder,OnButtonReleaseTimer), uiDuration, this);
+	RegisterTimerUsec(m_fcnRelease, uiDuration, this);
 }
 
 void RotaryEncoder::Push()
@@ -102,7 +102,7 @@ void RotaryEncoder::Push()
 
 void RotaryEncoder::PushAndHold()
 {
-	_Push(BUTTON_DURATION_LONG_US);
+	_Push(BUTTON_DURATION_LONG_US*10);
 }
 
 /*
@@ -117,7 +117,7 @@ void RotaryEncoder::Twist(Direction eDir)
 		m_eDirection = eDir;
 		m_uiPulseCt = 4;
 	}
-	RegisterTimerUsec(MAKE_C_TIMER_CALLBACK(RotaryEncoder,OnStateChangeTimer),PULSE_DURATION_US, this);
+	RegisterTimerUsec(m_fcnStateChange,PULSE_DURATION_US, this);
 }
 
 void RotaryEncoder::Init(avr_t *avr)

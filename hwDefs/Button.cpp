@@ -46,8 +46,8 @@ avr_cycle_count_t Button::AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen)
 
 void Button::Press(uint32_t uiUsec)
 {
-	CancelTimer(MAKE_C_TIMER_CALLBACK(Button,AutoRelease),this);
+	CancelTimer(m_fcnRelease,this);
 	RaiseIRQ(BUTTON_OUT, 0);// press
 	// register the auto-release
-	RegisterTimerUsec(MAKE_C_TIMER_CALLBACK(Button,AutoRelease),uiUsec, this);
+	RegisterTimerUsec(m_fcnRelease,uiUsec, this);
 }

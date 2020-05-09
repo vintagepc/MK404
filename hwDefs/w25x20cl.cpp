@@ -294,7 +294,7 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 void w25x20cl::Load(const char* path)
 {
 	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
-	int m_fdFlash = open(path, O_RDWR | O_CREAT, 0644);
+	m_fdFlash = open(path, O_RDWR | O_CREAT, 0644);
 	if (m_fdFlash < 0) {
 		perror(path);
 		exit(1);

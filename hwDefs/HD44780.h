@@ -137,6 +137,8 @@ class HD44780:public BasePeripheral
         void OnPinChanged(avr_irq_t *irq, uint32_t value);
         avr_cycle_count_t OnEPinChanged(avr_t *avr, avr_cycle_count_t value);
 
+		avr_cycle_timer_t m_fcnEPinChanged = MAKE_C_TIMER_CALLBACK(HD44780,OnEPinChanged);
+
         void IncrementCursor();
         void IncrementCGRAMCursor();
 
@@ -147,6 +149,8 @@ class HD44780:public BasePeripheral
         uint32_t ProcessRead();
 
         avr_cycle_count_t OnBusyTimeout(avr_t *avr, avr_cycle_count_t when);
+
+		avr_cycle_timer_t m_fcnBusy = MAKE_C_TIMER_CALLBACK(HD44780,OnBusyTimeout);
 
         uint16_t m_uiCursor = 0, m_uiCGCursor = 0;			// offset in vram
         bool m_bInCGRAM = false;

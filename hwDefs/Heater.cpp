@@ -48,7 +48,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
     RaiseIRQ(TEMP_OUT,(int)m_fCurrentTemp*256);
 
     if (m_uiPWM>0 || m_fCurrentTemp>m_fAmbientTemp+0.3)
-        RegisterTimerUsec(MAKE_C_TIMER_CALLBACK(Heater,OnTempTick),300000,this);
+        RegisterTimerUsec(m_fcnTempTick,300000,this);
     else
     {
         m_fCurrentTemp = m_fCurrentTemp;
@@ -64,7 +64,7 @@ void Heater::OnPWMChanged(struct avr_irq_t * irq,uint32_t value)
         m_uiPWM = value;
 
     if (m_uiPWM > 0)
-        RegisterTimerUsec(MAKE_C_TIMER_CALLBACK(Heater,OnTempTick), 100000, this);
+        RegisterTimerUsec(m_fcnTempTick, 100000, this);
 }
 
 //TCCR0A  _SFR_IO8(0x24)

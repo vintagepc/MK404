@@ -9,6 +9,124 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <GL/glut.h>
+
+void TestVis::_Draw(const std::vector<TestVis::DrawObject>& drawObjects, std::vector<tinyobj::material_t>& materials, std::map<std::string, GLuint>& textures) {
+  glPolygonMode(GL_FRONT, GL_FILL);
+  glPolygonMode(GL_BACK, GL_FILL);
+
+  glEnable(GL_POLYGON_OFFSET_FILL);
+  glPolygonOffset(1.0, 1.0);
+  GLsizei stride = (3 + 3 + 3 + 2) * sizeof(float);
+  for (size_t i = 0; i < drawObjects.size(); i++) {
+    TestVis::DrawObject o = drawObjects[i];
+    if (o.vb < 1) {
+      continue;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, o.vb);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    if ((o.material_id < materials.size())) {
+      std::string diffuse_texname = materials[o.material_id].diffuse_texname;
+      if (textures.find(diffuse_texname) != textures.end()) {
+          glBindTexture(GL_TEXTURE_2D, textures[diffuse_texname]);
+      }
+    }
+    glVertexPointer(3, GL_FLOAT, stride, (const void*)0);
+    glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
+    glColorPointer(3, GL_FLOAT, stride, (const void*)(sizeof(float) * 6));
+    glTexCoordPointer(2, GL_FLOAT, stride, (const void*)(sizeof(float) * 9));
+
+    glDrawArrays(GL_TRIANGLES, 0, 3 * o.numTriangles);
+    //CheckErrors("drawarrays");
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+  // draw wireframe
+  glDisable(GL_POLYGON_OFFSET_FILL);
+  glPolygonMode(GL_FRONT, GL_LINE);
+  glPolygonMode(GL_BACK, GL_LINE);
+
+  glColor3f(0.0f, 0.0f, 0.4f);
+  for (size_t i = 0; i < drawObjects.size(); i++) {
+    DrawObject o = drawObjects[i];
+    if (o.vb < 1) {
+      continue;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, o.vb);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glVertexPointer(3, GL_FLOAT, stride, (const void*)0);
+    glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
+    glColorPointer(3, GL_FLOAT, stride, (const void*)(sizeof(float) * 6));
+    glTexCoordPointer(2, GL_FLOAT, stride, (const void*)(sizeof(float) * 9));
+
+    glDrawArrays(GL_TRIANGLES, 0, 3 * o.numTriangles);
+    //CheckErrors("drawarrays");
+  }
+}
+
+void TestVis::Draw()
+{
+    eye[0] = 0.0f;
+    eye[1] = 0.0f;
+    eye[2] = 3.0f;
+
+    lookat[0] = 0.0f;
+    lookat[1] = 0.0f;
+    lookat[2] = 0.0f;
+
+    up[0] = 0.0f;
+    up[1] = 1.0f;
+    up[2] = 0.0f;
+    glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+
+    // camera & rotate
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    GLfloat mat[4][4];
+    gluLookAt(eye[0], eye[1], eye[2], lookat[0], lookat[1], lookat[2], up[0],
+              up[1], up[2]);
+   // build_rotmatrix(mat, curr_quat);
+    //glMultMatrixf(&mat[0][0]);
+
+    // Fit to -1, 1
+    glScalef(1.0f / maxExtent, 1.0f / maxExtent, 1.0f / maxExtent);
+
+    // Centerize object.
+    glTranslatef(-0.5 * (bmax[0] + bmin[0]), -0.5 * (bmax[1] + bmin[1]),
+                 -0.5 * (bmax[2] + bmin[2]));
+
+    _Draw(gDrawObjects, materials, textures);
+
+    glutSwapBuffers();
+}
+
+void TestVis::Load()
+{
+
+
+    if (false == LoadObjAndConvert(bmin, bmax, &gDrawObjects, materials, textures, "../assets/xyzCalibration_cube.obj"))
+        printf("Failed to load obj\n");
+    maxExtent = 0.5f * (bmax[0] - bmin[0]);
+    if (maxExtent < 0.5f * (bmax[1] - bmin[1])) {
+        maxExtent = 0.5f * (bmax[1] - bmin[1]);
+    }
+    if (maxExtent < 0.5f * (bmax[2] - bmin[2])) {
+        maxExtent = 0.5f * (bmax[2] - bmin[2]);
+    }
+}
 
 static std::string GetBaseDir(const std::string &filepath) {
   if (filepath.find_last_of("/\\") != std::string::npos)

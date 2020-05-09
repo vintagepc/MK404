@@ -33,6 +33,7 @@
 #if __APPLE__
 #include <GLUT/glut.h>
 #else
+#include <GL/glew.h>
 #include <GL/glut.h>
 #endif
 #include <pthread.h>
@@ -62,10 +63,7 @@ extern "C" {
 //#include "hd44780_glut.h"
 #include "include/thermistortables.h"
 #include "sim_vcd_file.h"
-#define __cppOld __cplusplus
-#undef __cplusplus // Needed to dodge some unwanted includes...
 #include "include/MK3/eeprom.h"
-#define __cplusplus __cppOld
 #include "sd_card.h"
 }
 #include "uart_pty.h"
@@ -86,6 +84,8 @@ extern "C" {
 
 #include "SerialPipe.h"
 
+#include "TestVis.h"
+
 #include "include/MK3/Configuration_prusa.h"
 
 #define __AVR_ATmega2560__
@@ -105,7 +105,7 @@ struct avr_flash {
 	char avr_eeprom_path[1024];
 };
 
-int window;
+int window,window2;
 
 int iScheme = 0;
 
@@ -137,6 +137,8 @@ struct hw_t {
 } hw;
 
 bool bFactoryReset = false;
+
+TestVis vis = TestVis();
 
 unsigned char guKey = 0;
 
@@ -189,6 +191,12 @@ void avr_special_deinit( avr_t* avr, void * data)
 
 	hw.mmu.Stop();
 
+}
+
+void displayCB2(void)
+{
+	glutSetWindow(window2);
+	vis.Draw();
 }
 
 void displayCB(void)		/* function called whenever redisplay needed */
@@ -380,6 +388,7 @@ void timerCB(int i)
 	// restart timer
 	glutTimerFunc(50, timerCB, 0);
 	displayCB();
+	//displayCB2();
 	//hd44780_print(&hd44780);
 }
 
@@ -406,6 +415,25 @@ int initGL(int w, int h)
 	glEnable(GL_BLEND);
 
 	return 1;
+}
+
+void InitGL2()
+{
+	glViewport(0, 0, 800, 800);
+	glMatrixMode(GL_PROJECTION);
+	glutDisplayFunc(displayCB2);	
+
+	auto fwd = [](int button, int state, int x, int y) {vis.MouseCB(button,state,x,y);};
+	glutMouseFunc(fwd);
+
+	auto fcnMove = [](int x, int y) { vis.MotionCB(x,y,window2);};
+
+	glutMotionFunc(fcnMove);
+
+	glLoadIdentity();
+	gluPerspective(45.0, (float)800 / (float)800, 0.01f, 100.0f);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
 void setupLCD()
@@ -723,7 +751,6 @@ int main(int argc, char *argv[])
 	}
 
 	avr = avr_make_mcu_by_name(mmcu);
-
 	hw.mcu = avr;
 	if (!avr) {
 		fprintf(stderr, "%s: Error creating the AVR core\n", argv[0]);
@@ -817,6 +844,8 @@ int main(int argc, char *argv[])
 	 */
 	glutInit(&argc, argv);		/* initialize GLUT system */
 
+
+
 	int w = 5 + hw.lcd.GetWidth() * 6;
 	int h = 5 + hw.lcd.GetHeight() * 9;
 	h+=40;
@@ -827,6 +856,15 @@ int main(int argc, char *argv[])
 	window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
 
 	initGL(w * pixsize, h * pixsize);
+
+	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
+	window2 = glutCreateWindow("FancyGraphics");	/* create window */
+
+	InitGL2();
+
+	printf("GLEW: %d\n", glewInit());
+
+	vis.Load();
 
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
 	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers

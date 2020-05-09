@@ -3,13 +3,20 @@
 #include <cassert>
 #include <cmath>
 #include <cstdio>
-#include <cstdlib>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <string>
 #include <vector>
+
+#include <trackball.h>
+
+#include <GL/glew.h>
 #include <GL/glut.h>
+TestVis::TestVis()
+{
+
+}
 
 void TestVis::_Draw(const std::vector<TestVis::DrawObject>& drawObjects, std::vector<tinyobj::material_t>& materials, std::map<std::string, GLuint>& textures) {
   glPolygonMode(GL_FRONT, GL_FILL);
@@ -73,19 +80,64 @@ void TestVis::_Draw(const std::vector<TestVis::DrawObject>& drawObjects, std::ve
   }
 }
 
+void TestVis::MouseCB(int button, int action, int x, int y)
+{
+ if (button == GLUT_LEFT_BUTTON) {
+    if (action == GLUT_DOWN) {
+      mouseLeftPressed = true;
+      trackball(prev_quat, 0.0, 0.0, 0.0, 0.0);
+    } else if (action == GLUT_UP) {
+      mouseLeftPressed = false;
+    }
+  }
+  if (button == GLUT_RIGHT_BUTTON) {
+    if (action == GLUT_DOWN) {
+      mouseRightPressed = true;
+    } else if (action == GLUT_UP) {
+      mouseRightPressed = false;
+    }
+  }
+  if (button == GLUT_MIDDLE_BUTTON) {
+    if (action == GLUT_DOWN) {
+      mouseMiddlePressed = true;
+    } else if (action == GLUT_UP) {
+      mouseMiddlePressed = false;
+    }
+  }
+}
+
+void TestVis::MotionCB(int x, int y, int iWin)
+{
+      float rotScale = 1.0f;
+  float transScale = 2.0f;
+
+  if (mouseLeftPressed) {
+    trackball(prev_quat, rotScale * (2.0f * prevMouseX - width) / (float)width,
+              rotScale * (height - 2.0f * prevMouseY) / (float)height,
+              rotScale * (2.0f * x - width) / (float)width,
+              rotScale * (height - 2.0f * y) / (float)height);
+
+    add_quats(prev_quat, curr_quat, curr_quat);
+  } else if (mouseMiddlePressed) {
+    eye[0] -= transScale * (x - prevMouseX) / (float)width;
+    lookat[0] -= transScale * (x - prevMouseX) / (float)width;
+    eye[1] += transScale * (y - prevMouseY) / (float)height;
+    lookat[1] += transScale * (y - prevMouseY) / (float)height;
+  } else if (mouseRightPressed) {
+    eye[2] += transScale * (y - prevMouseY) / (float)height;
+    lookat[2] += transScale * (y - prevMouseY) / (float)height;
+  }
+
+  // Update mouse point
+  prevMouseX = x;
+  prevMouseY = y;
+  glutPostWindowRedisplay(iWin);
+}
+
 void TestVis::Draw()
 {
-    eye[0] = 0.0f;
-    eye[1] = 0.0f;
-    eye[2] = 3.0f;
-
-    lookat[0] = 0.0f;
-    lookat[1] = 0.0f;
-    lookat[2] = 0.0f;
-
-    up[0] = 0.0f;
-    up[1] = 1.0f;
-    up[2] = 0.0f;
+  //  if (!bLoaded)
+  //      return;
     glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -98,8 +150,8 @@ void TestVis::Draw()
     GLfloat mat[4][4];
     gluLookAt(eye[0], eye[1], eye[2], lookat[0], lookat[1], lookat[2], up[0],
               up[1], up[2]);
-   // build_rotmatrix(mat, curr_quat);
-    //glMultMatrixf(&mat[0][0]);
+    build_rotmatrix(mat, curr_quat);
+    glMultMatrixf(&mat[0][0]);
 
     // Fit to -1, 1
     glScalef(1.0f / maxExtent, 1.0f / maxExtent, 1.0f / maxExtent);
@@ -115,9 +167,19 @@ void TestVis::Draw()
 
 void TestVis::Load()
 {
+    trackball(curr_quat,0,0,0,0);
+    eye[0] = 0.0f;
+    eye[1] = 0.0f;
+    eye[2] = 3.0f;
 
+    lookat[0] = 0.0f;
+    lookat[1] = 0.0f;
+    lookat[2] = 0.0f;
 
-    if (false == LoadObjAndConvert(bmin, bmax, &gDrawObjects, materials, textures, "../assets/xyzCalibration_cube.obj"))
+    up[0] = 0.0f;
+    up[1] = 1.0f;
+    up[2] = 0.0f;
+    if (false == LoadObjAndConvert(bmin, bmax, &gDrawObjects, materials, textures, "../assets/Stationary.obj"))
         printf("Failed to load obj\n");
     maxExtent = 0.5f * (bmax[0] - bmin[0]);
     if (maxExtent < 0.5f * (bmax[1] - bmin[1])) {
@@ -126,6 +188,7 @@ void TestVis::Load()
     if (maxExtent < 0.5f * (bmax[2] - bmin[2])) {
         maxExtent = 0.5f * (bmax[2] - bmin[2]);
     }
+    bLoaded = true;
 }
 
 static std::string GetBaseDir(const std::string &filepath) {

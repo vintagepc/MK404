@@ -71,9 +71,12 @@ set(EINSY_SOURCES
     MMU2.cpp
     include/SerialPipe.cpp
     utility/TestVis.cpp  
+    3rdParty/trackball.cc
 )
 
 add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${H_FILES} ${INCLUDE_FILES} ${FIRMWARE})
+
+target_compile_features(Einsy PRIVATE cxx_range_for)
 
 #//add_subdirectory(Hardware)
 
@@ -83,6 +86,7 @@ target_include_directories (Einsy PUBLIC
                             "${PROJECT_SOURCE_DIR}/../../simavr/cores"
                             "${PROJECT_SOURCE_DIR}/hwDefs"
                             "${PROJECT_SOURCE_DIR}/include"
+                            "${PROJECT_SOURCE_DIR}/utility"
                             "${PROJECT_SOURCE_DIR}/3rdParty"
                          )
 

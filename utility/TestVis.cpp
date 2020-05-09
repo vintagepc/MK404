@@ -18,10 +18,77 @@ TestVis::TestVis()
 
 }
 
+void TestVis::Draw()
+{
+  //  if (!bLoaded)
+  //      return;
+    glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+    glClearDepth(1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_TEXTURE_2D);
+  glLoadIdentity();
+  //printf("eye: %f %f %f\n",curr_quat[0],curr_quat[1], curr_quat[2]);
+    float pos[] = {-10,10,-10,1};
+    float fpos[] = {0,1,-1,1};
+    float fCol[] = {.3,.3,.3,1};
+    float fCol2[] = {0,0,0,1};
+  //   glEnable(GL_AUTO_NORMAL);
+    //glFrontFace(GL_CCW);
+
+    // camera & rotate
+
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_LIGHT0);
+    glLightfv(GL_LIGHT0,GL_AMBIENT_AND_DIFFUSE, fCol);
+    glLightfv(GL_LIGHT0,GL_POSITION, pos);
+  
+
+    //glLightfv(GL_LIGHT0,GL_AMBIENT, fCol2);
+
+    glEnable(GL_LIGHTING); 
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    GLfloat mat[4][4];
+    gluLookAt(eye[0], eye[1], eye[2], lookat[0], lookat[1], lookat[2], up[0],
+              up[1], up[2]);
+      
+
+    build_rotmatrix(mat, curr_quat);
+    glMultMatrixf(&mat[0][0]);
+
+    // Fit to -1, 1
+    glScalef(1.0f / maxExtent, 1.0f / maxExtent, 1.0f / maxExtent);
+
+    // Centerize object.
+    glTranslatef(-0.5 * (bmax[0] + bmin[0]), -0.5 * (bmax[1] + bmin[1]),
+                 -0.5 * (bmax[2] + bmin[2]));
+
+    _Draw(gDrawObjects, materials, textures);
+
+
+    glutSwapBuffers();
+}
+
 void TestVis::_Draw(const std::vector<TestVis::DrawObject>& drawObjects, std::vector<tinyobj::material_t>& materials, std::map<std::string, GLuint>& textures) {
   glPolygonMode(GL_FRONT, GL_FILL);
   glPolygonMode(GL_BACK, GL_FILL);
-
+//  glLightfv(GL_LIGHT0,GL_AMBIENT, );
+    float no_mat[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    float mat_ambient[] = {0.3f, 0.3f, 0.3f, 1.0f};
+    float mat_ambient_color[] = {0.5f, 0.5f, 0.5f, 1.0f};
+    float mat_diffuse[] = {0.1f, 0.1f, 0.1f, 1.0f};
+    float mat_specular[] = {.8f, .2f, .2f, 1.0f};
+    float no_shininess = 0.0f;
+    float low_shininess = 5.0f;
+    float high_shininess = 100.0f;
+    float mat_emission[] = {0.3f, 0.2f, 0.2f, 0.0f};
+  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, no_mat);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, high_shininess);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, no_mat);
   glEnable(GL_POLYGON_OFFSET_FILL);
   glPolygonOffset(1.0, 1.0);
   GLsizei stride = (3 + 3 + 3 + 2) * sizeof(float);
@@ -40,25 +107,24 @@ void TestVis::_Draw(const std::vector<TestVis::DrawObject>& drawObjects, std::ve
     if ((o.material_id < materials.size())) {
       std::string diffuse_texname = materials[o.material_id].diffuse_texname;
       if (textures.find(diffuse_texname) != textures.end()) {
-          glBindTexture(GL_TEXTURE_2D, textures[diffuse_texname]);
+         // glBindTexture(GL_TEXTURE_2D, textures[diffuse_texname]);
       }
     }
     glVertexPointer(3, GL_FLOAT, stride, (const void*)0);
     glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
     glColorPointer(3, GL_FLOAT, stride, (const void*)(sizeof(float) * 6));
     glTexCoordPointer(2, GL_FLOAT, stride, (const void*)(sizeof(float) * 9));
-
     glDrawArrays(GL_TRIANGLES, 0, 3 * o.numTriangles);
     //CheckErrors("drawarrays");
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
+//  return;
   // draw wireframe
   glDisable(GL_POLYGON_OFFSET_FILL);
   glPolygonMode(GL_FRONT, GL_LINE);
   glPolygonMode(GL_BACK, GL_LINE);
 
-  glColor3f(0.0f, 0.0f, 0.4f);
   for (size_t i = 0; i < drawObjects.size(); i++) {
     DrawObject o = drawObjects[i];
     if (o.vb < 1) {
@@ -85,7 +151,7 @@ void TestVis::MouseCB(int button, int action, int x, int y)
  if (button == GLUT_LEFT_BUTTON) {
     if (action == GLUT_DOWN) {
       mouseLeftPressed = true;
-      trackball(prev_quat, 0.0, 0.0, 0.0, 0.0);
+     // trackball(prev_quat, 0.0, 0.0, 0.0, 0.0);
     } else if (action == GLUT_UP) {
       mouseLeftPressed = false;
     }
@@ -134,37 +200,6 @@ void TestVis::MotionCB(int x, int y, int iWin)
   glutPostWindowRedisplay(iWin);
 }
 
-void TestVis::Draw()
-{
-  //  if (!bLoaded)
-  //      return;
-    glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_TEXTURE_2D);
-
-    // camera & rotate
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    GLfloat mat[4][4];
-    gluLookAt(eye[0], eye[1], eye[2], lookat[0], lookat[1], lookat[2], up[0],
-              up[1], up[2]);
-    build_rotmatrix(mat, curr_quat);
-    glMultMatrixf(&mat[0][0]);
-
-    // Fit to -1, 1
-    glScalef(1.0f / maxExtent, 1.0f / maxExtent, 1.0f / maxExtent);
-
-    // Centerize object.
-    glTranslatef(-0.5 * (bmax[0] + bmin[0]), -0.5 * (bmax[1] + bmin[1]),
-                 -0.5 * (bmax[2] + bmin[2]));
-
-    _Draw(gDrawObjects, materials, textures);
-
-    glutSwapBuffers();
-}
-
 void TestVis::Load()
 {
     trackball(curr_quat,0,0,0,0);
@@ -179,7 +214,7 @@ void TestVis::Load()
     up[0] = 0.0f;
     up[1] = 1.0f;
     up[2] = 0.0f;
-    if (false == LoadObjAndConvert(bmin, bmax, &gDrawObjects, materials, textures, "../assets/Stationary.obj"))
+    if (false == LoadObjAndConvert(bmin, bmax, &gDrawObjects, materials, textures, "../assets/X_AXIS.obj"))
         printf("Failed to load obj\n");
     maxExtent = 0.5f * (bmax[0] - bmin[0]);
     if (maxExtent < 0.5f * (bmax[1] - bmin[1])) {

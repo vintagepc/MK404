@@ -43,6 +43,9 @@ class Button:public BasePeripheral
 
 	private:
 		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);
+
+		avr_cycle_timer_t m_fcnRelease = MAKE_C_TIMER_CALLBACK(Button,AutoRelease);
+
 		bool m_bValue = false;
 		const char *m_strName = nullptr;
 

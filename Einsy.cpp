@@ -60,11 +60,11 @@
 #include "avr_uart.h"
 extern "C" {
 //#include "hd44780_glut.h"
-#include "thermistortables.h"
+#include "include/thermistortables.h"
 #include "sim_vcd_file.h"
 #define __cppOld __cplusplus
 #undef __cplusplus // Needed to dodge some unwanted includes...
-#include "Firmware/eeprom.h"
+#include "include/MK3/eeprom.h"
 #define __cplusplus __cppOld
 #include "sd_card.h"
 }
@@ -86,12 +86,12 @@ extern "C" {
 
 #include "SerialPipe.h"
 
-#include "Firmware/Configuration_prusa.h"
+#include "include/MK3/Configuration_prusa.h"
 
 #define __AVR_ATmega2560__
-#include "Firmware/pins_Einsy_1_0.h"
+#include "include/MK3/pins_Einsy_1_0.h"
 
-#include "Firmware/config.h"
+#include "include/MK3/config.h"
 
 avr_t * avr = NULL;
 avr_vcd_t vcd_file;
@@ -135,6 +135,8 @@ struct hw_t {
 	Einsy_EEPROM *EEPROM;
 	SerialPipe *spPipe;
 } hw;
+
+bool bFactoryReset = false;
 
 unsigned char guKey = 0;
 
@@ -245,7 +247,7 @@ void displayCB(void)		/* function called whenever redisplay needed */
 	glutSwapBuffers();
 }
 
-
+uint8_t uiLastMCUSR = 0;
 // This is for stuff that needs to happen before powerup and after resets...
 // things like resetting button states since that cancels any pending cycle timers.
 void powerup_and_reset_helper(avr_t *avr)
@@ -258,17 +260,35 @@ void powerup_and_reset_helper(avr_t *avr)
 	// Restore powerpanic to high
 	hw.PowerPanic->Press(1);
 
+	hw.UART0.Reset();
+
 	//depress encoder knob
-	avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 0);
+	if (!bFactoryReset)
+		avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 0);
+
+	bFactoryReset = false;
+
+	// TIMSK2
+	avr_regbit_t rb = AVR_IO_REGBITS(0x70, 0, 0b111);
+	avr_regbit_setto(avr,rb,0x01);
 }
 
 static void *
 avr_run_thread(
 		void * ignore)
 {
+	avr_regbit_t MCUSR = AVR_IO_REGBITS(0x34 + 32,0,0xFF);
 	printf("Starting AVR execution...\n");
 	int state = cpu_Running;
 	while ((state != cpu_Done) && (state != cpu_Crashed)){
+		// Re init the special workarounds we need after a reset.
+		uint8_t uiMCUSR = avr_regbit_get(avr,MCUSR);
+		if (uiMCUSR != uiLastMCUSR)
+		{
+			printf("MCUSR: %02x\n",uiLastMCUSR = uiMCUSR);
+			if (uiMCUSR) // only run on change and not changed to 0
+				powerup_and_reset_helper(avr);
+		}
 		if (guKey) {
 			switch (guKey) {
 				case 'w':
@@ -287,11 +307,15 @@ avr_run_thread(
 					printf("RESET/KILL\n");
 					// RESET BUTTON
 					avr_reset(avr);
+					avr_regbit_set(avr, avr->reset_flags.extrf);
 					break;
 				case 't':
 					printf("FACTORY_RESET\n");
+					bFactoryReset =true;
 					// Hold the button during boot to get factory reset menu
 					avr_reset(avr);
+					avr_regbit_set(avr, avr->reset_flags.extrf);
+				case 'h':
 					hw.encoder.PushAndHold();
 					break;
 				case 'y':
@@ -663,7 +687,7 @@ void * glutThread(void* p)
 int main(int argc, char *argv[])
 {
 
-	bool bBootloader = false, bConnectS0 = false, bWait = false, bMMU = false;
+	bool bBootloader = false, bConnectS0 = false, bWait = false, bMMU = false, bLoadFW= false;
 	struct avr_flash flash_data;
 	char boot_path[1024] = "stk500boot_v2_mega2560.hex";
 	//char boot_path[1024] = "atmega2560_PFW.axf";
@@ -684,6 +708,8 @@ int main(int argc, char *argv[])
 			bBootloader = true;
 		else if (!strcmp(argv[i], "-w"))
 			bWait = true;
+		else if (!strcmp(argv[i], "-l"))
+			bLoadFW = true;
 		else if (!strcmp(argv[i], "-m"))
 			bMMU = true;
 		else if (!strcmp(argv[i], "-S0"))
@@ -735,8 +761,8 @@ int main(int argc, char *argv[])
 	avr->reset = powerup_and_reset_helper;
 	hw.EEPROM = new Einsy_EEPROM(avr, flash_data.avr_eeprom_path);
 	hw.spiFlash.Load(strXFlashPath);
-
-	avr_load_firmware(avr,&f);
+	if (bLoadFW)
+		avr_load_firmware(avr,&f);
 	avr->frequency = freq;
 	avr->vcc = 5000;
 	avr->aref = 0;

@@ -268,7 +268,7 @@ uint32_t HD44780::ProcessRead()
 			// the timer too
 			SetFlag(HD44780_FLAG_BUSY, 0);
 			RaiseIRQ(BUSY, 0);
-			CancelTimer(MAKE_C_TIMER_CALLBACK(HD44780,OnBusyTimeout),this);
+			CancelTimer(m_fcnBusy,this);
 		}
 		RaiseIRQ(DATA_OUT, m_uiReadPins);
 
@@ -300,7 +300,7 @@ avr_cycle_count_t HD44780::OnEPinChanged(struct avr_t * avr, avr_cycle_count_t w
 	if (delay) {
 		SetFlag(HD44780_FLAG_BUSY, 1);
 		RaiseIRQ(BUSY, 1);
-		RegisterTimerUsec(MAKE_C_TIMER_CALLBACK(HD44780,OnBusyTimeout), delay,this);
+		RegisterTimerUsec(m_fcnBusy, delay,this);
 	}
 	SetFlag(HD44780_FLAG_REENTRANT, 0);
 	return 0;
@@ -334,7 +334,7 @@ void HD44780::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
 	int e = m_uiPinState & (1 << E);
 	// on the E pin rising edge, do stuff otherwise just exit
 	if (!eo && e)
-		RegisterTimer(MAKE_C_TIMER_CALLBACK(HD44780,OnEPinChanged),1,this);
+		RegisterTimer(m_fcnEPinChanged,1,this);
 }
 
 void HD44780::Init(avr_t *avr)

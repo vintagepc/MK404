@@ -74,7 +74,7 @@ class TMC2130: public SPIPeripheral
         void OnEnableIn(avr_irq_t *irq, uint32_t value);
 
         avr_cycle_count_t OnStandStillTimeout(avr_t *avr, avr_cycle_count_t when);
-
+        avr_cycle_timer_t m_fcnStandstill = MAKE_C_TIMER_CALLBACK(TMC2130,OnStandStillTimeout);
 
         void ProcessCommand();
         void CreateReply();

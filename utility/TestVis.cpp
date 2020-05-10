@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <cstring>
 
 #include <trackball.h>
 
@@ -27,23 +28,28 @@ void TestVis::Draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
-    glDisable(GL_TEXTURE_2D);
+    glEnable(GL_TEXTURE_2D);
   glLoadIdentity();
   //printf("eye: %f %f %f\n",curr_quat[0],curr_quat[1], curr_quat[2]);
-    float pos[] = {-10,10,-10,1};
+    float pos[] = {2,2,2,0};
     float fpos[] = {0,1,-1,1};
-    float fCol[] = {.3,.3,.3,1};
-    float fCol2[] = {0,0,0,1};
+    float fNone[] = {0,0,0,1};
+    float fAmb[] = {0,0,0,1};
+    float fCol2[] = {1,1,1,1};
+    float fSpec[] = {1,1,1,1};
+    float fDiff[] = {10,10,10,1};
   //   glEnable(GL_AUTO_NORMAL);
     //glFrontFace(GL_CCW);
 
     // camera & rotate
 
     glEnable(GL_CULL_FACE);
-    glEnable(GL_LIGHT0);
-    glLightfv(GL_LIGHT0,GL_AMBIENT_AND_DIFFUSE, fCol);
+
+    glLightfv(GL_LIGHT0,GL_AMBIENT, fAmb);
+    glLightfv(GL_LIGHT0,GL_SPECULAR, fSpec);
+    glLightfv(GL_LIGHT0,GL_DIFFUSE, fDiff);
     glLightfv(GL_LIGHT0,GL_POSITION, pos);
-  
+    glEnable(GL_LIGHT0);
 
     //glLightfv(GL_LIGHT0,GL_AMBIENT, fCol2);
 
@@ -74,22 +80,10 @@ void TestVis::Draw()
 void TestVis::_Draw(const std::vector<TestVis::DrawObject>& drawObjects, std::vector<tinyobj::material_t>& materials, std::map<std::string, GLuint>& textures) {
   glPolygonMode(GL_FRONT, GL_FILL);
   glPolygonMode(GL_BACK, GL_FILL);
-//  glLightfv(GL_LIGHT0,GL_AMBIENT, );
-    float no_mat[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    float mat_ambient[] = {0.3f, 0.3f, 0.3f, 1.0f};
-    float mat_ambient_color[] = {0.5f, 0.5f, 0.5f, 1.0f};
-    float mat_diffuse[] = {0.1f, 0.1f, 0.1f, 1.0f};
-    float mat_specular[] = {.8f, .2f, .2f, 1.0f};
-    float no_shininess = 0.0f;
-    float low_shininess = 5.0f;
-    float high_shininess = 100.0f;
-    float mat_emission[] = {0.3f, 0.2f, 0.2f, 0.0f};
-  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, no_mat);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, high_shininess);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, no_mat);
   glEnable(GL_POLYGON_OFFSET_FILL);
+  //glColorMaterial(GL_FRONT,GL_DIFFUSE) ;
+  //glEnable(GL_COLOR_MATERIAL);
+
   glPolygonOffset(1.0, 1.0);
   GLsizei stride = (3 + 3 + 3 + 2) * sizeof(float);
   for (size_t i = 0; i < drawObjects.size(); i++) {
@@ -107,8 +101,20 @@ void TestVis::_Draw(const std::vector<TestVis::DrawObject>& drawObjects, std::ve
     if ((o.material_id < materials.size())) {
       std::string diffuse_texname = materials[o.material_id].diffuse_texname;
       if (textures.find(diffuse_texname) != textures.end()) {
-         // glBindTexture(GL_TEXTURE_2D, textures[diffuse_texname]);
+        glBindTexture(GL_TEXTURE_2D, textures[diffuse_texname]);
+      } else {
+        float fCopy[4] = {0,0,0,1.0f};
+        memcpy(fCopy,materials[o.material_id].ambient,3*(sizeof(float)));
+        glMaterialfv(GL_FRONT, GL_AMBIENT,  fCopy);
+        memcpy(fCopy,materials[o.material_id].diffuse,3*(sizeof(float)));
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, fCopy);
+        memcpy(fCopy,materials[o.material_id].specular,3*(sizeof(float)));
+        glMaterialfv(GL_FRONT, GL_SPECULAR, fCopy);
+        glMaterialf(GL_FRONT, GL_SHININESS, materials[o.material_id].shininess);
+        memcpy(fCopy,materials[o.material_id].emission,3*(sizeof(float)));
+        glMaterialfv(GL_FRONT, GL_EMISSION, fCopy);
       }
+
     }
     glVertexPointer(3, GL_FLOAT, stride, (const void*)0);
     glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
@@ -117,32 +123,6 @@ void TestVis::_Draw(const std::vector<TestVis::DrawObject>& drawObjects, std::ve
     glDrawArrays(GL_TRIANGLES, 0, 3 * o.numTriangles);
     //CheckErrors("drawarrays");
     glBindTexture(GL_TEXTURE_2D, 0);
-  }
-
-//  return;
-  // draw wireframe
-  glDisable(GL_POLYGON_OFFSET_FILL);
-  glPolygonMode(GL_FRONT, GL_LINE);
-  glPolygonMode(GL_BACK, GL_LINE);
-
-  for (size_t i = 0; i < drawObjects.size(); i++) {
-    DrawObject o = drawObjects[i];
-    if (o.vb < 1) {
-      continue;
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, o.vb);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-    glDisableClientState(GL_COLOR_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glVertexPointer(3, GL_FLOAT, stride, (const void*)0);
-    glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
-    glColorPointer(3, GL_FLOAT, stride, (const void*)(sizeof(float) * 6));
-    glTexCoordPointer(2, GL_FLOAT, stride, (const void*)(sizeof(float) * 9));
-
-    glDrawArrays(GL_TRIANGLES, 0, 3 * o.numTriangles);
-    //CheckErrors("drawarrays");
   }
 }
 
@@ -214,7 +194,7 @@ void TestVis::Load()
     up[0] = 0.0f;
     up[1] = 1.0f;
     up[2] = 0.0f;
-    if (false == LoadObjAndConvert(bmin, bmax, &gDrawObjects, materials, textures, "../assets/X_AXIS.obj"))
+    if (false == LoadObjAndConvert(bmin, bmax, &gDrawObjects, materials, textures, "../assets/X_Axis2.obj"))
         printf("Failed to load obj\n");
     maxExtent = 0.5f * (bmax[0] - bmin[0]);
     if (maxExtent < 0.5f * (bmax[1] - bmin[1])) {
@@ -276,7 +256,7 @@ bool TestVis::LoadObjAndConvert(float bmin[3], float bmax[3],
                        std::map<std::string, GLuint>& textures,
                        const char* filename) {
   tinyobj::attrib_t attrib;
-  std::vector<tinyobj::shape_t> shapes;
+  
 
   std::string base_dir = GetBaseDir(filename);
 #ifdef _WIN32
@@ -449,7 +429,7 @@ bool TestVis::LoadObjAndConvert(float bmin[3], float bmax[3],
           vb.push_back(n[k][1]);
           vb.push_back(n[k][2]);
           // Combine normal and diffuse to get color.
-          float normal_factor = 0.2;
+          float normal_factor = 0;
           float diffuse_factor = 1 - normal_factor;
           float c[3] = {
               n[k][0] * normal_factor + diffuse[0] * diffuse_factor,
@@ -464,9 +444,9 @@ bool TestVis::LoadObjAndConvert(float bmin[3], float bmax[3],
             c[1] /= len;
             c[2] /= len;
           }
-          vb.push_back(c[0] * 0.5 + 0.5);
-          vb.push_back(c[1] * 0.5 + 0.5);
-          vb.push_back(c[2] * 0.5 + 0.5);
+          vb.push_back(c[0]);
+          vb.push_back(c[1]);
+          vb.push_back(c[2]);
           
           vb.push_back(tc[k][0]);
           vb.push_back(tc[k][1]);

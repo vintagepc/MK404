@@ -21,6 +21,7 @@ class TestVis
         float bmin[3], bmax[3];
         std::vector<DrawObject> gDrawObjects;
         std::vector<tinyobj::material_t> materials;
+        std::vector<tinyobj::shape_t> shapes;
         std::map<std::string, GLuint> textures;
 
         int height = 800, width = 800;

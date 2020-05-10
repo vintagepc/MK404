@@ -16,13 +16,77 @@
 #include <GL/glut.h>
 TestVis::TestVis()
 {
+  trackball(curr_quat,0,0,0,0);
+    eye[0] = 0.0f;
+    eye[1] = 0.0f;
+    eye[2] = 3.0f;
 
+    lookat[0] = 0.0f;
+    lookat[1] = 0.0f;
+    lookat[2] = 0.0f;
+
+    up[0] = 0.0f;
+    up[1] = 1.0f;
+    up[2] = 0.0f;
+    if (m_bLite)
+    {
+        m_Base.SetAllVisible(false);
+        m_Y.SetAllVisible(false);
+        for (int i=1; i<4; i++)
+          m_Y.SetSubobjectVisible(i); // heatbed, sheet
+
+        m_Z.SetAllVisible(false);
+        m_Extruder.SetAllVisible(false);
+        m_Extruder.SetSubobjectVisible(31);
+    }
+    else // Disable a bunch of stuff on the Einsy board.
+      //for (int i=28;i<54; i++)
+        m_Base.SetSubobjectVisible(1,false);
+}
+
+void TestVis::Init(avr_t *avr)
+{
+  _Init(avr,this);
+  RegisterNotify(X_IN,MAKE_C_CALLBACK(TestVis,OnXChanged),this);
+  RegisterNotify(Y_IN,MAKE_C_CALLBACK(TestVis,OnYChanged),this);
+  RegisterNotify(Z_IN,MAKE_C_CALLBACK(TestVis,OnZChanged),this);
+  RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(TestVis, OnSheetChanged), this);
+  m_bDirty = true;
+}
+
+void TestVis::OnXChanged(avr_irq_t *irq, uint32_t value)
+{
+  float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
+  m_fXPos =  fPos[0];
+  m_bDirty = true;
+}
+
+void TestVis::OnSheetChanged(avr_irq_t *irq, uint32_t value)
+{
+  m_Y.SetSubobjectVisible(2,value>0);
+  m_Y.SetSubobjectVisible(3,value>0);
+  m_bDirty = true;
+}
+
+void TestVis::OnYChanged(avr_irq_t *irq, uint32_t value)
+{
+  float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
+  m_fYPos =  fPos[0];
+  m_bDirty = true;
+}
+
+
+void TestVis::OnZChanged(avr_irq_t *irq, uint32_t value)
+{
+  float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
+  m_fZPos =  fPos[0];
+  m_bDirty = true;
 }
 
 void TestVis::Draw()
 {
-  //  if (!bLoaded)
-  //      return;
+    if (!m_bDirty)
+        return;
     glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
     glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -37,9 +101,7 @@ void TestVis::Draw()
     float fAmb[] = {0,0,0,1};
     float fCol2[] = {1,1,1,1};
     float fSpec[] = {1,1,1,1};
-    float fDiff[] = {10,10,10,1};
-  //   glEnable(GL_AUTO_NORMAL);
-    //glFrontFace(GL_CCW);
+    float fDiff[] = {1.5,1.5,1.5,1};
 
     // camera & rotate
 
@@ -50,8 +112,6 @@ void TestVis::Draw()
     glLightfv(GL_LIGHT0,GL_DIFFUSE, fDiff);
     glLightfv(GL_LIGHT0,GL_POSITION, pos);
     glEnable(GL_LIGHT0);
-
-    //glLightfv(GL_LIGHT0,GL_AMBIENT, fCol2);
 
     glEnable(GL_LIGHTING); 
     glMatrixMode(GL_MODELVIEW);
@@ -64,67 +124,35 @@ void TestVis::Draw()
     build_rotmatrix(mat, curr_quat);
     glMultMatrixf(&mat[0][0]);
 
+    float fExtent = m_Extruder.GetScaleFactor();
+    fExtent = m_Z.GetScaleFactor()>fExtent? m_Z.GetScaleFactor() : fExtent;
+    fExtent = m_Y.GetScaleFactor()>fExtent? m_Y.GetScaleFactor() : fExtent;
     // Fit to -1, 1
-    glScalef(1.0f / maxExtent, 1.0f / maxExtent, 1.0f / maxExtent);
-
+    glScalef(1.0f / fExtent, 1.0f / fExtent, 1.0f / fExtent);
+    float fTransform[3];
+    m_Base.GetCenteringTransform(fTransform);
     // Centerize object.
-    glTranslatef(-0.5 * (bmax[0] + bmin[0]), -0.5 * (bmax[1] + bmin[1]),
-                 -0.5 * (bmax[2] + bmin[2]));
+    glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 
-    _Draw(gDrawObjects, materials, textures);
+    glPushMatrix();
+      glTranslatef(0,-m_fZCorr + (m_fZPos/1000),0);
+      m_Z.Draw();
+      glPushMatrix();
+        glTranslatef(-m_fXCorr + (m_fXPos/932),0,0);
+        m_Extruder.Draw();
+      glPopMatrix();
+    glPopMatrix();
 
+    glPushMatrix();
+      glTranslatef(0,0, -m_fYCorr + (m_fYPos/932));
+      m_Y.Draw();
+    glPopMatrix();
+    m_Base.Draw();
 
     glutSwapBuffers();
+    m_bDirty = false;
 }
 
-void TestVis::_Draw(const std::vector<TestVis::DrawObject>& drawObjects, std::vector<tinyobj::material_t>& materials, std::map<std::string, GLuint>& textures) {
-  glPolygonMode(GL_FRONT, GL_FILL);
-  glPolygonMode(GL_BACK, GL_FILL);
-  glEnable(GL_POLYGON_OFFSET_FILL);
-  //glColorMaterial(GL_FRONT,GL_DIFFUSE) ;
-  //glEnable(GL_COLOR_MATERIAL);
-
-  glPolygonOffset(1.0, 1.0);
-  GLsizei stride = (3 + 3 + 3 + 2) * sizeof(float);
-  for (size_t i = 0; i < drawObjects.size(); i++) {
-    TestVis::DrawObject o = drawObjects[i];
-    if (o.vb < 1) {
-      continue;
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, o.vb);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-    if ((o.material_id < materials.size())) {
-      std::string diffuse_texname = materials[o.material_id].diffuse_texname;
-      if (textures.find(diffuse_texname) != textures.end()) {
-        glBindTexture(GL_TEXTURE_2D, textures[diffuse_texname]);
-      } else {
-        float fCopy[4] = {0,0,0,1.0f};
-        memcpy(fCopy,materials[o.material_id].ambient,3*(sizeof(float)));
-        glMaterialfv(GL_FRONT, GL_AMBIENT,  fCopy);
-        memcpy(fCopy,materials[o.material_id].diffuse,3*(sizeof(float)));
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, fCopy);
-        memcpy(fCopy,materials[o.material_id].specular,3*(sizeof(float)));
-        glMaterialfv(GL_FRONT, GL_SPECULAR, fCopy);
-        glMaterialf(GL_FRONT, GL_SHININESS, materials[o.material_id].shininess);
-        memcpy(fCopy,materials[o.material_id].emission,3*(sizeof(float)));
-        glMaterialfv(GL_FRONT, GL_EMISSION, fCopy);
-      }
-
-    }
-    glVertexPointer(3, GL_FLOAT, stride, (const void*)0);
-    glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
-    glColorPointer(3, GL_FLOAT, stride, (const void*)(sizeof(float) * 6));
-    glTexCoordPointer(2, GL_FLOAT, stride, (const void*)(sizeof(float) * 9));
-    glDrawArrays(GL_TRIANGLES, 0, 3 * o.numTriangles);
-    //CheckErrors("drawarrays");
-    glBindTexture(GL_TEXTURE_2D, 0);
-  }
-}
 
 void TestVis::MouseCB(int button, int action, int x, int y)
 {
@@ -150,9 +178,17 @@ void TestVis::MouseCB(int button, int action, int x, int y)
       mouseMiddlePressed = false;
     }
   }
+  if (button==3 || button==4) // wheel
+  {
+    if (button==3)
+      eye[2] += 0.05f;
+    else
+      eye[2] -= 0.05f;
+  }
+  m_bDirty = true;
 }
 
-void TestVis::MotionCB(int x, int y, int iWin)
+void TestVis::MotionCB(int x, int y)
 {
       float rotScale = 1.0f;
   float transScale = 2.0f;
@@ -177,309 +213,5 @@ void TestVis::MotionCB(int x, int y, int iWin)
   // Update mouse point
   prevMouseX = x;
   prevMouseY = y;
-  glutPostWindowRedisplay(iWin);
-}
-
-void TestVis::Load()
-{
-    trackball(curr_quat,0,0,0,0);
-    eye[0] = 0.0f;
-    eye[1] = 0.0f;
-    eye[2] = 3.0f;
-
-    lookat[0] = 0.0f;
-    lookat[1] = 0.0f;
-    lookat[2] = 0.0f;
-
-    up[0] = 0.0f;
-    up[1] = 1.0f;
-    up[2] = 0.0f;
-    if (false == LoadObjAndConvert(bmin, bmax, &gDrawObjects, materials, textures, "../assets/X_Axis2.obj"))
-        printf("Failed to load obj\n");
-    maxExtent = 0.5f * (bmax[0] - bmin[0]);
-    if (maxExtent < 0.5f * (bmax[1] - bmin[1])) {
-        maxExtent = 0.5f * (bmax[1] - bmin[1]);
-    }
-    if (maxExtent < 0.5f * (bmax[2] - bmin[2])) {
-        maxExtent = 0.5f * (bmax[2] - bmin[2]);
-    }
-    bLoaded = true;
-}
-
-static std::string GetBaseDir(const std::string &filepath) {
-  if (filepath.find_last_of("/\\") != std::string::npos)
-    return filepath.substr(0, filepath.find_last_of("/\\"));
-  return "";
-}
-
-
-static bool FileExists(const std::string &abs_filename) {
-  bool ret;
-  FILE *fp = fopen(abs_filename.c_str(), "rb");
-  if (fp) {
-    ret = true;
-    fclose(fp);
-  } else {
-    ret = false;
-  }
-
-  return ret;
-}
-
-static void CalcNormal(float N[3], float v0[3], float v1[3], float v2[3]) {
-  float v10[3];
-  v10[0] = v1[0] - v0[0];
-  v10[1] = v1[1] - v0[1];
-  v10[2] = v1[2] - v0[2];
-
-  float v20[3];
-  v20[0] = v2[0] - v0[0];
-  v20[1] = v2[1] - v0[1];
-  v20[2] = v2[2] - v0[2];
-
-  N[0] = v20[1] * v10[2] - v20[2] * v10[1];
-  N[1] = v20[2] * v10[0] - v20[0] * v10[2];
-  N[2] = v20[0] * v10[1] - v20[1] * v10[0];
-
-  float len2 = N[0] * N[0] + N[1] * N[1] + N[2] * N[2];
-  if (len2 > 0.0f) {
-    float len = sqrtf(len2);
-
-    N[0] /= len;
-    N[1] /= len;
-  }
-}
-
-bool TestVis::LoadObjAndConvert(float bmin[3], float bmax[3],
-                       std::vector<DrawObject>* drawObjects,
-                       std::vector<tinyobj::material_t>& materials,
-                       std::map<std::string, GLuint>& textures,
-                       const char* filename) {
-  tinyobj::attrib_t attrib;
-  
-
-  std::string base_dir = GetBaseDir(filename);
-#ifdef _WIN32
-  base_dir += "\\";
-#else
-  base_dir += "/";
-#endif
-
-  std::string err;
-  bool ret =
-      tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filename, base_dir.c_str());
-  if (!err.empty()) {
-    std::cerr << err << std::endl;
-  }
-
-  if (!ret) {
-    std::cerr << "Failed to load " << filename << std::endl;
-    return false;
-  }
-
-  printf("# of vertices  = %d\n", (int)(attrib.vertices.size()) / 3);
-  printf("# of normals   = %d\n", (int)(attrib.normals.size()) / 3);
-  printf("# of texcoords = %d\n", (int)(attrib.texcoords.size()) / 2);
-  printf("# of materials = %d\n", (int)materials.size());
-  printf("# of shapes    = %d\n", (int)shapes.size());
-
-  // Append `default` material
-  materials.push_back(tinyobj::material_t());
-
-  // Load diffuse textures
-  {
-      for (size_t m = 0; m < materials.size(); m++) {
-          tinyobj::material_t* mp = &materials[m];
-          
-          if (mp->diffuse_texname.length() > 0) {
-              // Only load the texture if it is not already loaded
-              if (textures.find(mp->diffuse_texname) == textures.end()) {
-                  GLuint texture_id;
-                  int w, h;
-                  int comp;
-
-                  std::string texture_filename = mp->diffuse_texname;
-                  if (!FileExists(texture_filename)) {
-                    // Append base dir.
-                    texture_filename = base_dir + mp->diffuse_texname;
-                    if (!FileExists(texture_filename)) {
-                      std::cerr << "Unable to find file: " << mp->diffuse_texname << std::endl;
-                      exit(1);
-                    }
-                  }
-                  
-                  unsigned char* image = nullptr; //stbi_load(texture_filename.c_str(), &w, &h, &comp, STBI_default);
-                  if (!image) {
-                      std::cerr << "Unable to load texture: " << texture_filename << std::endl;
-                      exit(1);
-                  }
-                  glGenTextures(1, &texture_id);
-                  glBindTexture(GL_TEXTURE_2D, texture_id);
-                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                  if (comp == 3) {
-                      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-                  }
-                  else if (comp == 4) {
-                      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-                  }
-                  glBindTexture(GL_TEXTURE_2D, 0);
-                  //stbi_image_free(image);
-                  textures.insert(std::make_pair(mp->diffuse_texname, texture_id));
-              }
-          }
-      }
-  }
-
-  bmin[0] = bmin[1] = bmin[2] = std::numeric_limits<float>::max();
-  bmax[0] = bmax[1] = bmax[2] = -std::numeric_limits<float>::max();
-
-  {
-    for (size_t s = 0; s < shapes.size(); s++) {
-      DrawObject o;
-      std::vector<float> vb;  // pos(3float), normal(3float), color(3float)
-      for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++) {
-        tinyobj::index_t idx0 = shapes[s].mesh.indices[3 * f + 0];
-        tinyobj::index_t idx1 = shapes[s].mesh.indices[3 * f + 1];
-        tinyobj::index_t idx2 = shapes[s].mesh.indices[3 * f + 2];
-        
-        int current_material_id = shapes[s].mesh.material_ids[f];
-
-        if ((current_material_id < 0) || (current_material_id >= static_cast<int>(materials.size()))) {
-          // Invaid material ID. Use default material.
-          current_material_id = materials.size() - 1; // Default material is added to the last item in `materials`.
-        }
-        //if (current_material_id >= materials.size()) {
-        //    std::cerr << "Invalid material index: " << current_material_id << std::endl;
-        //}
-        //
-        float diffuse[3];
-        for (size_t i = 0; i < 3; i++) {
-            diffuse[i] = materials[current_material_id].diffuse[i];
-        }
-        float tc[3][2];
-        if (attrib.texcoords.size() > 0) {
-            assert(attrib.texcoords.size() > 2 * idx0.texcoord_index + 1);
-            assert(attrib.texcoords.size() > 2 * idx1.texcoord_index + 1);
-            assert(attrib.texcoords.size() > 2 * idx2.texcoord_index + 1);
-            tc[0][0] = attrib.texcoords[2 * idx0.texcoord_index];
-            tc[0][1] = 1.0f - attrib.texcoords[2 * idx0.texcoord_index + 1];
-            tc[1][0] = attrib.texcoords[2 * idx1.texcoord_index];
-            tc[1][1] = 1.0f - attrib.texcoords[2 * idx1.texcoord_index + 1];
-            tc[2][0] = attrib.texcoords[2 * idx2.texcoord_index];
-            tc[2][1] = 1.0f - attrib.texcoords[2 * idx2.texcoord_index + 1];
-        } else {
-            tc[0][0] = 0.0f;
-            tc[0][1] = 0.0f;
-            tc[1][0] = 0.0f;
-            tc[1][1] = 0.0f;
-            tc[2][0] = 0.0f;
-            tc[2][1] = 0.0f;
-        }
-
-        float v[3][3];
-        for (int k = 0; k < 3; k++) {
-          int f0 = idx0.vertex_index;
-          int f1 = idx1.vertex_index;
-          int f2 = idx2.vertex_index;
-          assert(f0 >= 0);
-          assert(f1 >= 0);
-          assert(f2 >= 0);
-
-          v[0][k] = attrib.vertices[3 * f0 + k];
-          v[1][k] = attrib.vertices[3 * f1 + k];
-          v[2][k] = attrib.vertices[3 * f2 + k];
-          bmin[k] = std::min(v[0][k], bmin[k]);
-          bmin[k] = std::min(v[1][k], bmin[k]);
-          bmin[k] = std::min(v[2][k], bmin[k]);
-          bmax[k] = std::max(v[0][k], bmax[k]);
-          bmax[k] = std::max(v[1][k], bmax[k]);
-          bmax[k] = std::max(v[2][k], bmax[k]);
-        }
-
-        float n[3][3];
-        if (attrib.normals.size() > 0) {
-          int f0 = idx0.normal_index;
-          int f1 = idx1.normal_index;
-          int f2 = idx2.normal_index;
-          assert(f0 >= 0);
-          assert(f1 >= 0);
-          assert(f2 >= 0);
-          for (int k = 0; k < 3; k++) {
-            n[0][k] = attrib.normals[3 * f0 + k];
-            n[1][k] = attrib.normals[3 * f1 + k];
-            n[2][k] = attrib.normals[3 * f2 + k];
-          }
-        } else {
-          // compute geometric normal
-          CalcNormal(n[0], v[0], v[1], v[2]);
-          n[1][0] = n[0][0];
-          n[1][1] = n[0][1];
-          n[1][2] = n[0][2];
-          n[2][0] = n[0][0];
-          n[2][1] = n[0][1];
-          n[2][2] = n[0][2];
-        }
-
-        for (int k = 0; k < 3; k++) {
-          vb.push_back(v[k][0]);
-          vb.push_back(v[k][1]);
-          vb.push_back(v[k][2]);
-          vb.push_back(n[k][0]);
-          vb.push_back(n[k][1]);
-          vb.push_back(n[k][2]);
-          // Combine normal and diffuse to get color.
-          float normal_factor = 0;
-          float diffuse_factor = 1 - normal_factor;
-          float c[3] = {
-              n[k][0] * normal_factor + diffuse[0] * diffuse_factor,
-              n[k][1] * normal_factor + diffuse[1] * diffuse_factor,
-              n[k][2] * normal_factor + diffuse[2] * diffuse_factor
-          };
-          float len2 = c[0] * c[0] + c[1] * c[1] + c[2] * c[2];
-          if (len2 > 0.0f) {
-            float len = sqrtf(len2);
-
-            c[0] /= len;
-            c[1] /= len;
-            c[2] /= len;
-          }
-          vb.push_back(c[0]);
-          vb.push_back(c[1]);
-          vb.push_back(c[2]);
-          
-          vb.push_back(tc[k][0]);
-          vb.push_back(tc[k][1]);
-        }
-      }
-
-      o.vb = 0;
-      o.numTriangles = 0;
-
-      // OpenGL viewer does not support texturing with per-face material.
-      if (shapes[s].mesh.material_ids.size() > 0 && shapes[s].mesh.material_ids.size() > s) {
-          // Base case
-          o.material_id = shapes[s].mesh.material_ids[s];
-      } else {
-          o.material_id = materials.size() - 1; // = ID for default material.
-      }
-          
-      if (vb.size() > 0) {
-        glGenBuffers(1, &o.vb);
-        glBindBuffer(GL_ARRAY_BUFFER, o.vb);
-        glBufferData(GL_ARRAY_BUFFER, vb.size() * sizeof(float), &vb.at(0),
-                     GL_STATIC_DRAW);
-        o.numTriangles = vb.size() / (3 + 3 + 3 + 2) * 3;
-        printf("shape[%d] # of triangles = %d\n", static_cast<int>(s),
-               o.numTriangles);
-      }
-
-      drawObjects->push_back(o);
-    }
-  }
-
-  printf("bmin = %f, %f, %f\n", bmin[0], bmin[1], bmin[2]);
-  printf("bmax = %f, %f, %f\n", bmax[0], bmax[1], bmax[2]);
-
-  return true;
+  m_bDirty = true;
 }

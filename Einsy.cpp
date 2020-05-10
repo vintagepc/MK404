@@ -138,7 +138,7 @@ struct hw_t {
 
 bool bFactoryReset = false;
 
-TestVis vis = TestVis();
+TestVis *vis = nullptr;
 
 unsigned char guKey = 0;
 
@@ -196,7 +196,7 @@ void avr_special_deinit( avr_t* avr, void * data)
 void displayCB2(void)
 {
 	glutSetWindow(window2);
-	vis.Draw();
+	vis->Draw();
 }
 
 void displayCB(void)		/* function called whenever redisplay needed */
@@ -386,9 +386,9 @@ void timerCB(int i)
 {
 	//static int oldstate = -1;
 	// restart timer
-	glutTimerFunc(50, timerCB, 0);
+	glutTimerFunc(50, timerCB, i^1);
 	displayCB();
-	//displayCB2();
+	displayCB2();
 	//hd44780_print(&hd44780);
 }
 
@@ -422,11 +422,14 @@ void InitGL2()
 	glViewport(0, 0, 800, 800);
 	glMatrixMode(GL_PROJECTION);
 	glutDisplayFunc(displayCB2);	
+	
 
-	auto fwd = [](int button, int state, int x, int y) {vis.MouseCB(button,state,x,y);};
+	auto fwd = [](int button, int state, int x, int y) {vis->MouseCB(button,state,x,y);};
 	glutMouseFunc(fwd);
 
-	auto fcnMove = [](int x, int y) { vis.MotionCB(x,y,window2);};
+
+
+	auto fcnMove = [](int x, int y) { vis->MotionCB(x,y);};
 
 	glutMotionFunc(fcnMove);
 
@@ -868,8 +871,17 @@ int main(int argc, char *argv[])
 	InitGL2();
 
 
-	vis.Load();
+	vis = new TestVis();
 
+	vis->SetWindow(window2);
+
+	vis->Init(avr);
+
+	vis->ConnectFrom(hw.X.GetIRQ(TMC2130::POSITION_OUT),TestVis::X_IN);
+	vis->ConnectFrom(hw.Y.GetIRQ(TMC2130::POSITION_OUT),TestVis::Y_IN);
+	vis->ConnectFrom(hw.Z.GetIRQ(TMC2130::POSITION_OUT),TestVis::Z_IN);
+	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::SHEET_OUT), TestVis::SHEET_IN);
+	
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
 	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
 	// rather than having to roll our own internal FIFO. As an added bonus you can tap the ports for debugging.

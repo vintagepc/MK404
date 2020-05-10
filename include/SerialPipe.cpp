@@ -54,13 +54,13 @@ void* SerialPipe::Run()
 	int iLastFd = 0, iReadyRead, iChrRd;
 	if ((fdPort[0]=open(m_strPty0.c_str(), O_RDWR | O_NONBLOCK)) == -1)
 	{
-		fprintf(stderr, "Could not open %s.\n",m_strPty0);
+		fprintf(stderr, "Could not open %s.\n",m_strPty0.c_str());
 		perror(m_strPty0.c_str());
 		m_bQuit = true;
 	}
 	if ((fdPort[1]=open(m_strPty1.c_str(), O_RDWR | O_NONBLOCK)) == -1)
 	{
-		fprintf(stderr, "Could not open %s.\n",m_strPty1);
+		fprintf(stderr, "Could not open %s.\n",m_strPty1.c_str());
 		perror(m_strPty1.c_str());
 		m_bQuit = true;
 	}

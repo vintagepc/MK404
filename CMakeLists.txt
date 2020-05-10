@@ -71,6 +71,7 @@ set(EINSY_SOURCES
     MMU2.cpp
     include/SerialPipe.cpp
     utility/TestVis.cpp  
+    utility/GLObj.cpp  
     3rdParty/trackball.cc
 )
 

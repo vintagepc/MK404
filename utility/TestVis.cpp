@@ -39,9 +39,7 @@ TestVis::TestVis()
         m_Extruder.SetAllVisible(false);
         m_Extruder.SetSubobjectVisible(31);
     }
-    else // Disable a bunch of stuff on the Einsy board.
-      //for (int i=28;i<54; i++)
-        m_Base.SetSubobjectVisible(1,false);
+
 }
 
 void TestVis::Init(avr_t *avr)

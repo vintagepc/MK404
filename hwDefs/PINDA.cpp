@@ -92,7 +92,7 @@ void PINDA::OnXChanged(struct avr_irq_t * irq,uint32_t value)
 void PINDA::OnYChanged(struct avr_irq_t * irq,uint32_t value)
 {
     float *fVal = (float*) &value; // demangle the pos cast.
-     m_fPos[1] = fVal[1] + m_fOffset[1];
+     m_fPos[1] = fVal[0] + m_fOffset[1];
     // We only need to check triggering on XY motion for selfcal
     if (!m_bIsSheetPresent)
         CheckTriggerNoSheet();

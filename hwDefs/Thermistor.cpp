@@ -68,7 +68,7 @@ void Thermistor::Init(struct avr_t * avr, uint8_t uiMux)
 {
 	
 	_Init(avr, uiMux,this);
-
+	RegisterNotify(TEMP_IN,MAKE_C_CALLBACK(Thermistor,OnTempIn),this);
 	printf("%s on ADC %d start %.2f\n", __func__, m_uiMux, m_fCurrentTemp);
 }
 

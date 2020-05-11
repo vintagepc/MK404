@@ -880,6 +880,7 @@ int main(int argc, char *argv[])
 	vis->ConnectFrom(hw.X.GetIRQ(TMC2130::POSITION_OUT),TestVis::X_IN);
 	vis->ConnectFrom(hw.Y.GetIRQ(TMC2130::POSITION_OUT),TestVis::Y_IN);
 	vis->ConnectFrom(hw.Z.GetIRQ(TMC2130::POSITION_OUT),TestVis::Z_IN);
+	vis->ConnectFrom(hw.E.GetIRQ(TMC2130::POSITION_OUT),TestVis::E_IN);
 	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::SHEET_OUT), TestVis::SHEET_IN);
 	
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 

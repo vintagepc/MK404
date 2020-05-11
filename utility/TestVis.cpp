@@ -50,6 +50,7 @@ void TestVis::Init(avr_t *avr)
   RegisterNotify(X_IN,MAKE_C_CALLBACK(TestVis,OnXChanged),this);
   RegisterNotify(Y_IN,MAKE_C_CALLBACK(TestVis,OnYChanged),this);
   RegisterNotify(Z_IN,MAKE_C_CALLBACK(TestVis,OnZChanged),this);
+  RegisterNotify(E_IN,MAKE_C_CALLBACK(TestVis,OnEChanged),this);
   RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(TestVis, OnSheetChanged), this);
   m_bDirty = true;
 }
@@ -75,6 +76,12 @@ void TestVis::OnYChanged(avr_irq_t *irq, uint32_t value)
   m_bDirty = true;
 }
 
+void TestVis::OnEChanged(avr_irq_t *irq, uint32_t value)
+{
+  float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
+  m_fEPos =  fPos[0];
+  m_bDirty = true;
+}
 
 void TestVis::OnZChanged(avr_irq_t *irq, uint32_t value)
 {
@@ -85,8 +92,8 @@ void TestVis::OnZChanged(avr_irq_t *irq, uint32_t value)
 
 void TestVis::Draw()
 {
-    if (!m_bDirty)
-        return;
+    //if (!m_bDirty)
+    //    return;
     glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
     glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -101,7 +108,7 @@ void TestVis::Draw()
     float fAmb[] = {0,0,0,1};
     float fCol2[] = {1,1,1,1};
     float fSpec[] = {1,1,1,1};
-    float fDiff[] = {1.5,1.5,1.5,1};
+    float fDiff[] = {2,2,2,1};
 
     // camera & rotate
 
@@ -140,6 +147,17 @@ void TestVis::Draw()
       glPushMatrix();
         glTranslatef(-m_fXCorr + (m_fXPos/932),0,0);
         m_Extruder.Draw();
+
+        glPushMatrix();
+          m_EVis.GetCenteringTransform(fTransform);
+          float fVisSc = .02f/m_EVis.GetScaleFactor();
+          glScalef(fVisSc,fVisSc,fVisSc);
+          glRotatef((-36.f/28.f)*3.f*m_fEPos,0,0,1);
+          glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+
+          glTranslatef(0.065f*(1.f/fVisSc),0.37f*(1.f/fVisSc),0.331f*(1.f/fVisSc));
+          m_EVis.Draw();
+        glPopMatrix();
       glPopMatrix();
     glPopMatrix();
 

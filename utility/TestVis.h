@@ -7,7 +7,7 @@
 class TestVis: public BasePeripheral
 {
     public:
-        #define IRQPAIRS _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") _IRQ(SHEET_IN,"<sheet.in")
+        #define IRQPAIRS _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in")
         #include "IRQHelper.h"
 
         TestVis();
@@ -25,17 +25,20 @@ class TestVis: public BasePeripheral
         GLObj m_Z = GLObj("../assets/Z_Axis.obj");
         GLObj m_Y = GLObj("../assets/Y_Axis.obj");
         GLObj m_Base = GLObj("../assets/Stationary.obj");
+        GLObj m_EVis = GLObj("../assets/Triangles.obj");
 
         bool m_bLite = false; // Lite graphics
 
         void OnXChanged(avr_irq_t *irq, uint32_t value);
         void OnYChanged(avr_irq_t *irq, uint32_t value);
         void OnZChanged(avr_irq_t *irq, uint32_t value);
+        void OnEChanged(avr_irq_t *irq, uint32_t value);
         void OnSheetChanged(avr_irq_t *irq, uint32_t value);
 
         float m_fXCorr = 0.044, m_fXPos = 10;
         float m_fYCorr = 0.156, m_fYPos = 10;
         float m_fZCorr = 0.21, m_fZPos = 10;
+        float m_fEPos = 0;
 
         float m_bDirty = false;
 

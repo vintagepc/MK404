@@ -517,11 +517,11 @@ void setupHeaters()
 
 		hw.hBed = new Heater(0.25, 25, true);
 		hw.hBed->Init(avr, NULL, DIRQLU(avr,HEATER_BED_PIN));
-		hw.hBed->ConnectTo(hw.hBed->TEMP_OUT, hw.tBed.GetIRQ(Thermistor::TEMP_IN));
+		hw.hBed->ConnectTo(Heater::TEMP_OUT, hw.tBed.GetIRQ(Thermistor::TEMP_IN));
 
 		hw.hExtruder = new Heater(1.5,25.0);
 		hw.hExtruder->Init(avr, NULL, DIRQLU(avr, HEATER_0_PIN));
-		hw.hExtruder->ConnectTo(hw.hBed->TEMP_OUT, hw.tExtruder.GetIRQ(Thermistor::TEMP_IN));
+		hw.hExtruder->ConnectTo(Heater::TEMP_OUT, hw.tExtruder.GetIRQ(Thermistor::TEMP_IN));
 }
 
 void setupVoltages()

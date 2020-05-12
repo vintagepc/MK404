@@ -552,7 +552,7 @@ void setupDrivers()
     ex.mask = uiDiagMask;
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
-	struct TMC2130::TMC2130_cfg_t cfg;
+	TMC2130::TMC2130_cfg_t cfg;
 	cfg.iMaxMM = 255;
 	cfg.cAxis = 'X';
 	cfg.uiDiagPin = X_TMC2130_DIAG;

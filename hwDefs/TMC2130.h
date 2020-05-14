@@ -41,7 +41,7 @@ class TMC2130: public SPIPeripheral
             _IRQ(POSITION_OUT,      ">tmc2130.pos_out") 
         #include "IRQHelper.h"
 
-        typedef struct TMC2130_cfg_t {
+        struct TMC2130_cfg_t {
             TMC2130_cfg_t():bInverted(false),uiStepsPerMM(100),cAxis(' '),iMaxMM(200),fStartPos(10.0),bHasNoEndStops(false){};
             bool bInverted;
             uint16_t uiStepsPerMM;
@@ -50,7 +50,7 @@ class TMC2130: public SPIPeripheral
             float fStartPos;
             uint8_t uiDiagPin;
             bool bHasNoEndStops;
-        } TMC2130_cfg_t;
+        };
         
         // Default constructor.
         TMC2130();

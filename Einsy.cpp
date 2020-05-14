@@ -866,10 +866,13 @@ int main(int argc, char *argv[])
     pthread_create(&run[1], NULL, glutThread, NULL);
 
 	pthread_join(run[0],NULL);
+	glutLeaveMainLoop();
 	pthread_cancel(run[1]); // Kill the GL thread.
 
  	printf("Writing flash state...\n");
     avr_terminate(avr);
+	// Close flash.
+	hw.spiFlash.~w25x20cl(); 
     printf("AVR finished.\n");
 	if (bMMU)
 		delete hw.spPipe;		

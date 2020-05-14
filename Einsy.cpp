@@ -35,6 +35,7 @@
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
+#include <GL/freeglut.h>
 #endif
 #include <pthread.h>
 #include <signal.h>
@@ -272,6 +273,14 @@ void powerup_and_reset_helper(avr_t *avr)
 	// TIMSK2
 	avr_regbit_t rb = AVR_IO_REGBITS(0x70, 0, 0b111);
 	avr_regbit_setto(avr,rb,0x01);
+
+	//Reset all SPI SS lines
+	avr_raise_irq(hw.spiFlash.GetIRQ(w25x20cl::SPI_CSEL), 1);
+	avr_raise_irq(hw.sd_card.irq + IRQ_SD_CARD_nSS, 1);
+	avr_raise_irq(hw.X.GetIRQ(TMC2130::SPI_CSEL), 1);
+	avr_raise_irq(hw.Y.GetIRQ(TMC2130::SPI_CSEL), 1);
+	avr_raise_irq(hw.Z.GetIRQ(TMC2130::SPI_CSEL), 1);
+	avr_raise_irq(hw.E.GetIRQ(TMC2130::SPI_CSEL), 1);
 }
 
 static void *
@@ -552,7 +561,7 @@ void setupDrivers()
     ex.mask = uiDiagMask;
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
-	struct TMC2130::TMC2130_cfg_t cfg;
+	TMC2130::TMC2130_cfg_t cfg;
 	cfg.iMaxMM = 255;
 	cfg.cAxis = 'X';
 	cfg.uiDiagPin = X_TMC2130_DIAG;
@@ -858,10 +867,13 @@ int main(int argc, char *argv[])
     pthread_create(&run[1], NULL, glutThread, NULL);
 
 	pthread_join(run[0],NULL);
+	glutLeaveMainLoop();
 	pthread_cancel(run[1]); // Kill the GL thread.
 
  	printf("Writing flash state...\n");
     avr_terminate(avr);
+	// Close flash.
+	hw.spiFlash.~w25x20cl(); 
     printf("AVR finished.\n");
 	if (bMMU)
 		delete hw.spPipe;		

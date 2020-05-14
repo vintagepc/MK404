@@ -272,6 +272,14 @@ void powerup_and_reset_helper(avr_t *avr)
 	// TIMSK2
 	avr_regbit_t rb = AVR_IO_REGBITS(0x70, 0, 0b111);
 	avr_regbit_setto(avr,rb,0x01);
+
+	//Reset all SPI SS lines
+	avr_raise_irq(hw.spiFlash.GetIRQ(w25x20cl::SPI_CSEL), 1);
+	avr_raise_irq(hw.sd_card.irq + IRQ_SD_CARD_nSS, 1);
+	avr_raise_irq(hw.X.GetIRQ(TMC2130::SPI_CSEL), 1);
+	avr_raise_irq(hw.Y.GetIRQ(TMC2130::SPI_CSEL), 1);
+	avr_raise_irq(hw.Z.GetIRQ(TMC2130::SPI_CSEL), 1);
+	avr_raise_irq(hw.E.GetIRQ(TMC2130::SPI_CSEL), 1);
 }
 
 static void *

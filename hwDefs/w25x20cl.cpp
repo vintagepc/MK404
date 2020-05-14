@@ -28,7 +28,7 @@
 #include <fcntl.h>
 #include "w25x20cl.h"
 
-#define TRACE(_w) _w
+//#define TRACE(_w) _w
 #ifndef TRACE
 #define TRACE(_w)
 #endif

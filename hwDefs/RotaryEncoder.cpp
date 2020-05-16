@@ -76,7 +76,7 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t * avr,avr_cycle_count_
 
 avr_cycle_count_t RotaryEncoder::OnButtonReleaseTimer(avr_t * avr, avr_cycle_count_t when)
 {
-	RaiseIRQ(OUT_BUTTON, 0);
+	RaiseIRQ(OUT_BUTTON, 1);
 	if (m_bVerbose) {
 		printf("ROTENC: Button release\n");
 	}
@@ -89,7 +89,7 @@ void RotaryEncoder::_Push(uint32_t uiDuration)
 	if (m_bVerbose) {
 		printf("ROTENC: Button press\n");
 	}
-	RaiseIRQ(OUT_BUTTON, 1);
+	RaiseIRQ(OUT_BUTTON, 0);
 
 	// Pull up later
 	RegisterTimerUsec(m_fcnRelease, uiDuration, this);

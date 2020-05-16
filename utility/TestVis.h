@@ -26,7 +26,7 @@ class TestVis: public BasePeripheral
 
     private:
        
-        GLObj m_Extruder = GLObj("../assets/X_Axis.obj");
+        GLObj m_Extruder = GLObj("../assets/X_AXIS.obj");
         GLObj m_Z = GLObj("../assets/Z_AXIS.obj");
         GLObj m_Y = GLObj("../assets/Y_AXIS.obj");
         GLObj m_Sheet = GLObj("../assets/SSSheet.obj");
@@ -34,6 +34,8 @@ class TestVis: public BasePeripheral
         GLObj m_SDCard = GLObj("../assets/SDCard.obj");
         GLObj m_Knob = GLObj("../assets/LCD-knobR2.obj");
         GLObj m_EVis = GLObj("../assets/Triangles.obj");
+        //GLObj m_EMMU = GLObj("../assets/E_MMU.obj");
+        GLObj m_EStd = GLObj("../assets/E_STD.obj");
 
         HD44780GL *m_pLCD = nullptr;
 

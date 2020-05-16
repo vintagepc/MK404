@@ -151,19 +151,20 @@ void TestVis::Draw()
     glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 
     glPushMatrix();   
-      glScalef(fMM2M,fMM2M,fMM2M);(0,-m_fZCorr + (m_fZPos),0);
+      glTranslatef(0,-m_fZCorr + (m_fZPos),0);
       m_Z.Draw();
       glPushMatrix();
         glTranslatef(-m_fXCorr + (m_fXPos),0,0);
         m_Extruder.Draw();
 
-        glPushMatrix();
+        glScalef(fMM2M,fMM2M,fMM2M);
+        m_EStd.Draw();
+        glPushMatrix();  
           m_EVis.GetCenteringTransform(fTransform);
           fTransform[1] +=1.5f;
           glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
-          glRotatef((-36.f/28.f)*m_fEPos,0,0,1);
+          glRotatef((-36.f/28.f)*3.f*(m_fEPos*1000.f),0,0,1);
           glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
-             glScalef(fMM2M,fMM2M,fMM2M);
           m_EVis.Draw();
         glPopMatrix();
       glPopMatrix();

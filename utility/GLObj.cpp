@@ -14,6 +14,12 @@
 
 #include <GL/glew.h>
 #include <GL/glut.h>
+
+
+// This disables textures and vertex colors, not used in favor of materials anyway.
+// Also cuts GPU RAM usage in half, and probably has performance gains for not needing to set the vertex properties.
+#define TEX_VCOLOR 0
+
 GLObj::GLObj(std::string strFile)
 {
  if (false == LoadObjAndConvert(strFile.c_str()))
@@ -44,7 +50,11 @@ void GLObj::Draw() {
   glPolygonMode(GL_FRONT, GL_FILL);
   glPolygonMode(GL_BACK, GL_FILL);
 
+#if TEX_VCOLOR
   GLsizei stride = (3 + 3 + 3 + 2) * sizeof(float);
+#else
+  GLsizei stride = (3 + 3) * sizeof(float);
+#endif
   for (size_t i = 0; i < m_DrawObjects.size(); i++) {
     DrawObject o = m_DrawObjects[i];
     if (o.vb < 1 || !o.bDraw) {
@@ -54,8 +64,11 @@ void GLObj::Draw() {
     glBindBuffer(GL_ARRAY_BUFFER, o.vb);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
+
+#if TEX_VCOLOR    
     glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+#endif
 
     if ((o.material_id < m_materials.size())) {
       std::string diffuse_texname = m_materials[o.material_id].diffuse_texname;
@@ -77,8 +90,10 @@ void GLObj::Draw() {
     }
     glVertexPointer(3, GL_FLOAT, stride, (const void*)0);
     glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
+#if TEX_VCOLOR    
     glColorPointer(3, GL_FLOAT, stride, (const void*)(sizeof(float) * 6));
     glTexCoordPointer(2, GL_FLOAT, stride, (const void*)(sizeof(float) * 9));
+#endif
     glDrawArrays(GL_TRIANGLES, 0, 3 * o.numTriangles);
     glBindTexture(GL_TEXTURE_2D, 0);
   }
@@ -161,6 +176,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
   // Append `default` material
   m_materials.push_back(tinyobj::material_t());
 
+#if TEX_VCOLOR
   // Load diffuse m_textures
   {
       for (size_t m = 0; m < m_materials.size(); m++) {
@@ -205,6 +221,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
           }
       }
   }
+#endif
 
   m_extMin[0] = m_extMin[1] = m_extMin[2] = std::numeric_limits<float>::max();
   m_extMax[0] = m_extMax[1] = m_extMax[2] = -std::numeric_limits<float>::max();
@@ -232,7 +249,9 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
         for (size_t i = 0; i < 3; i++) {
             diffuse[i] = m_materials[current_material_id].diffuse[i];
         }
+#if TEX_VCOLOR
         float tc[3][2];
+
         if (attrib.texcoords.size() > 0) {
             assert(attrib.texcoords.size() > 2 * idx0.texcoord_index + 1);
             assert(attrib.texcoords.size() > 2 * idx1.texcoord_index + 1);
@@ -251,6 +270,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
             tc[2][0] = 0.0f;
             tc[2][1] = 0.0f;
         }
+#endif
 
         float v[3][3];
         for (int k = 0; k < 3; k++) {
@@ -303,6 +323,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
           vb.push_back(n[k][0]);
           vb.push_back(n[k][1]);
           vb.push_back(n[k][2]);
+#if TEX_VCOLOR
           // Combine normal and diffuse to get color.
           float normal_factor = 0.2;
           float diffuse_factor = 1 - normal_factor;
@@ -325,6 +346,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
           
           vb.push_back(tc[k][0]);
           vb.push_back(tc[k][1]);
+#endif
         }
       }
 
@@ -344,7 +366,11 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
         glBindBuffer(GL_ARRAY_BUFFER, o.vb);
         glBufferData(GL_ARRAY_BUFFER, vb.size() * sizeof(float), &vb.at(0),
                      GL_STATIC_DRAW);
+#if TEX_VCOLOR
         o.numTriangles = vb.size() / (3 + 3 + 3 + 2) * 3;
+#else
+        o.numTriangles = vb.size() / (3 + 3) * 3;
+#endif
         printf("shape[%d] # of triangles = %d\n", static_cast<int>(s),
                o.numTriangles);
       }

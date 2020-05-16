@@ -53,38 +53,51 @@ void TestVis::Init(avr_t *avr)
   m_bDirty = true;
 }
 
+void TestVis::TwistKnob(bool bDir)
+{
+  if (bDir)
+    m_iKnobPos = (m_iKnobPos+18)%360;
+  else
+    m_iKnobPos = (m_iKnobPos + 342)%360;
+}
+
 void TestVis::OnXChanged(avr_irq_t *irq, uint32_t value)
 {
   float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-  m_fXPos =  fPos[0];
+  m_fXPos =  fPos[0]/1000.f;
   m_bDirty = true;
 }
 
 void TestVis::OnSheetChanged(avr_irq_t *irq, uint32_t value)
 {
-  m_Y.SetSubobjectVisible(2,value>0);
-  m_Y.SetSubobjectVisible(3,value>0);
+  m_Sheet.SetAllVisible(value>0);
+  m_bDirty = true;
+}
+
+void TestVis::OnSDChanged(avr_irq_t *irq, uint32_t value)
+{
+  m_SDCard.SetAllVisible(value^1);
   m_bDirty = true;
 }
 
 void TestVis::OnYChanged(avr_irq_t *irq, uint32_t value)
 {
   float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-  m_fYPos =  fPos[0];
+  m_fYPos =  fPos[0]/1000.f;
   m_bDirty = true;
 }
 
 void TestVis::OnEChanged(avr_irq_t *irq, uint32_t value)
 {
   float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-  m_fEPos =  fPos[0];
+  m_fEPos =  fPos[0]/1000.f;
   m_bDirty = true;
 }
 
 void TestVis::OnZChanged(avr_irq_t *irq, uint32_t value)
 {
   float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-  m_fZPos =  fPos[0];
+  m_fZPos =  fPos[0]/1000.f;
   m_bDirty = true;
 }
 
@@ -106,7 +119,7 @@ void TestVis::Draw()
     float fAmb[] = {0,0,0,1};
     float fCol2[] = {1,1,1,1};
     float fSpec[] = {1,1,1,1};
-    float fDiff[] = {2,2,2,1};
+    float fDiff[] = {5,5,5,1};
 
     // camera & rotate
 
@@ -128,10 +141,8 @@ void TestVis::Draw()
 
     build_rotmatrix(mat, curr_quat);
     glMultMatrixf(&mat[0][0]);
-
-    float fExtent = m_Extruder.GetScaleFactor();
-    fExtent = m_Z.GetScaleFactor()>fExtent? m_Z.GetScaleFactor() : fExtent;
-    fExtent = m_Y.GetScaleFactor()>fExtent? m_Y.GetScaleFactor() : fExtent;
+    float fMM2M = 1.f/1000.f;
+    float fExtent = m_Base.GetScaleFactor();
     // Fit to -1, 1
     glScalef(1.0f / fExtent, 1.0f / fExtent, 1.0f / fExtent);
     float fTransform[3];
@@ -139,31 +150,58 @@ void TestVis::Draw()
     // Centerize object.
     glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 
-    glPushMatrix();
-      glTranslatef(0,-m_fZCorr + (m_fZPos/1000),0);
+    glPushMatrix();   
+      glScalef(fMM2M,fMM2M,fMM2M);(0,-m_fZCorr + (m_fZPos),0);
       m_Z.Draw();
       glPushMatrix();
-        glTranslatef(-m_fXCorr + (m_fXPos/932),0,0);
+        glTranslatef(-m_fXCorr + (m_fXPos),0,0);
         m_Extruder.Draw();
 
         glPushMatrix();
           m_EVis.GetCenteringTransform(fTransform);
-          float fVisSc = .02f/m_EVis.GetScaleFactor();
-          glScalef(fVisSc,fVisSc,fVisSc);
-          glRotatef((-36.f/28.f)*3.f*m_fEPos,0,0,1);
+          fTransform[1] +=1.5f;
+          glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
+          glRotatef((-36.f/28.f)*m_fEPos,0,0,1);
           glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
-
-          glTranslatef(0.065f*(1.f/fVisSc),0.37f*(1.f/fVisSc),0.331f*(1.f/fVisSc));
+             glScalef(fMM2M,fMM2M,fMM2M);
           m_EVis.Draw();
         glPopMatrix();
       glPopMatrix();
     glPopMatrix();
 
     glPushMatrix();
-      glTranslatef(0,0, -m_fYCorr + (m_fYPos/932));
+      glTranslatef(0,0, -m_fYCorr + (m_fYPos));
       m_Y.Draw();
+      m_Sheet.Draw();
     glPopMatrix();
     m_Base.Draw();
+    glPushMatrix();
+      glTranslatef(0.215,0.051,0.501);
+      glRotatef(-45.f,1,0,0);
+      glPushMatrix();  
+        glRotatef((float)m_iKnobPos,0,0,1);
+        m_Knob.Draw();
+      glPopMatrix();
+    glPopMatrix();
+    if (m_pLCD)
+    {
+      glPushMatrix();
+        glTranslatef(0.101,0.0549,0.4925);
+        glRotatef(-45.f,1,0,0);
+        glPushMatrix();  
+        float fScale = (4.f*0.076f)/500.f; // Disp is 76mm wide, lcd is drawn 500 wide at 4x scale
+          glScalef(fScale,fScale,fScale);
+          glScalef(1.0,-1.0f,-0.1f);
+          glPushMatrix();
+            m_pLCD->Draw(0x02c5fb00, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055, true);
+          glPopMatrix();
+        glPopMatrix();
+      glPopMatrix();
+    }
+    glPushMatrix();
+      glScalef(fMM2M,fMM2M,fMM2M);
+      m_SDCard.Draw();
+    glPopMatrix();
 
     glutSwapBuffers();
     m_bDirty = false;

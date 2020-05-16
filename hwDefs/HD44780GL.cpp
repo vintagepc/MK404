@@ -43,13 +43,21 @@
 #include "hd44780_charROM.h"	// generated with gimp
 
 static inline void
-glColor32U(uint32_t color)
+glColor32U(uint32_t color, bool bMaterial = false)
 {
-	glColor4f(
-			(float)((color >> 24) & 0xff) / 255.0f,
-			(float)((color >> 16) & 0xff) / 255.0f,
-			(float)((color >> 8) & 0xff) / 255.0f,
-			(float)((color) & 0xff) / 255.0f );
+	float fCol[4] = {	(float)((color >> 24) & 0xff) / 255.0f,
+						(float)((color >> 16) & 0xff) / 255.0f,
+						(float)((color >> 8) & 0xff) / 255.0f,
+						(float)((color) & 0xff) / 255.0f };
+	if (bMaterial)
+	{
+		float fNone[4] = {0,0,0,1};
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, fNone);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,  fCol);
+	}
+	else
+		glColor4fv(fCol);
+		
 }
 
 void HD44780GL::Init(avr_t *avr)
@@ -85,17 +93,17 @@ void HD44780GL::OnBrightnessDigital(struct avr_irq_t * irq,	uint32_t value)
 }
 
 
-void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow)
+void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glColor32U(character);
+	glColor32U(character,bMaterial);
 	glBegin(GL_QUADS);
-	glVertex3i(5, 8, 0);
-	glVertex3i(0, 8, 0);
-	glVertex3i(0, 0, 0);
-	glVertex3i(5, 0, 0);
+	glVertex3i(5, 8, -1);
+	glVertex3i(5, 0, -1);
+	glVertex3i(0, 0, -1);
+	glVertex3i(0, 8, -1);
 	glEnd();
 
 	glEnable(GL_BLEND);
@@ -130,18 +138,18 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 				if (shadow)
 				{
 					glPushMatrix();
-					glColor32U(shadow);
-					glVertex3f(x,y,0);
-					glVertex3f(x+1,y,0);
-					glVertex3f(x+1,y+1,0);
-					glVertex3f(x,y+1,0);
+					glColor32U(shadow, bMaterial);
+					glVertex3f(x,y,		-2);
+					glVertex3f(x,y+1,	-2);
+					glVertex3f(x+1,y+1,	-2);
+					glVertex3f(x+1,y,	-2);
 					glPopMatrix();
 				}
-				glColor32U(text);
-				glVertex3f(x,y,0);
-				glVertex3f(x+inset,y,0);
-				glVertex3f(x+inset,y+inset,0);
-				glVertex3f(x,y+inset,0);
+				glColor32U(text, bMaterial);
+				glVertex3f(x,y,				-3);
+				glVertex3f(x,y+inset,		-3);
+				glVertex3f(x+inset,y+inset,	-3);
+				glVertex3f(x+inset,y,		-3);
 
 			}
 		}
@@ -153,7 +161,7 @@ void HD44780GL::Draw(
 		uint32_t background,
 		uint32_t character,
 		uint32_t text,
-		uint32_t shadow)
+		uint32_t shadow, bool bMaterial)
 {
 	uint8_t iCols = m_uiWidth;
 	uint8_t iRows = m_uiHeight;
@@ -164,17 +172,25 @@ void HD44780GL::Draw(
 	uint8_t* iBG = (uint8_t*)&background;
 	float r = iBG[3]/255.0,g = iBG[2]/255.0,blue = iBG[1]/255.0;
 	float fScale = (float)m_uiBrightness/255.0;
-	glColor4f(r*fScale,g*fScale,blue*fScale,1.0f);
+	float fNone[4] = {0,0,0,1};
+	if (bMaterial)
+	{
+		float fCopy[4] = {r*fScale,g*fScale,blue*fScale,0.0f};
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, fNone);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION ,  fCopy);
+	}
+	else
+		glColor4f(r*fScale,g*fScale,blue*fScale,1.0f);
+
 	glTranslatef(border, border, 0);
 	glBegin(GL_QUADS);
 	glVertex3f(iCols * m_uiCharW + (iCols - 1) + border, -border, 0);
 	glVertex3f(-border, -border, 0);
 	glVertex3f(-border, iRows * m_uiCharH + (iRows - 1) + border, 0);
 	glVertex3f(iCols * m_uiCharW + (iCols - 1) + border, iRows * m_uiCharH
-	        + (iRows - 1) + border, 0);
+			+ (iRows - 1) + border, 0);
 	glEnd();
 
-	glColor3f(1.0f, 1.0f, 1.0f);
 	// TODO: Something is not right with these offsets. The stock ones
 	// (0, 0x20,0x40,0x60) were totally whack-o, these seem to kinda-sorta work but
 	// there are still lingering display quirks where stuff renders offscreen. Probably the actual memory
@@ -184,7 +200,7 @@ void HD44780GL::Draw(
 	for (int v = 0 ; v < m_uiHeight; v++) {
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {
-			GLPutChar(m_vRam[offset[v] + i], character, text, shadow);
+			GLPutChar(m_vRam[offset[v] + i], character, text, shadow, bMaterial);
 			glTranslatef(6, 0, 0);
 		}
 		glPopMatrix();

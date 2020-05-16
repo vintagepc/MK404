@@ -41,8 +41,11 @@ class ADCPeripheral: public BasePeripheral
             if (v.src != m_uiMux)
                 return;  
             uint32_t uiVal = OnADCRead(irq,value);
+            if (uiVal == m_uiLast)
+                return;
             RaiseIRQ(C::ADC_VALUE_OUT,uiVal);
             _SyncDigitalIRQ<C>(uiVal);
+            m_uiLast = uiVal;
         };
 
         template<class C>
@@ -53,7 +56,7 @@ class ADCPeripheral: public BasePeripheral
             else if (uiVOut < 800) // 0.8v. L
                 RaiseIRQ(C::DIGITAL_OUT,0);
             else
-                RaiseIRQFloat(C::DIGITAL_OUT,0);
+                RaiseIRQFloat(C::DIGITAL_OUT,(m_pIrq + C::DIGITAL_OUT)->flags | IRQ_FLAG_FLOATING);
         };
 
 
@@ -78,6 +81,8 @@ class ADCPeripheral: public BasePeripheral
          };
          
         uint8_t m_uiMux = 0;
+
+        uint32_t m_uiLast = 0;
 };
 
 #endif

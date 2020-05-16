@@ -266,7 +266,7 @@ void powerup_and_reset_helper(avr_t *avr)
 
 	//depress encoder knob
 	if (!bFactoryReset)
-		avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 0);
+		avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 1);
 
 	bFactoryReset = false;
 
@@ -544,7 +544,7 @@ void setupVoltages()
 	hw.IR.ConnectTo(IRSensor::DIGITAL_OUT, DIRQLU(avr, IR_SENSOR_PIN));
 	hw.lIR = LED(0xFFCC00FF,'I');
 	hw.lIR.Init(avr);
-	hw.lIR.ConnectFrom(hw.IR.GetIRQ(IRSensor::DIGITAL_OUT), LED::LED_IN);
+	hw.lIR.ConnectFrom(DIRQLU(avr, IR_SENSOR_PIN), LED::LED_IN);
 }
 
 void setupDrivers()
@@ -878,6 +878,6 @@ int main(int argc, char *argv[])
 	if (bMMU)
 		delete hw.spPipe;		
 
-	printf("Done");
+	printf("Done\n");
 
 }

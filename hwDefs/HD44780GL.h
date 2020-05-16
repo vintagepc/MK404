@@ -41,10 +41,11 @@ class HD44780GL:public HD44780
 		void Draw(uint32_t background,
 			uint32_t character,
 			uint32_t text,
-			uint32_t shadow);
+			uint32_t shadow,
+			bool bMaterial = false);
 
 	private:
-		void GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow);
+		void GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial = false);
 
 		void OnBrightnessPWM(avr_irq_t *irq, uint32_t value);
 		void OnBrightnessDigital(avr_irq_t *irq, uint32_t value);

@@ -50,6 +50,7 @@ void TestVis::Init(avr_t *avr)
   RegisterNotify(Z_IN,MAKE_C_CALLBACK(TestVis,OnZChanged),this);
   RegisterNotify(E_IN,MAKE_C_CALLBACK(TestVis,OnEChanged),this);
   RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(TestVis, OnSheetChanged), this);
+  RegisterNotify(EFAN_IN, MAKE_C_CALLBACK(TestVis, OnEFanChanged), this);
   m_bDirty = true;
 }
 
@@ -71,6 +72,12 @@ void TestVis::OnXChanged(avr_irq_t *irq, uint32_t value)
 void TestVis::OnSheetChanged(avr_irq_t *irq, uint32_t value)
 {
   m_Sheet.SetAllVisible(value>0);
+  m_bDirty = true;
+}
+
+void TestVis::OnEFanChanged(avr_irq_t *irq, uint32_t value)
+{
+  m_bFanOn = (value>0);
   m_bDirty = true;
 }
 
@@ -159,6 +166,15 @@ void TestVis::Draw()
 
         glScalef(fMM2M,fMM2M,fMM2M);
         m_EStd.Draw();
+        glPushMatrix();
+          if (m_bFanOn)
+            m_iFanPos = (m_iFanPos + 23)%360;
+          m_EFan.GetCenteringTransform(fTransform);
+          glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
+          glRotatef((float)m_iFanPos,1,0,0);
+          glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+          m_EFan.Draw();
+        glPopMatrix();
         glPushMatrix();  
           m_EVis.GetCenteringTransform(fTransform);
           fTransform[1] +=1.5f;
@@ -175,6 +191,16 @@ void TestVis::Draw()
       m_Y.Draw();
       glTranslatef(0.025,0.083,0.431);
       m_Sheet.Draw();
+      glTranslatef(0,0.01,0);
+      float fLED[4] = {1,0,0,1};
+      glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
+      glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
+      glBegin(GL_QUADS);
+        glVertex3f(0,0,0);
+        glVertex3f(0,0,0.1);
+        glVertex3f(0.1,0,0.1);
+        glVertex3f(0.1,0,0);
+      glEnd();
     glPopMatrix();
     m_Base.Draw();
     glPushMatrix();

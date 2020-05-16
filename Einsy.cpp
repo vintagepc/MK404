@@ -896,6 +896,7 @@ int main(int argc, char *argv[])
 	vis->ConnectFrom(hw.Z.GetIRQ(TMC2130::POSITION_OUT),TestVis::Z_IN);
 	vis->ConnectFrom(hw.E.GetIRQ(TMC2130::POSITION_OUT),TestVis::E_IN);
 	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::SHEET_OUT), TestVis::SHEET_IN);
+	vis->ConnectFrom(hw.fExtruder->GetIRQ(Fan::SPEED_OUT), TestVis::EFAN_IN);
 	vis->SetLCD(&hw.lcd);
 	
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 

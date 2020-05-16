@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <sys/select.h>
 #include <fcntl.h>
+#include <type_traits>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -35,6 +36,7 @@
 #else
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include <GL/freeglut.h>
 #endif
 #include <pthread.h>
 #include <signal.h>
@@ -272,13 +274,21 @@ void powerup_and_reset_helper(avr_t *avr)
 
 	//depress encoder knob
 	if (!bFactoryReset)
-		avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 0);
+		avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 1);
 
 	bFactoryReset = false;
 
 	// TIMSK2
 	avr_regbit_t rb = AVR_IO_REGBITS(0x70, 0, 0b111);
 	avr_regbit_setto(avr,rb,0x01);
+
+	//Reset all SPI SS lines
+	avr_raise_irq(hw.spiFlash.GetIRQ(w25x20cl::SPI_CSEL), 1);
+	avr_raise_irq(hw.sd_card.irq + IRQ_SD_CARD_nSS, 1);
+	avr_raise_irq(hw.X.GetIRQ(TMC2130::SPI_CSEL), 1);
+	avr_raise_irq(hw.Y.GetIRQ(TMC2130::SPI_CSEL), 1);
+	avr_raise_irq(hw.Z.GetIRQ(TMC2130::SPI_CSEL), 1);
+	avr_raise_irq(hw.E.GetIRQ(TMC2130::SPI_CSEL), 1);
 }
 
 static void *
@@ -549,11 +559,11 @@ void setupHeaters()
 
 		hw.hBed = new Heater(0.25, 25, true);
 		hw.hBed->Init(avr, NULL, DIRQLU(avr,HEATER_BED_PIN));
-		hw.hBed->ConnectTo(hw.hBed->TEMP_OUT, hw.tBed.GetIRQ(Thermistor::TEMP_IN));
+		hw.hBed->ConnectTo(Heater::TEMP_OUT, hw.tBed.GetIRQ(Thermistor::TEMP_IN));
 
 		hw.hExtruder = new Heater(1.5,25.0);
 		hw.hExtruder->Init(avr, NULL, DIRQLU(avr, HEATER_0_PIN));
-		hw.hExtruder->ConnectTo(hw.hBed->TEMP_OUT, hw.tExtruder.GetIRQ(Thermistor::TEMP_IN));
+		hw.hExtruder->ConnectTo(Heater::TEMP_OUT, hw.tExtruder.GetIRQ(Thermistor::TEMP_IN));
 }
 
 void setupVoltages()
@@ -567,7 +577,7 @@ void setupVoltages()
 	hw.IR.ConnectTo(IRSensor::DIGITAL_OUT, DIRQLU(avr, IR_SENSOR_PIN));
 	hw.lIR = LED(0xFFCC00FF,'I');
 	hw.lIR.Init(avr);
-	hw.lIR.ConnectFrom(hw.IR.GetIRQ(IRSensor::DIGITAL_OUT), LED::LED_IN);
+	hw.lIR.ConnectFrom(DIRQLU(avr, IR_SENSOR_PIN), LED::LED_IN);
 }
 
 void setupDrivers()
@@ -584,7 +594,7 @@ void setupDrivers()
     ex.mask = uiDiagMask;
 	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
-	struct TMC2130::TMC2130_cfg_t cfg;
+	TMC2130::TMC2130_cfg_t cfg;
 	cfg.iMaxMM = 255;
 	cfg.cAxis = 'X';
 	cfg.uiDiagPin = X_TMC2130_DIAG;
@@ -912,14 +922,17 @@ int main(int argc, char *argv[])
     pthread_create(&run[1], NULL, glutThread, NULL);
 
 	pthread_join(run[0],NULL);
+	glutLeaveMainLoop();
 	pthread_cancel(run[1]); // Kill the GL thread.
 
  	printf("Writing flash state...\n");
     avr_terminate(avr);
+	// Close flash.
+	hw.spiFlash.~w25x20cl(); 
     printf("AVR finished.\n");
 	if (bMMU)
 		delete hw.spPipe;		
 
-	printf("Done");
+	printf("Done\n");
 
 }

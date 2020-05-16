@@ -69,7 +69,7 @@ void Einsy_EEPROM::Save()
 	avr_eeprom_desc_t io {ee:nullptr, offset:0, size:m_uiSize};
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); // Should net a pointer to eeprom[0]
 	ssize_t r = write(m_fdEEPROM, io.ee, m_uiSize);
-	printf("Wrote %u bytes of EEPROM to %s\n",r, m_strPath);
+	printf("Wrote %zd bytes of EEPROM to %s\n",r, m_strPath);
 	if (r != m_uiSize) {
 		fprintf(stderr, "unable to write EEPROM memory\n");
 		perror(m_strPath);

@@ -180,7 +180,7 @@ void HD44780GL::Draw(
 	// there are still lingering display quirks where stuff renders offscreen. Probably the actual memory
 	// mapping needs to change instead of just the offsets since I suspect there are still
 	// corner cases that write into incorrect areas.
-	uint8_t offset[] = {0, 0x40, iCols, iCols+0x40};
+	uint8_t offset[] = {0, 0x40, iCols, static_cast<uint8_t>(iCols+0x40)};
 	for (int v = 0 ; v < m_uiHeight; v++) {
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {

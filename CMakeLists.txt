@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_DEBUG_POSTFIX d)
+ 
+include(ExternalProject)
 
 project(Einsy VERSION 0.1)
 
@@ -74,19 +76,29 @@ set(EINSY_SOURCES
 
 add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${H_FILES} ${INCLUDE_FILES} ${FIRMWARE})
 
-#//add_subdirectory(Hardware)
+execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")
+
+ExternalProject_Add(simavr
+    SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rdParty/simavr
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND make build-simavr RELEASE=0
+    INSTALL_COMMAND ""
+    BUILD_IN_SOURCE 1
+
+)
+
+set (LIBSIMAVR ${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/obj-${SIMAVR_BIN_DIR}/libsimavr.a)
+
+message("Defining simavr location as ${LIBSIMAVR}")
 
 target_include_directories (Einsy PUBLIC 
                             "${PROJECT_BINARY_DIR}"
-                            "${PROJECT_SOURCE_DIR}/../../simavr/sim"
-                            "${PROJECT_SOURCE_DIR}/../../simavr/cores"
+                            "${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/"
                             "${PROJECT_SOURCE_DIR}/hwDefs"
                             "${PROJECT_SOURCE_DIR}/include"
                          )
-
-find_library(LIBSIMAVR
-            simavr
-            HINTS "${PROJECT_SOURCE_DIR}/../../simavr/*")
 
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})

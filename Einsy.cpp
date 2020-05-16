@@ -434,7 +434,7 @@ void InitGL2()
 	glViewport(0, 0, 800, 800);
 	glMatrixMode(GL_PROJECTION);
 	glutDisplayFunc(displayCB2);	
-	
+	glutKeyboardFunc(keyCB); // same func as main window.
 
 	auto fwd = [](int button, int state, int x, int y) {vis->MouseCB(button,state,x,y);};
 	glutMouseFunc(fwd);
@@ -451,6 +451,7 @@ void InitGL2()
 	glLoadIdentity();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+	glEnable(GL_MULTISAMPLE);
 }
 
 void setupLCD()
@@ -874,7 +875,8 @@ int main(int argc, char *argv[])
 
 	initGL(w * pixsize, h * pixsize);
 
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH) ;
+	glutSetOption(GLUT_MULTISAMPLE,4);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE) ;
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
 	window2 = glutCreateWindow("FancyGraphics");	/* create window */
 

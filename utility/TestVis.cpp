@@ -116,10 +116,10 @@ void TestVis::Draw()
     float pos[] = {2,2,2,0};
     float fpos[] = {0,1,-1,1};
     float fNone[] = {0,0,0,1};
-    float fAmb[] = {0,0,0,1};
+    float fAmb[] = {.1,.1,.1,1};
     float fCol2[] = {1,1,1,1};
-    float fSpec[] = {1,1,1,1};
-    float fDiff[] = {5,5,5,1};
+    float fSpec[] = {.4,.4,.4,.5};
+    float fDiff[] = {2.5,2.5,2.5,1};
 
     // camera & rotate
 
@@ -172,6 +172,7 @@ void TestVis::Draw()
     glPushMatrix();
       glTranslatef(0,0, -m_fYCorr + (m_fYPos));
       m_Y.Draw();
+      glTranslatef(0.025,0.083,0.431);
       m_Sheet.Draw();
     glPopMatrix();
     m_Base.Draw();

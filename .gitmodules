@@ -1,0 +1,3 @@
+[submodule "3rdParty/simavr"]
+	path = 3rdParty/simavr
+	url = https://github.com/vintagepc/simavr.git

@@ -32,7 +32,7 @@ public:
 	#include "IRQHelper.h"
 
 	// Creates a new LED with RGBA color (A ignored) uiHexColor and char label chrLabel
-	LED(uint32_t uiHexColor = 0x00FF0000, char chrLabel = ' ');
+	LED(uint32_t uiHexColor = 0x00FF0000, char chrLabel = ' ', bool bInvert = false);
 
 	// Initializes the LED to the AVR
 	void Init(avr_t * avr);
@@ -46,6 +46,7 @@ private:
 	float m_fColor[3] = {0,1,0};
 	char m_chrLabel = ' ';
 	bool m_bOn = false;
+	bool m_bInvert = false;
 
 };
 #endif /* __LED_H___ */

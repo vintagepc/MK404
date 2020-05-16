@@ -55,6 +55,7 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `enter` is the encoder button
 - `q` quits.
 - `p` simulates a power panic
+- `c` inserts/removes the SD card
 - `d` spews program counter output to console.
 - `1` changes the LCD color scheme.
 - `r` resets the printer (X button)

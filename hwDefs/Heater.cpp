@@ -88,7 +88,7 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
 
 Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed):
                                             m_fThermalMass(fThermalMass),
-                                            m_fAmbientTemp(m_fAmbientTemp), 
+                                            m_fAmbientTemp(fAmbientTemp), 
                                             m_fCurrentTemp(fAmbientTemp),
                                             m_bIsBed(bIsBed)            
 {

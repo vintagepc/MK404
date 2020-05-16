@@ -294,7 +294,9 @@ static void _sd_card_ss_pin_changed_cb (struct avr_irq_t *irq, uint32_t value, v
 	struct avr_t *avr = self->avr;
 
 	self->selected = (value == 0) ? 1 : 0; /* invert the value, since nSS is active low */
-	DEBUG ("SD card selected: %u.", self->selected);
+	DEBUG ("SD card selected: %u. In state: %d", self->selected, self->state);
+	if (self->selected == 0)
+		self->state = SD_CARD_IDLE;
 }
 
 /* Called when the MOSI IRQ is fired. */

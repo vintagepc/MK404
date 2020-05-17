@@ -86,7 +86,7 @@ extern "C" {
 
 #include "SerialPipe.h"
 
-#include "TestVis.h"
+#include "MK3SGL.h"
 
 #include "include/MK3/Configuration_prusa.h"
 
@@ -140,7 +140,7 @@ struct hw_t {
 
 bool bFactoryReset = false, bCardMounted = false;
 
-TestVis *vis = nullptr;
+MK3SGL *vis = nullptr;
 
 unsigned char guKey = 0;
 
@@ -314,12 +314,12 @@ avr_run_thread(
 				case 'w':
 					printf("<");
 					hw.encoder.Twist(RotaryEncoder::CCW_CLICK);
-					vis->TwistKnob(true);
+					if (vis) vis->TwistKnob(true);
 					break;
 				case 's':
 					printf(">");
 					hw.encoder.Twist(RotaryEncoder::CW_CLICK);
-					vis->TwistKnob(false);
+					if (vis) vis->TwistKnob(false);
 					break;
 				case 0xd:
 					printf("ENTER pushed\n");
@@ -414,7 +414,8 @@ void timerCB(int i)
 	// restart timer
 	glutTimerFunc(50, timerCB, i^1);
 	displayCB();
-	displayCB2();
+	if (vis !=nullptr)
+		displayCB2();
 	//hd44780_print(&hd44780);
 }
 
@@ -443,7 +444,7 @@ int initGL(int w, int h)
 	return 1;
 }
 
-void InitGL2()
+void InitFancyVis(bool bMMU)
 {
 	glViewport(0, 0, 800, 800);
 	glMatrixMode(GL_PROJECTION);
@@ -466,6 +467,24 @@ void InitGL2()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	glEnable(GL_MULTISAMPLE);
+
+	vis = new MK3SGL();
+
+	vis->SetWindow(window2);
+
+	vis->Init(avr);
+
+	vis->ConnectFrom(hw.X.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::X_IN);
+	vis->ConnectFrom(hw.Y.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::Y_IN);
+	vis->ConnectFrom(hw.Z.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::Z_IN);
+	vis->ConnectFrom(hw.E.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::E_IN);
+	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
+	vis->ConnectFrom(hw.fExtruder->GetIRQ(Fan::SPEED_OUT), MK3SGL::EFAN_IN);
+	vis->ConnectFrom(hw.hBed->GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
+	vis->ConnectFrom(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, MK3SGL::SD_IN);
+	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
+	vis->SetLCD(&hw.lcd);
+	vis->SetMMU(bMMU);
 }
 
 void setupLCD()
@@ -746,7 +765,9 @@ void * glutThread(void* p)
 int main(int argc, char *argv[])
 {
 
-	bool bBootloader = false, bConnectS0 = false, bWait = false, bMMU = false, bLoadFW= false;
+	bool bBootloader = false, bConnectS0 = false, 
+		bWait = false, bMMU = false, bLoadFW= false,
+		bAdvVis = false;
 	struct avr_flash flash_data;
 	char boot_path[1024] = "stk500boot_v2_mega2560.hex";
 	//char boot_path[1024] = "atmega2560_PFW.axf";
@@ -771,10 +792,12 @@ int main(int argc, char *argv[])
 			bLoadFW = true;
 		else if (!strcmp(argv[i], "-m"))
 			bMMU = true;
+		else if (!strcmp(argv[i], "--fancy"))
+			bAdvVis = true;
 		else if (!strcmp(argv[i], "-S0"))
 			bConnectS0 = true;
-		else if (!strncmp(argv[i], "-l",2))
-			chrLogSerial = argv[i][2];
+		else if (!strncmp(argv[i], "-lg",3))
+			chrLogSerial = argv[i][3];
 		else {
 			fprintf(stderr, "%s: invalid argument %s\n", argv[0], argv[i]);
 			exit(1);
@@ -888,32 +911,21 @@ int main(int argc, char *argv[])
 
 	initGL(w * pixsize, h * pixsize);
 
-	glutSetOption(GLUT_MULTISAMPLE,4);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE) ;
-	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
-	window2 = glutCreateWindow("FancyGraphics");	/* create window */
 
-	glewInit();
+	if (bAdvVis)
+	{
+		glutSetOption(GLUT_MULTISAMPLE,4);
+		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE) ;
+		glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
+		window2 = glutCreateWindow("FancyGraphics");	/* create window */
 
-	InitGL2();
+		glewInit();
+
+		InitFancyVis(bMMU);
+	}
 
 
-	vis = new TestVis();
 
-	vis->SetWindow(window2);
-
-	vis->Init(avr);
-
-	vis->ConnectFrom(hw.X.GetIRQ(TMC2130::POSITION_OUT),TestVis::X_IN);
-	vis->ConnectFrom(hw.Y.GetIRQ(TMC2130::POSITION_OUT),TestVis::Y_IN);
-	vis->ConnectFrom(hw.Z.GetIRQ(TMC2130::POSITION_OUT),TestVis::Z_IN);
-	vis->ConnectFrom(hw.E.GetIRQ(TMC2130::POSITION_OUT),TestVis::E_IN);
-	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::SHEET_OUT), TestVis::SHEET_IN);
-	vis->ConnectFrom(hw.fExtruder->GetIRQ(Fan::SPEED_OUT), TestVis::EFAN_IN);
-	vis->ConnectFrom(hw.hBed->GetIRQ(Heater::ON_OUT), TestVis::BED_IN);
-	vis->ConnectFrom(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, TestVis::SD_IN);
-	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::TRIGGER_OUT), TestVis::PINDA_IN);
-	vis->SetLCD(&hw.lcd);
 	
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
 	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers

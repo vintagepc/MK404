@@ -5,7 +5,7 @@
 #include "BasePeripheral.h"
 #include "HD44780GL.h"
 
-class TestVis: public BasePeripheral
+class MK3SGL: public BasePeripheral
 {
     public:
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
@@ -13,7 +13,7 @@ class TestVis: public BasePeripheral
                             _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in")
         #include "IRQHelper.h"
 
-        TestVis();
+        MK3SGL();
         void Init(avr_t *avr);
         void Draw();
 
@@ -30,17 +30,17 @@ class TestVis: public BasePeripheral
 
     private:
        
-        GLObj m_Extruder = GLObj("../assets/X_AXIS.obj");
-        GLObj m_Z = GLObj("../assets/Z_AXIS.obj");
-        GLObj m_Y = GLObj("../assets/Y_AXIS.obj");
-        GLObj m_Sheet = GLObj("../assets/SSSheet.obj");
-        GLObj m_Base = GLObj("../assets/Stationary.obj");
-        GLObj m_SDCard = GLObj("../assets/SDCard.obj");
-        GLObj m_Knob = GLObj("../assets/LCD-knobR2.obj");
-        GLObj m_EVis = GLObj("../assets/Triangles.obj");
-        GLObj m_EMMU = GLObj("../assets/E_MMU.obj");
-        GLObj m_EStd = GLObj("../assets/E_STD.obj");
-        GLObj m_EFan = GLObj("../assets/E_Fan.obj");
+        GLObj m_Extruder = GLObj("assets/X_AXIS.obj");
+        GLObj m_Z = GLObj("assets/Z_AXIS.obj");
+        GLObj m_Y = GLObj("assets/Y_AXIS.obj");
+        GLObj m_Sheet = GLObj("assets/SSSheet.obj");
+        GLObj m_Base = GLObj("assets/Stationary.obj");
+        GLObj m_SDCard = GLObj("assets/SDCard.obj");
+        GLObj m_Knob = GLObj("assets/LCD-knobR2.obj");
+        GLObj m_EVis = GLObj("assets/Triangles.obj");
+        GLObj m_EMMU = GLObj("assets/E_MMU.obj");
+        GLObj m_EStd = GLObj("assets/E_STD.obj");
+        GLObj m_EFan = GLObj("assets/E_Fan.obj");
 
         HD44780GL *m_pLCD = nullptr;
 
@@ -67,7 +67,6 @@ class TestVis: public BasePeripheral
 
         int m_iKnobPos = 0, m_iFanPos = 0;
 
-        bool bLoaded = false;
         double prevMouseX, prevMouseY;
         bool mouseLeftPressed;
         bool mouseMiddlePressed;

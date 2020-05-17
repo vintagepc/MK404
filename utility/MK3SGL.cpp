@@ -1,4 +1,4 @@
-#include "TestVis.h"
+#include "MK3SGL.h"
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -14,7 +14,7 @@
 
 #include <GL/glew.h>
 #include <GL/glut.h>
-TestVis::TestVis()
+MK3SGL::MK3SGL()
 {
   trackball(curr_quat,0,0,0,0);
     eye[0] = 0.0f;
@@ -42,23 +42,23 @@ TestVis::TestVis()
 
 }
 
-void TestVis::Init(avr_t *avr)
+void MK3SGL::Init(avr_t *avr)
 {
   _Init(avr,this);
-  RegisterNotify(X_IN,MAKE_C_CALLBACK(TestVis,OnXChanged),this);
-  RegisterNotify(Y_IN,MAKE_C_CALLBACK(TestVis,OnYChanged),this);
-  RegisterNotify(Z_IN,MAKE_C_CALLBACK(TestVis,OnZChanged),this);
-  RegisterNotify(E_IN,MAKE_C_CALLBACK(TestVis,OnEChanged),this);
-  RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(TestVis, OnSheetChanged), this);
-  RegisterNotify(EFAN_IN, MAKE_C_CALLBACK(TestVis, OnEFanChanged), this);
-  RegisterNotify(BED_IN, MAKE_C_CALLBACK(TestVis, OnBedChanged), this);
-  RegisterNotify(SD_IN, MAKE_C_CALLBACK(TestVis,OnSDChanged),this);
-  RegisterNotify(PINDA_IN, MAKE_C_CALLBACK(TestVis,OnPINDAChanged),this);
+  RegisterNotify(X_IN,MAKE_C_CALLBACK(MK3SGL,OnXChanged),this);
+  RegisterNotify(Y_IN,MAKE_C_CALLBACK(MK3SGL,OnYChanged),this);
+  RegisterNotify(Z_IN,MAKE_C_CALLBACK(MK3SGL,OnZChanged),this);
+  RegisterNotify(E_IN,MAKE_C_CALLBACK(MK3SGL,OnEChanged),this);
+  RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(MK3SGL, OnSheetChanged), this);
+  RegisterNotify(EFAN_IN, MAKE_C_CALLBACK(MK3SGL, OnEFanChanged), this);
+  RegisterNotify(BED_IN, MAKE_C_CALLBACK(MK3SGL, OnBedChanged), this);
+  RegisterNotify(SD_IN, MAKE_C_CALLBACK(MK3SGL,OnSDChanged),this);
+  RegisterNotify(PINDA_IN, MAKE_C_CALLBACK(MK3SGL,OnPINDAChanged),this);
 
   m_bDirty = true;
 }
 
-void TestVis::TwistKnob(bool bDir)
+void MK3SGL::TwistKnob(bool bDir)
 {
   if (bDir)
     m_iKnobPos = (m_iKnobPos+18)%360;
@@ -66,65 +66,65 @@ void TestVis::TwistKnob(bool bDir)
     m_iKnobPos = (m_iKnobPos + 342)%360;
 }
 
-void TestVis::OnXChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnXChanged(avr_irq_t *irq, uint32_t value)
 {
   float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
   m_fXPos =  fPos[0]/1000.f;
   m_bDirty = true;
 }
 
-void TestVis::OnBedChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnBedChanged(avr_irq_t *irq, uint32_t value)
 {
   m_bBedOn = value>0;
   m_bDirty = true;
 }
 
-void TestVis::OnSheetChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnSheetChanged(avr_irq_t *irq, uint32_t value)
 {
   m_Sheet.SetAllVisible(value>0);
   m_bDirty = true;
 }
 
-void TestVis::OnEFanChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnEFanChanged(avr_irq_t *irq, uint32_t value)
 {
   m_bFanOn = (value>0);
   m_bDirty = true;
 }
 
-void TestVis::OnSDChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnSDChanged(avr_irq_t *irq, uint32_t value)
 {
   m_SDCard.SetAllVisible(value^1);
   m_bDirty = true;
 }
 
-void TestVis::OnPINDAChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnPINDAChanged(avr_irq_t *irq, uint32_t value)
 {
   m_bPINDAOn = value;
   m_bDirty = true;
 }
 
-void TestVis::OnYChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnYChanged(avr_irq_t *irq, uint32_t value)
 {
   float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
   m_fYPos =  fPos[0]/1000.f;
   m_bDirty = true;
 }
 
-void TestVis::OnEChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnEChanged(avr_irq_t *irq, uint32_t value)
 {
   float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
   m_fEPos =  fPos[0]/1000.f;
   m_bDirty = true;
 }
 
-void TestVis::OnZChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnZChanged(avr_irq_t *irq, uint32_t value)
 {
   float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
   m_fZPos =  fPos[0]/1000.f;
   m_bDirty = true;
 }
 
-void TestVis::Draw()
+void MK3SGL::Draw()
 {
     //if (!m_bDirty)
     //    return;
@@ -283,7 +283,7 @@ void TestVis::Draw()
 }
 
 
-void TestVis::MouseCB(int button, int action, int x, int y)
+void MK3SGL::MouseCB(int button, int action, int x, int y)
 {
  if (button == GLUT_LEFT_BUTTON) {
     if (action == GLUT_DOWN) {
@@ -317,7 +317,7 @@ void TestVis::MouseCB(int button, int action, int x, int y)
   m_bDirty = true;
 }
 
-void TestVis::MotionCB(int x, int y)
+void MK3SGL::MotionCB(int x, int y)
 {
       float rotScale = 1.0f;
   float transScale = 2.0f;

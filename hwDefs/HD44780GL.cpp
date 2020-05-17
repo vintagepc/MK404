@@ -92,23 +92,17 @@ void HD44780GL::OnBrightnessDigital(struct avr_irq_t * irq,	uint32_t value)
 	
 }
 
-
 void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	glColor32U(character,bMaterial);
 	glBegin(GL_QUADS);
-	glVertex3i(5, 8, -1);
-	glVertex3i(5, 0, -1);
-	glVertex3i(0, 0, -1);
-	glVertex3i(0, 8, -1);
+		glVertex3i(5, 8, -1);
+		glVertex3i(5, 0, -1);
+		glVertex3i(0, 0, -1);
+		glVertex3i(0, 8, -1);
 	glEnd();
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBegin(GL_QUADS);
 	uint8_t *uiData;
 	uint8_t iCols=8;
 	if (c<16)
@@ -138,24 +132,27 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 				if (shadow)
 				{
 					glPushMatrix();
-					glColor32U(shadow, bMaterial);
-					glVertex3f(x,y,		-2);
-					glVertex3f(x,y+1,	-2);
-					glVertex3f(x+1,y+1,	-2);
-					glVertex3f(x+1,y,	-2);
+						glColor32U(shadow, bMaterial);
+						glBegin(GL_QUADS);
+							glVertex3f(x,y,		-2);
+							glVertex3f(x,y+1,	-2);
+							glVertex3f(x+1,y+1,	-2);
+							glVertex3f(x+1,y,	-2);
+						glEnd();
 					glPopMatrix();
 				}
 				glColor32U(text, bMaterial);
-				glVertex3f(x,y,				-3);
-				glVertex3f(x,y+inset,		-3);
-				glVertex3f(x+inset,y+inset,	-3);
-				glVertex3f(x+inset,y,		-3);
-
+				glBegin(GL_QUADS);
+					glVertex3f(x,y,				-3);
+					glVertex3f(x,y+inset,		-3);
+					glVertex3f(x+inset,y+inset,	-3);
+					glVertex3f(x+inset,y,		-3);
+				glEnd();
 			}
 		}
 	}
-	glEnd();
 }
+
 
 void HD44780GL::Draw(
 		uint32_t background,
@@ -166,9 +163,6 @@ void HD44780GL::Draw(
 	uint8_t iCols = m_uiWidth;
 	uint8_t iRows = m_uiHeight;
 	int border = 3;
-
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_BLEND);
 	uint8_t* iBG = (uint8_t*)&background;
 	float r = iBG[3]/255.0,g = iBG[2]/255.0,blue = iBG[1]/255.0;
 	float fScale = (float)m_uiBrightness/255.0;
@@ -184,13 +178,12 @@ void HD44780GL::Draw(
 
 	glTranslatef(border, border, 0);
 	glBegin(GL_QUADS);
-	glVertex3f(iCols * m_uiCharW + (iCols - 1) + border, -border, 0);
-	glVertex3f(-border, -border, 0);
-	glVertex3f(-border, iRows * m_uiCharH + (iRows - 1) + border, 0);
-	glVertex3f(iCols * m_uiCharW + (iCols - 1) + border, iRows * m_uiCharH
-			+ (iRows - 1) + border, 0);
+		glVertex3f(iCols * m_uiCharW + (iCols - 1) + border, -border, 0);
+		glVertex3f(-border, -border, 0);
+		glVertex3f(-border, iRows * m_uiCharH + (iRows - 1) + border, 0);
+		glVertex3f(iCols * m_uiCharW + (iCols - 1) + border, iRows * m_uiCharH
+				+ (iRows - 1) + border, 0);
 	glEnd();
-
 	// TODO: Something is not right with these offsets. The stock ones
 	// (0, 0x20,0x40,0x60) were totally whack-o, these seem to kinda-sorta work but
 	// there are still lingering display quirks where stuff renders offscreen. Probably the actual memory

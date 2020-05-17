@@ -82,7 +82,7 @@ void GLObj::Draw() {
         glMaterialfv(GL_FRONT, GL_DIFFUSE, fCopy);
         memcpy(fCopy,m_materials[o.material_id].specular,3*(sizeof(float)));
         glMaterialfv(GL_FRONT, GL_SPECULAR, fCopy);
-        glMaterialf(GL_FRONT, GL_SHININESS, m_materials[o.material_id].shininess);
+        glMaterialf(GL_FRONT, GL_SHININESS, (m_materials[o.material_id].shininess/1000.f)*128.f);
         memcpy(fCopy,m_materials[o.material_id].emission,3*(sizeof(float)));
         glMaterialfv(GL_FRONT, GL_EMISSION, fCopy);
       }
@@ -367,9 +367,9 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
         glBufferData(GL_ARRAY_BUFFER, vb.size() * sizeof(float), &vb.at(0),
                      GL_STATIC_DRAW);
 #if TEX_VCOLOR
-        o.numTriangles = vb.size() / (3 + 3 + 3 + 2) * 3;
+        o.numTriangles = vb.size() / ((3 + 3 + 3 + 2) * 3);
 #else
-        o.numTriangles = vb.size() / (3 + 3) * 3;
+        o.numTriangles = vb.size() / ((3 + 3) * 3);
 #endif
         printf("shape[%d] # of triangles = %d\n", static_cast<int>(s),
                o.numTriangles);

@@ -10,7 +10,7 @@ class TestVis: public BasePeripheral
     public:
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
                             _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
-                            _IRQ(BED_IN,"<bed.in")
+                            _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in")
         #include "IRQHelper.h"
 
         TestVis();
@@ -54,13 +54,14 @@ class TestVis: public BasePeripheral
         void OnSDChanged(avr_irq_t *irq, uint32_t value);
         void OnEFanChanged(avr_irq_t *irq, uint32_t value);
         void OnBedChanged(avr_irq_t *irq, uint32_t value);
+        void OnPINDAChanged(avr_irq_t *irq, uint32_t value);
 
         float m_fXCorr = 0.044, m_fXPos = 0.010;
         float m_fYCorr = 0.141, m_fYPos = 0.010;
         float m_fZCorr = 0.206, m_fZPos = 0.010;
         float m_fEPos = 0;
 
-        float m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false;
+        bool m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false, m_bPINDAOn = false;
 
         int height = 800, width = 800, m_iWindow = 0;
 

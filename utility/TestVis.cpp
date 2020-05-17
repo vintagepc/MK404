@@ -126,7 +126,7 @@ void TestVis::Draw()
     float fAmb[] = {.1,.1,.1,1};
     float fCol2[] = {1,1,1,1};
     float fSpec[] = {.4,.4,.4,.5};
-    float fDiff[] = {2.5,2.5,2.5,1};
+    float fDiff[] = {1.5,1.5,1.5,1};
 
     // camera & rotate
 
@@ -140,6 +140,7 @@ void TestVis::Draw()
 
     glEnable(GL_LIGHTING); 
     glMatrixMode(GL_MODELVIEW);
+    glEnable(GL_NORMALIZE);
     glLoadIdentity();
     GLfloat mat[4][4];
     gluLookAt(eye[0], eye[1], eye[2], lookat[0], lookat[1], lookat[2], up[0],
@@ -173,6 +174,7 @@ void TestVis::Draw()
           glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
           glRotatef((float)m_iFanPos,1,0,0);
           glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+          
           m_EFan.Draw();
         glPopMatrix();
         glPushMatrix();  

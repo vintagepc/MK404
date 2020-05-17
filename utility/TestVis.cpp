@@ -52,6 +52,9 @@ void TestVis::Init(avr_t *avr)
   RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(TestVis, OnSheetChanged), this);
   RegisterNotify(EFAN_IN, MAKE_C_CALLBACK(TestVis, OnEFanChanged), this);
   RegisterNotify(BED_IN, MAKE_C_CALLBACK(TestVis, OnBedChanged), this);
+  RegisterNotify(SD_IN, MAKE_C_CALLBACK(TestVis,OnSDChanged),this);
+  RegisterNotify(PINDA_IN, MAKE_C_CALLBACK(TestVis,OnPINDAChanged),this);
+
   m_bDirty = true;
 }
 
@@ -91,6 +94,12 @@ void TestVis::OnEFanChanged(avr_irq_t *irq, uint32_t value)
 void TestVis::OnSDChanged(avr_irq_t *irq, uint32_t value)
 {
   m_SDCard.SetAllVisible(value^1);
+  m_bDirty = true;
+}
+
+void TestVis::OnPINDAChanged(avr_irq_t *irq, uint32_t value)
+{
+  m_bPINDAOn = value;
   m_bDirty = true;
 }
 
@@ -134,7 +143,7 @@ void TestVis::Draw()
     float fCol2[] = {1,1,1,1};
     float fSpec[] = {.4,.4,.4,.5};
     float fDiff[] = {1.5,1.5,1.5,1};
-
+    float fLED[4] = {1,0,0,1};
     // camera & rotate
 
     glEnable(GL_CULL_FACE);
@@ -170,13 +179,35 @@ void TestVis::Draw()
       m_Z.Draw();
       glPushMatrix();
         glTranslatef(-m_fXCorr + (m_fXPos),0,0);
-        m_Extruder.Draw();
-
+       m_Extruder.Draw();
+       if (m_bPINDAOn)
+        {
+          glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
+          glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
+          glPushMatrix();
+          glTranslatef(0.092,0.3355,0.274);
+          glBegin(GL_TRIANGLE_FAN);
+            glVertex3f( 0,   0,    0);
+            glVertex3f(-0.004,0,0);
+            glVertex3f(-0.003,0,0.003);
+            glVertex3f( 0,   0,     0.004);
+            glVertex3f( 0.003,0,0.003);
+            glVertex3f( 0.004,  0,  0);
+            glVertex3f(0.003, 0,   -0.003);
+            glVertex3f( 0,   0,    -0.004);
+            glVertex3f(-0.003, 0, -0.003);
+            glVertex3f(-0.004,0,0);
+          glEnd();
+          glPopMatrix();
+          glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, fNone);
+        }
         glScalef(fMM2M,fMM2M,fMM2M);
         if (m_bMMU)
           m_EMMU.Draw();
         else
           m_EStd.Draw();
+
+   
 
         glPushMatrix();
           if (m_bFanOn)
@@ -207,15 +238,15 @@ void TestVis::Draw()
       if (m_bBedOn)
       {
         glTranslatef(0.016,0,-0.244);
-        float fLED[4] = {1,0,0,1};
         glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
         glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
         glBegin(GL_QUADS);
           glVertex3f(0,0,0);
-          glVertex3f(0.003,0,0);
-          glVertex3f(0.003,0.002,0.002);
-          glVertex3f(0,0.002,0.002);
+          glVertex3f(0.004,0,0);
+          glVertex3f(0.004,0.003,0.003);
+          glVertex3f(0,0.003,0.003);
         glEnd();
+        glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, fNone);
       }
     glPopMatrix();
     m_Base.Draw();
@@ -257,7 +288,7 @@ void TestVis::MouseCB(int button, int action, int x, int y)
  if (button == GLUT_LEFT_BUTTON) {
     if (action == GLUT_DOWN) {
       mouseLeftPressed = true;
-     // trackball(prev_quat, 0.0, 0.0, 0.0, 0.0);
+      trackball(prev_quat, 0.0, 0.0, 0.0, 0.0);
     } else if (action == GLUT_UP) {
       mouseLeftPressed = false;
     }

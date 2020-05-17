@@ -552,7 +552,13 @@ int sd_card_mount_file (struct avr_t *avr, sd_card_t *self, const char *filename
 	if (image_size == 0)
 	{
 		image_size = stat_buf.st_size;
-		printf("Autodetected SD image size as %lu Mb\n",image_size>>20); // >>21 = div by 1024*1024
+		if (image_size==0)
+		{
+			printf("No SD image found. Aborting mount.\n");
+			saved_errno = -1;
+			goto error;
+		}
+		printf("Autodetected SD image size as %lu Mb\n",image_size>>20); // >>20 = div by 1024*1024
 	}
 	else if (stat_buf.st_size < image_size) 
 	{

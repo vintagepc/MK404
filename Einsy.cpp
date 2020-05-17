@@ -478,7 +478,6 @@ void setupSDcard(char * mmcu)
 
 	if (mount_error != 0) {
 		fprintf (stderr, "SD card image ‘%s’ could not be mounted (error %i).\n", hw.sd_card.filepath, mount_error);
-		exit (2);
 	}
 }
 

@@ -8,7 +8,9 @@
 class TestVis: public BasePeripheral
 {
     public:
-        #define IRQPAIRS _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in")
+        #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
+                            _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
+                            _IRQ(BED_IN,"<bed.in")
         #include "IRQHelper.h"
 
         TestVis();
@@ -18,6 +20,8 @@ class TestVis: public BasePeripheral
         void TwistKnob(bool bDir);
 
         void SetLCD(HD44780GL* pLCD){m_pLCD = pLCD;}
+
+        void SetMMU(bool bMMU) { m_bMMU = bMMU;}
 
         void MouseCB(int button, int state, int x, int y);
         void MotionCB(int x, int y);
@@ -34,7 +38,7 @@ class TestVis: public BasePeripheral
         GLObj m_SDCard = GLObj("../assets/SDCard.obj");
         GLObj m_Knob = GLObj("../assets/LCD-knobR2.obj");
         GLObj m_EVis = GLObj("../assets/Triangles.obj");
-        //GLObj m_EMMU = GLObj("../assets/E_MMU.obj");
+        GLObj m_EMMU = GLObj("../assets/E_MMU.obj");
         GLObj m_EStd = GLObj("../assets/E_STD.obj");
         GLObj m_EFan = GLObj("../assets/E_Fan.obj");
 
@@ -49,13 +53,14 @@ class TestVis: public BasePeripheral
         void OnSheetChanged(avr_irq_t *irq, uint32_t value);
         void OnSDChanged(avr_irq_t *irq, uint32_t value);
         void OnEFanChanged(avr_irq_t *irq, uint32_t value);
+        void OnBedChanged(avr_irq_t *irq, uint32_t value);
 
         float m_fXCorr = 0.044, m_fXPos = 0.010;
         float m_fYCorr = 0.141, m_fYPos = 0.010;
         float m_fZCorr = 0.206, m_fZPos = 0.010;
         float m_fEPos = 0;
 
-        float m_bDirty = false, m_bFanOn = false;
+        float m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false;
 
         int height = 800, width = 800, m_iWindow = 0;
 

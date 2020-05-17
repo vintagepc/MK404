@@ -51,6 +51,7 @@ void TestVis::Init(avr_t *avr)
   RegisterNotify(E_IN,MAKE_C_CALLBACK(TestVis,OnEChanged),this);
   RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(TestVis, OnSheetChanged), this);
   RegisterNotify(EFAN_IN, MAKE_C_CALLBACK(TestVis, OnEFanChanged), this);
+  RegisterNotify(BED_IN, MAKE_C_CALLBACK(TestVis, OnBedChanged), this);
   m_bDirty = true;
 }
 
@@ -66,6 +67,12 @@ void TestVis::OnXChanged(avr_irq_t *irq, uint32_t value)
 {
   float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
   m_fXPos =  fPos[0]/1000.f;
+  m_bDirty = true;
+}
+
+void TestVis::OnBedChanged(avr_irq_t *irq, uint32_t value)
+{
+  m_bBedOn = value>0;
   m_bDirty = true;
 }
 
@@ -166,7 +173,11 @@ void TestVis::Draw()
         m_Extruder.Draw();
 
         glScalef(fMM2M,fMM2M,fMM2M);
-        m_EStd.Draw();
+        if (m_bMMU)
+          m_EMMU.Draw();
+        else
+          m_EStd.Draw();
+
         glPushMatrix();
           if (m_bFanOn)
             m_iFanPos = (m_iFanPos + 23)%360;
@@ -193,16 +204,19 @@ void TestVis::Draw()
       m_Y.Draw();
       glTranslatef(0.025,0.083,0.431);
       m_Sheet.Draw();
-      glTranslatef(0,0.01,0);
-      float fLED[4] = {1,0,0,1};
-      glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
-      glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
-      glBegin(GL_QUADS);
-        glVertex3f(0,0,0);
-        glVertex3f(0,0,0.1);
-        glVertex3f(0.1,0,0.1);
-        glVertex3f(0.1,0,0);
-      glEnd();
+      if (m_bBedOn)
+      {
+        glTranslatef(0.016,0,-0.244);
+        float fLED[4] = {1,0,0,1};
+        glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
+        glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
+        glBegin(GL_QUADS);
+          glVertex3f(0,0,0);
+          glVertex3f(0.003,0,0);
+          glVertex3f(0.003,0.002,0.002);
+          glVertex3f(0,0.002,0.002);
+        glEnd();
+      }
     glPopMatrix();
     m_Base.Draw();
     glPushMatrix();

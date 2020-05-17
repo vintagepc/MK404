@@ -549,7 +549,19 @@ int sd_card_mount_file (struct avr_t *avr, sd_card_t *self, const char *filename
 		goto error;
 	}
 
-	if (stat_buf.st_size < image_size) {
+	if (image_size == 0)
+	{
+		image_size = stat_buf.st_size;
+		if (image_size==0)
+		{
+			printf("No SD image found. Aborting mount.\n");
+			saved_errno = -1;
+			goto error;
+		}
+		printf("Autodetected SD image size as %lu Mb\n",image_size>>20); // >>20 = div by 1024*1024
+	}
+	else if (stat_buf.st_size < image_size) 
+	{
 		if (ftruncate (fd, image_size) == -1) {
 			/* Error. */
 			saved_errno = errno;
@@ -579,7 +591,7 @@ int sd_card_mount_file (struct avr_t *avr, sd_card_t *self, const char *filename
 
 	_sd_card_set_csd_c_size (self, c_size, c_size_mult);
 
-	avr_raise_irq(self->irq + IRQ_SD_CARD_PRESENT,1);
+	avr_raise_irq(self->irq + IRQ_SD_CARD_PRESENT,0);
 
 	return 0;
 
@@ -616,6 +628,6 @@ int sd_card_unmount_file (struct avr_t *avr, sd_card_t *self)
 	self->data_fd = -1;
 
 	_sd_card_set_csd_c_size (self, 0, 0);
-	avr_raise_irq(self->irq + IRQ_SD_CARD_PRESENT,0);
+	avr_raise_irq(self->irq + IRQ_SD_CARD_PRESENT,1);
 	return 0;
 }

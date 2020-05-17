@@ -72,7 +72,7 @@ set(EINSY_SOURCES
     hwDefs/w25x20cl.cpp
     MMU2.cpp
     include/SerialPipe.cpp
-    utility/TestVis.cpp  
+    utility/MK3SGL.cpp  
     utility/GLObj.cpp  
     3rdParty/trackball.cc
 )
@@ -132,6 +132,17 @@ add_custom_command(TARGET Einsy POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/stk500boot_v2_mega2560.hex"
                     "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
+
+# Copies the models/materials:
+add_custom_command(TARGET Einsy POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/assets"
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/assets/*.obj"
+                    "${PROJECT_BINARY_DIR}/assets/"
+                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/assets/*.mtl"
+                    "${PROJECT_BINARY_DIR}/assets/")
+                    
 
 add_custom_target(Build_Run COMMAND cd ${PROJECT_BINARY_DIR} && ./Einsy &)
 add_dependencies(Build_Run Einsy)

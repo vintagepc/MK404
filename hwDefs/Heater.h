@@ -30,7 +30,7 @@
 class Heater : public BasePeripheral
 {
 public:
-    #define IRQPAIRS _IRQ(PWM_IN,"<heater.pwm_in") _IRQ(DIGITAL_IN,"<heater.digital_in") _IRQ(TEMP_OUT,">heater.temp_out")
+    #define IRQPAIRS _IRQ(PWM_IN,"<heater.pwm_in") _IRQ(DIGITAL_IN,"<heater.digital_in") _IRQ(TEMP_OUT,">heater.temp_out") _IRQ(ON_OUT,">heater.on")
     #include "IRQHelper.h"
 
 

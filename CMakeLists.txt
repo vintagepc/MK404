@@ -96,6 +96,8 @@ ExternalProject_Add(simavr
 
 )
 
+add_dependencies(Einsy simavr)
+
 set (LIBSIMAVR ${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/obj-${SIMAVR_BIN_DIR}/libsimavr.a)
 
 message("Defining simavr location as ${LIBSIMAVR}")

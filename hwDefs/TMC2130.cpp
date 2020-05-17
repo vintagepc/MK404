@@ -110,6 +110,7 @@ void TMC2130::Draw_Simple()
             glScalef(0.09,-0.05,0);
             glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,cfg.cAxis);
         glPopMatrix();
+        glColor3f(1,1,1);
         glPushMatrix();
             glTranslatef(30,7,0);
             glScalef(0.09,-0.05,0);

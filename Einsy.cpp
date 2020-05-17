@@ -133,12 +133,12 @@ struct hw_t {
 	PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
 	UART_Logger logger;
 	MMU2 mmu;
-	LED lPINDA, lIR;
+	LED lPINDA, lIR, lSD;
 	Einsy_EEPROM *EEPROM;
 	SerialPipe *spPipe;
 } hw;
 
-bool bFactoryReset = false;
+bool bFactoryReset = false, bCardMounted = false;
 
 TestVis *vis = nullptr;
 
@@ -249,9 +249,11 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		glScalef(fX/350,4,1);
 		glTranslatef(0,fY +30,0);
 		hw.E.Draw_Simple();
-		glTranslatef(330,0,0);
+		glTranslatef(290,0,0);
+		hw.lSD.Draw();
+		glTranslatef(20,0,0);
 		hw.lPINDA.Draw();
-		glTranslatef(10,0,0);
+		glTranslatef(20,0,0);
 		hw.lIR.Draw();
 	glPopMatrix();
 	glutSwapBuffers();
@@ -343,6 +345,18 @@ avr_run_thread(
 					break;
 				case 'f':
 					hw.IR.Toggle();
+					break;
+				case 'c':
+					if (hw.sd_card.data==NULL)
+					{
+						printf("Mounting SD image...\n");
+						sd_card_mount_file(avr, &hw.sd_card, hw.sd_card.filepath,0);
+					}
+					else
+					{
+						printf("SD card removed...\n");
+						sd_card_unmount_file(avr, &hw.sd_card);
+					}
 					break;
 				case 'q':
 					gbStop = 1;
@@ -489,18 +503,17 @@ void setupSDcard(char * mmcu)
 	
 	// wire up the SD present signal.
 	avr_connect_irq(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, DIRQLU(avr,SDCARDDETECT));
-    avr_ioport_external_t ex;
-    ex.value = 0;
-    ex.name = PORT(SDCARDDETECT);
-    ex.mask = 1<<PIN(SDCARDDETECT);
-	avr_ioctl(avr,AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name),&ex);
+	
+	// Add indicator first so it captures the mount IRQ
+	hw.lSD = LED(0x0000FF00,'C', true);
+	hw.lSD.Init(avr);
+	hw.lSD.ConnectFrom(DIRQLU(avr,SDCARDDETECT), LED::LED_IN);
 
 	snprintf(hw.sd_card.filepath, sizeof(hw.sd_card.filepath), "Einsy_%s_SDcard.bin", mmcu);
-	int mount_error = sd_card_mount_file (avr, &hw.sd_card, hw.sd_card.filepath, 128450560);
+	int mount_error = sd_card_mount_file (avr, &hw.sd_card, hw.sd_card.filepath, 0);
 
 	if (mount_error != 0) {
 		fprintf (stderr, "SD card image ‘%s’ could not be mounted (error %i).\n", hw.sd_card.filepath, mount_error);
-		exit (2);
 	}
 }
 
@@ -578,7 +591,7 @@ void setupVoltages()
     hw.vMain->Init(avr,VOLT_PWR_PIN);
 	hw.IR.Init(avr,VOLT_IR_PIN);
 	hw.IR.ConnectTo(IRSensor::DIGITAL_OUT, DIRQLU(avr, IR_SENSOR_PIN));
-	hw.lIR = LED(0xFFCC00FF,'I');
+	hw.lIR = LED(0xFFCC00FF,'I',true);
 	hw.lIR.Init(avr);
 	hw.lIR.ConnectFrom(DIRQLU(avr, IR_SENSOR_PIN), LED::LED_IN);
 }

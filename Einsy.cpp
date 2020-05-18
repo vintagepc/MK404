@@ -444,7 +444,7 @@ int initGL(int w, int h)
 	return 1;
 }
 
-void InitFancyVis(bool bMMU)
+void InitFancyVis(bool bMMU, bool bLite)
 {
 	glViewport(0, 0, 800, 800);
 	glMatrixMode(GL_PROJECTION);
@@ -468,7 +468,7 @@ void InitFancyVis(bool bMMU)
 	glEnable(GL_BLEND);
 	glEnable(GL_MULTISAMPLE);
 
-	vis = new MK3SGL();
+	vis = new MK3SGL(bLite);
 
 	vis->SetWindow(window2);
 
@@ -767,7 +767,7 @@ int main(int argc, char *argv[])
 
 	bool bBootloader = false, bConnectS0 = false, 
 		bWait = false, bMMU = false, bLoadFW= false,
-		bAdvVis = false;
+		bAdvVis = false, bLite = false;
 	struct avr_flash flash_data;
 	char boot_path[1024] = "stk500boot_v2_mega2560.hex";
 	//char boot_path[1024] = "atmega2560_PFW.axf";
@@ -792,6 +792,8 @@ int main(int argc, char *argv[])
 			bLoadFW = true;
 		else if (!strcmp(argv[i], "-m"))
 			bMMU = true;
+		else if (!strcmp(argv[i], "--lite"))
+			bAdvVis = bLite = true;
 		else if (!strcmp(argv[i], "--fancy"))
 			bAdvVis = true;
 		else if (!strcmp(argv[i], "-S0"))
@@ -921,7 +923,7 @@ int main(int argc, char *argv[])
 
 		glewInit();
 
-		InitFancyVis(bMMU);
+		InitFancyVis(bMMU, bLite);
 	}
 
 

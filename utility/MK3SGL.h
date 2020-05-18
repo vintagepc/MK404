@@ -13,7 +13,7 @@ class MK3SGL: public BasePeripheral
                             _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in")
         #include "IRQHelper.h"
 
-        MK3SGL();
+        MK3SGL(bool bLite);
         void Init(avr_t *avr);
         void Draw();
 
@@ -22,6 +22,8 @@ class MK3SGL: public BasePeripheral
         void SetLCD(HD44780GL* pLCD){m_pLCD = pLCD;}
 
         void SetMMU(bool bMMU) { m_bMMU = bMMU;}
+
+        void SetLite(bool bLite) { m_bLite = bLite;}
 
         void MouseCB(int button, int state, int x, int y);
         void MotionCB(int x, int y);
@@ -41,6 +43,7 @@ class MK3SGL: public BasePeripheral
         GLObj m_EMMU = GLObj("assets/E_MMU.obj");
         GLObj m_EStd = GLObj("assets/E_STD.obj");
         GLObj m_EFan = GLObj("assets/E_Fan.obj");
+        GLObj m_EPFan = GLObj("assets/E_PrintFan.obj");
 
         HD44780GL *m_pLCD = nullptr;
 
@@ -60,12 +63,13 @@ class MK3SGL: public BasePeripheral
         float m_fYCorr = 0.141, m_fYPos = 0.010;
         float m_fZCorr = 0.206, m_fZPos = 0.010;
         float m_fEPos = 0;
+        
+        int m_iKnobPos = 0, m_iFanPos = 0, m_iPFanPos = 0;
 
         bool m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false, m_bPINDAOn = false;
 
         int height = 800, width = 800, m_iWindow = 0;
 
-        int m_iKnobPos = 0, m_iFanPos = 0;
 
         double prevMouseX, prevMouseY;
         bool mouseLeftPressed;

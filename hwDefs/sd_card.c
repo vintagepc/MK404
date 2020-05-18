@@ -93,6 +93,19 @@ static void CRC_ADD(const uint8_t data, void *param) {
 	self->CRC = crctab[(self->CRC >> 8 ^ data) & 0XFF] ^ (self->CRC << 8);
 }
 
+static uint8_t CRC7(const uint8_t data[], size_t count)
+{
+	const uint8_t poly = 0b10001001;
+	uint8_t crc = 0;
+	for (size_t i = 0; i < count; i++) {
+		crc ^= data[i];
+		for (int j = 0; j < 8; j++) {
+			crc = (crc & 0x80u) ? ((crc << 1) ^ (poly << 1)) : (crc << 1);
+		}
+	}
+	return crc | 0x01;
+}
+
 #define COMMAND_RESPONSE_R1(status) \
 	self->command_response.data[0] = ((status) & 0x7f); \
 	self->command_response.length = 1;
@@ -476,7 +489,7 @@ static void _sd_card_init_csd (sd_card_t *self)
 	self->csd[14] |= 0 << 5; //PERM_WRITE_PROTECT
 	self->csd[14] |= 0 << 4; //TMP_WRITE_PROTECT
 	self->csd[14] |= 0 << 2; //(FILE_FORMAT)
-	self->csd[15] = 1; //CRC
+	self->csd[15] = CRC7(self->csd, sizeof(self->csd) - 1);
 }
 
 static void _sd_card_set_csd_c_size (sd_card_t *self, off_t c_size)
@@ -487,6 +500,7 @@ static void _sd_card_set_csd_c_size (sd_card_t *self, off_t c_size)
 	self->csd[9] |= (C_SIZE);
 	self->csd[8] |= (C_SIZE >> 8);
 	self->csd[7] |= (C_SIZE >> 16);
+	self->csd[15] = CRC7(self->csd, sizeof(self->csd) - 1);
 #ifdef SD_CARD_DEBUG
 	printf("CSD: ");
 	for (int i = 0; i < sizeof(self->csd); i++)

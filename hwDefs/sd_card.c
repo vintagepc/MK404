@@ -127,18 +127,11 @@ static void CRC_ADD(const uint8_t data, void *param) {
 #define DEBUG(m, ...) do{}while(0)
 #endif
 
-// #define SDv1
-// #define SDv2
-#define SDHC //high capacity
 
 /* Convert from an address as received in a command header, to a byte offset into the data array. */
 static off_t _sd_card_input_address_to_data_index (off_t input_address)
 {
-#ifdef SDHC
 	return input_address * BLOCK_SIZE;
-#else
-	return input_address;
-#endif
 }
 
 /* Process the command currently in the command_header and emit a response. */
@@ -159,7 +152,6 @@ static sd_card_state_t _sd_card_process_command (struct avr_t *avr, sd_card_t *s
 			}
 
 			break;
-#ifndef SDv1
 		case CMD8:
 			/* State that we support SDv2 by returning 0x01 as the first byte, followed by an (arbitrary) 4-byte trailer. This is an R7
 			 * response. The last 12 bits signify that the card can operate at a Vdd range of 2.7--3.6V. */
@@ -170,7 +162,6 @@ static sd_card_state_t _sd_card_process_command (struct avr_t *avr, sd_card_t *s
 			self->command_response.data[4] = self->command_header.params[3];
 			self->command_response.length = 5;
 			break;
-#endif
 		case CMD9:
 			/* SEND_CSD. */
 			COMMAND_RESPONSE_R1 (0x00);
@@ -480,9 +471,7 @@ void sd_card_init (struct avr_t *avr, sd_card_t *p)
 	p->state = SD_CARD_IDLE;
 
 	p->ocr= 0;
-#ifdef SDHC
 	p->ocr |= 1 << 30; //SDHC
-#endif
 	p->ocr |= 1 << 31; //Card power up status bit
 
 	/* CSD register. Reference: JESD84-A44, Section 8.3. TODO: Haven't look at all the fields yet. */

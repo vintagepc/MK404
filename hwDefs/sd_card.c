@@ -497,6 +497,8 @@ static void _sd_card_set_csd_c_size (sd_card_t *self, off_t c_size)
 	assert((c_size % (512 * 1024)) == 0);
 
 	const uint32_t C_SIZE = c_size / (512 * 1024);
+	assert ((C_SIZE >> 16) == 0); //limit of 32GB
+
 	self->csd[9] |= (C_SIZE);
 	self->csd[8] |= (C_SIZE >> 8);
 	self->csd[7] |= (C_SIZE >> 16);

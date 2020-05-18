@@ -446,21 +446,55 @@ static const char *_irq_names[IRQ_SD_CARD_COUNT] = {
 	[IRQ_SD_CARD_PRESENT] = ">sdcard.present"
 };
 
-/* Set the C_SIZE field of the CSD register. Reference: JESD84-A44, Section 8.3. */
-static void _sd_card_set_csd_c_size (sd_card_t *self, uint16_t c_size /* only LS 10b used */, uint8_t c_size_mult /* only LS 3b used */)
+static void _sd_card_init_csd (sd_card_t *self)
 {
-	/* Check they fit within the LS 12b and LS 3b. */
-	assert ((c_size & 0xfff) == c_size);
-	assert ((c_size_mult & 0x07) == c_size_mult);
+	memset(&self->csd, 0, sizeof(self->csd));
+	
+	const uint16_t CCC = 0x5B5;
+	const uint8_t SECTOR_SIZE = 0x7F;
+	const uint8_t WP_GRP_SIZE = 0x00;
+	const uint8_t WRITE_BL_LEN = 9;
 
-	/* Set C_SIZE. */
-	self->csd[6] = (self->csd[6] & 0xfc) | ((c_size >> 10) & 0x03); /* LS 2b form MS 2b of C_SIZE field. */
-	self->csd[7] = (c_size >> 2) & 0xff; /* Middle 8b of C_SIZE field. */
-	self->csd[8] = ((c_size & 0x03) << 6) | (self->csd[8] & 0x3f); /* MS 2b form LS 2b of C_SIZE field. */
+	self->csd[0] = 0b01 << 6; //CSD_STRUCTURE
+	self->csd[1] = 0x0E; //(TAAC)
+	self->csd[2] = 0x00; //(NSAC)
+	self->csd[3] = 0x32; //(TRAN_SPEED)
+	self->csd[4] = CCC >> 4; //CCC MSB
+	self->csd[5] = (CCC & 0xF) << 4; //CCC LSB
+	self->csd[5] |= READ_BL_LEN & 0xF; //(READ_BL_LEN)
+	self->csd[10] = (1 << 6); //(ERASE_BLK_EN)
+	self->csd[10] |= SECTOR_SIZE >> 1; // (SECTOR_SIZE MSB)
+	self->csd[11] = SECTOR_SIZE << 7; // (SECTOR_SIZE LSB)
+	self->csd[11] |= WP_GRP_SIZE; //(WP_GRP_SIZE)
+	self->csd[12] |= 0 << 7; //(WP_GRP_ENABLE)
+	self->csd[12] = 0x02 << 2; //(R2W_FACTOR)
+	self->csd[12] |= WRITE_BL_LEN >> 2; //(WRITE_BL_LEN MSB)
+	self->csd[13] = WRITE_BL_LEN << 6; //(WRITE_BL_LEN LSB)
+	self->csd[13] |= 0 << 5; //(WRITE_BL_PARTIAL)
+	self->csd[14] = 0 << 7; //(FILE_FORMAT_GRP)
+	self->csd[14] |= 1 << 6; //COPY
+	self->csd[14] |= 0 << 5; //PERM_WRITE_PROTECT
+	self->csd[14] |= 0 << 4; //TMP_WRITE_PROTECT
+	self->csd[14] |= 0 << 2; //(FILE_FORMAT)
+	self->csd[15] = 1; //CRC
+}
 
-	/* Set C_SIZE_MULT. */
-	self->csd[9] = (self->csd[9] & 0xfc) | ((c_size_mult >> 1) & 0x03); /* LS 2b form MS 2b of C_SIZE_MULT field. */
-	self->csd[10] = ((c_size_mult & 0x01) << 7) | (self->csd[10] & 0x7f); /* MS 1b forms LS 1b of C_SIZE_MULT field. */
+static void _sd_card_set_csd_c_size (sd_card_t *self, off_t c_size)
+{
+	assert((c_size % (512 * 1024)) == 0);
+
+	const uint32_t C_SIZE = c_size / (512 * 1024);
+	self->csd[9] |= (C_SIZE);
+	self->csd[8] |= (C_SIZE >> 8);
+	self->csd[7] |= (C_SIZE >> 16);
+#ifdef SD_CARD_DEBUG
+	printf("CSD: ");
+	for (int i = 0; i < sizeof(self->csd); i++)
+	{
+		printf("%02hX", self->csd[i]);
+	}
+	printf("\n");
+#endif //SD_CARD_DEBUG
 }
 
 void sd_card_init (struct avr_t *avr, sd_card_t *p)
@@ -474,12 +508,7 @@ void sd_card_init (struct avr_t *avr, sd_card_t *p)
 	p->ocr |= 1 << 30; //SDHC
 	p->ocr |= 1 << 31; //Card power up status bit
 
-	/* CSD register. Reference: JESD84-A44, Section 8.3. TODO: Haven't look at all the fields yet. */
-	/* Most significant byte. */
-	p->csd[0] = 0x00; /* CSD version 1.1 */
-	p->csd[5] = (READ_BL_LEN & 0x0f);
-	_sd_card_set_csd_c_size (p, 0, 0);
-	/* Least significant byte. */
+	_sd_card_init_csd(p);
 
 	p->data = NULL; /* no disk mounted */
 	p->data_length = 0;
@@ -510,9 +539,6 @@ int sd_card_mount_file (struct avr_t *avr, sd_card_t *self, const char *filename
 	struct stat stat_buf;
 	uint8_t locked = 0; /* boolean */
 	off_t blocknr;
-	uint8_t c_size_mult;
-	uint16_t mult;
-	uint16_t c_size;
 
 	/* Open the specified disk image. */
 	fd = open (filename, O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR);
@@ -573,12 +599,7 @@ int sd_card_mount_file (struct avr_t *avr, sd_card_t *self, const char *filename
 	self->data_fd = fd;
 
 	/* Update the C_SIZE field (number of sectors) in the CSD register. Reference for size calculations: JESD84-A44, Section 8.3, 'C_SIZE'. */
-	blocknr = image_size / BLOCK_SIZE;
-	c_size_mult = 4; /* arbitrarily chosen */
-	mult = (1 << (c_size_mult + 2));
-	c_size = (blocknr / mult) - 1;
-
-	_sd_card_set_csd_c_size (self, c_size, c_size_mult);
+	_sd_card_set_csd_c_size (self, image_size);
 
 	avr_raise_irq(self->irq + IRQ_SD_CARD_PRESENT,0);
 
@@ -616,7 +637,8 @@ int sd_card_unmount_file (struct avr_t *avr, sd_card_t *self)
 	self->data_length = 0;
 	self->data_fd = -1;
 
-	_sd_card_set_csd_c_size (self, 0, 0);
+	_sd_card_init_csd(self);
+	_sd_card_set_csd_c_size (self, 0);
 	avr_raise_irq(self->irq + IRQ_SD_CARD_PRESENT,1);
 	return 0;
 }

@@ -86,7 +86,7 @@ extern "C" {
 
 #include "SerialPipe.h"
 
-#include "MK3SGL.h"
+#include <MK3SGL.h>
 
 #include "include/MK3/Configuration_prusa.h"
 
@@ -480,6 +480,7 @@ void InitFancyVis(bool bMMU, bool bLite)
 	vis->ConnectFrom(hw.E.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::E_IN);
 	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
 	vis->ConnectFrom(hw.fExtruder->GetIRQ(Fan::SPEED_OUT), MK3SGL::EFAN_IN);
+	vis->ConnectFrom(hw.fPrint->GetIRQ(Fan::SPEED_OUT), MK3SGL::PFAN_IN);
 	vis->ConnectFrom(hw.hBed->GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
 	vis->ConnectFrom(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, MK3SGL::SD_IN);
 	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);

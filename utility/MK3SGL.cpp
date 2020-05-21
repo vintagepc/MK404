@@ -54,6 +54,7 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(E_IN,MAKE_C_CALLBACK(MK3SGL,OnEChanged),this);
 	RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(MK3SGL, OnSheetChanged), this);
 	RegisterNotify(EFAN_IN, MAKE_C_CALLBACK(MK3SGL, OnEFanChanged), this);
+	RegisterNotify(PFAN_IN, MAKE_C_CALLBACK(MK3SGL, OnPFanChanged), this);
 	RegisterNotify(BED_IN, MAKE_C_CALLBACK(MK3SGL, OnBedChanged), this);
 	RegisterNotify(SD_IN, MAKE_C_CALLBACK(MK3SGL,OnSDChanged),this);
 	RegisterNotify(PINDA_IN, MAKE_C_CALLBACK(MK3SGL,OnPINDAChanged),this);
@@ -91,6 +92,12 @@ void MK3SGL::OnSheetChanged(avr_irq_t *irq, uint32_t value)
 void MK3SGL::OnEFanChanged(avr_irq_t *irq, uint32_t value)
 {
 	m_bFanOn = (value>0);
+	m_bDirty = true;
+}
+
+void MK3SGL::OnPFanChanged(avr_irq_t *irq, uint32_t value)
+{
+	m_bPFanOn = (value>0);
 	m_bDirty = true;
 }
 
@@ -212,19 +219,17 @@ void MK3SGL::Draw()
 						m_EStd.Draw();
 				glPopMatrix();
 
-				// glPushMatrix();
-				// 	m_EPFan.GetCenteringTransform(fTransform);
-				// 	m_iPFanPos = (m_iPFanPos + 1)%360;
-				// 	glTranslatef (-fTransform[0],-fTransform[1], -fTransform[2]);
-				// 	glScalef(fMM2M,fMM2M,fMM2M);
-				// 	glPushMatrix();
-				// 		m_EPFan.Draw();
-				// 		//glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
-				// 		//glRotatef((float)m_iPFanPos,0,-1,0.95);
-				// 		//glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
-				// 		m_EPFan.Draw();
-				// 	glPopMatrix();
-				// glPopMatrix();
+				glPushMatrix();
+					m_EPFan.GetCenteringTransform(fTransform);
+					if (m_bPFanOn)
+						m_iPFanPos = (m_iPFanPos + 5)%360;
+					glTranslatef(0.086,0.328,0.314);
+					glRotatef(180-45.0,1,0,0);
+					glPushMatrix();
+						glRotatef((float)m_iPFanPos,0,1,0);
+						m_EPFan.Draw();
+					glPopMatrix();
+				glPopMatrix();
 
 				glPushMatrix();
 					glScalef(fMM2M,fMM2M,fMM2M);

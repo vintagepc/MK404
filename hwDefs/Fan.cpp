@@ -49,7 +49,7 @@ void Fan::OnPWMChange(struct avr_irq_t * irq, uint32_t value)
     float fSecPerRev = 60.0f/(float)m_uiCurrentRPM;
     float fuSPerRev = 1000000*fSecPerRev;
     m_uiUsecPulse = fuSPerRev/4; // 4 pulses per rev.
-    (printf("New PWM(%u)/RPM/cyc: %u / %u / %u\n", m_uiMaxRPM, m_uiPWM, m_uiCurrentRPM, m_uiUsecPulse));
+    TRACE(printf("New PWM(%u)/RPM/cyc: %u / %u / %u\n", m_uiMaxRPM, m_uiPWM, m_uiCurrentRPM, m_uiUsecPulse));
     if (m_uiCurrentRPM>0)
     {
         avr_cycle_timer_register_usec(m_pAVR,m_uiUsecPulse,m_fcnTachChange,this);

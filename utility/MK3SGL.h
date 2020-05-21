@@ -10,7 +10,7 @@ class MK3SGL: public BasePeripheral
     public:
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
                             _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
-                            _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in")
+                            _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in") _IRQ(PFAN_IN,"<PFAN.in")
         #include "IRQHelper.h"
 
         MK3SGL(bool bLite);
@@ -43,7 +43,7 @@ class MK3SGL: public BasePeripheral
         GLObj m_EMMU = GLObj("assets/E_MMU.obj");
         GLObj m_EStd = GLObj("assets/E_STD.obj");
         GLObj m_EFan = GLObj("assets/E_Fan.obj");
-        GLObj m_EPFan = GLObj("assets/E_PrintFan.obj");
+        GLObj m_EPFan = GLObj("assets/Print-fan_rotor.obj");
 
         HD44780GL *m_pLCD = nullptr;
 
@@ -56,6 +56,7 @@ class MK3SGL: public BasePeripheral
         void OnSheetChanged(avr_irq_t *irq, uint32_t value);
         void OnSDChanged(avr_irq_t *irq, uint32_t value);
         void OnEFanChanged(avr_irq_t *irq, uint32_t value);
+        void OnPFanChanged(avr_irq_t *irq, uint32_t value);
         void OnBedChanged(avr_irq_t *irq, uint32_t value);
         void OnPINDAChanged(avr_irq_t *irq, uint32_t value);
 
@@ -67,6 +68,7 @@ class MK3SGL: public BasePeripheral
         int m_iKnobPos = 0, m_iFanPos = 0, m_iPFanPos = 0;
 
         bool m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false, m_bPINDAOn = false;
+        bool m_bPFanOn = false;
 
         int height = 800, width = 800, m_iWindow = 0;
 

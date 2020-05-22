@@ -198,15 +198,15 @@ void MK3SGL::Draw()
 						glTranslatef(0.092,0.3355,0.274);
 						glBegin(GL_TRIANGLE_FAN);
 							glVertex3f( 0,   0,    0);
-							glVertex3f(-0.004,0,0);
-							glVertex3f(-0.003,0,0.003);
-							glVertex3f( 0,   0,     0.004);
-							glVertex3f( 0.003,0,0.003);
-							glVertex3f( 0.004,  0,  0);
-							glVertex3f(0.003, 0,   -0.003);
-							glVertex3f( 0,   0,    -0.004);
-							glVertex3f(-0.003, 0, -0.003);
-							glVertex3f(-0.004,0,0);
+							glVertex3f(-0.003,0,0);
+							glVertex3f(-0.002,0,0.002);
+							glVertex3f( 0,   0,     0.003);
+							glVertex3f( 0.002,0,0.002);
+							glVertex3f( 0.003,  0,  0);
+							glVertex3f(0.002, 0,   -0.002);
+							glVertex3f( 0,   0,    -0.003);
+							glVertex3f(-0.002, 0, -0.002);
+							glVertex3f(-0.003,0,0);
 						glEnd();
 					glPopMatrix();
 					glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, fNone);
@@ -244,6 +244,7 @@ void MK3SGL::Draw()
 				glPopMatrix();
 	
 				glPushMatrix();  
+					glScalef(fMM2M,fMM2M,fMM2M);
 					m_EVis.GetCenteringTransform(fTransform);
 					fTransform[1] +=1.5f;
 					glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);

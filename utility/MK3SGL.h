@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include "BasePeripheral.h"
 #include "HD44780GL.h"
+#include <GLPrint.h>
 
 class MK3SGL: public BasePeripheral
 {
@@ -48,6 +49,8 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUBase = GLObj("assets/MMU_stationary.obj");
         GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
+
+        GLPrint m_Print;
 
         HD44780GL *m_pLCD = nullptr;
 

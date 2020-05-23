@@ -23,9 +23,6 @@ typedef struct
 // Otherwise it would move following items.
 #define EEPROM_SHEETS_SIZEOF 89
 
-#ifdef __cplusplus
-static_assert(sizeof(Sheets) == EEPROM_SHEETS_SIZEOF, "Sizeof(Sheets) is not EEPROM_SHEETS_SIZEOF.");
-#endif
 
 #define EEPROM_EMPTY_VALUE 0xFF
 #define EEPROM_EMPTY_VALUE16 0xFFFF
@@ -229,13 +226,6 @@ static Sheets * const EEPROM_Sheets_base = (Sheets*)(EEPROM_SHEETS_BASE);
 #define EEPROM_FIRMWARE_VERSION_MAJOR     FW_PRUSA3D_MAGIC_LEN
 // Magic string, indicating that the current or the previous firmware running was the Prusa3D firmware.
 #define EEPROM_FIRMWARE_PRUSA_MAGIC 0
-
-#ifdef __cplusplus
-#include "ConfigurationStore.h"
-static_assert(EEPROM_FIRMWARE_VERSION_END < 20, "Firmware version EEPROM address conflicts with EEPROM_M500_base");
-static constexpr M500_conf * const EEPROM_M500_base = reinterpret_cast<M500_conf*>(20); //offset for storing settings using M500
-static_assert(((sizeof(M500_conf) + 20) < EEPROM_LAST_ITEM), "M500_conf address space conflicts with previous items.");
-#endif
 
 enum
 {

@@ -129,6 +129,7 @@ void PINDA::ToggleSheet()
 {
     m_bIsSheetPresent^=1;
     printf("Steel sheet: %s\n", m_bIsSheetPresent? "INSTALLED" : "REMOVED");
+    RaiseIRQ(SHEET_OUT,m_bIsSheetPresent);
 }
 
 PINDA::PINDA(float fX, float fY):m_fOffset{fX,fY}

@@ -36,7 +36,8 @@ class MMU2: public BasePeripheral
 {
 
     public:
-        #define IRQPAIRS _IRQ(FEED_DISTANCE,"<mmu.feed_distance") _IRQ(RESET,"<mmu.reset") _IRQ(PULLEY_IN,"<mmu.pulley_in")
+        #define IRQPAIRS _IRQ(FEED_DISTANCE,"<mmu.feed_distance") _IRQ(RESET,"<mmu.reset") _IRQ(PULLEY_IN,"<mmu.pulley_in") \
+                        _IRQ(SELECTOR_OUT,">sel_pos.out") _IRQ(IDLER_OUT,">idler_pos.out") _IRQ(LEDS_OUT,">leds.out")
         #include "IRQHelper.h"
 
         MMU2();
@@ -62,6 +63,8 @@ class MMU2: public BasePeripheral
         void OnDisplayTimer(int i);
 
         void OnResetIn(avr_irq_t *irq, uint32_t value);
+
+        void LEDHandler(avr_irq_t *irq, uint32_t value);
         
         void OnPulleyFeedIn(avr_irq_t *irq, uint32_t value);
 

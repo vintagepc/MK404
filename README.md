@@ -36,9 +36,11 @@ Remaining To-Dos of note:
 
 # Getting Started:
 
-To get stared, clone the modified SimAVR repo at https://github.com/vintagepc/simavr.git and check out the worktree_test branch. the boards_einsy folder may be empty, you will need to cd into the simavr checkout and run `git submodule init` and `git submodule update` from within it to pull down the MK3SIM dependency.
+To get stared, clone the MK3Sim repo. the 3rdParty/simavr folder may be empty, you will need to cd into the MK3Sim checkout and run `git submodule init` and `git submodule update` from within it to pull down the correct simavr dependency.
 
 This is now a `cmake` project and independent of simAVR. The expectation is that you have built the parent simavr repo at least once to create the object files. After that, you can follow normal cmake procedures, using your favourite IDE (or with cmake-gui). 
+
+You will need to use a fairly recent version of GCC/G++ (I use 7.4.0). Older versions from the 4.8 era may not support some of the syntax used. 
 
 Windows is not officially supported/maintained but current status (as of May 2020) is that you can build and execute the program using Cygwin with the appropriate dependencies.
 

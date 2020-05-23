@@ -97,9 +97,11 @@ static uint8_t CRC7(const uint8_t data[], size_t count)
 {
 	const uint8_t poly = 0b10001001;
 	uint8_t crc = 0;
-	for (size_t i = 0; i < count; i++) {
+	size_t i =0;
+	int j = 0;
+	for (i = 0; i < count; i++) {
 		crc ^= data[i];
-		for (int j = 0; j < 8; j++) {
+		for (j = 0; j < 8; j++) {
 			crc = (crc & 0x80u) ? ((crc << 1) ^ (poly << 1)) : (crc << 1);
 		}
 	}

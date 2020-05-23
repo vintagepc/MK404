@@ -239,6 +239,7 @@ void MMU2::SetupHardware()
 	m_shift.ConnectFrom(IOIRQ(m_pAVR, 'B',6), 	HC595::IN_LATCH);
 	m_shift.ConnectFrom(IOIRQ(m_pAVR, 'B',5), 	HC595::IN_DATA);
 	m_shift.ConnectFrom(IOIRQ(m_pAVR, 'C',7), 	HC595::IN_CLOCK);
+	avr_irq_register_notify(m_shift.GetIRQ(HC595::OUT), MAKE_C_CALLBACK(MMU2,LEDHandler),this);
 
 	m_Extr.Init(m_pAVR);
 	m_Extr.ConnectFrom(IOIRQ(m_pAVR,'C',6), TMC2130::SPI_CSEL);
@@ -286,6 +287,14 @@ void MMU2::SetupHardware()
 
 	m_buttons.Init(m_pAVR,5);
 
+}
+
+void MMU2::LEDHandler(avr_irq_t *irq, uint32_t value)
+{
+	uint32_t valOut = 0;
+	valOut = (value >>6) & 0b1111111111; // Just the LEDs.
+	if (GetIRQ(LEDS_OUT)->value != valOut)
+		RaiseIRQ(LEDS_OUT,valOut);
 }
 
 void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)

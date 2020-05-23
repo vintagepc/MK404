@@ -11,7 +11,7 @@ class MK3SGL: public BasePeripheral
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
                             _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
                             _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in") _IRQ(PFAN_IN,"<PFAN.in") _IRQ(SEL_IN,"<Sel.in") \
-                            _IRQ(IDL_IN,"<idler.in")
+                            _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in")
         #include "IRQHelper.h"
 
         MK3SGL(bool bLite);
@@ -54,13 +54,14 @@ class MK3SGL: public BasePeripheral
         bool m_bLite = false; // Lite graphics
 
         void DrawMMU();
-
+        void DrawLED(float r, float g, float b);
         void OnXChanged(avr_irq_t *irq, uint32_t value);
         void OnYChanged(avr_irq_t *irq, uint32_t value);
         void OnZChanged(avr_irq_t *irq, uint32_t value);
         void OnEChanged(avr_irq_t *irq, uint32_t value);
         void OnSelChanged(avr_irq_t *irq, uint32_t value);
         void OnIdlChanged(avr_irq_t *irq, uint32_t value);
+        void OnMMULedsChanged(avr_irq_t *irq, uint32_t value);
         void OnSheetChanged(avr_irq_t *irq, uint32_t value);
         void OnSDChanged(avr_irq_t *irq, uint32_t value);
         void OnEFanChanged(avr_irq_t *irq, uint32_t value);

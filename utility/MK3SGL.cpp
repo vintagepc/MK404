@@ -42,6 +42,7 @@ MK3SGL::MK3SGL(bool bLite):m_bLite(bLite)
 				m_EStd.SetAllVisible(false);
 				m_EMMU.SetAllVisible(false);
 		}
+		//m_MMUBase.SetSubobjectVisible(0,false);
 		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
 
 }
@@ -61,6 +62,8 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(BED_IN, MAKE_C_CALLBACK(MK3SGL, OnBedChanged), this);
 	RegisterNotify(SD_IN, MAKE_C_CALLBACK(MK3SGL,OnSDChanged),this);
 	RegisterNotify(PINDA_IN, MAKE_C_CALLBACK(MK3SGL,OnPINDAChanged),this);
+
+	RegisterNotify(MMU_LEDS_IN,MAKE_C_CALLBACK(MK3SGL,OnMMULedsChanged),this);
 
 	m_bDirty = true;
 }
@@ -127,6 +130,41 @@ void MK3SGL::OnSDChanged(avr_irq_t *irq, uint32_t value)
 void MK3SGL::OnPINDAChanged(avr_irq_t *irq, uint32_t value)
 {
 	m_bPINDAOn = value;
+	m_bDirty = true;
+}
+
+void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
+{
+	// Set the materials appropriately:
+	// Bits 9..0 are LEDs G/R 1..4, 0
+	// LEDs are subobjects R: 32-36 (4..0) and G(38-42)
+	//Red mtl = 31, G = 32. On mtls = 37/38
+	// 	m_lGreen[0].ConnectFrom(m_shift.GetIRQ(HC595::BIT6), LED::LED_IN);
+	// m_lRed[0].ConnectFrom(	m_shift.GetIRQ(HC595::BIT7), LED::LED_IN);
+	// m_lGreen[4].ConnectFrom(m_shift.GetIRQ(HC595::BIT8), LED::LED_IN);
+	// m_lRed[4].ConnectFrom(	m_shift.GetIRQ(HC595::BIT9), LED::LED_IN);
+	// m_lGreen[3].ConnectFrom(m_shift.GetIRQ(HC595::BIT10), LED::LED_IN);
+	// m_lRed[3].ConnectFrom(	m_shift.GetIRQ(HC595::BIT11), LED::LED_IN);
+	// m_lGreen[2].ConnectFrom(m_shift.GetIRQ(HC595::BIT12), LED::LED_IN);
+	// m_lRed[2].ConnectFrom(	m_shift.GetIRQ(HC595::BIT13), LED::LED_IN);
+	// m_lGreen[1].ConnectFrom(m_shift.GetIRQ(HC595::BIT14), LED::LED_IN);
+	// m_lRed[1].ConnectFrom(	m_shift.GetIRQ(HC595::BIT15), LED::LED_IN);
+	uint32_t bChanged = irq->value ^ value;
+	static constexpr uint8_t iLedBase[2] = {38, 32}; // G, R
+	static constexpr uint8_t iLedObj[10] = {4,4,0,0,1,1,2,2,3,3};
+	static constexpr uint8_t iMtlOff[2] = {32, 31};
+	static constexpr uint8_t iMtlOn[2] = {38,37}; 
+	for (int i=0; i<10; i++)
+	{
+		if ((bChanged>>i) &1)
+		{
+			if ((value>>i) & 1)
+				m_MMUBase.SetSubobjectMaterial(iLedBase[i%2]+iLedObj[i],iMtlOn[i%2]);
+			else
+				m_MMUBase.SetSubobjectMaterial(iLedBase[i%2]+iLedObj[i],5);//iMtlOff[i%2]);
+		}
+	}
+
 	m_bDirty = true;
 }
 
@@ -280,15 +318,7 @@ void MK3SGL::Draw()
 			if (m_bBedOn)
 			{
 				glTranslatef(0.016,0,-0.244);
-				glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
-				glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
-				glBegin(GL_QUADS);
-					glVertex3f(0,0,0);
-					glVertex3f(0.004,0,0);
-					glVertex3f(0.004,0.003,0.003);
-					glVertex3f(0,0.003,0.003);
-				glEnd();
-				glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, fNone);
+				DrawLED(1,0,0);
 			}
 		glPopMatrix();
 		m_Base.Draw();
@@ -324,6 +354,22 @@ void MK3SGL::Draw()
 		glutSwapBuffers();
 		m_bDirty = false;
 }
+
+void MK3SGL::DrawLED(float r, float g, float b)
+{
+		float fLED[4] = {r,g,b,1};
+		float fNone[4] = {0,0,0,1};
+		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
+				glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
+				glBegin(GL_QUADS);
+					glVertex3f(0,0,0);
+					glVertex3f(0.004,0,0);
+					glVertex3f(0.004,0.003,0.003);
+					glVertex3f(0,0.003,0.003);
+				glEnd();
+				glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, fNone);
+}
+
 void MK3SGL::DrawMMU()
 {
 		float fTransform[3];

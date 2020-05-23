@@ -694,7 +694,7 @@ void setupDrivers()
 	// TODO once the drivers are setup.
 	hw.pinda.Init(avr, hw.X.GetIRQ(TMC2130::POSITION_OUT),  hw.Y.GetIRQ(TMC2130::POSITION_OUT),  hw.Z.GetIRQ(TMC2130::POSITION_OUT));
 	hw.pinda.ConnectTo(PINDA::TRIGGER_OUT ,DIRQLU(avr, Z_MIN_PIN));
-	hw.lPINDA = LED(0xFF0000FF,'P');
+	hw.lPINDA = LED(0xFF0000FF,'P',true);
 	hw.lPINDA.Init(avr);
 	hw.lPINDA.ConnectFrom(hw.pinda.GetIRQ(PINDA::TRIGGER_OUT), LED::LED_IN);
 

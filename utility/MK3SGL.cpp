@@ -245,7 +245,7 @@ void MK3SGL::Draw()
 			glPushMatrix();
 				glTranslatef(-m_fXCorr + (m_fXPos),0,0);
 			 m_Extruder.Draw();
-			 if (m_bPINDAOn)
+			 if (!m_bPINDAOn)
 				{
 					glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
 					glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);

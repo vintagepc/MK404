@@ -490,6 +490,7 @@ void InitFancyVis(bool bMMU, bool bLite)
 	{
 		vis->ConnectFrom(hw.mmu.GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);
 		vis->ConnectFrom(hw.mmu.GetIRQ(MMU2::IDLER_OUT), MK3SGL::IDL_IN);
+		vis->ConnectFrom(hw.mmu.GetIRQ(MMU2::LEDS_OUT),MK3SGL::MMU_LEDS_IN);
 	}
 }
 

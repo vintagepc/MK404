@@ -10,6 +10,7 @@ class GLObj
         GLObj(std::string strFile);
         void Draw();
         void SetSubobjectVisible(uint iObj, bool bVisible = true);
+        void SetSubobjectMaterial(uint iObj, int iMat);
         void SetAllVisible(bool bVisible = true);
         float GetScaleFactor() { return m_fMaxExtent; };
         float GetCenteringTransform(float fTrans[3]) { for (int i=0; i<3; i++) fTrans[i] = -0.5f * (m_extMin[i] + m_extMax[i]);}

@@ -42,6 +42,7 @@ MK3SGL::MK3SGL(bool bLite):m_bLite(bLite)
 				m_EStd.SetAllVisible(false);
 				m_EMMU.SetAllVisible(false);
 		}
+		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
 
 }
 
@@ -53,6 +54,7 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(Z_IN,MAKE_C_CALLBACK(MK3SGL,OnZChanged),this);
 	RegisterNotify(E_IN,MAKE_C_CALLBACK(MK3SGL,OnEChanged),this);
 	RegisterNotify(SEL_IN,MAKE_C_CALLBACK(MK3SGL,OnSelChanged),this);
+	RegisterNotify(IDL_IN,MAKE_C_CALLBACK(MK3SGL,OnIdlChanged),this);
 	RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(MK3SGL, OnSheetChanged), this);
 	RegisterNotify(EFAN_IN, MAKE_C_CALLBACK(MK3SGL, OnEFanChanged), this);
 	RegisterNotify(PFAN_IN, MAKE_C_CALLBACK(MK3SGL, OnPFanChanged), this);
@@ -85,6 +87,12 @@ void MK3SGL::OnSelChanged(avr_irq_t *irq, uint32_t value)
 	m_bDirty = true;
 }
 
+void MK3SGL::OnIdlChanged(avr_irq_t *irq, uint32_t value)
+{
+	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
+	m_fIdlPos =  fPos[0];
+	m_bDirty = true;
+}
 
 void MK3SGL::OnBedChanged(avr_irq_t *irq, uint32_t value)
 {
@@ -335,6 +343,18 @@ void MK3SGL::DrawMMU()
 				glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 				m_MMUSel.Draw();
 			glPopMatrix();
+			glPushMatrix();
+				m_MMUIdl.GetCenteringTransform(fTransform);
+				glTranslatef(-0.03,0.028,0.025);
+				fTransform[1]=-0.071;
+				fTransform[2]=-0.0929;
+				glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
+				glRotatef(-m_fIdlPos - m_fIdlCorr,1,0,0);					
+				glRotatef(180,0,1,0);
+				glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+				m_MMUIdl.Draw();
+			glPopMatrix();
+
 		glPopMatrix();
 	}	
 

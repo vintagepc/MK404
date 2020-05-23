@@ -486,6 +486,10 @@ void InitFancyVis(bool bMMU, bool bLite)
 	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
 	vis->SetLCD(&hw.lcd);
 	vis->SetMMU(bMMU);
+	if (bMMU)
+	{
+		vis->ConnectFrom(hw.mmu.GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);
+	}
 }
 
 void setupLCD()
@@ -914,7 +918,20 @@ int main(int argc, char *argv[])
 
 	initGL(w * pixsize, h * pixsize);
 
+	
+	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
+	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
+	// rather than having to roll our own internal FIFO. As an added bonus you can tap the ports for debugging.
+	if (bMMU)
+	{
+		hw.mmu.Init();
+		hw.mmu.StartGL();
+		hw.mmu.ConnectFrom(IOIRQ(avr,'J',5),MMU2::RESET);
+		hw.IR.Set(IRSensor::IR_AUTO);
+		avr_irq_register_notify(hw.mmu.GetIRQ(MMU2::FEED_DISTANCE), mmu_irsensor_hook, avr);
+	}
 
+	// MMU must be set up first
 	if (bAdvVis)
 	{
 		glutSetOption(GLUT_MULTISAMPLE,4);
@@ -929,18 +946,7 @@ int main(int argc, char *argv[])
 
 
 
-	
-	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
-	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
-	// rather than having to roll our own internal FIFO. As an added bonus you can tap the ports for debugging.
-	if (bMMU)
-	{
-		hw.mmu.Init();
-		hw.mmu.StartGL();
-		hw.mmu.ConnectFrom(IOIRQ(avr,'J',5),MMU2::RESET);
-		hw.IR.Set(IRSensor::IR_AUTO);
-		avr_irq_register_notify(hw.mmu.GetIRQ(MMU2::FEED_DISTANCE), mmu_irsensor_hook, avr);
-	}
+
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.

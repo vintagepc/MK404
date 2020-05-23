@@ -132,8 +132,9 @@ void MMU2::Init()
 	cfg.bHasNoEndStops = false;
 	m_Idl.SetConfig(cfg);
 
-	cfg.uiStepsPerMM = 20;
+	cfg.uiStepsPerMM = 50;
 	cfg.cAxis = 'S';
+	cfg.iMaxMM = 70;
 	cfg.bInverted = true;
 	m_Sel.SetConfig(cfg);
 }
@@ -246,7 +247,7 @@ void MMU2::SetupHardware()
 	m_Sel.Init(m_pAVR);
 	m_Sel.ConnectFrom(IOIRQ(m_pAVR,'D',7),	TMC2130::SPI_CSEL);
 	m_Sel.ConnectFrom(IOIRQ(m_pAVR,'D',4),	TMC2130::STEP_IN);
-	
+	m_Sel.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(SELECTOR_OUT));
 
 	m_Idl.Init(m_pAVR);
 	m_Idl.ConnectFrom(IOIRQ(m_pAVR,'B',7), TMC2130::SPI_CSEL);

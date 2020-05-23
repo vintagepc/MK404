@@ -52,6 +52,7 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(Y_IN,MAKE_C_CALLBACK(MK3SGL,OnYChanged),this);
 	RegisterNotify(Z_IN,MAKE_C_CALLBACK(MK3SGL,OnZChanged),this);
 	RegisterNotify(E_IN,MAKE_C_CALLBACK(MK3SGL,OnEChanged),this);
+	RegisterNotify(SEL_IN,MAKE_C_CALLBACK(MK3SGL,OnSelChanged),this);
 	RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(MK3SGL, OnSheetChanged), this);
 	RegisterNotify(EFAN_IN, MAKE_C_CALLBACK(MK3SGL, OnEFanChanged), this);
 	RegisterNotify(PFAN_IN, MAKE_C_CALLBACK(MK3SGL, OnPFanChanged), this);
@@ -76,6 +77,14 @@ void MK3SGL::OnXChanged(avr_irq_t *irq, uint32_t value)
 	m_fXPos =  fPos[0]/1000.f;
 	m_bDirty = true;
 }
+
+void MK3SGL::OnSelChanged(avr_irq_t *irq, uint32_t value)
+{
+	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
+	m_fSelPos =  fPos[0]/1000.f;
+	m_bDirty = true;
+}
+
 
 void MK3SGL::OnBedChanged(avr_irq_t *irq, uint32_t value)
 {
@@ -302,10 +311,32 @@ void MK3SGL::Draw()
 			glScalef(fMM2M,fMM2M,fMM2M);
 			m_SDCard.Draw();
 		glPopMatrix();
-
+		if (m_bMMU)
+			DrawMMU();
 		glutSwapBuffers();
 		m_bDirty = false;
 }
+void MK3SGL::DrawMMU()
+{
+		float fTransform[3];
+		glPushMatrix();
+			m_MMUBase.GetCenteringTransform(fTransform);
+			glTranslatef(0,0.3185,0.0425);
+			glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
+			glRotatef(-45,1,0,0);
+			glTranslatef(0.13+fTransform[0],fTransform[1],fTransform[2]);
+			m_MMUBase.Draw();
+			glPushMatrix();
+				m_MMUSel.GetCenteringTransform(fTransform);
+				glTranslatef(m_fSelPos - m_fSelCorr,0.062,0.123);
+				glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
+				glRotatef(-90,1,0,0);					
+				glRotatef(-2.5,0,1,0);					
+				glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+				m_MMUSel.Draw();
+			glPopMatrix();
+		glPopMatrix();
+	}	
 
 
 void MK3SGL::MouseCB(int button, int action, int x, int y)

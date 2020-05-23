@@ -10,7 +10,8 @@ class MK3SGL: public BasePeripheral
     public:
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
                             _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
-                            _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in") _IRQ(PFAN_IN,"<PFAN.in") _IRQ(SEL_IN,"<Sel.in")
+                            _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in") _IRQ(PFAN_IN,"<PFAN.in") _IRQ(SEL_IN,"<Sel.in") \
+                            _IRQ(IDL_IN,"<idler.in")
         #include "IRQHelper.h"
 
         MK3SGL(bool bLite);
@@ -46,6 +47,7 @@ class MK3SGL: public BasePeripheral
         GLObj m_EPFan = GLObj("assets/Print-fan_rotor.obj");
         GLObj m_MMUBase = GLObj("assets/MMU_stationary.obj");
         GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
+        GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
 
         HD44780GL *m_pLCD = nullptr;
 
@@ -58,6 +60,7 @@ class MK3SGL: public BasePeripheral
         void OnZChanged(avr_irq_t *irq, uint32_t value);
         void OnEChanged(avr_irq_t *irq, uint32_t value);
         void OnSelChanged(avr_irq_t *irq, uint32_t value);
+        void OnIdlChanged(avr_irq_t *irq, uint32_t value);
         void OnSheetChanged(avr_irq_t *irq, uint32_t value);
         void OnSDChanged(avr_irq_t *irq, uint32_t value);
         void OnEFanChanged(avr_irq_t *irq, uint32_t value);
@@ -70,6 +73,8 @@ class MK3SGL: public BasePeripheral
         float m_fZCorr = 0.206, m_fZPos = 0.010;
         float m_fEPos = 0;
         float m_fSelCorr = 0.025f, m_fSelPos = 0.0f;
+        // This is going to be in degrees rotation instead of mm
+        float m_fIdlCorr = 20.00f, m_fIdlPos = 0.0f;
         
         int m_iKnobPos = 0, m_iFanPos = 0, m_iPFanPos = 0;
 

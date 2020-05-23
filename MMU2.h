@@ -37,7 +37,7 @@ class MMU2: public BasePeripheral
 
     public:
         #define IRQPAIRS _IRQ(FEED_DISTANCE,"<mmu.feed_distance") _IRQ(RESET,"<mmu.reset") _IRQ(PULLEY_IN,"<mmu.pulley_in") \
-                        _IRQ(SELECTOR_OUT,"<sel_pos.out")
+                        _IRQ(SELECTOR_OUT,">sel_pos.out") _IRQ(IDLER_OUT,">idler_pos.out")
         #include "IRQHelper.h"
 
         MMU2();

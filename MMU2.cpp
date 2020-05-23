@@ -126,7 +126,7 @@ void MMU2::Init()
 	cfg.uiDiagPin = 30; // filler, not used.
 	m_Extr.SetConfig(cfg);
 
-	cfg.uiStepsPerMM = 10;
+	cfg.uiStepsPerMM = 8;
 	cfg.iMaxMM = 200;
 	cfg.cAxis = 'I';
 	cfg.bHasNoEndStops = false;
@@ -252,6 +252,7 @@ void MMU2::SetupHardware()
 	m_Idl.Init(m_pAVR);
 	m_Idl.ConnectFrom(IOIRQ(m_pAVR,'B',7), TMC2130::SPI_CSEL);
 	m_Idl.ConnectFrom(IOIRQ(m_pAVR,'D',6), TMC2130::STEP_IN);
+	m_Idl.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(IDLER_OUT));
 
 	for (int i=0; i<5; i++)
 	{

@@ -340,7 +340,8 @@ void MK3SGL::Draw()
 					glScalef(fScale,fScale,fScale);
 					glScalef(1.0,-1.0f,-0.1f);
 					glPushMatrix();
-						m_pLCD->Draw(0x02c5fb00, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055, true);
+						// This scheme is a bit more legible on the smaller screen.
+						m_pLCD->Draw(0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055, true);
 					glPopMatrix();
 				glPopMatrix();
 			glPopMatrix();

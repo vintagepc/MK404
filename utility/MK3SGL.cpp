@@ -315,6 +315,11 @@ void MK3SGL::Draw()
 			m_Y.Draw();
 			glTranslatef(0.025,0.083,0.431);
 			m_Sheet.Draw();
+			glPushMatrix();
+				glTranslatef(0.001,0.001,-0.017);
+				glScalef(fMM2M,fMM2M,-fMM2M);
+				m_Print.Draw();
+			glPopMatrix();
 			if (m_bBedOn)
 			{
 				glTranslatef(0.016,0,-0.244);

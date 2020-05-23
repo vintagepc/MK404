@@ -126,14 +126,15 @@ void MMU2::Init()
 	cfg.uiDiagPin = 30; // filler, not used.
 	m_Extr.SetConfig(cfg);
 
-	cfg.uiStepsPerMM = 10;
+	cfg.uiStepsPerMM = 8;
 	cfg.iMaxMM = 200;
 	cfg.cAxis = 'I';
 	cfg.bHasNoEndStops = false;
 	m_Idl.SetConfig(cfg);
 
-	cfg.uiStepsPerMM = 20;
+	cfg.uiStepsPerMM = 50;
 	cfg.cAxis = 'S';
+	cfg.iMaxMM = 70;
 	cfg.bInverted = true;
 	m_Sel.SetConfig(cfg);
 }
@@ -238,6 +239,7 @@ void MMU2::SetupHardware()
 	m_shift.ConnectFrom(IOIRQ(m_pAVR, 'B',6), 	HC595::IN_LATCH);
 	m_shift.ConnectFrom(IOIRQ(m_pAVR, 'B',5), 	HC595::IN_DATA);
 	m_shift.ConnectFrom(IOIRQ(m_pAVR, 'C',7), 	HC595::IN_CLOCK);
+	avr_irq_register_notify(m_shift.GetIRQ(HC595::OUT), MAKE_C_CALLBACK(MMU2,LEDHandler),this);
 
 	m_Extr.Init(m_pAVR);
 	m_Extr.ConnectFrom(IOIRQ(m_pAVR,'C',6), TMC2130::SPI_CSEL);
@@ -246,11 +248,12 @@ void MMU2::SetupHardware()
 	m_Sel.Init(m_pAVR);
 	m_Sel.ConnectFrom(IOIRQ(m_pAVR,'D',7),	TMC2130::SPI_CSEL);
 	m_Sel.ConnectFrom(IOIRQ(m_pAVR,'D',4),	TMC2130::STEP_IN);
-	
+	m_Sel.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(SELECTOR_OUT));
 
 	m_Idl.Init(m_pAVR);
 	m_Idl.ConnectFrom(IOIRQ(m_pAVR,'B',7), TMC2130::SPI_CSEL);
 	m_Idl.ConnectFrom(IOIRQ(m_pAVR,'D',6), TMC2130::STEP_IN);
+	m_Idl.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(IDLER_OUT));
 
 	for (int i=0; i<5; i++)
 	{
@@ -284,6 +287,14 @@ void MMU2::SetupHardware()
 
 	m_buttons.Init(m_pAVR,5);
 
+}
+
+void MMU2::LEDHandler(avr_irq_t *irq, uint32_t value)
+{
+	uint32_t valOut = 0;
+	valOut = (value >>6) & 0b1111111111; // Just the LEDs.
+	if (GetIRQ(LEDS_OUT)->value != valOut)
+		RaiseIRQ(LEDS_OUT,valOut);
 }
 
 void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)

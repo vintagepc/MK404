@@ -65,6 +65,8 @@ void Heater::OnPWMChanged(struct avr_irq_t * irq,uint32_t value)
 
     if (m_uiPWM > 0)
         RegisterTimerUsec(m_fcnTempTick, 100000, this);
+    if ((m_pIrq + ON_OUT)->value != (m_uiPWM>0))
+        RaiseIRQ(ON_OUT,m_uiPWM>0);
 }
 
 //TCCR0A  _SFR_IO8(0x24)

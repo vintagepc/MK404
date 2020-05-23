@@ -71,14 +71,21 @@ set(EINSY_SOURCES
     hwDefs/VoltageSrc.cpp
     hwDefs/w25x20cl.cpp
     MMU2.cpp
-    include/SerialPipe.cpp  
+    include/SerialPipe.cpp
+    utility/MK3SGL.cpp  
+    utility/GLObj.cpp  
+    3rdParty/trackball.cc
 )
 
 add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${H_FILES} ${INCLUDE_FILES} ${FIRMWARE})
 
-execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+target_compile_features(Einsy PRIVATE cxx_range_for)
 
+execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")
+
+add_subdirectory(3rdParty/tinyobjloader)
+
 
 ExternalProject_Add(simavr
     SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rdParty/simavr
@@ -100,12 +107,18 @@ target_include_directories (Einsy PUBLIC
                             "${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/"
                             "${PROJECT_SOURCE_DIR}/hwDefs"
                             "${PROJECT_SOURCE_DIR}/include"
+                            "${PROJECT_SOURCE_DIR}/utility"
+                            "${PROJECT_SOURCE_DIR}/3rdParty"
                          )
+
+
+include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
+
 
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
 
-target_link_libraries(Einsy pthread util glut GL GLU m ${LIBSIMAVR} ${LIBELF_LIBRARIES}) 
+target_link_libraries(Einsy pthread util glut GL GLU GLEW m tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES}) 
 
 add_custom_command(TARGET Einsy POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -119,6 +132,17 @@ add_custom_command(TARGET Einsy POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/stk500boot_v2_mega2560.hex"
                     "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
+
+# Copies the models/materials:
+add_custom_command(TARGET Einsy POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/assets"
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/assets/*.obj"
+                    "${PROJECT_BINARY_DIR}/assets/"
+                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/assets/*.mtl"
+                    "${PROJECT_BINARY_DIR}/assets/")
+                    
 
 add_custom_target(Build_Run COMMAND cd ${PROJECT_BINARY_DIR} && ./Einsy &)
 add_dependencies(Build_Run Einsy)

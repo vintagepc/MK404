@@ -28,6 +28,7 @@ LED::LED(uint32_t uiHexColor, char chrLabel, bool bInvert):m_chrLabel(chrLabel),
     m_fColor[0] = (float)(uiHexColor >> 24)/255.0f;
     m_fColor[1] = (float)((uiHexColor >> 16)& 0xFF)/255.0f;
     m_fColor[2] = (float)((uiHexColor >> 8)& 0xFF)/255.0f;
+    m_bOn^=bInvert;
 }
 
 

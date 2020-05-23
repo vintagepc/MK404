@@ -38,7 +38,7 @@ Remaining To-Dos of note:
 
 To get stared, clone the MK3Sim repo. the 3rdParty/simavr folder may be empty, you will need to cd into the MK3Sim checkout and run `git submodule init` and `git submodule update` from within it to pull down the correct simavr dependency.
 
-This is now a `cmake` project and independent of simAVR. The expectation is that you have built the parent simavr repo at least once to create the object files. After that, you can follow normal cmake procedures, using your favourite IDE (or with cmake-gui). 
+This is now a `cmake` project and independent of simAVR. You can follow normal cmake procedures, using your favourite IDE (or with cmake-gui). The SimAVR submodule will be built automatically and taken care of for you.
 
 You will need to use a fairly recent version of GCC/G++ (I use 7.4.0). Older versions from the 4.8 era may not support some of the syntax used. 
 

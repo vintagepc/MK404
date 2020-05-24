@@ -275,8 +275,11 @@ void powerup_and_reset_helper(avr_t *avr)
 	hw.UART0.Reset();
 
 	//depress encoder knob
+	avr_irq_t *pBtnIRQ = DIRQLU(avr,BTN_ENC);
 	if (!bFactoryReset)
-		avr_raise_irq(hw.encoder.GetIRQ(RotaryEncoder::OUT_BUTTON), 1);
+		avr_raise_irq(pBtnIRQ, 1);
+	else
+		avr_raise_irq(pBtnIRQ, 0);
 
 	bFactoryReset = false;
 
@@ -330,6 +333,9 @@ avr_run_thread(
 					// RESET BUTTON
 					avr_reset(avr);
 					avr_regbit_set(avr, avr->reset_flags.extrf);
+					hw.encoder.Push(); // I dont' know why this is required to not get stuck in factory reset mode.
+					// The only thing I can think of is that SimAVR doesn't like IRQ changes that don't have
+					// any avr_run cycles between them. :-/
 					break;
 				case 't':
 					printf("FACTORY_RESET\n");
@@ -337,6 +343,7 @@ avr_run_thread(
 					// Hold the button during boot to get factory reset menu
 					avr_reset(avr);
 					avr_regbit_set(avr, avr->reset_flags.extrf);
+					break;
 				case 'h':
 					hw.encoder.PushAndHold();
 					break;
@@ -830,7 +837,7 @@ int main(int argc, char *argv[])
 	avr->custom.deinit = avr_special_deinit;
 	avr->custom.data = &flash_data;
 	avr_init(avr);
-	avr->reset = powerup_and_reset_helper;
+	//avr->reset = powerup_and_reset_helper;
 	hw.EEPROM = new Einsy_EEPROM(avr, flash_data.avr_eeprom_path);
 	hw.spiFlash.Load(strXFlashPath);
 	if (bLoadFW)

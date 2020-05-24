@@ -512,8 +512,6 @@ void setupLCD()
 
 	hw.lcd.ConnectFrom(DIRQLU(avr, LCD_BL_PIN), HD44780::BRIGHTNESS_IN);
 	hw.lcd.ConnectFrom(DPWMLU(avr, LCD_BL_PIN), HD44780::BRIGHTNESS_PWM_IN);
-	avr_ioport_external_t ex = {.name = PORT(LCD_BL_PIN), .mask = (1UL << PIN(LCD_BL_PIN)), .value = 0UL};
-	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
 	hw.encoder.Init(avr);
 	hw.encoder.ConnectTo(RotaryEncoder::OUT_A, DIRQLU(avr, BTN_EN2));
@@ -624,17 +622,6 @@ void setupVoltages()
 
 void setupDrivers()
 {
-	// Fake an external pullup on the diag pins so it can be detected:
-	// Note we can't do this inside the init because it clobbers others, so only the last
-	// one that you set would stick.
-
-	uint8_t uiDiagMask = 1<<PIN(X_TMC2130_DIAG) | 1 << PIN(Y_TMC2130_DIAG) | 1 << PIN(Z_TMC2130_DIAG) | 1 << PIN(E0_TMC2130_DIAG);
-	printf( "Diag mask: %02x\n",uiDiagMask);
-    avr_ioport_external_t ex;
-    ex.value = 0;
-    ex.name = 'K';
-    ex.mask = uiDiagMask;
-	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
 
 	TMC2130::TMC2130_cfg_t cfg;
 	cfg.iMaxMM = 255;
@@ -686,11 +673,6 @@ void setupDrivers()
 	hw.E.ConnectFrom(DIRQLU(avr,E0_STEP_PIN),		TMC2130::STEP_IN);
 	hw.E.ConnectFrom(DIRQLU(avr,E0_ENABLE_PIN),	TMC2130::ENABLE_IN);
 
-
-	ex.mask = 1<<PIN(Z_MIN_PIN); // DIAG pins. 
-	ex.name = PORT(Z_MIN_PIN); // Value should already be 0 from above.
-	avr_ioctl(avr, AVR_IOCTL_IOPORT_SET_EXTERNAL(ex.name), &ex);
-	
 	// TODO once the drivers are setup.
 	hw.pinda.Init(avr, hw.X.GetIRQ(TMC2130::POSITION_OUT),  hw.Y.GetIRQ(TMC2130::POSITION_OUT),  hw.Z.GetIRQ(TMC2130::POSITION_OUT));
 	hw.pinda.ConnectTo(PINDA::TRIGGER_OUT ,DIRQLU(avr, Z_MIN_PIN));

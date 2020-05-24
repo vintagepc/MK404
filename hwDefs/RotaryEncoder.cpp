@@ -102,7 +102,7 @@ void RotaryEncoder::Push()
 
 void RotaryEncoder::PushAndHold()
 {
-	_Push(BUTTON_DURATION_LONG_US*10);
+	_Push(BUTTON_DURATION_LONG_US);
 }
 
 /*

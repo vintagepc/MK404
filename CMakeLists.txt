@@ -93,6 +93,7 @@ ExternalProject_Add(simavr
     BUILD_COMMAND make build-simavr RELEASE=0
     INSTALL_COMMAND ""
     BUILD_IN_SOURCE 1
+    BUILD_ALWAYS 1
 
 )
 

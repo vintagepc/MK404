@@ -28,11 +28,12 @@ class GLPrint
 	GLPrint();
 
 	void Draw();
+	void NewCoord(float fX, float fY, float fZ, float fE);
 
 	private:
-		// stores print coordinates in mm.
-		std::vector<std::tuple<float,float,float>> m_vCoords;
-
-
-
+		std::vector<std::array<float,4>> m_vCoords;
+		std::array<float,4> *m_pfSegStart;
+		std::array<float,4> m_fSegEnd;
+		float m_fERetr = 0;
+		bool m_bExtruding = false;
 };

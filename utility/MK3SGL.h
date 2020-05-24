@@ -74,8 +74,9 @@ class MK3SGL: public BasePeripheral
 
         float m_fXCorr = 0.044, m_fXPos = 0.010;
         float m_fYCorr = 0.141, m_fYPos = 0.010;
-        float m_fZCorr = 0.206, m_fZPos = 0.010;
+        float m_fZCorr = 0.210, m_fZPos = 0.010;
         float m_fEPos = 0;
+        float m_fERetract= 0; bool m_bInRetract = false;
         float m_fSelCorr = 0.025f, m_fSelPos = 0.0f;
         // This is going to be in degrees rotation instead of mm
         float m_fIdlCorr = 20.00f, m_fIdlPos = 0.0f;

@@ -26,7 +26,7 @@ class GLPrint
 {
 	public:
 	GLPrint();
-
+	void Clear();
 	void Draw();
 	void NewCoord(float fX, float fY, float fZ, float fE);
 

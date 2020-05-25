@@ -89,11 +89,15 @@ void GLPrint::Draw()
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,fSpec);
 	glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,64);
+	glEnable(GL_AUTO_NORMAL);
+	glEnable(GL_NORMALIZE);
 	glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
 		glDrawArrays(GL_LINE_STRIP,0,m_vCoords.size());
-		glMultiDrawArrays(GL_LINE_STRIP,0,)
+	//	glMultiDrawArrays(GL_LINE_STRIP,0,)
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisable(GL_AUTO_NORMAL);
+	glDisable(GL_NORMALIZE);
 	// glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
 	// glEnable(GL_COLOR_MATERIAL);
 	// glEnable(GL_AUTO_NORMAL);

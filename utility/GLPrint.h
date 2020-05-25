@@ -34,6 +34,9 @@ class GLPrint
 		std::vector<std::array<float,4>> m_vCoords;
 		std::array<float,4> *m_pfSegStart;
 		std::array<float,4> m_fSegEnd;
+		std::vector<int> m_ivStart = {0};
+		std::vector<int> m_ivCount;
+		std::vector<float> m_fvDraw = {0,0,0};
 		float m_fERetr = 0;
 		bool m_bExtruding = false;
 };

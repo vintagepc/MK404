@@ -31,12 +31,11 @@ class GLPrint
 	void NewCoord(float fX, float fY, float fZ, float fE);
 
 	private:
-		std::vector<std::array<float,4>> m_vCoords;
-		std::array<float,4> *m_pfSegStart;
-		std::array<float,4> m_fSegEnd;
-		std::vector<int> m_ivStart = {0};
+		std::array<int,4> m_iExtrEnd, m_iExtrStart;
+		std::array<float,4> m_fExtrEnd, m_fExtrStart;
+		std::vector<int> m_ivStart;
 		std::vector<int> m_ivCount;
-		std::vector<float> m_fvDraw = {0,0,0};
-		float m_fERetr = 0;
+		std::vector<float> m_fvDraw;
+		float m_fEMax = 0;
 		bool m_bExtruding = false;
 };

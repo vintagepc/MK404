@@ -26,9 +26,16 @@ static constexpr int iPrintRes = 100000; //0.1mm (meters/this)
 
 GLPrint::GLPrint()
 {	
-	m_iExtrStart = {0,0,0,0};
-	m_iExtrEnd =  {0,0,0,0};
+	Clear();
+}
+
+void GLPrint::Clear()
+{
+	m_iExtrStart = m_iExtrEnd = {0,0,0,0};
 	m_fExtrStart = m_fExtrEnd = {0,0,0,0};
+	m_ivCount.clear();
+	m_ivStart.clear();
+	m_fvDraw.clear();
 }
 
 void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)

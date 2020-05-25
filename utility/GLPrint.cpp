@@ -22,103 +22,112 @@
 #include "GLPrint.h"
 #include "GL/glew.h"
 
+static constexpr int iPrintRes = 100000; //0.1mm (meters/this)
+
 GLPrint::GLPrint()
 {	
-	m_vCoords.push_back(std::array<float,4>{0,0,0,0});
-	m_pfSegStart = &m_vCoords[0];
+	m_iExtrStart = {0,0,0,0};
+	m_iExtrEnd =  {0,0,0,0};
+	m_fExtrStart = m_fExtrEnd = {0,0,0,0};
 }
 
 void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 {
+	
+	int iX = fX*iPrintRes,iY = fY*iPrintRes,iZ = fZ*iPrintRes;
+
 	// Test if the new coordinate is still collinear with the existing segment. 
 	// Triangle area method. Slopes have risks of zero/inf/nan for very small deltas.
  	//Ax(By - Cy) + Bx(Cy - Ay) + Cx(Ay - By) 
 	 // We don't bother with div by 2/abs since we only care if the area is 0. 
-	const std::array<float,4> fStart = *m_pfSegStart;
-	float fArea = (fStart[0]* ( m_fSegEnd[1] - fY)) + (m_fSegEnd[0]*(fY - fStart[1])) + (fX * (fStart[1] - m_fSegEnd[1]));
-	// float fSlope1 = ((fY-fStart[1])/(fX-fStart[0]));
-	// float fSlope2 = ((fY-m_fSegEnd[1])/(fX-m_fSegEnd[0]));
-	// float fSlope3 = ((m_fSegEnd[1]-fStart[1])/(m_fSegEnd[0]-fStart[0]));
-	bool bSamePos = (fX == m_fSegEnd[0]) && (fY == m_fSegEnd[1]);
-	bool bExtruding = !(fE<m_fSegEnd[3]) && fE>m_fERetr; // Extruding if we are > than last retraction event and also moving +
+	int iArea = (m_iExtrStart[0]* ( m_iExtrEnd[2] - iY)) + (m_iExtrEnd[0]*(iY - m_iExtrStart[2])) + (iX * (m_iExtrStart[2] - m_iExtrEnd[2]));
+	float fArea = (m_fExtrStart[0]* ( m_fExtrEnd[2] - fY)) + (m_fExtrEnd[0]*(fY - m_fExtrStart[2])) + (fX * (m_fExtrStart[2] - m_fExtrEnd[2]));
+	if (fArea<0) fArea = -fArea;
+	bool bColinear = (fArea/2)<1e-10 || abs((iArea/2)) <= 1;
 
-	if ((bSamePos && !bExtruding) || (bSamePos && (fZ == m_fSegEnd[2]))) //SamePos doesn't inculde Z so we don't get inf/zero slopes on hops.
+	bool bSamePos = (iX == m_iExtrEnd[0]) && (iY == m_iExtrEnd[2]);
+	bool bExtruding = fE>(m_fEMax-5e-5); //-0.0002); // Extruding if we are > than the highest E value previously observed
+	// Trailing 0.0002 is fudge factor for LA/retraction threshold to avoid gaps at E end.
+
+	if ((bSamePos && !bExtruding) || (bSamePos && (iZ == m_iExtrEnd[1]))) //SamePos doesn't inculde Z so we don't get inf/zero slopes on hops.
 		return;
-	bool bCollinear =  fArea < 1E-8; // Float rounding err, this should be satisfactory... // (fSlope1==fSlope2) && (fSlope2 == fSlope3);
 
-	bool bNewSegment = false;
+	if (fE>m_fEMax)
+		m_fEMax = fE;
+	else if (!m_bExtruding && !bExtruding)
+	{
+		// Just update segment end if we are mid non-extrusion (travel)
+		// We don't need to track co-linearity if not extruding.
+		bColinear = true;
+	}
 	if (bExtruding ^ m_bExtruding)
 	{
 		// Extruding condition has changed. Start a new segment. 
-		bNewSegment = true;
-		if (!bExtruding) // Just stopped extruding. Store coord.
+		if (bExtruding) // Just started extruding. Update the various pointers.
 		{
-			//printf("Seg end\n");
-			m_fERetr = m_fSegEnd[3];
+			m_iExtrStart = m_iExtrEnd;
+			m_fExtrStart = m_fExtrEnd;
+			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
+			//printf("New extrusion %u at index %u\n",m_ivStart.size(),m_ivStart.back());
 		}
-		else
-			//printf("Seg start\n");
-
+		m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+		if (!bExtruding)
+		{
+			m_ivCount.push_back((m_fvDraw.size()/3) - m_ivStart.back());
+			//printf("Ended extrusion %u (%u vertices)\n", m_ivCount.size(), m_ivCount.back());
+		}
 		m_bExtruding = bExtruding;
-
 	}
-	if (!bCollinear || bNewSegment) 
+	else if (!bColinear) 
 	{
-		// New segment, push it onto the vertex queue and reset the start.
+		// New segment, push it onto the vertex list and update the segment count
 		//printf("New segment: %d\n",m_vCoords.size());
-		m_vCoords.push_back(m_fSegEnd);	
-		//m_fvDraw.insert(m_fvDraw.end(), m_fSegEnd.front(), m_fSegEnd.front()+3);
-		m_fvDraw.push_back(m_fSegEnd[0]);
-		m_fvDraw.push_back(m_fSegEnd[2]);
-		m_fvDraw.push_back(m_fSegEnd[1]);
-		m_pfSegStart = &m_vCoords.back(); // Update segment start.
+		m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+		m_iExtrStart = m_iExtrEnd;
+		m_fExtrStart = m_fExtrEnd;
 	}
-	// If it's the same segment just update the end we are tracking.
-	m_fSegEnd[0] = fX; 
-	m_fSegEnd[1] = fY;
-	m_fSegEnd[2] = fZ;
-	m_fSegEnd[3] = fE;
+	// Update the end we are tracking.
+	m_fExtrEnd[0] = fX;
+	m_fExtrEnd[2] = fY;
+	m_fExtrEnd[1] = fZ;
+	m_iExtrEnd[0] = iX; 
+	m_iExtrEnd[1] = iY;
+	m_iExtrEnd[2] = iZ;
+	//m_iExtrEnd[3] = iE;
 	
 }
 
 void GLPrint::Draw()
 {
 	float fColor[4] = {0.8,0,0,1};
+	float fG[4] = {0,0.8,0,1};
+	float fY[4] = {1,1,0,1};
 	float fSpec[4] = {1,1,1,1};
 	glLineWidth(1.0);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,fSpec);
 	glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,64);
-	glEnable(GL_AUTO_NORMAL);
-	glEnable(GL_NORMALIZE);
+//	glEnable(GL_AUTO_NORMAL);
+	//glEnable(GL_NORMALIZE);
 	glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
-		glDrawArrays(GL_LINE_STRIP,0,m_vCoords.size());
-	//	glMultiDrawArrays(GL_LINE_STRIP,0,)
+		glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
+		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec);
+		if (m_ivCount.size()>0)
+			glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),((m_fvDraw.size()/3)-m_ivStart.back())-1);
+		if (m_bExtruding)
+		{
+			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fY);
+			glBegin(GL_LINES);
+				glVertex3fv((&m_fvDraw.back())-2);
+				glVertex3fv(m_fExtrEnd.data());
+			glEnd();
+		}
+		// Uncomment for vertex debugging. 
+		// glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fG);
+		// glPointSize(1.0);
+		// glDrawArrays(GL_POINTS,0,m_fvDraw.size()/3);
 	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisable(GL_AUTO_NORMAL);
-	glDisable(GL_NORMALIZE);
-	// glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
-	// glEnable(GL_COLOR_MATERIAL);
-	// glEnable(GL_AUTO_NORMAL);
-	// glBegin(GL_LINE_STRIP);
-	// 	for (int i=0; i<m_vCoords.size(); i++)
-	// 	{
-	// 		if (i<m_vCoords.size()-1 && m_vCoords[i][3]<m_vCoords[i+1][3])
-	// 			glColor4f(0.8,0,0,1);
-	// 		else
-	// 		{
-	// 			// End of extr. segment, draw the point again so the line ends cleanly, then change colour.
-	// 			glColor4f(0.5,0,0,1); // add some definition with a slight colour change
-	// 			glVertex3f(m_vCoords[i][0],m_vCoords[i][2],m_vCoords[i][1]); 
-	// 			glColor4f(0,1,0,0);
-	// 		}
-	// 		glVertex3f(m_vCoords[i][0],m_vCoords[i][2],m_vCoords[i][1]);
-	// 	}
-	// 	// Also draw to the current position, it's not on the segment queue yet.
-	// 	glColor4f(1,1,1,1);
-	// 	glVertex3f(m_fSegEnd[0], m_fSegEnd[2], m_fSegEnd[1]);
-	// glEnd();
-	// glDisable(GL_AUTO_NORMAL);
-	// glDisable(GL_COLOR_MATERIAL);
+//	glDisable(GL_AUTO_NORMAL);
+	//glDisable(GL_NORMALIZE);
 }

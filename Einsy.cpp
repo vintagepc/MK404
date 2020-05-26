@@ -101,6 +101,8 @@ avr_vcd_t vcd_file;
 uint8_t gbStop = 0;
 uint8_t gbPrintPC = 0;
 
+bool g_bPaused = false;
+
 struct avr_flash {
 	char avr_flash_path[1024];
 	int avr_flash_fd;
@@ -305,6 +307,11 @@ avr_run_thread(
 	int state = cpu_Running;
 	while ((state != cpu_Done) && (state != cpu_Crashed)){
 		// Re init the special workarounds we need after a reset.
+		if (g_bPaused)
+		{
+			usleep(100000);
+			continue;
+		}
 		uint8_t uiMCUSR = avr_regbit_get(avr,MCUSR);
 		if (uiMCUSR != uiLastMCUSR)
 		{
@@ -390,6 +397,7 @@ void keyCB(
 		case 'q':
 			//glutLeaveMainLoop();
 			guKey = key;
+			g_bPaused = false;
 			break;
 		case 'p':
 			printf("SIMULATING POWER PANIC\n");
@@ -400,6 +408,10 @@ void keyCB(
 			break;
 		case '1':
 			iScheme ^=1;
+		case 'z':
+			g_bPaused ^= true;
+			printf("Pause: %u\n",g_bPaused);
+			break;
 		/* case 'r':
 			printf("Starting VCD trace; press 's' to stop\n");
 			avr_vcd_start(&vcd_file);

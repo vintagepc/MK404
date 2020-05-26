@@ -704,58 +704,7 @@ void setupDrivers()
 
 
 }
-void setupTimers(avr_t* avr)
-{
-	 avr_regbit_t rb = AVR_IO_REGBITS(0xB0,0,0xFF);
-	 //	avr_regbit_setto(avr, rb, 0x03);
-	//	rb.reg++;
-	//avr_regbit_setto(avr, rb, 0x03); // B
 
-	// rb.reg = 0x80; // TCCR1A
-	// avr_regbit_setto(avr, rb, 0x01);
-	// rb.reg++;
-	// avr_regbit_setto(avr, rb, 0x03); // B
-
-	// //rb.reg = 0xB0; // TCCR2A
-	// avr_regbit_setto(avr, rb, 0);
-	// rb.reg++;
-	// avr_regbit_setto(avr, rb, 0x1); // B
-
-	//  rb.reg=0xb3; //OCR2A
-	//  avr_regbit_setto(avr, rb, 0x00);
-	//  rb.reg++; // 2B
-	//  avr_regbit_setto(avr, rb, 128);
-
-	rb.reg = 0x6e;
-	rb.mask= 0b00000111;
-	// TIMSK0
-//	avr_regbit_setto(avr,rb,0x01);
-
-	rb.reg = 0x70;
-	// TIMSK2
-	avr_regbit_setto(avr,rb,0x01);
-
-	//rb.reg++;
-	//rb.mask= 0b00001111;
-	// TIMSK3
-	//avr_regbit_setto(avr,rb,0b00000010);
-
-	//rb.reg = 0x90; // TCCR3A
-	//avr_regbit_setto(avr, rb, 0x03);// | 1<<6);
-	// rb.reg++;
-	// avr_regbit_setto(avr, rb, 1); // B
-
-//	 rb.reg = 0xA0; // TCCR4A
-//	 avr_regbit_setto(avr, rb, 0x03);// | 1 <<6);
-//	 rb.reg++;
-//	 avr_regbit_setto(avr, rb, 0x01); // B
-
-	// rb.reg = 0x120; // TCCR5A
-	// avr_regbit_setto(avr, rb, 0x01);
-	// rb.reg++;
-	// avr_regbit_setto(avr, rb, 0x03); // B */
-
-}
 
 void fix_serial(avr_t * avr, avr_io_addr_t addr, uint8_t v, void * param)
 {
@@ -892,8 +841,6 @@ int main(int argc, char *argv[])
 	setupLCD();
 
 	setupDrivers();
-
-	setupTimers(avr);
 
 	setupVoltages();
 

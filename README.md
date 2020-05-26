@@ -68,3 +68,4 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `y` adds/removes the steel sheet from the heatbed for PINDA MBL or XYZ cal
 - `f` toggles filament presence
 - `z` pauses Einsy execution without stopping GL interactivity (so you can still pan/scroll/zoom the fancy graphics)
+- `l` clears the current print visual from the print bed.

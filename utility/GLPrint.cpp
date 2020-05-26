@@ -36,6 +36,8 @@ void GLPrint::Clear()
 	m_ivCount.clear();
 	m_ivStart.clear();
 	m_fvDraw.clear();
+	m_bExtruding = false;
+	m_fEMax = 0;
 }
 
 void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
@@ -75,12 +77,24 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 			m_iExtrStart = m_iExtrEnd;
 			m_fExtrStart = m_fExtrEnd;
 			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
+			m_ivTStart.push_back(m_fvTri.size()/3);
 			//printf("New extrusion %u at index %u\n",m_ivStart.size(),m_ivStart.back());
 		}
 		m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+		m_fvCol.push_back(m_bRed?1:0.7);
+		m_fvCol.push_back(0);
+		m_fvCol.push_back(0);
+		//m_bRed^=1;
+
+		// m_fvTri.push_back(m_fExtrEnd[0]);
+		// m_fvTri.push_back(m_fExtrEnd[1]-0.0002);
+		// m_fvTri.push_back(m_fExtrEnd[2]);
+		// m_fvTri.insert(m_fvTri.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+
 		if (!bExtruding)
 		{
 			m_ivCount.push_back((m_fvDraw.size()/3) - m_ivStart.back());
+			// m_ivTCount.push_back((m_fvTri.size()/3) - m_ivTStart.back());
 			//printf("Ended extrusion %u (%u vertices)\n", m_ivCount.size(), m_ivCount.back());
 		}
 		m_bExtruding = bExtruding;
@@ -90,6 +104,14 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 		// New segment, push it onto the vertex list and update the segment count
 		//printf("New segment: %d\n",m_vCoords.size());
 		m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+		m_fvCol.push_back(m_bRed?1:0.7);
+		m_fvCol.push_back(0);
+		m_fvCol.push_back(0);
+		m_bRed^=1;
+		// m_fvTri.push_back(m_fExtrEnd[0]);
+		// m_fvTri.push_back(m_fExtrEnd[1]-0.0002);
+		// m_fvTri.push_back(m_fExtrEnd[2]);
+		// m_fvTri.insert(m_fvTri.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
 		m_iExtrStart = m_iExtrEnd;
 		m_fExtrStart = m_fExtrEnd;
 	}
@@ -98,8 +120,8 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 	m_fExtrEnd[2] = fY;
 	m_fExtrEnd[1] = fZ;
 	m_iExtrEnd[0] = iX; 
-	m_iExtrEnd[1] = iY;
-	m_iExtrEnd[2] = iZ;
+	m_iExtrEnd[2] = iY;
+	m_iExtrEnd[1] = iZ;
 	//m_iExtrEnd[3] = iE;
 	
 }
@@ -107,18 +129,29 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 void GLPrint::Draw()
 {
 	float fColor[4] = {0.8,0,0,1};
-	float fG[4] = {0,0.8,0,1};
+	float fG[4] = {0,0.5,0,1};
 	float fY[4] = {1,1,0,1};
+	float fK[4] = {0,0,0,1};
 	float fSpec[4] = {1,1,1,1};
 	glLineWidth(1.0);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor);
+	
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,fSpec);
 	glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,64);
-//	glEnable(GL_AUTO_NORMAL);
+	//glEnable(GL_AUTO_NORMAL);
 	//glEnable(GL_NORMALIZE);
 	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fK);
+		glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
+		// glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
+		//glNormal3f(0,1,0);
+		//glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fG);
+		glEnable(GL_COLOR_MATERIAL);
+		glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
 		glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
+		glColorPointer(3, GL_FLOAT, 3*sizeof(float), m_fvCol.data());
 		glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
+		glDisable(GL_COLOR_MATERIAL);
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec);
 		if (m_ivCount.size()>0)
 			glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),((m_fvDraw.size()/3)-m_ivStart.back())-1);
@@ -135,6 +168,7 @@ void GLPrint::Draw()
 		// glPointSize(1.0);
 		// glDrawArrays(GL_POINTS,0,m_fvDraw.size()/3);
 	glDisableClientState(GL_VERTEX_ARRAY);
-//	glDisable(GL_AUTO_NORMAL);
+	glDisableClientState(GL_COLOR_ARRAY);
+	//glDisable(GL_AUTO_NORMAL);
 	//glDisable(GL_NORMALIZE);
 }

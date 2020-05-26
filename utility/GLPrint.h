@@ -33,9 +33,11 @@ class GLPrint
 	private:
 		std::array<int,4> m_iExtrEnd, m_iExtrStart;
 		std::array<float,4> m_fExtrEnd, m_fExtrStart;
-		std::vector<int> m_ivStart;
-		std::vector<int> m_ivCount;
-		std::vector<float> m_fvDraw;
+		std::vector<int> m_ivStart, m_ivTStart;
+		std::vector<int> m_ivCount, m_ivTCount;
+		std::vector<float> m_fvDraw, m_fvCol;
+		std::vector<float> m_fvTri;
 		float m_fEMax = 0;
 		bool m_bExtruding = false;
+		bool m_bRed = 1;
 };

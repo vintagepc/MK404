@@ -412,6 +412,9 @@ void keyCB(
 			g_bPaused ^= true;
 			printf("Pause: %u\n",g_bPaused);
 			break;
+		case 'l':
+			vis->ClearPrint();
+			break;
 		/* case 'r':
 			printf("Starting VCD trace; press 's' to stop\n");
 			avr_vcd_start(&vcd_file);

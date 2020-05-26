@@ -19,9 +19,14 @@ class MK3SGL: public BasePeripheral
         void Init(avr_t *avr);
         void Draw();
 
+        // Twists the displayed knob in response to a keypress
         void TwistKnob(bool bDir);
 
+        // Attaches the GL LCD for rendering. 
         void SetLCD(HD44780GL* pLCD){m_pLCD = pLCD;}
+
+        // Clears the displayed print.
+        void ClearPrint() { m_Print.Clear(); }
 
         void SetMMU(bool bMMU) { m_bMMU = bMMU;}
 

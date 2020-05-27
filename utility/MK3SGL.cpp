@@ -14,7 +14,7 @@
 
 #include <GL/glew.h>
 #include <GL/glut.h>
-MK3SGL::MK3SGL(bool bLite):m_bLite(bLite)
+MK3SGL::MK3SGL(bool bLite, bool bMMU):m_bLite(bLite),m_bMMU(bMMU)
 {
 	trackball(curr_quat,0,0,0,0);
 		eye[0] = 0.0f;
@@ -28,22 +28,29 @@ MK3SGL::MK3SGL(bool bLite):m_bLite(bLite)
 		up[0] = 0.0f;
 		up[1] = 1.0f;
 		up[2] = 0.0f;
+
+		for(int i=0; i<m_vObjLite.size(); i++)
+			m_vObjLite[i]->Load();
+
 		if (m_bLite)
 		{
-				m_Base.SetAllVisible(false);
 				m_Y.SetAllVisible(false);
 				m_Y.SetSubobjectVisible(2); // heatbed, sheet
-				m_Z.SetAllVisible(false);
 				m_Extruder.SetAllVisible(false);
 				m_Extruder.SetSubobjectVisible(19); // V6
 				m_Extruder.SetSubobjectVisible(20);
 				m_Extruder.SetSubobjectVisible(1); // PINDA
 				m_Extruder.SetSubobjectVisible(2);
-				m_EStd.SetAllVisible(false);
-				m_EMMU.SetAllVisible(false);
 		}
-		//m_MMUBase.SetSubobjectVisible(0,false);
-		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
+		else
+			for(int i=0; i<m_vObj.size(); i++)
+				m_vObj[i]->Load();
+		if (m_bMMU)
+		{
+			for(int i=0; i<m_vObjMMU.size(); i++)
+				m_vObjMMU[i]->Load();
+			m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
+		}
 
 }
 
@@ -224,21 +231,32 @@ void MK3SGL::Draw()
 		glEnable(GL_NORMALIZE);
 		glLoadIdentity();
 		GLfloat mat[4][4];
-		gluLookAt(eye[0], eye[1], eye[2], lookat[0], lookat[1], lookat[2], up[0],
+		if (!m_bFollowNozzle)
+		{
+			gluLookAt(eye[0], eye[1], eye[2], lookat[0], lookat[1], lookat[2], up[0],
 							up[1], up[2]);
-			
-
-		build_rotmatrix(mat, curr_quat);
-		glMultMatrixf(&mat[0][0]);
+			build_rotmatrix(mat, curr_quat);
+			glMultMatrixf(&mat[0][0]);
+		}
 		float fMM2M = 1.f/1000.f;
 		float fExtent = m_Base.GetScaleFactor();
+		if (m_bLite)
+			fExtent = m_Y.GetScaleFactor();
+			
 		// Fit to -1, 1
 		glScalef(1.0f / fExtent, 1.0f / fExtent, 1.0f / fExtent);
 		float fTransform[3];
-		m_Base.GetCenteringTransform(fTransform);
+		if (m_bLite)	
+			m_Y.GetCenteringTransform(fTransform);
+		else
+			m_Base.GetCenteringTransform(fTransform);
 		// Centerize object.
 		glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
-
+		if (m_bFollowNozzle)
+		{
+			float fLook[3] = {.025f+m_fXPos+fTransform[0] ,m_fZPos+0.02f, -0.01f};
+			gluLookAt(fLook[0]+.001, fLook[1]+.003 ,fLook[2]+.08, fLook[0],fLook[1],fLook[2] ,0,1,0);
+		}
 		glPushMatrix();   
 			glTranslatef(0,-m_fZCorr + (m_fZPos),0);
 			m_Z.Draw();

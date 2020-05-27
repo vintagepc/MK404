@@ -20,18 +20,24 @@
 // Also cuts GPU RAM usage in half, and probably has performance gains for not needing to set the vertex properties.
 #define TEX_VCOLOR 0
 
-GLObj::GLObj(std::string strFile)
+GLObj::GLObj(std::string strFile):m_strFile(strFile)
 {
- if (false == LoadObjAndConvert(strFile.c_str()))
-				printf("Failed to load obj\n");
+ 
+}
 
-				m_fMaxExtent = 0.5f * (m_extMax[0] - m_extMin[0]);
-		if (m_fMaxExtent < 0.5f * (m_extMax[1] - m_extMin[1])) {
-				m_fMaxExtent = 0.5f * (m_extMax[1] - m_extMin[1]);
-		}
-		if (m_fMaxExtent < 0.5f * (m_extMax[2] - m_extMin[2])) {
-				m_fMaxExtent = 0.5f * (m_extMax[2] - m_extMin[2]);
-		}
+void GLObj::Load()
+{
+	m_bLoaded = LoadObjAndConvert(m_strFile.c_str());
+	if (!m_bLoaded)
+		printf("Failed to load obj\n");
+
+	m_fMaxExtent = 0.5f * (m_extMax[0] - m_extMin[0]);
+	if (m_fMaxExtent < 0.5f * (m_extMax[1] - m_extMin[1])) {
+			m_fMaxExtent = 0.5f * (m_extMax[1] - m_extMin[1]);
+	}
+	if (m_fMaxExtent < 0.5f * (m_extMax[2] - m_extMin[2])) {
+			m_fMaxExtent = 0.5f * (m_extMax[2] - m_extMin[2]);
+	}
 }
 
 void GLObj::SetAllVisible(bool bVisible)
@@ -59,6 +65,9 @@ void GLObj::SetSubobjectMaterial(uint iObj, int iMat)
 }
 
 void GLObj::Draw() {
+	if (!m_bLoaded)
+		return;
+		
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_FILL);
 

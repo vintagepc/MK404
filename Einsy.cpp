@@ -436,6 +436,8 @@ void keyCB(
 			break;
 		case '1':
 			iScheme ^=1;
+		case 'n':
+			vis->ToggleNozzleCam();
 		/* case 'r':
 			printf("Starting VCD trace; press 's' to stop\n");
 			avr_vcd_start(&vcd_file);
@@ -512,7 +514,7 @@ void InitFancyVis(bool bMMU, bool bLite)
 	glEnable(GL_BLEND);
 	glEnable(GL_MULTISAMPLE);
 
-	vis = new MK3SGL(bLite);
+	vis = new MK3SGL(bLite,bMMU);
 
 	vis->SetWindow(window2);
 
@@ -529,7 +531,7 @@ void InitFancyVis(bool bMMU, bool bLite)
 	vis->ConnectFrom(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, MK3SGL::SD_IN);
 	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
 	vis->SetLCD(&hw.lcd);
-	vis->SetMMU(bMMU);
+	//vis->SetMMU(bMMU);
 	if (bMMU)
 	{
 		vis->ConnectFrom(hw.mmu.GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);

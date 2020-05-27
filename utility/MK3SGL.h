@@ -14,7 +14,7 @@ class MK3SGL: public BasePeripheral
                             _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in")
         #include "IRQHelper.h"
 
-        MK3SGL(bool bLite);
+        MK3SGL(bool bLite, bool bMMU);
         void Init(avr_t *avr);
         void Draw();
 
@@ -25,6 +25,10 @@ class MK3SGL: public BasePeripheral
         void SetMMU(bool bMMU) { m_bMMU = bMMU;}
 
         void SetLite(bool bLite) { m_bLite = bLite;}
+
+        void ToggleNozzleCam() {m_bFollowNozzle^=true;}
+
+        void SetFollowNozzle(bool bFollow) { m_bFollowNozzle = bFollow;}
 
         void MouseCB(int button, int state, int x, int y);
         void MotionCB(int x, int y);
@@ -49,9 +53,15 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
 
+        std::vector<GLObj*> m_vObjLite = { &m_Y, &m_SDCard, &m_Sheet, &m_Knob, &m_EVis, &m_EFan, &m_EPFan, &m_Extruder};
+        std::vector<GLObj*> m_vObj = { &m_Z, &m_Base, &m_EStd};
+        std::vector<GLObj*> m_vObjMMU = { &m_EMMU, &m_MMUBase, &m_MMUSel, &m_MMUIdl};
+
         HD44780GL *m_pLCD = nullptr;
 
         bool m_bLite = false; // Lite graphics
+
+        bool m_bFollowNozzle = false; // Camera follows nozzle.
 
         void DrawMMU();
         void DrawLED(float r, float g, float b);

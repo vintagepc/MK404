@@ -53,6 +53,9 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `-S0` connects UART0 to a PTY you can use with a terminal program or avrdude. Otherwise traffic is just printed to console.
 - `--lite` displays a lightweight 3d representation of moving parts
 - `--fancy` displays a full 3d visualization of the printer.
+### Mouse Functions:
+- Scroll wheel moves the encoder.
+- Left button down/up controls click/release
 
 ### Key functions:
 - `w` and `s` move the encoder. 

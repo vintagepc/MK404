@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <tuple>
+#include <math.h>
 
 class GLPrint
 {
@@ -31,13 +32,34 @@ class GLPrint
 	void NewCoord(float fX, float fY, float fZ, float fE);
 
 	private:
+
+		static inline void CrossProduct(const float fA[3], const float fB[3], float fOut[3]) 
+		{	
+			fOut[0] = (fA[1]*fB[2]) - (fA[2]*fB[1]);
+			fOut[1] = (fA[2]*fB[0]) - (fA[0]*fB[2]);
+			fOut[2] = (fA[0]*fB[1]) - (fA[1]*fB[0]);
+		};
+
+		static inline void Normalize(float fA[3])
+		{
+			float fNorm = sqrt((fA[0]*fA[0]) + (fA[1]*fA[1]) + (fA[2]*fA[2]));
+			fA[0]/=fNorm;
+			fA[1]/=fNorm;
+			fA[2]/=fNorm;
+		}
+
+		//void FindNearest(const float fVec[3]);
+
+
 		std::array<int,4> m_iExtrEnd, m_iExtrStart;
 		std::array<float,4> m_fExtrEnd, m_fExtrStart;
 		std::vector<int> m_ivStart, m_ivTStart;
 		std::vector<int> m_ivCount, m_ivTCount;
-		std::vector<float> m_fvDraw, m_fvCol;
+		std::vector<float> m_fvDraw, m_fvNorms;
 		std::vector<float> m_fvTri;
+		// Layer vertex tracking.
+		std::vector<float*> m_vpfLayer1, m_vpfLayer2, *m_pCurLayer = &m_vpfLayer1, *m_pPrevLayer = &m_vpfLayer2;
+		float m_fCurZ = -1, m_fLastZ = -1;
 		float m_fEMax = 0;
 		bool m_bExtruding = false;
-		bool m_bRed = 1;
 };

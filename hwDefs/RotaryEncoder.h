@@ -50,6 +50,12 @@ class RotaryEncoder:public BasePeripheral
         // Pushes and releases the button after an extended delay.
         void PushAndHold();
 
+        // Does press event without a release for mouse control.
+        void MousePush(); 
+
+        // Release event for mouse push. 
+        void Release(); 
+
     private:
 
         void _Push(uint32_t uiDuration);
@@ -65,6 +71,7 @@ class RotaryEncoder:public BasePeripheral
         uint8_t m_uiPulseCt = 0;
         Direction m_eDirection = CCW_CLICK;
         int m_iPhase = 0;			// current position
+        bool m_bTimerRunning = false;
 
 };
 

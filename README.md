@@ -67,3 +67,4 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `h` just holds the encoder.
 - `y` adds/removes the steel sheet from the heatbed for PINDA MBL or XYZ cal
 - `f` toggles filament presence
+- `n` toggles "Nozzle cam" mode

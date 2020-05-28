@@ -1,0 +1,6 @@
+[submodule "3rdParty/simavr"]
+	path = 3rdParty/simavr
+	url = https://github.com/vintagepc/simavr.git
+[submodule "3rdParty/tinyobjloader"]
+	path = 3rdParty/tinyobjloader
+	url = https://github.com/tinyobjloader/tinyobjloader.git

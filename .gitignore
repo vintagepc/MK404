@@ -1,7 +1,7 @@
-
+build
 .directory
-.vscode
 build-env
 *.d
 *.o
 *.elf
+.vscode/settings.json

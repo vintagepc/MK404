@@ -28,7 +28,7 @@ jobs:
         submodules: true
         
     - name: Install libelf
-      run: sudo apt-get install libelf-dev
+      run: sudo apt-get install libelf-dev gcc-avr
     - name: Build CMake
       uses: ashutoshvarma/action-cmake-build@v1
       with:

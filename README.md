@@ -6,7 +6,8 @@ Not much to see here yet, I figured that I'd just start something separate to sh
 *NOTE:*
 You currently cannot run an as-is Marlin build. See the following notes on the serial and timer bootloop issues.
 
-*Current state of affairs*:
+*Current state of affairs*: 
+- ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg)
 - Bootloader works:
 
 ![](images/bootloader.png)

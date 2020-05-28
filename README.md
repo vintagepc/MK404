@@ -8,8 +8,10 @@ Remaining To-Dos of note:
 - Beeper
 - Better visuals (in progress)
 
-*Current state of affairs*:
+*Current state of affairs*: 
+- ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg)
 - **The simulator can complete a self test!**
+
 
 ![](https://user-images.githubusercontent.com/53943260/80157964-63404880-8595-11ea-9bfe-55668a0d4807.png)
 

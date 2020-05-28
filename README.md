@@ -8,8 +8,10 @@ Remaining To-Dos of note:
 - Beeper
 - Better visuals (in progress)
 
-*Current state of affairs*:
+*Current state of affairs*: 
+- ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg)
 - **The simulator can complete a self test!**
+
 
 ![](https://user-images.githubusercontent.com/53943260/80157964-63404880-8595-11ea-9bfe-55668a0d4807.png)
 
@@ -54,8 +56,13 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `--lite` displays a lightweight 3d representation of moving parts
 - `--fancy` displays a full 3d visualization of the printer.
 ### Mouse Functions:
+#### LCD Window:
 - Scroll wheel moves the encoder.
 - Left button down/up controls click/release
+#### Printer visualization Window (when not in nozzle-cam mode):
+- Left button: Rotate
+- Middle button: Pan
+- Right button & scroll wheel: Zoom/Z travel
 
 ### Key functions:
 - `w` and `s` move the encoder. 

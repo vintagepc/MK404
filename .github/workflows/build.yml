@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: CI Build
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -23,6 +23,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2.2.0
       with:
+        repository: https://github.com/vintagepc/MK3SIM.git
         token: ${{ secrets.CIDeploy_PK }}
         submodules: true
         

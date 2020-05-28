@@ -26,7 +26,7 @@
 #include "RotaryEncoder.h"
 
 static constexpr uint8_t  STATE_COUNT = 4;
-static constexpr uint32_t PULSE_DURATION_US = 50000UL;
+static constexpr uint32_t PULSE_DURATION_US = 10000UL;
 static constexpr uint32_t BUTTON_DURATION_US = 100000UL;
 static constexpr uint32_t BUTTON_DURATION_LONG_US = 3000000UL; // 3s
 
@@ -61,16 +61,16 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t * avr,avr_cycle_count_
 			break;
 
 		default:
-			// Invalid direction
+			printf("Rotenc: Invalid direction.\n"); // Invalid direction
 			break;
 	}
     RaiseIRQ(OUT_A, m_States[m_iPhase]>>1);
     RaiseIRQ(OUT_B, m_States[m_iPhase]&1);
 	
     if(--m_uiPulseCt >0) // Continue ticking the encoder
-	{
 		RegisterTimerUsec(m_fcnStateChange,PULSE_DURATION_US,this);
-	}
+	else
+		m_bTimerRunning = false;
 	return 0;
 }
 
@@ -105,6 +105,16 @@ void RotaryEncoder::PushAndHold()
 	_Push(BUTTON_DURATION_LONG_US);
 }
 
+void RotaryEncoder::MousePush()
+{
+	RaiseIRQ(OUT_BUTTON, 0);
+}
+
+void RotaryEncoder::Release()
+{
+	RaiseIRQ(OUT_BUTTON, 1);
+}
+
 /*
  * Simulates one "twist" pulse of the rotary encoder.
  */
@@ -117,7 +127,11 @@ void RotaryEncoder::Twist(Direction eDir)
 		m_eDirection = eDir;
 		m_uiPulseCt = 4;
 	}
-	RegisterTimerUsec(m_fcnStateChange,PULSE_DURATION_US, this);
+	if (!m_bTimerRunning) // Don't register if the timer is already ticking.
+	{
+		m_bTimerRunning = true;
+		RegisterTimerUsec(m_fcnStateChange,PULSE_DURATION_US, this);
+	}
 }
 
 void RotaryEncoder::Init(avr_t *avr)

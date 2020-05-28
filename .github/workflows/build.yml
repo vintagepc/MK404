@@ -25,3 +25,7 @@ jobs:
       with:
         token: ${{ secrets.CIDeploy_PK }}
         submodules: true
+        
+          # Runs a single command using the runners shell
+    - name: Run CMake
+      uses: lukka/run-cmake@v2.4

@@ -56,8 +56,13 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `--lite` displays a lightweight 3d representation of moving parts
 - `--fancy` displays a full 3d visualization of the printer.
 ### Mouse Functions:
+#### LCD Window:
 - Scroll wheel moves the encoder.
 - Left button down/up controls click/release
+#### Printer visualization Window (when not in nozzle-cam mode):
+- Left button: Rotate
+- Middle button: Pan
+- Right button & scroll wheel: Zoom/Z travel
 
 ### Key functions:
 - `w` and `s` move the encoder. 

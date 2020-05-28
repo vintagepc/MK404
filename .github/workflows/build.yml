@@ -47,13 +47,19 @@ jobs:
     - name: Test build simavr
       run: cd /home/runner/work/MK3SIM/MK3SIM/3rdParty/simavr && make build-simavr
       continue-on-error: true
-      
-    - name: Build CMake
-      uses: ashutoshvarma/action-cmake-build@v1
-      continue-on-error: true
-      with:
-        build-dir: ${{ runner.workspace }}/MK3SIM/build
-        build-type: Release
+ 
+    - name: Prepare CMake build
+      run: mkdir ${{ runner.workspace }}/MK3SIM/build && cd ${{ runner.workspace }}/MK3SIM/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
+    
+    - name: Build Einsy
+      run: cd ${{ runner.workspace }}/MK3SIM/build && make
+ 
+#    - name: Build CMake
+#      uses: ashutoshvarma/action-cmake-build@v1
+#      continue-on-error: true
+#      with:
+#        build-dir: ${{ runner.workspace }}/MK3SIM/build
+#        build-type: Release
         
        
 

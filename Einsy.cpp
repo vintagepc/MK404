@@ -144,7 +144,7 @@ bool bFactoryReset = false, bCardMounted = false;
 
 MK3SGL *vis = nullptr;
 
-unsigned char guKey = 0;
+unsigned char guKey = 0, guMouse = 0;
 
 // avr special flash initalization
 // here: open and map a file to enable a persistent storage for the flash memory
@@ -319,6 +319,26 @@ avr_run_thread(
 			if (uiMCUSR) // only run on change and not changed to 0
 				powerup_and_reset_helper(avr);
 		}
+		if (guMouse)
+		{
+			switch (guMouse){
+				case 1:
+					hw.encoder.MousePush();
+					break;
+				case 2:
+					hw.encoder.Release();
+					break;
+				case 3:
+					hw.encoder.Twist(RotaryEncoder::CCW_CLICK);
+					if (vis) vis->TwistKnob(true);
+					break;
+				case 4:
+					hw.encoder.Twist(RotaryEncoder::CW_CLICK);
+					if (vis) vis->TwistKnob(false);
+					break;
+			}
+			guMouse = 0;
+		}
 		if (guKey) {
 			switch (guKey) {
 				case 'w':
@@ -389,6 +409,22 @@ avr_run_thread(
 	return NULL;
 }
 
+
+void MouseCB(int button, int action, int x, int y)
+{
+	if (button == GLUT_LEFT_BUTTON) {
+		if (action == GLUT_DOWN) {
+			guMouse = 1;
+		} else if (action == GLUT_UP) {
+			guMouse = 2;
+		}
+	}
+	if ((button==3 || button==4) && action == GLUT_DOWN) // wheel
+	{
+		guMouse = button;
+	}
+}
+
 void keyCB(
 		unsigned char key, int x, int y)	/* called on key press */
 {
@@ -415,6 +451,9 @@ void keyCB(
 		case 'l':
 			vis->ClearPrint();
 			break;
+		case 'n':
+			vis->ToggleNozzleCam();
+      break;
 		/* case 'r':
 			printf("Starting VCD trace; press 's' to stop\n");
 			avr_vcd_start(&vcd_file);
@@ -452,6 +491,7 @@ int initGL(int w, int h)
 
 	glutDisplayFunc(displayCB);		/* set window's display callback */
 	glutKeyboardFunc(keyCB);		/* set window's key callback */
+	glutMouseFunc(MouseCB);
 	glutTimerFunc(1000, timerCB, 0);
 
 	glEnable(GL_TEXTURE_2D);
@@ -490,7 +530,7 @@ void InitFancyVis(bool bMMU, bool bLite)
 	glEnable(GL_BLEND);
 	glEnable(GL_MULTISAMPLE);
 
-	vis = new MK3SGL(bLite);
+	vis = new MK3SGL(bLite,bMMU);
 
 	vis->SetWindow(window2);
 
@@ -507,7 +547,7 @@ void InitFancyVis(bool bMMU, bool bLite)
 	vis->ConnectFrom(hw.sd_card.irq + IRQ_SD_CARD_PRESENT, MK3SGL::SD_IN);
 	vis->ConnectFrom(hw.pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
 	vis->SetLCD(&hw.lcd);
-	vis->SetMMU(bMMU);
+	//vis->SetMMU(bMMU);
 	if (bMMU)
 	{
 		vis->ConnectFrom(hw.mmu.GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);

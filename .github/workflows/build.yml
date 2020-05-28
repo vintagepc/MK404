@@ -39,7 +39,7 @@ jobs:
       run: mkdir -p packages/partial
       
     - name: Install packages
-      run: sudo apt-get -o Dir::Cache::Archives=./packages install libelf-dev gcc-avr
+      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr
       
     - name: Test build simavr
       run: cd MK3SIM/3rdParty/simavr && make

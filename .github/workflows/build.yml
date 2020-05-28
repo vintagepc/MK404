@@ -31,12 +31,12 @@ jobs:
       uses: actions/cache@v1.0.3
       id: cache-pkgs
       with:
-          path: "./packages"
+          path: "packages"
           key: ${{secrets.build_pkg_cache}}
       
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
-      run: mkdir ./packages/partial
+      run: mkdir -p packages/partial
       
     - name: Install packages
       run: sudo apt-get -o Dir::Cache::Archives=./packages install libelf-dev gcc-avr

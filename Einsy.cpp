@@ -101,6 +101,8 @@ avr_vcd_t vcd_file;
 uint8_t gbStop = 0;
 uint8_t gbPrintPC = 0;
 
+bool g_bPaused = false;
+
 struct avr_flash {
 	char avr_flash_path[1024];
 	int avr_flash_fd;
@@ -305,6 +307,11 @@ avr_run_thread(
 	int state = cpu_Running;
 	while ((state != cpu_Done) && (state != cpu_Crashed)){
 		// Re init the special workarounds we need after a reset.
+		if (g_bPaused)
+		{
+			usleep(100000);
+			continue;
+		}
 		uint8_t uiMCUSR = avr_regbit_get(avr,MCUSR);
 		if (uiMCUSR != uiLastMCUSR)
 		{
@@ -426,6 +433,7 @@ void keyCB(
 		case 'q':
 			//glutLeaveMainLoop();
 			guKey = key;
+			g_bPaused = false;
 			break;
 		case 'p':
 			printf("SIMULATING POWER PANIC\n");
@@ -436,8 +444,16 @@ void keyCB(
 			break;
 		case '1':
 			iScheme ^=1;
+		case 'z':
+			g_bPaused ^= true;
+			printf("Pause: %u\n",g_bPaused);
+			break;
+		case 'l':
+			vis->ClearPrint();
+			break;
 		case 'n':
 			vis->ToggleNozzleCam();
+      break;
 		/* case 'r':
 			printf("Starting VCD trace; press 's' to stop\n");
 			avr_vcd_start(&vcd_file);
@@ -728,58 +744,7 @@ void setupDrivers()
 
 
 }
-void setupTimers(avr_t* avr)
-{
-	 avr_regbit_t rb = AVR_IO_REGBITS(0xB0,0,0xFF);
-	 //	avr_regbit_setto(avr, rb, 0x03);
-	//	rb.reg++;
-	//avr_regbit_setto(avr, rb, 0x03); // B
 
-	// rb.reg = 0x80; // TCCR1A
-	// avr_regbit_setto(avr, rb, 0x01);
-	// rb.reg++;
-	// avr_regbit_setto(avr, rb, 0x03); // B
-
-	// //rb.reg = 0xB0; // TCCR2A
-	// avr_regbit_setto(avr, rb, 0);
-	// rb.reg++;
-	// avr_regbit_setto(avr, rb, 0x1); // B
-
-	//  rb.reg=0xb3; //OCR2A
-	//  avr_regbit_setto(avr, rb, 0x00);
-	//  rb.reg++; // 2B
-	//  avr_regbit_setto(avr, rb, 128);
-
-	rb.reg = 0x6e;
-	rb.mask= 0b00000111;
-	// TIMSK0
-//	avr_regbit_setto(avr,rb,0x01);
-
-	rb.reg = 0x70;
-	// TIMSK2
-	avr_regbit_setto(avr,rb,0x01);
-
-	//rb.reg++;
-	//rb.mask= 0b00001111;
-	// TIMSK3
-	//avr_regbit_setto(avr,rb,0b00000010);
-
-	//rb.reg = 0x90; // TCCR3A
-	//avr_regbit_setto(avr, rb, 0x03);// | 1<<6);
-	// rb.reg++;
-	// avr_regbit_setto(avr, rb, 1); // B
-
-//	 rb.reg = 0xA0; // TCCR4A
-//	 avr_regbit_setto(avr, rb, 0x03);// | 1 <<6);
-//	 rb.reg++;
-//	 avr_regbit_setto(avr, rb, 0x01); // B
-
-	// rb.reg = 0x120; // TCCR5A
-	// avr_regbit_setto(avr, rb, 0x01);
-	// rb.reg++;
-	// avr_regbit_setto(avr, rb, 0x03); // B */
-
-}
 
 void fix_serial(avr_t * avr, avr_io_addr_t addr, uint8_t v, void * param)
 {
@@ -916,8 +881,6 @@ int main(int argc, char *argv[])
 	setupLCD();
 
 	setupDrivers();
-
-	setupTimers(avr);
 
 	setupVoltages();
 

@@ -38,7 +38,7 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU):m_bLite(bLite),m_bMMU(bMMU)
 				m_Y.SetSubobjectVisible(2); // heatbed, sheet
 				m_Extruder.SetAllVisible(false);
 				m_Extruder.SetSubobjectVisible(19); // V6
-				m_Extruder.SetSubobjectVisible(20);
+				//m_Extruder.SetSubobjectVisible(20);
 				m_Extruder.SetSubobjectVisible(1); // PINDA
 				m_Extruder.SetSubobjectVisible(2);
 		}
@@ -185,7 +185,8 @@ void MK3SGL::OnYChanged(avr_irq_t *irq, uint32_t value)
 void MK3SGL::OnEChanged(avr_irq_t *irq, uint32_t value)
 {
 	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-	m_fEPos =  fPos[0]/1000.f;
+	m_fEPos = fPos[0]/1000.f;
+	m_Print.NewCoord(m_fXPos,m_fYPos,m_fZPos,m_fEPos);
 	m_bDirty = true;
 }
 
@@ -333,6 +334,11 @@ void MK3SGL::Draw()
 			m_Y.Draw();
 			glTranslatef(0.025,0.083,0.431);
 			m_Sheet.Draw();
+			glPushMatrix();
+				glScalef(1,1,-1);
+				glTranslatef(0.001,0.001,0.013);
+				m_Print.Draw();
+			glPopMatrix();
 			if (m_bBedOn)
 			{
 				glTranslatef(0.016,0,-0.244);

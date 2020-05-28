@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include "BasePeripheral.h"
 #include "HD44780GL.h"
+#include <GLPrint.h>
 
 class MK3SGL: public BasePeripheral
 {
@@ -18,9 +19,14 @@ class MK3SGL: public BasePeripheral
         void Init(avr_t *avr);
         void Draw();
 
+        // Twists the displayed knob in response to a keypress
         void TwistKnob(bool bDir);
 
+        // Attaches the GL LCD for rendering. 
         void SetLCD(HD44780GL* pLCD){m_pLCD = pLCD;}
+
+        // Clears the displayed print.
+        void ClearPrint() { m_Print.Clear(); }
 
         void SetMMU(bool bMMU) { m_bMMU = bMMU;}
 
@@ -53,6 +59,8 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
 
+        GLPrint m_Print;
+
         std::vector<GLObj*> m_vObjLite = { &m_Y, &m_SDCard, &m_Sheet, &m_Knob, &m_EVis, &m_EFan, &m_EPFan, &m_Extruder};
         std::vector<GLObj*> m_vObj = { &m_Z, &m_Base, &m_EStd};
         std::vector<GLObj*> m_vObjMMU = { &m_EMMU, &m_MMUBase, &m_MMUSel, &m_MMUIdl};
@@ -81,8 +89,9 @@ class MK3SGL: public BasePeripheral
 
         float m_fXCorr = 0.044, m_fXPos = 0.010;
         float m_fYCorr = 0.141, m_fYPos = 0.010;
-        float m_fZCorr = 0.206, m_fZPos = 0.010;
+        float m_fZCorr = 0.210, m_fZPos = 0.010;
         float m_fEPos = 0;
+        float m_fERetract= 0; bool m_bInRetract = false;
         float m_fSelCorr = 0.025f, m_fSelPos = 0.0f;
         // This is going to be in degrees rotation instead of mm
         float m_fIdlCorr = 20.00f, m_fIdlPos = 0.0f;

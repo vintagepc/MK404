@@ -74,6 +74,7 @@ set(EINSY_SOURCES
     include/SerialPipe.cpp
     utility/MK3SGL.cpp  
     utility/GLObj.cpp  
+    utility/GLPrint.cpp
     3rdParty/trackball.cc
 )
 

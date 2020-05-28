@@ -27,6 +27,8 @@ jobs:
         ssh-key: ${{ secrets.CIDeployKey }}
         submodules: true
         
+    - name: Install libelf
+      run: sudo apt-get install libelf libelf-dev
     - name: Build CMake
       uses: ashutoshvarma/action-cmake-build@v1
       with:

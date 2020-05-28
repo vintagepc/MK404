@@ -21,6 +21,8 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.CIDeploy_PK }}
 
     - name: C++ code linter (clang-tidy and cppcheck)
       uses: smay1613/cpp-linter-action@0.0.2

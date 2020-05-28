@@ -23,7 +23,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2.2.0
       with:
-        repository: https://github.com/vintagepc/MK3SIM.git
+        repository: vintagepc/MK3SIM.git
         token: ${{ secrets.CIDeploy_PK }}
         submodules: true
         

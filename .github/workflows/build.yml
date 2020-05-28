@@ -24,7 +24,6 @@ jobs:
       uses: actions/checkout@v2.2.0
       with:
         repository: vintagepc/MK3SIM.git
-        ssh-key: ${{ secrets.CIDeployKey }}
         submodules: true
     
     - name: Cache packages

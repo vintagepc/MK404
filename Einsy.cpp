@@ -444,6 +444,7 @@ void keyCB(
 			break;
 		case '1':
 			iScheme ^=1;
+			break;
 		case 'z':
 			g_bPaused ^= true;
 			printf("Pause: %u\n",g_bPaused);

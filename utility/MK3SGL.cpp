@@ -256,6 +256,8 @@ void MK3SGL::Draw()
 		if (m_bFollowNozzle)
 		{
 			float fLook[3] = {.025f+m_fXPos+fTransform[0] ,m_fZPos+0.02f, -0.01f};
+			if (!m_bLite)
+				fLook[1]-=0.15f;
 			gluLookAt(fLook[0]+.001, fLook[1]+.003 ,fLook[2]+.08, fLook[0],fLook[1],fLook[2] ,0,1,0);
 		}
 		glPushMatrix();   

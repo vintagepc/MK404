@@ -44,10 +44,6 @@ jobs:
     - name: Cache permissions
       run: sudo chmod -R 744 packages
       
-    - name: Test build simavr
-      run: cd /home/runner/work/MK3SIM/MK3SIM/3rdParty/simavr && make build-simavr
-      continue-on-error: true
- 
     - name: Prepare CMake build
       run: mkdir ${{ runner.workspace }}/MK3SIM/build && cd ${{ runner.workspace }}/MK3SIM/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
     

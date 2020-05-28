@@ -40,6 +40,9 @@ jobs:
       
     - name: Install packages
       run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr
+
+    - name: Cache permissions
+      run: sudo chmod -R 744 packages
       
     - name: Test build simavr
       run: cd /home/runner/work/MK3SIM/MK3SIM/3rdParty/simavr && make build-simavr

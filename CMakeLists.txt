@@ -75,7 +75,7 @@ set(EINSY_SOURCES
     utility/MK3SGL.cpp  
     utility/GLObj.cpp  
     utility/GLPrint.cpp
-    3rdParty/trackball.cc
+    3rdParty/arcball/Camera.cpp
 )
 
 add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${H_FILES} ${INCLUDE_FILES} ${FIRMWARE})
@@ -110,7 +110,7 @@ target_include_directories (Einsy PUBLIC
                             "${PROJECT_SOURCE_DIR}/hwDefs"
                             "${PROJECT_SOURCE_DIR}/include"
                             "${PROJECT_SOURCE_DIR}/utility"
-                            "${PROJECT_SOURCE_DIR}/3rdParty"
+                            "${PROJECT_SOURCE_DIR}/3rdParty/arcball"
                          )
 
 

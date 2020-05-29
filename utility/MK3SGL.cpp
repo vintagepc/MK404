@@ -10,47 +10,34 @@
 #include <vector>
 #include <cstring>
 
-#include <trackball.h>
-
 #include <GL/glew.h>
 #include <GL/glut.h>
 MK3SGL::MK3SGL(bool bLite, bool bMMU):m_bLite(bLite),m_bMMU(bMMU)
 {
-	trackball(curr_quat,0,0,0,0);
-		eye[0] = 0.0f;
-		eye[1] = 0.0f;
-		eye[2] = 3.0f;
+	m_camera.setWindowSize(800,800);
+	m_camera.setEye(0,0.5,3);
+	for(int i=0; i<m_vObjLite.size(); i++)
+		m_vObjLite[i]->Load();
 
-		lookat[0] = 0.0f;
-		lookat[1] = 0.0f;
-		lookat[2] = 0.0f;
-
-		up[0] = 0.0f;
-		up[1] = 1.0f;
-		up[2] = 0.0f;
-
-		for(int i=0; i<m_vObjLite.size(); i++)
-			m_vObjLite[i]->Load();
-
-		if (m_bLite)
-		{
-				m_Y.SetAllVisible(false);
-				m_Y.SetSubobjectVisible(2); // heatbed, sheet
-				m_Extruder.SetAllVisible(false);
-				m_Extruder.SetSubobjectVisible(19); // V6
-				//m_Extruder.SetSubobjectVisible(20);
-				m_Extruder.SetSubobjectVisible(1); // PINDA
-				m_Extruder.SetSubobjectVisible(2);
-		}
-		else
-			for(int i=0; i<m_vObj.size(); i++)
-				m_vObj[i]->Load();
-		if (m_bMMU)
-		{
-			for(int i=0; i<m_vObjMMU.size(); i++)
-				m_vObjMMU[i]->Load();
-			m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
-		}
+	if (m_bLite)
+	{
+			m_Y.SetAllVisible(false);
+			m_Y.SetSubobjectVisible(2); // heatbed, sheet
+			m_Extruder.SetAllVisible(false);
+			m_Extruder.SetSubobjectVisible(19); // V6
+			//m_Extruder.SetSubobjectVisible(20);
+			m_Extruder.SetSubobjectVisible(1); // PINDA
+			m_Extruder.SetSubobjectVisible(2);
+	}
+	else
+		for(int i=0; i<m_vObj.size(); i++)
+			m_vObj[i]->Load();
+	if (m_bMMU)
+	{
+		for(int i=0; i<m_vObjMMU.size(); i++)
+			m_vObjMMU[i]->Load();
+		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
+	}
 
 }
 
@@ -231,14 +218,30 @@ void MK3SGL::Draw()
 		glMatrixMode(GL_MODELVIEW);
 		glEnable(GL_NORMALIZE);
 		glLoadIdentity();
-		GLfloat mat[4][4];
+
 		if (!m_bFollowNozzle)
 		{
-			gluLookAt(eye[0], eye[1], eye[2], lookat[0], lookat[1], lookat[2], up[0],
-							up[1], up[2]);
-			build_rotmatrix(mat, curr_quat);
-			glMultMatrixf(&mat[0][0]);
+			float fSize = 0.1f;
+			float fBase[3];
+			glLineWidth(2.f);
+			// If a mouse button is pressed, draw the "look at" axis. 
+			glPushMatrix();
+				glEnable(GL_COLOR_MATERIAL);
+				glBegin(GL_LINES);
+					glColor3f(1,0,0);
+					glVertex3f(fBase[0]-fSize, fBase[1], fBase[2]); glVertex3f(fBase[0]+fSize,fBase[1], fBase[2]);
+					glColor3f(0,1,0);
+					glVertex3f(fBase[0], fBase[1]-fSize,  fBase[2]); glVertex3f(fBase[0], fBase[1]+fSize, fBase[2]);
+					glColor3f(0,0,1);
+					glVertex3f(fBase[0],fBase[1], fBase[2]-fSize); glVertex3f(fBase[0],fBase[1], fBase[2]+fSize);
+				glEnd();
+				glDisable(GL_COLOR_MATERIAL);
+			glPopMatrix();
+			glMultMatrixf(m_camera.getViewMatrix());
 		}
+
+
+
 		float fMM2M = 1.f/1000.f;
 		float fExtent = m_Base.GetScaleFactor();
 		if (m_bLite)
@@ -434,62 +437,36 @@ void MK3SGL::DrawMMU()
 
 void MK3SGL::MouseCB(int button, int action, int x, int y)
 {
- if (button == GLUT_LEFT_BUTTON) {
-		if (action == GLUT_DOWN) {
-			mouseLeftPressed = true;
-			trackball(prev_quat, 0.0, 0.0, 0.0, 0.0);
-		} else if (action == GLUT_UP) {
-			mouseLeftPressed = false;
-		}
+ 	if (button == GLUT_LEFT_BUTTON) {
+		if (action == GLUT_DOWN) 
+			m_camera.beginRotate();
+		else if (action == GLUT_UP) 
+			m_camera.endRotate();
 	}
 	if (button == GLUT_RIGHT_BUTTON) {
-		if (action == GLUT_DOWN) {
-			mouseRightPressed = true;
-		} else if (action == GLUT_UP) {
-			mouseRightPressed = false;
-		}
+		if (action == GLUT_DOWN) 
+			m_camera.beginPan();
+		else if (action == GLUT_UP) 
+			m_camera.endPan();
+		
 	}
 	if (button == GLUT_MIDDLE_BUTTON) {
-		if (action == GLUT_DOWN) {
-			mouseMiddlePressed = true;
-		} else if (action == GLUT_UP) {
-			mouseMiddlePressed = false;
-		}
+		if (action == GLUT_DOWN)
+			m_camera.beginZoom();
+		else if (action == GLUT_UP) 
+			m_camera.endZoom();
+		
 	}
-	if (button==3 || button==4) // wheel
-	{
-		if (button==3)
-			eye[2] += 0.05f;
-		else
-			eye[2] -= 0.05f;
-	}
+	if (button==3)
+		m_camera.zoom(0.5f);
+	if (button==4)
+		m_camera.zoom(-0.5f);
+
 	m_bDirty = true;
 }
 
 void MK3SGL::MotionCB(int x, int y)
 {
-			float rotScale = 1.0f;
-	float transScale = 2.0f;
-
-	if (mouseLeftPressed) {
-		trackball(prev_quat, rotScale * (2.0f * prevMouseX - width) / (float)width,
-							rotScale * (height - 2.0f * prevMouseY) / (float)height,
-							rotScale * (2.0f * x - width) / (float)width,
-							rotScale * (height - 2.0f * y) / (float)height);
-
-		add_quats(prev_quat, curr_quat, curr_quat);
-	} else if (mouseMiddlePressed) {
-		eye[0] -= transScale * (x - prevMouseX) / (float)width;
-		lookat[0] -= transScale * (x - prevMouseX) / (float)width;
-		eye[1] += transScale * (y - prevMouseY) / (float)height;
-		lookat[1] += transScale * (y - prevMouseY) / (float)height;
-	} else if (mouseRightPressed) {
-		eye[2] += transScale * (y - prevMouseY) / (float)height;
-		lookat[2] += transScale * (y - prevMouseY) / (float)height;
-	}
-
-	// Update mouse point
-	prevMouseX = x;
-	prevMouseY = y;
+ 	m_camera.setCurrentMousePos(x, y);
 	m_bDirty = true;
 }

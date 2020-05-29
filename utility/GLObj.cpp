@@ -10,8 +10,6 @@
 #include <vector>
 #include <cstring>
 
-#include <trackball.h>
-
 #include <GL/glew.h>
 #include <GL/glut.h>
 
@@ -67,7 +65,7 @@ void GLObj::SetSubobjectMaterial(uint iObj, int iMat)
 void GLObj::Draw() {
 	if (!m_bLoaded)
 		return;
-		
+
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_FILL);
 

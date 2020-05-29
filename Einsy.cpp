@@ -454,7 +454,10 @@ void keyCB(
 			break;
 		case 'n':
 			vis->ToggleNozzleCam();
-      break;
+      	break;
+		case '`':
+			vis->ResetCamera();
+			break;
 		/* case 'r':
 			printf("Starting VCD trace; press 's' to stop\n");
 			avr_vcd_start(&vcd_file);

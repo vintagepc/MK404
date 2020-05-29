@@ -5,6 +5,7 @@
 #include "BasePeripheral.h"
 #include "HD44780GL.h"
 #include <GLPrint.h>
+#include <Camera.hpp>
 
 class MK3SGL: public BasePeripheral
 {
@@ -27,6 +28,8 @@ class MK3SGL: public BasePeripheral
 
         // Clears the displayed print.
         void ClearPrint() { m_Print.Clear(); }
+
+        void ResetCamera();
 
         void SetMMU(bool bMMU) { m_bMMU = bMMU;}
 
@@ -60,6 +63,8 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
 
         GLPrint m_Print;
+
+        Camera m_camera;
 
         std::vector<GLObj*> m_vObjLite = { &m_Y, &m_SDCard, &m_Sheet, &m_Knob, &m_EVis, &m_EFan, &m_EPFan, &m_Extruder};
         std::vector<GLObj*> m_vObj = { &m_Z, &m_Base, &m_EStd};
@@ -104,11 +109,5 @@ class MK3SGL: public BasePeripheral
         int height = 800, width = 800, m_iWindow = 0;
 
 
-        double prevMouseX, prevMouseY;
-        bool mouseLeftPressed;
-        bool mouseMiddlePressed;
-        bool mouseRightPressed;
-        float curr_quat[4];
-        float prev_quat[4];
-        float eye[3], lookat[3], up[3], maxExtent;
+        float maxExtent;
 };

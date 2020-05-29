@@ -80,4 +80,4 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `z` pauses Einsy execution without stopping GL interactivity (so you can still pan/scroll/zoom the fancy graphics)
 - `l` clears the current print visual from the print bed.
 - `n` toggles "Nozzle cam" mode
-- '`' (backtick) resets the camera view
+- `` ` `` (backtick) resets the camera view

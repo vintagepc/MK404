@@ -14,8 +14,7 @@
 #include <GL/glut.h>
 MK3SGL::MK3SGL(bool bLite, bool bMMU):m_bLite(bLite),m_bMMU(bMMU)
 {
-	m_camera.setWindowSize(800,800);
-	m_camera.setEye(0,0.5,3);
+	ResetCamera();
 	for(int i=0; i<m_vObjLite.size(); i++)
 		m_vObjLite[i]->Load();
 
@@ -39,6 +38,14 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU):m_bLite(bLite),m_bMMU(bMMU)
 		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
 	}
 
+}
+
+void MK3SGL::ResetCamera()
+{
+	m_camera = Camera();
+	m_camera.setWindowSize(800,800);
+	m_camera.setEye(0,0.5,3);
+	m_camera.setCenter(0,0,0);
 }
 
 void MK3SGL::Init(avr_t *avr)

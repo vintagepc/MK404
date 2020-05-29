@@ -29,6 +29,8 @@ class MK3SGL: public BasePeripheral
         // Clears the displayed print.
         void ClearPrint() { m_Print.Clear(); }
 
+        void ResetCamera();
+
         void SetMMU(bool bMMU) { m_bMMU = bMMU;}
 
         void SetLite(bool bLite) { m_bLite = bLite;}

@@ -25,15 +25,15 @@
 #include <stdio.h>
 #include "Button.h"
 
-Button::Button(const char *strName)
+Button::Button(std::string strName):m_strName(strName)
 {
-	m_strName = strName;
 }
 
 void Button::Init(avr_t* avr)
 {
 	// if name was not provided, init uses the defaults
-	_Init(avr, this, &m_strName);
+	const char * pName = m_strName.c_str();
+	_Init(avr, this, &pName);
 }
 
 

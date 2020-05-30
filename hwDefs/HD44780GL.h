@@ -35,9 +35,10 @@
 class HD44780GL:public HD44780
 {
 	public:
-
+		// Registers with SimAVR (for brightness)
 		void Init(avr_t *avr);
 
+		// Draws the display with the given colours within the current GL context.
 		void Draw(uint32_t background,
 			uint32_t character,
 			uint32_t text,
@@ -45,6 +46,7 @@ class HD44780GL:public HD44780
 			bool bMaterial = false);
 
 	private:
+		// Char draw helper.
 		void GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial = false);
 
 		void OnBrightnessPWM(avr_irq_t *irq, uint32_t value);

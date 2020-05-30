@@ -1,5 +1,5 @@
 /*
-    Fan.cpp Simple fan tach sim for Einsy Rambo
+    Fan.cpp - Simple fan tach sim for Einsy Rambo
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 

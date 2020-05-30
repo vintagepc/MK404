@@ -36,6 +36,7 @@ class PINDA:public BasePeripheral{
     // Initializes the PINDA on AVR, and connects it to the X/Y/Z position IRQs
     void Init(avr_t *avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t *irqZ);
 
+    // Toggles steel sheet presence. If it is removed, the PINDA will exhibit XY calibration trigger behaviour.
     void ToggleSheet();
 
 // so we can use initializer syntax later

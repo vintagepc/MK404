@@ -76,10 +76,13 @@ class HD44780:public BasePeripheral
             _IRQ(BRIGHTNESS_PWM_IN,"8<hd44780.BRIGHTNESS_PWM_IN")
 		#include "IRQHelper.h"
 
+		// Makes a display with the given dimensions.
 		HD44780(uint8_t width = 20, uint8_t height = 4):m_uiHeight(height),m_uiWidth(width) {};
 
+		// Registers IRQs with SimAVR.
 		void Init(avr_t *avr);
 
+		// Returns height and width.
         uint8_t GetWidth() { return m_uiWidth;}
         uint8_t GetHeight() { return m_uiHeight;}
 
@@ -160,19 +163,5 @@ class HD44780:public BasePeripheral
         uint8_t  m_uiReadPins = 0;
         volatile uint16_t m_flags = 0;				// LCD flags ( HD44780_FLAG_*)
 };
-
-
-
-
-typedef struct hd44780_t
-{
-
-
-	uint8_t iPWMVal;
-	uint8_t iBrightness;
-} hd44780_t;
-
-
-
 
 #endif 

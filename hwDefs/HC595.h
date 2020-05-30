@@ -80,10 +80,11 @@ class HC595: public BasePeripheral
 			_IRQ(BIT31	,">bit31")
 		#include "IRQHelper.h"
 
+		// Registers with SimAVR
 		void Init(avr_t *avr);
 
 	private:
-
+		// IRQ handlers.
 		void OnLatchIn(avr_irq_t *irq, uint32_t value);
 		void OnClockIn(avr_irq_t *irq, uint32_t value);
 		void OnSPIIn(avr_irq_t *irq, uint32_t value);

@@ -1,5 +1,5 @@
 /*
-	Thermistor.h
+	Thermistor.h - thermistor simulator.
 
 	Original Copyright 2008-2012 Michel Pollet <buserror@gmail.com>
 
@@ -35,12 +35,16 @@ class Thermistor: public ADCPeripheral
 		#define IRQPAIRS _IRQ(ADC_TRIGGER_IN,"<adc.trigger") _IRQ(ADC_VALUE_OUT,">adc.out") _IRQ(TEMP_OUT,">temp.out") _IRQ(TEMP_IN, "<temp.in") _IRQ(DIGITAL_OUT,">temp.digital_out")
 		#include "IRQHelper.h"
 
+		// Creates a new thermistor with given starting/ambient temperature.
 		Thermistor(float fStartTemp = 25);
 
+		// Registers with SimAVR on the given mux,
 		void Init(avr_t *avr, uint8_t adc_mux_number);
 
+		// Sets the thermistor table. You can feed this a marlin table def.
 		void SetTable(short *pTable, unsigned int uiEntries, int oversampling);
 
+		// Set the temperature explicitly.
 		void Set(float fTemp);
 
 	private:

@@ -40,16 +40,22 @@ class MMU2: public BasePeripheral
                         _IRQ(SELECTOR_OUT,">sel_pos.out") _IRQ(IDLER_OUT,">idler_pos.out") _IRQ(LEDS_OUT,">leds.out")
         #include "IRQHelper.h"
 
+        // Creates a new MMU2
         MMU2();
 
+        // Initializes the AVR and loads the firmware.
         void Init();
 
+        // Actually starts the MMU processing thread.
         void Start();
 
+        // Creates the GL window and context for the visuals.
         void StartGL();
 
+        // Shuts down the MMU thread.
         void Stop();
 
+        // Returns the name of the serial port (for the pipe thread)
         std::string GetSerialPort();
 
     private:

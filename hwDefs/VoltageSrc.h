@@ -1,5 +1,5 @@
 /*
-	VoltageSrc.h
+	VoltageSrc.h - a voltage src ADC peripheral.
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 

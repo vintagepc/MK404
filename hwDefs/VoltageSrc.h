@@ -55,7 +55,6 @@ protected:
     // Input trigger
     void OnInput(avr_irq_t *pIRQ, uint32_t value);
 
-    uint8_t m_uiMuxNr = -1;
     float m_fVScale = 1.0f;
     float m_fCurrentV = 0.0f;
 };

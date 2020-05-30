@@ -29,6 +29,30 @@
 class ADCPeripheral: public BasePeripheral
 {
     protected:
+        // Returns the current mux number for this peripheral
+        uint8_t GetMuxNumber() { return m_uiMux; }
+
+        // Override this with your own ADC implementation. You don't need to worry abouy
+        // verifying you are the current ADC channel.
+        virtual uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) = 0;
+
+        // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
+        template<class C>
+        void _Init(avr_t *avr, uint8_t uiADC, C *p, const char** IRQNAMES = nullptr) {
+            BasePeripheral::_Init(avr,p);
+
+            m_uiMux = uiADC;
+
+	        RegisterNotify(C::ADC_TRIGGER_IN, MAKE_C_CALLBACK(ADCPeripheral,_OnADCRead<C>), this);
+
+            avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_OUT_TRIGGER);
+            avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, uiADC);
+            if (src && dst) {
+                ConnectFrom(src, C::ADC_TRIGGER_IN);
+                ConnectTo(C::ADC_VALUE_OUT, dst);
+            }
+         };
+    private:
         template<class C>
         void _OnADCRead(struct avr_irq_t * irq, uint32_t value)
         {
@@ -59,27 +83,6 @@ class ADCPeripheral: public BasePeripheral
                 RaiseIRQFloat(C::DIGITAL_OUT,(m_pIrq + C::DIGITAL_OUT)->flags | IRQ_FLAG_FLOATING);
         };
 
-
-        // Override this with your own ADC implementation.
-        virtual uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) = 0;
-
-        // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
-        template<class C>
-        void _Init(avr_t *avr, uint8_t uiADC, C *p, const char** IRQNAMES = nullptr) {
-            BasePeripheral::_Init(avr,p);
-
-            m_uiMux = uiADC;
-
-	        RegisterNotify(C::ADC_TRIGGER_IN, MAKE_C_CALLBACK(ADCPeripheral,_OnADCRead<C>), this);
-
-            avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_OUT_TRIGGER);
-            avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, uiADC);
-            if (src && dst) {
-                ConnectFrom(src, C::ADC_TRIGGER_IN);
-                ConnectTo(C::ADC_VALUE_OUT, dst);
-            }
-         };
-         
         uint8_t m_uiMux = 0;
 
         uint32_t m_uiLast = 0;

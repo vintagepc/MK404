@@ -1,5 +1,5 @@
 /*
-	BasePeripheral.h
+	BasePeripheral.h - a base class for any peripheral used with Mk3Sim
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
@@ -45,7 +45,7 @@ class BasePeripheral
         // Returns actual IRQ for a given enum value.
         inline avr_irq_t * GetIRQ(unsigned int eDest) {return m_pIrq + eDest;}
 
-          // Connects internal IRQ to an external one.
+        // Connects internal IRQ to an external one.
         inline void ConnectTo(unsigned int eSrc, avr_irq_t *irqDest) {avr_connect_irq(m_pIrq + eSrc, irqDest);}
 
         // Connects external IRQ to internal one.
@@ -65,8 +65,9 @@ class BasePeripheral
 
         // Raises your own IRQ
         void inline RaiseIRQ(unsigned int eDest, uint32_t value) { avr_raise_irq(m_pIrq + eDest, value);}
-        void inline RaiseIRQFloat(unsigned int eDest, uint32_t value) { avr_raise_irq_float(m_pIrq + eDest, value,1);}
+        void inline RaiseIRQFloat(unsigned int eDest, uint32_t value) { avr_raise_irq_float(m_pIrq + eDest, value,m_pIrq->flags | IRQ_FLAG_FLOATING);}
 
+        // Registers an IRQ notification function. Use MAKE_C_CALLBACK to make a lambda function.
         template <class C>
         void inline RegisterNotify(unsigned int eSrc, avr_irq_notify_t func, C* pObj) { avr_irq_register_notify(m_pIrq + eSrc, func, pObj); };
 
@@ -121,7 +122,6 @@ class BasePeripheral
              avr_irq_register_notify(m_pIrq + eDest,fCB, &sO);
              }; */
              
-    protected: 
         struct avr_t *m_pAVR = nullptr;
         avr_irq_t * m_pIrq = nullptr;
 

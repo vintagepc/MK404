@@ -52,7 +52,7 @@ uint32_t Thermistor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 		}
 	}
 	printf("%s(%d) temperature out of range (%.2f), we're screwed\n",
-			__func__, m_uiMux, m_fCurrentTemp);
+			__func__, GetMuxNumber(), m_fCurrentTemp);
 	return UINT32_MAX;
 }
 
@@ -69,7 +69,7 @@ void Thermistor::Init(struct avr_t * avr, uint8_t uiMux)
 	
 	_Init(avr, uiMux,this);
 	RegisterNotify(TEMP_IN,MAKE_C_CALLBACK(Thermistor,OnTempIn),this);
-	printf("%s on ADC %d start %.2f\n", __func__, m_uiMux, m_fCurrentTemp);
+	printf("%s on ADC %d start %.2f\n", __func__, GetMuxNumber(), m_fCurrentTemp);
 }
 
 void Thermistor::SetTable(short *pTable, unsigned int uiEntries, int iOversamp)

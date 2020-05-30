@@ -2,7 +2,8 @@
 	SPIPeripheral.h - Generalization helper for SPI-based peripherals.
     This header auto-wires the SPI and deals with some of the copypasta
     relating to checking CSEL and so on. You just need to have
-    OnSPIIn and OnCSELIn overriden, as well as the SPI_BYTE_[*]/SPI_CSEL IRQs defined.
+    OnSPIIn and (optionally) OnCSELIn overriden, as well as the 
+    SPI_BYTE_[*]/SPI_CSEL IRQs defined.
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
@@ -32,29 +33,18 @@
 class SPIPeripheral: public BasePeripheral
 {
     protected:
+
+        // SPI input helper. Overload this in your SPI class.
+        // If you want to send a reply, return the value and call SetSendReplyFlag()
         virtual uint8_t OnSPIIn(struct avr_irq_t * irq, uint32_t value) = 0; 
+
+        // SPI CSEL helper. You can overload this if you want, but you don't need to for
+        // basic 8-bit SPI objects as it already guards OnSPIIn.
         virtual void OnCSELIn(struct avr_irq_t * irq, uint32_t value) = 0;
 
-        void _OnCSELIn(struct avr_irq_t * irq, uint32_t value)
-        {
-            m_bCSel = value;
-            OnCSELIn(irq,value);
-        };
-
+        // Sets the flag that you have and want to send a reply. 
         void SetSendReplyFlag(){m_bSendReply = true;}
-
-        template<class C>
-        void _OnSPIIn(struct avr_irq_t * irq, uint32_t value)
-        {
-            if (!m_bCSel)
-            {
-                m_bSendReply = false;
-                uint8_t uiByteOut = OnSPIIn(irq, value);
-                if (m_bSendReply)
-                    RaiseIRQ(C::SPI_BYTE_OUT,uiByteOut);
-            }
-        }
-
+        
         // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
         template<class C>
         void _Init(avr_t *avr, C *p, const char** IRQNAMES = nullptr) {
@@ -67,8 +57,29 @@ class SPIPeripheral: public BasePeripheral
                      
             RegisterNotify(C::SPI_CSEL, MAKE_C_CALLBACK(SPIPeripheral,_OnCSELIn), this);
         }
+
+    private:
         bool m_bCSel = true; // Chipselect, active low.
         bool m_bSendReply = false;
+
+        void _OnCSELIn(struct avr_irq_t * irq, uint32_t value)
+        {
+            m_bCSel = value;
+            OnCSELIn(irq,value);
+        };
+
+
+        template<class C>
+        void _OnSPIIn(struct avr_irq_t * irq, uint32_t value)
+        {
+            if (!m_bCSel)
+            {
+                m_bSendReply = false;
+                uint8_t uiByteOut = OnSPIIn(irq, value);
+                if (m_bSendReply)
+                    RaiseIRQ(C::SPI_BYTE_OUT,uiByteOut);
+            }
+        }
 };
 
 #endif

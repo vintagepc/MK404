@@ -1,8 +1,25 @@
 /*
-		Pin translation layer for pins_Einsy.h (arduino pin numbers, ##) to the ATMEL port designator (Px#). 
-		You will need to add a new layer for other boards if yours does not match this.
-		This has been unceremoniously lifed from the pins_arduino.h file in the Prusa board definition for the Einsy.
-*/
+	PinHelper_2560.h - Pin translation layer for pins_Einsy.h (arduino pin numbers, ##) to the ATMEL port designator (Px#). 
+	You will need to add a new layer for other boards if yours does not match this, but it should work for all
+	Atmel 2560-derivative boards.
+	
+	This has been unceremoniously lifed from the pins_arduino.h file in the Prusa board definition for the Einsy.
+
+ 	This file is part of MK3SIM.
+
+	MK3SIM is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	MK3SIM is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef __PINHELPER_H__
 #define __PINHELPER_H__

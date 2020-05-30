@@ -33,8 +33,10 @@ class UART_Logger : public BasePeripheral
 		#define IRQPAIRS _IRQ(BYTE_IN,"8<logger.in")
 		#include "IRQHelper.h"
 
+		// Shuts down the logger/closes file.
 		~UART_Logger();
 
+		// Registers with SimAVR.
 		void Init(avr_t *avr, char chrUART);
 
 	private:

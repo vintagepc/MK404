@@ -1,3 +1,23 @@
+/*
+	MK3SGL.h - Printer visualization for a MK3S, with MMU and print.
+
+	Copyright 2020 VintagePC <https://github.com/vintagepc/>
+
+ 	This file is part of MK3SIM.
+
+	MK3SIM is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	MK3SIM is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "GLObj.h"
 #include <tiny_obj_loader.h>
@@ -16,11 +36,17 @@ class MK3SGL: public BasePeripheral
                             _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in")
         #include "IRQHelper.h"
 
+
+        // Creates new MK3SGL object, with lite graphics (or full) and an MMU (or not)
         MK3SGL(bool bLite, bool bMMU);
+
+        // IRQ registration helper.
         void Init(avr_t *avr);
+
+        // Draws the visuals within the current GL transformation context.
         void Draw();
 
-        // Twists the displayed knob in response to a keypress
+        // Twists the displayed knob in response to input from mouse/keyboard.
         void TwistKnob(bool bDir);
 
         // Attaches the GL LCD for rendering. 
@@ -29,16 +55,23 @@ class MK3SGL: public BasePeripheral
         // Clears the displayed print.
         void ClearPrint() { m_Print.Clear(); }
 
+        // Resets the camera view to the starting position.
         void ResetCamera();
 
+        // Changes whether an MMU is present.
         void SetMMU(bool bMMU) { m_bMMU = bMMU;}
 
+        // Changes whether lite mode is on or off.
         void SetLite(bool bLite) { m_bLite = bLite;}
 
+        // Toggles nozzle cam mode.
         void ToggleNozzleCam() {m_bFollowNozzle^=true;}
 
+        // Sets nozzle cam mode enabled to an explicit value.
         void SetFollowNozzle(bool bFollow) { m_bFollowNozzle = bFollow;}
 
+
+        // GL helpers needed for the window and mouse callbacks, use when creating the GL window.
         void MouseCB(int button, int state, int x, int y);
         void MotionCB(int x, int y);
         void SetWindow(int iWin) { m_iWindow = iWin;};
@@ -76,8 +109,13 @@ class MK3SGL: public BasePeripheral
 
         bool m_bFollowNozzle = false; // Camera follows nozzle.
 
+        // MMU draw subfunction.
         void DrawMMU();
+
+        // Draws a simple LED at a position.
         void DrawLED(float r, float g, float b);
+
+        // IRQ receivers.
         void OnXChanged(avr_irq_t *irq, uint32_t value);
         void OnYChanged(avr_irq_t *irq, uint32_t value);
         void OnZChanged(avr_irq_t *irq, uint32_t value);
@@ -92,12 +130,15 @@ class MK3SGL: public BasePeripheral
         void OnBedChanged(avr_irq_t *irq, uint32_t value);
         void OnPINDAChanged(avr_irq_t *irq, uint32_t value);
 
+
+        // Correction parameters to get the model at 0,0,0 and aligned with the simulated starting positions.
         float m_fXCorr = 0.044, m_fXPos = 0.010;
         float m_fYCorr = 0.141, m_fYPos = 0.010;
         float m_fZCorr = 0.210, m_fZPos = 0.010;
         float m_fEPos = 0;
         float m_fERetract= 0; bool m_bInRetract = false;
         float m_fSelCorr = 0.025f, m_fSelPos = 0.0f;
+        
         // This is going to be in degrees rotation instead of mm
         float m_fIdlCorr = 20.00f, m_fIdlPos = 0.0f;
         

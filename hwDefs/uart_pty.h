@@ -43,13 +43,16 @@ class uart_pty: public BasePeripheral
 		// Destructor. Kills the thread, if it was started.
 		~uart_pty();
 
+		// Registers with SimAVR
 		void Init(avr_t *avr);
 
+		// Actually connects to the UART.
 		void Connect(char chrUART);
 
 		// Resets the newline trap after a printer reset.
 		void Reset() { m_chrLast = '\n';}
 		
+		// Gets the slave name (file). Used by the pipe thread.
 		const std::string GetSlaveName() { return std::string(pty.slavename); };
 
 	private:

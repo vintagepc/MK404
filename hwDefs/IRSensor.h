@@ -1,5 +1,5 @@
 /*
-	IRSensor.h
+	IRSensor.h - a simulated 3/S IR sensor, v0.4
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 

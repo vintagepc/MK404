@@ -1,7 +1,7 @@
 /*
 	w25x20cl.cpp - An SPI flash emulator for the Einsy external language flash
 
-	TODO: -- @LEPTUN - ADD YOUR BYLINE HERE --
+	Copyright 2020 leptun <https://github.com/leptun/>
 
 	Rewritten for C++ in 2020 by VintagePC <https://github.com/vintagepc/>
 

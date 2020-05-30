@@ -55,27 +55,34 @@ class TMC2130: public SPIPeripheral
         // Default constructor.
         TMC2130();
 
+        // Sets the configuration to the provided values. (inversion, positions, etc)
         void SetConfig(TMC2130_cfg_t cfg);
 
+        // Registers with SimAVR.
         void Init(avr_t *avr);
 
         // Draws a simple visual representation of the motor position.
         void Draw();
+
         // Draws the position value as a number, without position ticks.
         void Draw_Simple();
 
     private:
 
+        // SPI handlers.
         uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;
         void OnCSELIn(avr_irq_t *irq, uint32_t value) override;
 
+        // Input handlers.
         void OnDirIn(avr_irq_t *irq, uint32_t value);
         void OnStepIn(avr_irq_t *irq, uint32_t value);
         void OnEnableIn(avr_irq_t *irq, uint32_t value);
 
+        // Standstill register handler.
         avr_cycle_count_t OnStandStillTimeout(avr_t *avr, avr_cycle_count_t when);
         avr_cycle_timer_t m_fcnStandstill = MAKE_C_TIMER_CALLBACK(TMC2130,OnStandStillTimeout);
 
+        // Command processing
         void ProcessCommand();
         void CreateReply();
 
@@ -85,7 +92,7 @@ class TMC2130: public SPIPeripheral
         bool m_bEnable = true; 
         
         TMC2130_cfg_t cfg;
-
+        // Register definitions.
         typedef union tmc2130_cmd_t{
             tmc2130_cmd_t():all(0x0){}
             uint64_t all :40;

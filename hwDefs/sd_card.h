@@ -1,21 +1,25 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 8; tab-width: 8 -*- */
 /*
- * Brewing Logger.
- * Copyright (C) Philip Withnall 2012 <philip@tecnocode.co.uk>
- *
- * Brewing Logger is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Brewing Logger is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Brewing Logger.  If not, see <http://www.gnu.org/licenses/>.
- */
+	sd_card.h - an SD card SPI simulator.
+
+	Original  Copyright (C) Philip Withnall 2012 <philip@tecnocode.co.uk> as part of Brewing Logger
+
+	Modified for use with MK3SIM in 2020 by leptun <https://github.com/leptun/>
+
+ 	This file is part of MK3SIM.
+
+	MK3SIM is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	MK3SIM is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef _SD_CARD_H
 #define _SD_CARD_H

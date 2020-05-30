@@ -25,6 +25,7 @@
 #define __BUTTON_H__
 
 #include "BasePeripheral.h"
+#include <string>
 
 class Button:public BasePeripheral
 {
@@ -33,12 +34,12 @@ class Button:public BasePeripheral
 	#include "IRQHelper.h"
 
 	// Creates a new button with name strName
-	Button(const char *strName = nullptr);
+	Button(std::string strName = "Button");
 
 	// Initializes the button on "avr"
 	void Init(struct avr_t * avr);
 
-	// Presses the button for a given duration (default 1000)
+	// Presses the button for a given duration (us, default 1000)
 	void Press(uint32_t uiUSec = 1000);
 
 	private:
@@ -47,7 +48,7 @@ class Button:public BasePeripheral
 		avr_cycle_timer_t m_fcnRelease = MAKE_C_TIMER_CALLBACK(Button,AutoRelease);
 
 		bool m_bValue = false;
-		const char *m_strName = nullptr;
+		std::string m_strName;
 
 };
 #endif /* __BUTTON_H__*/

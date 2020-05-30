@@ -26,9 +26,17 @@
 class GLPrint
 {
 	public:
+
+	// Creates a new GLPrint.
 	GLPrint();
+
+	// Clears the current print from the bed. You probably shouldn't call this when mid print.
 	void Clear();
+
+	// Draws the print within the current GL matrix context.
 	void Draw();
+
+	// Function to receive new coordinate updates from your simulated printer's stepper drivers. 
 	void NewCoord(float fX, float fY, float fZ, float fE);
 
 	private:

@@ -414,7 +414,7 @@ avr_run_thread(
 
 void MouseCB(int button, int action, int x, int y)
 {
-	if (button == GLUT_LEFT_BUTTON) {
+	if (button == GLUT_LEFT_BUTTON || button == GLUT_RIGHT_BUTTON) {
 		if (action == GLUT_DOWN) {
 			guMouse = 1;
 		} else if (action == GLUT_UP) {

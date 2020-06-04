@@ -47,6 +47,10 @@ set(INCLUDE_FILES
     include/PinHelper_2560.h
     include/Util.h
     include/thermistortables.h
+    utility/Color.h
+    utility/MK3SGL.h
+    utility/GLObj.h
+    utility/GLPrint.h
 )
 
 
@@ -72,6 +76,7 @@ set(EINSY_SOURCES
     hwDefs/w25x20cl.cpp
     MMU2.cpp
     include/SerialPipe.cpp
+    utility/Color.cpp
     utility/MK3SGL.cpp  
     utility/GLObj.cpp  
     utility/GLPrint.cpp

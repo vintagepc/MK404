@@ -253,7 +253,11 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		glScalef(fX/350,4,1);
 		glTranslatef(0,fY +30,0);
 		hw.E.Draw_Simple();
-		glTranslatef(290,0,0);
+		glTranslatef(250,0,0);
+		hw.hExtruder->Draw();
+		glTranslatef(20,0,0);
+		hw.hBed->Draw();
+		glTranslatef(20,0,0);
 		hw.lSD.Draw();
 		glTranslatef(20,0,0);
 		hw.lPINDA.Draw();
@@ -665,11 +669,11 @@ void setupHeaters()
 		hw.fPrint = new Fan(5000);
 		hw.fPrint->Init(avr, DIRQLU(avr, TACH_1), 	DIRQLU(avr, FAN_PIN),	DPWMLU(avr, FAN_PIN));
 
-		hw.hBed = new Heater(0.25, 25, true);
+		hw.hBed = new Heater(0.25, 25, true,'B',30,100);
 		hw.hBed->Init(avr, NULL, DIRQLU(avr,HEATER_BED_PIN));
 		hw.hBed->ConnectTo(Heater::TEMP_OUT, hw.tBed.GetIRQ(Thermistor::TEMP_IN));
 
-		hw.hExtruder = new Heater(1.5,25.0);
+		hw.hExtruder = new Heater(1.5,25.0,false,'H',30,250);
 		hw.hExtruder->Init(avr, NULL, DIRQLU(avr, HEATER_0_PIN));
 		hw.hExtruder->ConnectTo(Heater::TEMP_OUT, hw.tExtruder.GetIRQ(Thermistor::TEMP_IN));
 }

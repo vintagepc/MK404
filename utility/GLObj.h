@@ -50,7 +50,7 @@ class GLObj
         float GetScaleFactor() { return m_fMaxExtent; };
 
         // Gets the transform float you need to center the obj at 0,0,0.
-        float GetCenteringTransform(float fTrans[3]) { for (int i=0; i<3; i++) fTrans[i] = -0.5f * (m_extMin[i] + m_extMax[i]);}
+        void GetCenteringTransform(float fTrans[3]) { for (int i=0; i<3; i++) fTrans[i] = -0.5f * (m_extMin[i] + m_extMax[i]);}
 
 
     private:

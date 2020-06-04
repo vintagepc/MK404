@@ -22,6 +22,7 @@
 #include "GLPrint.h"
 #include "GL/glew.h"
 #include <algorithm>
+#include <functional>
 
 static constexpr int iPrintRes = 100000; //0.1mm (meters/this)
 

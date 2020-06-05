@@ -26,6 +26,7 @@
 #define __HEATER_H__
 
 #include "BasePeripheral.h"
+#include "Color.h"
 
 class Heater : public BasePeripheral
 {
@@ -36,7 +37,8 @@ public:
 
     // "Thermal mass" of the heater... deg C it heats/cools per sec at full-on (PWM=255);
     // Create a new heater with ambient fAmbientTemp, and thermal mass fThermalMass
-    Heater(float fThermalMass, float fAmbientTemp, bool bIsBed = false);
+    Heater(float fThermalMass, float fAmbientTemp, bool bIsBed, char chrLabel,
+		   float fColdTemp, float fHotTemp);
 
     // Initializes the heater on "avr" and on irqPQM/irqDigital,
     void Init(avr_t *avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital);
@@ -46,6 +48,9 @@ public:
 
     // Returns to automatic control after having used Set()
     void Resume_Auto();
+
+	// Draws the heater status
+	void Draw();
 
     private:
         // Hook for PWM change
@@ -62,9 +67,15 @@ public:
         bool m_bAuto = true;
         float m_fCurrentTemp = 25.0;
         float m_fAmbientTemp = 25.0;
+        float m_fColdTemp;
+        float m_fHotTemp;
         float m_fThermalMass = 1.0;
         uint16_t m_uiPWM = 0;
         bool m_bIsBed = false;
+        char m_chrLabel;
+
+	    static constexpr Color3fv m_colColdTemp = {0, 1, 1};
+	    static constexpr Color3fv m_colHotTemp = {1, 0, 0};
 };
 
 #endif /* __HEATER_H__*/

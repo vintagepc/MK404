@@ -21,6 +21,8 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "GL/glut.h"
+
 #include "Heater.h"
 #include "stdio.h"
 #include "math.h"
@@ -88,11 +90,15 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
     OnPWMChanged(irq,value);
 }
 
-Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed):
+Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
+			   char chrLabel, float fColdTemp, float fHotTemp):
                                             m_fThermalMass(fThermalMass),
-                                            m_fAmbientTemp(fAmbientTemp), 
+                                            m_fAmbientTemp(fAmbientTemp),
                                             m_fCurrentTemp(fAmbientTemp),
-                                            m_bIsBed(bIsBed)            
+                                            m_bIsBed(bIsBed),
+                                            m_chrLabel(chrLabel),
+                                            m_fColdTemp(fColdTemp),
+                                            m_fHotTemp(fHotTemp)
 {
 
 }
@@ -117,4 +123,34 @@ void Heater::Set(uint8_t uiPWM)
 void Heater::Resume_Auto()
 {
     m_bAuto = true;
+}
+
+
+constexpr Color3fv Heater::m_colColdTemp;
+constexpr Color3fv Heater::m_colHotTemp;
+
+void Heater::Draw()
+{
+	bool bOn = m_uiPWM>0;
+
+	Color3fv colFill;
+	float v = (m_fCurrentTemp - m_fColdTemp) / (m_fHotTemp - m_fColdTemp);
+	colorLerp(m_colColdTemp, m_colHotTemp, v, colFill);
+
+    glPushMatrix();
+	    glColor3fv(colFill);
+        glBegin(GL_QUADS);
+            glVertex2f(0,10);
+            glVertex2f(20,10);
+            glVertex2f(20,0);
+            glVertex2f(0,0);
+        glEnd();
+        glColor3f(bOn,bOn,bOn);
+        glTranslatef(8,7,-1);
+        glScalef(0.05,-0.05,1);
+		glPushAttrib(GL_LINE_BIT);
+			glLineWidth(3);
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrLabel);
+		glPopAttrib();
+    glPopMatrix();
 }

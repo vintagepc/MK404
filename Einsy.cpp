@@ -136,7 +136,7 @@ struct hw_t {
 	IRSensor IR;
 	PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
 	UART_Logger logger;
-	MMU2 mmu;
+	MMU2 *mmu = nullptr;
 	LED lPINDA, lIR, lSD;
 	Einsy_EEPROM *EEPROM;
 	SerialPipe *spPipe;
@@ -195,7 +195,8 @@ void avr_special_deinit( avr_t* avr, void * data)
 	
 	sd_card_unmount_file(avr, &hw.sd_card);
 
-	hw.mmu.Stop();
+	if (hw.mmu)
+		hw.mmu->Stop();
 
 }
 
@@ -207,51 +208,32 @@ void displayCB2(void)
 
 void displayCB(void)		/* function called whenever redisplay needed */
 {
-	//if (hd44780_get_flag(&hw.lcd, HD44780_FLAG_DIRTY)==0 && 
-	//	hd44780_get_flag(&hw.lcd, HD44780_FLAG_CRAM_DIRTY == 0))
-	//	return;
 	glutSetWindow(window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW); // Select modelview matrix
 	glPushMatrix();
 	glLoadIdentity(); // Start with an identity matrix
-	glScalef(4, 4, 1);
+		glScalef(4, 4, 1);
 
-	hw.lcd.Draw(colors[(4*iScheme) + 0], /* background */
-			colors[(4*iScheme) + 1], /* character background */
-			colors[(4*iScheme) + 2], /* text */
-			colors[(4*iScheme) + 3] /* shadow */ );
+		hw.lcd.Draw(colors[(4*iScheme) + 0], /* background */
+				colors[(4*iScheme) + 1], /* character background */
+				colors[(4*iScheme) + 2], /* text */
+				colors[(4*iScheme) + 3] /* shadow */ );
 	glPopMatrix();
 
 	// Do something for the motors...
 	float fX = (5 + hw.lcd.GetWidth()* 6)*4;
 	float fY = (5 + hw.lcd.GetHeight() * 9);
+	glLoadIdentity();
+	glScalef(fX/350,4,1);
 	glPushMatrix();
-		glColor3f(0,0,0);
-		glLoadIdentity();		
-		glScalef(fX/350,4,1);
-		glTranslatef(0,fY,0);
+		glTranslatef(0, fY,0);
 		hw.X.Draw();
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glLoadIdentity();
-		glScalef(fX/350,4,1);
-		glTranslatef(0, fY +10,0);
+		glTranslatef(0, 10,0);
 		hw.Y.Draw();
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glLoadIdentity();
-		glScalef(fX/350,4,1);
-		glTranslatef(0,fY +20,0);
+		glTranslatef(0, 10,0);
 		hw.Z.Draw();
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glLoadIdentity();
-		glScalef(fX/350,4,1);
-		glTranslatef(0,fY +30,0);
+		glTranslatef(0, 10,0);
 		hw.E.Draw_Simple();
 		glTranslatef(250,0,0);
 		hw.hExtruder->Draw();
@@ -264,6 +246,14 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		glTranslatef(20,0,0);
 		hw.lIR.Draw();
 	glPopMatrix();
+	
+	if (hw.mmu)
+	{
+		glPushMatrix();
+		// The MMU draws from the bottom of the window up, just make the window bigger if it's too small.
+			hw.mmu->Draw();
+		glPopMatrix();
+	}
 	glutSwapBuffers();
 }
 
@@ -560,9 +550,9 @@ void InitFancyVis(bool bMMU, bool bLite)
 	//vis->SetMMU(bMMU);
 	if (bMMU)
 	{
-		vis->ConnectFrom(hw.mmu.GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);
-		vis->ConnectFrom(hw.mmu.GetIRQ(MMU2::IDLER_OUT), MK3SGL::IDL_IN);
-		vis->ConnectFrom(hw.mmu.GetIRQ(MMU2::LEDS_OUT),MK3SGL::MMU_LEDS_IN);
+		vis->ConnectFrom(hw.mmu->GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);
+		vis->ConnectFrom(hw.mmu->GetIRQ(MMU2::IDLER_OUT), MK3SGL::IDL_IN);
+		vis->ConnectFrom(hw.mmu->GetIRQ(MMU2::LEDS_OUT),MK3SGL::MMU_LEDS_IN);
 	}
 }
 
@@ -698,7 +688,6 @@ void setupDrivers()
 	TMC2130::TMC2130_cfg_t cfg;
 	cfg.iMaxMM = 255;
 	cfg.cAxis = 'X';
-	cfg.uiDiagPin = X_TMC2130_DIAG;
 
 	hw.X.SetConfig(cfg);
 	hw.X.Init(avr);
@@ -706,11 +695,11 @@ void setupDrivers()
 	hw.X.ConnectFrom(DIRQLU(avr,X_DIR_PIN),		TMC2130::DIR_IN);
 	hw.X.ConnectFrom(DIRQLU(avr,X_STEP_PIN),		TMC2130::STEP_IN);
 	hw.X.ConnectFrom(DIRQLU(avr,X_ENABLE_PIN),		TMC2130::ENABLE_IN);
+	hw.X.ConnectTo(TMC2130::DIAG_OUT,DIRQLU(avr,X_TMC2130_DIAG));
 
 	cfg.uiStepsPerMM = 400;
 	cfg.iMaxMM = 219;
 	cfg.cAxis = 'Z';
-	cfg.uiDiagPin = Z_TMC2130_DIAG;
 
 	hw.Z.SetConfig(cfg);
 	hw.Z.Init(avr);
@@ -718,12 +707,12 @@ void setupDrivers()
 	hw.Z.ConnectFrom(DIRQLU(avr,Z_DIR_PIN),		TMC2130::DIR_IN);
 	hw.Z.ConnectFrom(DIRQLU(avr,Z_STEP_PIN),		TMC2130::STEP_IN);
 	hw.Z.ConnectFrom(DIRQLU(avr,Z_ENABLE_PIN),		TMC2130::ENABLE_IN);
+	hw.Z.ConnectTo(TMC2130::DIAG_OUT,DIRQLU(avr,Z_TMC2130_DIAG));
 
 	cfg.bInverted = true;
 	cfg.uiStepsPerMM = 100;
 	cfg.cAxis = 'Y';
 	cfg.iMaxMM = 220;
-	cfg.uiDiagPin = Y_TMC2130_DIAG;
 
 	hw.Y.SetConfig(cfg);
 	hw.Y.Init(avr);
@@ -731,11 +720,11 @@ void setupDrivers()
 	hw.Y.ConnectFrom(DIRQLU(avr,Y_DIR_PIN),		TMC2130::DIR_IN);
 	hw.Y.ConnectFrom(DIRQLU(avr,Y_STEP_PIN),		TMC2130::STEP_IN);
 	hw.Y.ConnectFrom(DIRQLU(avr,Y_ENABLE_PIN),		TMC2130::ENABLE_IN);
+	hw.Y.ConnectTo(TMC2130::DIAG_OUT,DIRQLU(avr,Y_TMC2130_DIAG));
 
 	cfg.bHasNoEndStops = true;
 	cfg.fStartPos = 0;
 	cfg.uiStepsPerMM = 280;
-	cfg.uiDiagPin = E0_TMC2130_DIAG;
 	cfg.cAxis = 'E';
 
 	hw.E.SetConfig(cfg);
@@ -744,7 +733,7 @@ void setupDrivers()
 	hw.E.ConnectFrom(DIRQLU(avr,E0_DIR_PIN),		TMC2130::DIR_IN);
 	hw.E.ConnectFrom(DIRQLU(avr,E0_STEP_PIN),		TMC2130::STEP_IN);
 	hw.E.ConnectFrom(DIRQLU(avr,E0_ENABLE_PIN),	TMC2130::ENABLE_IN);
-
+	hw.E.ConnectTo(TMC2130::DIAG_OUT,DIRQLU(avr,E0_TMC2130_DIAG));
 	// TODO once the drivers are setup.
 	hw.pinda.Init(avr, hw.X.GetIRQ(TMC2130::POSITION_OUT),  hw.Y.GetIRQ(TMC2130::POSITION_OUT),  hw.Z.GetIRQ(TMC2130::POSITION_OUT));
 	hw.pinda.ConnectTo(PINDA::TRIGGER_OUT ,DIRQLU(avr, Z_MIN_PIN));
@@ -912,7 +901,7 @@ int main(int argc, char *argv[])
 
 	int w = 5 + hw.lcd.GetWidth() * 6;
 	int h = 5 + hw.lcd.GetHeight() * 9;
-	h+=40;
+	h+= (bMMU?90:40);
 	int pixsize = 4;
 
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
@@ -921,17 +910,15 @@ int main(int argc, char *argv[])
 
 	initGL(w * pixsize, h * pixsize);
 
-	
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes. 
 	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
 	// rather than having to roll our own internal FIFO. As an added bonus you can tap the ports for debugging.
 	if (bMMU)
 	{
-		hw.mmu.Init();
-		hw.mmu.StartGL();
-		hw.mmu.ConnectFrom(IOIRQ(avr,'J',5),MMU2::RESET);
+		hw.mmu = new MMU2();
+		hw.mmu->ConnectFrom(IOIRQ(avr,'J',5),MMU2::RESET);
 		hw.IR.Set(IRSensor::IR_AUTO);
-		avr_irq_register_notify(hw.mmu.GetIRQ(MMU2::FEED_DISTANCE), mmu_irsensor_hook, avr);
+		avr_irq_register_notify(hw.mmu->GetIRQ(MMU2::FEED_DISTANCE), mmu_irsensor_hook, avr);
 	}
 
 	// MMU must be set up first
@@ -962,7 +949,7 @@ int main(int argc, char *argv[])
     pthread_t run[2];
 
 	if (bMMU) // SPin up the serial pipe
-        hw.spPipe = new SerialPipe(hw.UART2.GetSlaveName(), hw.mmu.GetSerialPort());
+        hw.spPipe = new SerialPipe(hw.UART2.GetSlaveName(), hw.mmu->GetSerialPort());
 
 	pthread_create(&run[0], NULL, avr_run_thread, NULL);
     pthread_create(&run[1], NULL, glutThread, NULL);
@@ -977,7 +964,10 @@ int main(int argc, char *argv[])
 	hw.spiFlash.~w25x20cl(); 
     printf("AVR finished.\n");
 	if (bMMU)
+	{
 		delete hw.spPipe;		
+		delete hw.mmu;
+	}
 
 	printf("Done\n");
 

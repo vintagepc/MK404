@@ -48,7 +48,6 @@ class TMC2130: public SPIPeripheral
             char cAxis;
             int16_t iMaxMM;
             float fStartPos;
-            uint8_t uiDiagPin;
             bool bHasNoEndStops;
         };
         

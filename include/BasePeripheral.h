@@ -41,6 +41,7 @@
 class BasePeripheral 
 {
     public:
+        enum IRQ : unsigned int;
 
         // Returns actual IRQ for a given enum value.
         inline avr_irq_t * GetIRQ(unsigned int eDest) {return m_pIrq + eDest;}
@@ -121,9 +122,9 @@ class BasePeripheral
                  };
              avr_irq_register_notify(m_pIrq + eDest,fCB, &sO);
              }; */
-             
-        struct avr_t *m_pAVR = nullptr;
         avr_irq_t * m_pIrq = nullptr;
+        struct avr_t *m_pAVR = nullptr;
+    private:             
 
 };
 

@@ -22,24 +22,25 @@
 #define _EINSY_1_1A_H
 
 #include <Einsy_1_0a.h>
-
-class Einsy_1_1a : public Einsy_1_0a
+namespace Wirings
 {
-	protected:
-		std::map<Pin, MCUPin> GetPinMap() override {
-			auto baseMap = Einsy_1_0a::GetPinMap();
-			baseMap[IR_SENSOR_PIN] = 62;
-			baseMap.erase(KILL_PIN);
-			baseMap[LCD_BL_PIN] = 5;
-			baseMap[TACH_0] = 79;
-			baseMap[TACH_1] = 80;
-			baseMap[TEMP_PINDA_PIN] = 3;
-			baseMap[VOLT_BED_PIN] = 9;
-			baseMap[VOLT_IR_PIN] = 8;
-			baseMap[VOLT_PWR_PIN] = 4;
-			baseMap[W25X20CL_PIN_CS] = 32;
-			return baseMap;
-		};
+	class Einsy_1_1a : public Einsy_1_0a
+	{
+		protected:
+			std::map<Pin, MCUPin> GetPinMap() override {
+				auto baseMap = Einsy_1_0a::GetPinMap();
+				baseMap[IR_SENSOR_PIN] = 62;
+				baseMap.erase(KILL_PIN);
+				baseMap[LCD_BL_PIN] = 5;
+				baseMap[TACH_0] = 79;
+				baseMap[TACH_1] = 80;
+				baseMap[TEMP_PINDA_PIN] = 3;
+				baseMap[VOLT_BED_PIN] = 9;
+				baseMap[VOLT_IR_PIN] = 8;
+				baseMap[VOLT_PWR_PIN] = 4;
+				baseMap[W25X20CL_PIN_CS] = 32;
+				return baseMap;
+			};
+	};
 };
-
 #endif // _EINSY_1_1A_H

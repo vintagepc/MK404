@@ -51,13 +51,16 @@ set(INCLUDE_FILES
     utility/MK3SGL.h
     utility/GLObj.h
     utility/GLPrint.h
-    parts/Wiring.h
     parts/PinNames.h
-    parts/Board.h
     parts/PinSpec.h
     parts/pinspecs/PinSpec_32u4.h
+	parts/pinspecs/PinSpec_2560.h
+    parts/Board.h
     parts/boards/MM_Control_01.h
+    parts/Wiring.h
     parts/wiring/MM_Control_01.h
+	parts/wiring/Einsy_1_0a.h
+	parts/wiring/Einsy_1_1a.h
 )
 
 

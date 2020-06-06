@@ -41,10 +41,8 @@ set(H_FILES
 )
 
 set(INCLUDE_FILES
-    include/SerialPipe.h
-    include/ADCPeripheral.h
-    include/BasePeripheral.h
     include/PinHelper_2560.h
+    include/SerialPipe.h
     include/Util.h
     include/thermistortables.h
     utility/Color.h
@@ -52,6 +50,9 @@ set(INCLUDE_FILES
     utility/GLObj.h
     utility/GLPrint.h
     parts/PinNames.h
+    parts/ADCPeripheral.h
+    parts/BasePeripheral.h
+	parts/SPIPeripheral.h
     parts/PinSpec.h
     parts/pinspecs/PinSpec_32u4.h
 	parts/pinspecs/PinSpec_2560.h

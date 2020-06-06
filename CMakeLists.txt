@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_DEBUG_POSTFIX d)
- 
+
 include(ExternalProject)
 
 project(Einsy VERSION 0.1)
@@ -51,6 +51,13 @@ set(INCLUDE_FILES
     utility/MK3SGL.h
     utility/GLObj.h
     utility/GLPrint.h
+    parts/Wiring.h
+    parts/PinNames.h
+    parts/Board.h
+    parts/PinSpec.h
+    parts/pinspecs/PinSpec_32u4.h
+    parts/boards/MM_Control_01.h
+    parts/wiring/MM_Control_01.h
 )
 
 
@@ -77,8 +84,10 @@ set(EINSY_SOURCES
     MMU2.cpp
     include/SerialPipe.cpp
     utility/Color.cpp
-    utility/MK3SGL.cpp  
-    utility/GLObj.cpp  
+    parts/boards/MM_Control_01.cpp
+    parts/Board.cpp
+    utility/MK3SGL.cpp
+    utility/GLObj.cpp
     utility/GLPrint.cpp
     3rdParty/arcball/Camera.cpp
 )
@@ -109,11 +118,15 @@ set (LIBSIMAVR ${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/obj-${SIMAVR_BIN_DIR
 
 message("Defining simavr location as ${LIBSIMAVR}")
 
-target_include_directories (Einsy PUBLIC 
+target_include_directories (Einsy PUBLIC
                             "${PROJECT_BINARY_DIR}"
                             "${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/"
                             "${PROJECT_SOURCE_DIR}/hwDefs"
                             "${PROJECT_SOURCE_DIR}/include"
+                            "${PROJECT_SOURCE_DIR}/parts"
+                            "${PROJECT_SOURCE_DIR}/parts/boards"
+                            "${PROJECT_SOURCE_DIR}/parts/pinspecs"
+                            "${PROJECT_SOURCE_DIR}/parts/wiring"
                             "${PROJECT_SOURCE_DIR}/utility"
                             "${PROJECT_SOURCE_DIR}/3rdParty/arcball"
                          )
@@ -125,7 +138,7 @@ include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
 
-target_link_libraries(Einsy pthread util glut GL GLU GLEW m tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES}) 
+target_link_libraries(Einsy pthread util glut GL GLU GLEW m tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 
 add_custom_command(TARGET Einsy POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -149,17 +162,17 @@ add_custom_command(TARGET Einsy POST_BUILD
                      COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/assets/*.mtl"
                     "${PROJECT_BINARY_DIR}/assets/")
-                    
+
 
 add_custom_target(Build_Run COMMAND cd ${PROJECT_BINARY_DIR} && ./Einsy &)
 add_dependencies(Build_Run Einsy)
 
-add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR} 
-                            && ./build-fw.sh 
+add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
+                            && ./build-fw.sh
                             && cp ../Prusa-Firmware-build/Firmware.ino.elf MK3S.afx
                             && avr-objdump -d MK3S.afx > MK3S.txt)
 
 add_custom_target(FAT32.img COMMAND unzip -o ${PROJECT_SOURCE_DIR}/assets/FAT32.zip)
-add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PROJECT_SOURCE_DIR}/SDCard/* :: 
+add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PROJECT_SOURCE_DIR}/SDCard/* ::
                                                 COMMAND mv FAT32.img Einsy_atmega2560_SDcard.bin)
 add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)

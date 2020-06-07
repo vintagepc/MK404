@@ -24,6 +24,8 @@
 #include <sim_hex.h>
 #include <sim_elf.h>
 #include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
 
 using namespace std;
 using namespace Boards;
@@ -37,7 +39,92 @@ void Board::CreateAVR()
 		fprintf(stderr, "FATAL: Failed to create board %s\n", m_wiring.GetMCUName().c_str());
 		exit(1);
 	}
+	m_pAVR->custom.init = [](avr_t *p, void *param){Board *board = (Board*)param; board->_OnAVRInit();};
+	m_pAVR->custom.deinit = [](avr_t *p, void *param){Board *board = (Board*)param; board->_OnAVRDeinit();};
+	m_pAVR->custom.data = this;
 	avr_init(m_pAVR);
+}
+
+void Board::CreateBoard()
+{
+	CreateAVR();
+	m_pAVR->pc = LoadFirmware(m_strFW);
+	if (!m_strBoot.empty())
+	{
+		m_pAVR->reset_pc = LoadFirmware(m_strBoot);
+	}
+	m_pAVR->frequency = m_uiFreq;
+	m_pAVR->vcc = 5000;
+	m_pAVR->aref = 0;
+	m_pAVR->avcc = 5000;
+	//m_pAVR->log = 1 + verbose;
+
+	// even if not setup at startup, activate gdb if crashing
+	m_pAVR->gdb_port = 1234;
+	SetupHardware();
+};
+
+void Board::StartAVR()
+{
+	if (m_thread!=0)
+	{
+		printf("Attempted to start an already running %s\n", m_wiring.GetMCUName().c_str());
+		return;
+	}
+	auto fRunCB =[](void * param) { Board* p = (Board*)param; return p->RunAVR();};
+	pthread_create(&m_thread, NULL, fRunCB, this);
+}
+
+void Board::StopAVR()
+{
+	printf("Stopping %s_%s...\n", m_strBoard.c_str(), m_wiring.GetMCUName().c_str());
+	if (m_thread==0)
+		return;
+	m_bQuit = true;
+	pthread_join(m_thread,NULL);
+	m_thread = 0;
+	printf("Done\n");
+}
+
+void Board::_OnAVRInit()
+{
+	std::string strFlash = GetStorageFileName("flash"),
+		strEEPROM = GetStorageFileName("eeprom");
+
+	m_fdFlash = open(strFlash.c_str(), O_RDWR|O_CREAT, 0644);
+	if (m_fdFlash < 0) {
+		perror(strFlash.c_str());
+		fprintf(stderr,"ERROR: Could not open flash file. Flash contents will NOT persist.\n");
+	}
+	else
+	{
+		// resize and map the file the file
+		(void)ftruncate(m_fdFlash, m_pAVR->flashend + 1);
+		ssize_t r = read(m_fdFlash, m_pAVR->flash, m_pAVR->flashend + 1);
+		if (r != m_pAVR->flashend + 1) {
+			fprintf(stderr, "unable to load flash memory\n");
+			perror(strFlash.c_str());
+			exit(1);
+		}
+	}
+	m_EEPROM.Load(m_pAVR,strEEPROM.c_str());
+	OnAVRInit();
+}
+
+void Board::_OnAVRDeinit()
+{
+	if (m_fdFlash>0)
+	{
+		lseek(m_fdFlash, SEEK_SET, 0);
+		ssize_t r = write(m_fdFlash, m_pAVR->flash, m_pAVR->flashend + 1);
+		if (r != m_pAVR->flashend + 1) {
+			fprintf(stderr, "unable to write %s flash memory\n",m_strBoard.c_str());
+		}
+		close(m_fdFlash);
+		m_fdFlash = 0;
+	}
+	m_EEPROM.Save();
+	OnAVRDeinit();
 }
 
 avr_flashaddr_t Board::LoadFirmware(string strFW)
@@ -57,7 +144,7 @@ avr_flashaddr_t Board::LoadFirmware(string strFW)
 			m_pAVR->codeend = m_pAVR->flashend;
 			return uiFWStart;
 		}
-		else if(0==strFW.compare(strFW.size()-4, 4, ".afx") || 
+		else if(0==strFW.compare(strFW.size()-4, 4, ".afx") ||
 				0==strFW.compare(strFW.size()-4, 4, ".elf"))
 		{
 			elf_firmware_t fw;

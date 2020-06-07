@@ -22,14 +22,14 @@
 
 namespace Boards
 {
-	
+
 	void MM_Control_01::SetupHardware()
 	{
 		DisableInterruptLevelPoll(5);
 
 		AddSerialPty(m_UART,'1');
 
-		m_shift.Init(m_pAVR);
+		AddHardware(m_shift);
 		TryConnect(SHIFT_LATCH,m_shift,HC595::IN_LATCH);
 		TryConnect(SHIFT_DATA,m_shift,HC595::IN_DATA);
 		TryConnect(SHIFT_CLOCK,m_shift,HC595::IN_CLOCK);
@@ -39,9 +39,9 @@ namespace Boards
 		cfg.fStartPos = 0;
 		cfg.cAxis = 'P';
 		cfg.bHasNoEndStops = true;
-		
+
 		m_Extr.SetConfig(cfg);
-		m_Extr.Init(m_pAVR);
+		AddHardware(m_Extr);
 		TryConnect(P_TMC2130_CS, m_Extr, TMC2130::SPI_CSEL);
 		TryConnect(P_STEP_PIN, m_Extr, TMC2130::STEP_IN);
 		TryConnect(m_Extr,TMC2130::DIAG_OUT,P_TMC2130_DIAG);
@@ -55,7 +55,7 @@ namespace Boards
 		cfg.bInverted = true;
 		cfg.bHasNoEndStops = false;
 		m_Sel.SetConfig(cfg);
-		m_Sel.Init(m_pAVR);
+		AddHardware(m_Sel);
 		TryConnect(S_TMC2130_CS,m_Sel,TMC2130::SPI_CSEL);
 		TryConnect(S_STEP_PIN,m_Sel,TMC2130::STEP_IN);
 		TryConnect(m_Sel,TMC2130::DIAG_OUT,S_TMC2130_DIAG);
@@ -67,24 +67,24 @@ namespace Boards
 		cfg.iMaxMM = 200;
 		cfg.cAxis = 'I';
 		m_Idl.SetConfig(cfg);
-		m_Idl.Init(m_pAVR);
+		AddHardware(m_Idl);
 		TryConnect(I_TMC2130_CS,m_Idl,TMC2130::SPI_CSEL);
 		TryConnect(I_STEP_PIN,m_Idl,TMC2130::STEP_IN);
 		TryConnect(m_Idl,TMC2130::DIAG_OUT,I_TMC2130_DIAG);
 		SetPin(I_TMC2130_DIAG,0);
 		m_Idl.ConnectFrom(m_shift.GetIRQ(HC595::BIT5), TMC2130::ENABLE_IN);
 		m_Idl.ConnectFrom(m_shift.GetIRQ(HC595::BIT4), TMC2130::DIR_IN);
-		
+
 
 		for (int i=0; i<5; i++)
 		{
 			m_lGreen[i] = LED(0x00FF00FF);
-			m_lGreen[i].Init(m_pAVR);
+			AddHardware(m_lGreen[i]);
 			m_lRed[i] = LED(0xFF0000FF);
-			m_lRed[i].Init(m_pAVR);
+			AddHardware(m_lRed[i]);
 		}
 		m_lFINDA = LED(0xFFCC00FF,'F');
-		m_lFINDA.Init(m_pAVR);
+		AddHardware(m_lFINDA);
 		TryConnect(FINDA_PIN,m_lFINDA,LED::LED_IN);
 		SetPin(FINDA_PIN,0);
 
@@ -99,7 +99,7 @@ namespace Boards
 		m_lGreen[1].ConnectFrom(m_shift.GetIRQ(HC595::BIT14), LED::LED_IN);
 		m_lRed[1].ConnectFrom(	m_shift.GetIRQ(HC595::BIT15), LED::LED_IN);
 
-		m_buttons.Init(m_pAVR,5);
+		AddHardware(m_buttons,5);
 
 	}
 

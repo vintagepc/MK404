@@ -24,7 +24,7 @@
 #include "avr_uart.h"
 #include "GL/glut.h"
 
-// Yes yes, globals are bad. But we don't have any choice because freeglut calls 
+// Yes yes, globals are bad. But we don't have any choice because freeglut calls
 // don't have parameter void pointers to retain the c++ class pointer. :-/
 MMU2 *MMU2::g_pMMU = nullptr;
 using namespace Boards;
@@ -37,26 +37,8 @@ MMU2::MMU2():MM_Control_01()
 		exit(1);
 	}
 	g_pMMU = this;
+	SetBoardName("MMU2");
 	CreateBoard();
-}
-
-void* MMU2::Run()
-{
-	printf("Starting MMU2 execution...\n");
-	int state = cpu_Running;
-	while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){	
-		if (m_bReset)
-		{
-			m_bReset = 0;
-			avr_reset(MM_Control_01::m_pAVR);
-		}
-		//if (gbPrintPC)
-		//	printf("PC: %x\n",mmu->pc);
-		state = avr_run(MM_Control_01::m_pAVR);
-	}
-	avr_terminate(MM_Control_01::m_pAVR);
-	printf("MMU finished.\n");
-	return NULL;
 }
 
 std::string MMU2::GetSerialPort()
@@ -98,7 +80,7 @@ void MMU2::Draw()		/* function called whenever redisplay needed */
 		m_Extr.Draw_Simple();
 	glPopMatrix();
 	glPushMatrix();
-		glColor3f(0,0,0);		
+		glColor3f(0,0,0);
 		glTranslatef(0,fY-10,0);
 		glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -137,9 +119,8 @@ void MMU2::SetupHardware()
 
 void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)
 {
-	//printf("MMU RESET: %02x\n",value);
 	if (!value && !m_bStarted)
-		Start();
+		StartAVR();
     else if (irq->value && !value)
         m_bReset = true;
 }
@@ -159,26 +140,4 @@ void MMU2::LEDHandler(avr_irq_t *irq, uint32_t value)
 	valOut = (value >>6) & 0b1111111111; // Just the LEDs.
 	if (GetIRQ(LEDS_OUT)->value != valOut)
 		RaiseIRQ(LEDS_OUT,valOut);
-}
-
-void MMU2::Start()
-{
-    if (m_bStarted)
-        return; 
-    printf("Starting MMU...\n");
-    m_bStarted = true;
-
-	auto fRunCB =[](void * param) { MMU2* p = (MMU2*)param; return p->Run();};
-
-	pthread_create(&m_tRun, NULL, fRunCB, this);
-}
-
-void MMU2::Stop()
-{
-	printf("MMU_stop()\n");
-    if (!m_bStarted)
-        return;
-    m_bQuit = true;
-    pthread_join(m_tRun,NULL);
-    printf("MMU Done\n");
 }

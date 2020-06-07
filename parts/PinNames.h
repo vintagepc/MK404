@@ -10,7 +10,7 @@
 		__PIN_COMBO(x,_TMC2130_CS),\
 		__PIN_COMBO(x,_TMC2130_DIAG),\
 
-// Pin names. Just add yours here. 
+// Pin names. Just add yours here.
 namespace PinNames {
 	enum Pin{
 		BEEPER,
@@ -31,7 +31,7 @@ namespace PinNames {
 		IR_SENSOR_PIN,
 		KILL_PIN,
 		LCD_BL_PIN,
-		LCD_PINS_D4, 
+		LCD_PINS_D4,
 		LCD_PINS_D5,
 		LCD_PINS_D6,
 		LCD_PINS_D7,
@@ -58,6 +58,7 @@ namespace PinNames {
 		TEMP_AMBIENT_PIN,
 		TEMP_BED_PIN,
 		TEMP_PINDA_PIN,
+		UVLO_PIN,
 		VOLT_BED_PIN,
 		VOLT_IR_PIN,
 		VOLT_PWR_PIN,

@@ -28,9 +28,10 @@
 #include <avr_eeprom.h>
 
 
-Einsy_EEPROM::Einsy_EEPROM(struct avr_t *avr, const char* path)
+void Einsy_EEPROM::Load(struct avr_t *avr, const char* path)
 {
 	m_pAVR = avr;
+	m_uiSize = m_pAVR->e2end + 1;
 	strncpy(m_strPath, path, sizeof(m_strPath));
 
 	m_fdEEPROM = open(m_strPath, O_RDWR | O_CREAT, 0644);
@@ -39,7 +40,7 @@ Einsy_EEPROM::Einsy_EEPROM(struct avr_t *avr, const char* path)
 		exit(1);
 	}
 	printf("Loading %u bytes of EEPROM\n", m_uiSize);
-	
+
 	avr_eeprom_desc_t io {ee:(uint8_t*)malloc(m_uiSize),offset:0, size:m_uiSize};
 
 	(void)ftruncate(m_fdEEPROM, m_uiSize);
@@ -93,4 +94,3 @@ uint8_t Einsy_EEPROM::Peek(uint16_t address)
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io);
 	return uiRet;
 }
-

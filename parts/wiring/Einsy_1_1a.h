@@ -35,6 +35,7 @@ namespace Wirings
 				baseMap[TACH_0] = 79;
 				baseMap[TACH_1] = 80;
 				baseMap[TEMP_PINDA_PIN] = 3;
+				baseMap[UVLO_PIN] = 2;
 				baseMap[VOLT_BED_PIN] = 9;
 				baseMap[VOLT_IR_PIN] = 8;
 				baseMap[VOLT_PWR_PIN] = 4;

@@ -48,10 +48,12 @@ void Board::CreateAVR()
 void Board::CreateBoard()
 {
 	CreateAVR();
-	m_pAVR->pc = LoadFirmware(m_strFW);
+	m_FWBase = LoadFirmware(m_strFW);
+	m_pAVR->pc = m_FWBase;
 	if (!m_strBoot.empty())
 	{
-		m_pAVR->reset_pc = LoadFirmware(m_strBoot);
+		m_bootBase = LoadFirmware(m_strBoot);
+		m_pAVR->reset_pc = m_bootBase;
 	}
 	m_pAVR->frequency = m_uiFreq;
 	m_pAVR->vcc = 5000;

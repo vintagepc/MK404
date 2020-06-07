@@ -20,8 +20,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BOARD_H__
-#define __BOARD_H__
+#pragma once
 
 #include "Wiring.h"
 #include <BasePeripheral.h>
@@ -90,6 +89,11 @@ namespace Boards
 				return false;
 			}
 
+			// Start the bootloader first boot instead of jumping right into the main FW.
+			inline void SetStartBootloader() {m_pAVR->pc = m_pAVR->reset_pc;}
+
+			inline void WaitForFinish() {pthread_join(m_thread,NULL);}
+
 		protected:
 			// Define this method and use it to initialize/attach your hardware to the MCU.
 			virtual void SetupHardware() = 0;
@@ -104,6 +108,10 @@ namespace Boards
 			// Called when the AVR is reset or powered up (i.e. MCUSR set)
 			virtual void OnAVRReset(){};
 
+			// Helper called every cycle - use it to process keys, mouse, etc.
+			// within the context of the AVR run thread.
+			virtual void OnAVRCycle(){};
+
 			virtual void* RunAVR()
 			{
 				avr_regbit_t MCUSR = m_pAVR->reset_flags.porf;
@@ -112,17 +120,25 @@ namespace Boards
 				printf("Starting %s execution...\n", m_wiring.GetMCUName().c_str());
 				int state = cpu_Running;
 				while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){
-					int8_t uiMCUSR = avr_regbit_get(avr,MCUSR);
+							// Re init the special workarounds we need after a reset.
+					if (m_bPaused)
+					{
+						usleep(100000);
+						continue;
+					}
+					int8_t uiMCUSR = avr_regbit_get(m_pAVR,MCUSR);
 					if (uiMCUSR != m_uiLastMCUSR)
 					{
 						printf("MCUSR: %02x\n",m_uiLastMCUSR = uiMCUSR);
 						if (uiMCUSR) // only run on change and not changed to 0
 							OnAVRReset();
 					}
+					OnAVRCycle();
 					if (m_bReset)
 					{
 						m_bReset = 0;
 						avr_reset(m_pAVR);
+						avr_regbit_set(m_pAVR, m_pAVR->reset_flags.extrf);
 					}
 					state = avr_run(m_pAVR);
 				}
@@ -131,6 +147,8 @@ namespace Boards
 				return nullptr;
 			};
 
+			inline void SetResetFlag(){m_bReset = true;}
+			inline void SetQuitFlag(){m_bQuit = true;}
 			// suppress continuous polling for low INT lines... major performance drain.
 			void DisableInterruptLevelPoll(uint8_t uiNumIntLins)
 			{
@@ -164,6 +182,13 @@ namespace Boards
 				return strFN;
 			}
 
+			inline MCUPin GetPinNumber(PinNames::Pin ePin)
+			{
+				if (m_wiring.IsPin(ePin))
+					return m_wiring.GetPin(ePin);
+				return -1;
+			}
+
 			inline avr_irq_t* GetPWMIRQ(PinNames::Pin ePin)
 			{
 				if (m_wiring.IsPin(ePin))
@@ -180,6 +205,8 @@ namespace Boards
 			inline void SetBoardName(std::string strName){m_strBoard = strName;}
 
 			struct avr_t* m_pAVR = nullptr;
+
+			bool m_bPaused = false;
 
 		private:
 			void CreateAVR();
@@ -201,9 +228,10 @@ namespace Boards
 
 			uint8_t m_uiLastMCUSR = 0;
 
+			avr_flashaddr_t m_bootBase, m_FWBase;
+
 			// Loads an ELF or HEX file into the MCU. Returns boot PC
 
 			Einsy_EEPROM m_EEPROM;
 	};
 };// Boards
-#endif //__BOARD_H__

@@ -1,5 +1,5 @@
 /*
-	Einsy_1_1a.h - Pin definition for an Einsy 1.1a
+	Prusa_MK3SMMU2.h - Printer definition for the Prusa MK3S w/MMU2
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK3SIM.
@@ -20,33 +20,33 @@
 
 #pragma once
 
-#include <Einsy_1_0a.h>
-namespace Wirings
-{
-	class Einsy_1_1a : public Einsy_1_0a
-	{
-		public:
-			Einsy_1_1a():Einsy_1_0a()
-			{
-				m_mPins = GetPinMap();
-			};
+#include "Prusa_MK3S.h"
+#include "SerialPipe.h"
+#include "MMU2.h"
 
-		protected:
-			std::map<Pin, MCUPin> GetPinMap() override {
-				auto baseMap = Einsy_1_0a::GetPinMap();
-				baseMap[IR_SENSOR_PIN] = 62;
-				baseMap.erase(KILL_PIN);
-				baseMap[LCD_BL_PIN] = 5;
-				baseMap[MMU_HWRESET] = 76;
-				baseMap[TACH_0] = 79;
-				baseMap[TACH_1] = 80;
-				baseMap[TEMP_PINDA_PIN] = 3;
-				baseMap[UVLO_PIN] = 2;
-				baseMap[VOLT_BED_PIN] = 9;
-				baseMap[VOLT_IR_PIN] = 8;
-				baseMap[VOLT_PWR_PIN] = 4;
-				baseMap[W25X20CL_PIN_CS] = 32;
-				return baseMap;
-			};
-	};
+class Prusa_MK3SMMU2 : public Prusa_MK3S
+{
+
+	public:
+		Prusa_MK3SMMU2():Prusa_MK3S(){};
+		~Prusa_MK3SMMU2();
+
+		void Draw() override;
+		void OnVisualTypeSet(VisualType type) override;
+
+		bool GetHasMMU() override {return true;}
+
+		std::pair<int,int> GetWindowSize() override;
+
+	protected:
+		void SetupHardware() override;
+
+		void OnMMUFeed(avr_irq_t *irq, uint32_t value);// Helper for MMU IR sensor triggering.
+
+		MMU2 m_MMU;
+		SerialPipe *m_pipe = nullptr;
+
+	private:
+
+
 };

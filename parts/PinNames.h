@@ -38,6 +38,7 @@ namespace PinNames {
 		LCD_PINS_ENABLE,
 		LCD_PINS_RS,
 		LED_PIN,
+		MMU_HWRESET,
 		__TMC2130_PIN_SET(P)
 		PS_ON_PIN,
 		__TMC2130_PIN_SET(S)

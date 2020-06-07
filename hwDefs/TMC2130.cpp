@@ -26,7 +26,6 @@
 #include "avr_spi.h"
 #include "TMC2130.h"
 #include "GL/glut.h"
-#include "Util.h"
 
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (cfg.cAxis=='S' || cfg.cAxis=='I') _w
@@ -57,7 +56,7 @@ void TMC2130::Draw()
                 glVertex3f(3,1,0);
             glEnd();
             glColor3f(0,0,0);
-        }   
+        }
         glPushMatrix();
             glTranslatef(3,7,0);
             glScalef(0.09,-0.05,0);
@@ -121,7 +120,7 @@ void TMC2130::Draw_Simple()
                 glVertex3f(3,1,0);
             glEnd();
             glColor3f(0,0,0);
-        }   
+        }
         glPushMatrix();
             glTranslatef(3,7,0);
             glScalef(0.09,-0.05,0);
@@ -161,7 +160,7 @@ void TMC2130::CreateReply()
     //(printf("Reply built: %10lx\n",m_cmdOut.all));
 }
 
-// Called when a full command is ready to process. 
+// Called when a full command is ready to process.
 void TMC2130::ProcessCommand()
 {
     TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08x\n",cfg.cAxis, m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
@@ -235,7 +234,7 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     if (!m_bEnable) return;
     CancelTimer(m_fcnStandstill,this);
 	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",cfg.cAxis,value));
-    if (m_bDir)    
+    if (m_bDir)
         m_iCurStep--;
     else
         m_iCurStep++;
@@ -299,12 +298,12 @@ void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)
     m_fCurPos = cfg.fStartPos;
 }
 
-void TMC2130::Init(struct avr_t * avr) 
+void TMC2130::Init(struct avr_t * avr)
 {
     _Init(avr, this);
 
     RegisterNotify(DIR_IN,      MAKE_C_CALLBACK(TMC2130,OnDirIn), this);
     RegisterNotify(STEP_IN,     MAKE_C_CALLBACK(TMC2130,OnStepIn), this);
     RegisterNotify(ENABLE_IN,   MAKE_C_CALLBACK(TMC2130,OnEnableIn), this);
-    
+
 }

@@ -41,7 +41,7 @@ set(H_FILES
 )
 
 set(INCLUDE_FILES
-    include/PinHelper_2560.h
+    include/MK3/Configuration_prusa.h
     include/SerialPipe.h
     include/Util.h
     include/thermistortables.h
@@ -58,6 +58,8 @@ set(INCLUDE_FILES
 	parts/pinspecs/PinSpec_2560.h
     parts/Board.h
     parts/boards/MM_Control_01.h
+	parts/boards/EinsyRambo.h
+	parts/Printer.h
     parts/Wiring.h
     parts/wiring/MM_Control_01.h
 	parts/wiring/Einsy_1_0a.h
@@ -88,8 +90,11 @@ set(EINSY_SOURCES
     MMU2.cpp
     include/SerialPipe.cpp
     utility/Color.cpp
-    parts/boards/MM_Control_01.cpp
     parts/Board.cpp
+    parts/boards/MM_Control_01.cpp
+	parts/boards/EinsyRambo.cpp
+	parts/printers/Prusa_MK3S.cpp
+	parts/printers/Prusa_MK3SMMU2.cpp
     utility/MK3SGL.cpp
     utility/GLObj.cpp
     utility/GLPrint.cpp
@@ -127,6 +132,7 @@ target_include_directories (Einsy PUBLIC
                             "${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/"
                             "${PROJECT_SOURCE_DIR}/hwDefs"
                             "${PROJECT_SOURCE_DIR}/include"
+							"${PROJECT_SOURCE_DIR}/"
                             "${PROJECT_SOURCE_DIR}/parts"
                             "${PROJECT_SOURCE_DIR}/parts/boards"
                             "${PROJECT_SOURCE_DIR}/parts/pinspecs"

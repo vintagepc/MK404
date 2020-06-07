@@ -26,7 +26,6 @@
 #include <sim_time.h>
 #include <avr_timer.h>
 #include "HD44780.h"
-#include "Util.h"
 
 //#define TRACE(_w) _w
 #ifndef TRACE
@@ -63,7 +62,7 @@ avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t * avr,avr_cycle_count_t wh
 
 void HD44780::IncrementCursor()
 {
-	
+
 	if (GetFlag(HD44780_FLAG_I_D)) {
 		TRACE(printf("Cursor++ (%02x)\n",m_uiCursor));
 		if (m_uiCursor == 0x67) // end of display.
@@ -72,7 +71,7 @@ void HD44780::IncrementCursor()
 			m_uiCursor = 0x40;
 		else
 			m_uiCursor++;
-	} 
+	}
 	else
 	 {
 		TRACE(printf("Cursor--\n"));
@@ -81,17 +80,17 @@ void HD44780::IncrementCursor()
 		else if (m_uiCursor == 0x40)
 			m_uiCursor = 0x27;
 		else
-			m_uiCursor--;	
-			
+			m_uiCursor--;
+
 		//SetFlag(HD44780_FLAG_DIRTY, 1);
 		//avr_raise_irq(b->irq + ADDR, m_uiCursor);
 	}
 }
 
-// Nudge the CGRAM cursor value. 
+// Nudge the CGRAM cursor value.
 void HD44780::IncrementCGRAMCursor()
 {
-	if (GetFlag(HD44780_FLAG_I_D)) 
+	if (GetFlag(HD44780_FLAG_I_D))
 		if (m_uiCGCursor==64)
 			m_uiCGCursor = 0;
 		else
@@ -112,7 +111,7 @@ uint32_t HD44780::OnDataReady()
 	if (m_bInCGRAM)
 	{
 		m_cgRam[m_uiCGCursor] = m_uiDataPins;
-		TRACE(printf("hd44780_write_data %02x to CGRAM %02x\n",m_uiDataPins,m_uiCGCursor));		
+		TRACE(printf("hd44780_write_data %02x to CGRAM %02x\n",m_uiDataPins,m_uiCGCursor));
 		IncrementCGRAMCursor();
 	}
 	else
@@ -124,7 +123,7 @@ uint32_t HD44780::OnDataReady()
 		} else {
 			IncrementCursor();
 		}
-		
+
 	}
     SetFlag(HD44780_FLAG_DIRTY, 1);
 	return delay;
@@ -348,7 +347,7 @@ void HD44780::Init(avr_t *avr)
 
 	for (int i = 0; i < BUSY; i++)
 		RegisterNotify(ALL+i, MAKE_C_CALLBACK(HD44780,OnPinChanged), this);
-    
+
 	ResetCursor();
     ClearScreen();
 
@@ -357,4 +356,3 @@ void HD44780::Init(avr_t *avr)
 	printf("LCD: %duS is %d cycles for your AVR\n",
 			1, (int)avr_usec_to_cycles(avr, 1));
 }
-

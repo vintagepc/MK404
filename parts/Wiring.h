@@ -35,14 +35,14 @@ namespace Wirings
 	class Wiring
 	{
 		public:
-			// Making a type so that this is easy to update 
+			// Making a type so that this is easy to update
 			// down the road if we need more values than this can provide.
 			typedef signed char MCUPin;
 
 			// Creates a new board with the given pinspec.
 			Wiring(const PinSpec &pSpec):m_pinSpec(pSpec){};
 
-			// Passthrough to retrieve the MCU name 
+			// Passthrough to retrieve the MCU name
 			std::string GetMCUName() const { return m_pinSpec.GetMCUName(); }
 
 			const PinSpec& GetPinSpec() const { return m_pinSpec; }
@@ -60,20 +60,22 @@ namespace Wirings
 			inline struct avr_irq_t* DIRQLU(struct avr_t* avr, Pin ePin) const { return IOIRQ(avr,m_pinSpec.PORT(m_mPins.at(ePin)),m_pinSpec.PIN(m_mPins.at(ePin))); }
 
 			// Looks up a PWM IRQ based on the arduino convenience pin number.
-			//inline struct avr_irq_t* DPWMLU(struct avr_t* avr, unsigned int n) { return TIMERIRQ(avr, m_pinSpec.TIMER_CHAR(n), m_pinSpec.TIMER_IDX(n)); } 
-			inline struct avr_irq_t* DPWMLU(struct avr_t* avr, Pin ePin)  const { return TIMERIRQ(avr, m_pinSpec.TIMER_CHAR(m_mPins.at(ePin)), m_pinSpec.TIMER_IDX(m_mPins.at(ePin))); } 
+			//inline struct avr_irq_t* DPWMLU(struct avr_t* avr, unsigned int n) { return TIMERIRQ(avr, m_pinSpec.TIMER_CHAR(n), m_pinSpec.TIMER_IDX(n)); }
+			inline struct avr_irq_t* DPWMLU(struct avr_t* avr, Pin ePin)  const { return TIMERIRQ(avr, m_pinSpec.TIMER_CHAR(m_mPins.at(ePin)), m_pinSpec.TIMER_IDX(m_mPins.at(ePin))); }
 
-			// Returns T/F whether a pin is defined. 
+			// Returns T/F whether a pin is defined.
 			inline bool IsPin(PinNames::Pin pin) const { return m_mPins.count(pin)>0;}
+
+			inline MCUPin GetPin(PinNames::Pin ePin) const { return m_mPins.at(ePin);}
 
 		protected:
 			virtual std::map<Pin,MCUPin> GetPinMap() = 0;
 
 			// Gets the PWM id for a given timer number.
 			inline unsigned int _TimerPWMID(uint8_t number) const { return TIMER_IRQ_OUT_PWM0 + number; }
-			
+
 			std::map<Pin,MCUPin> m_mPins;
-					
+
 		private:
 			const PinSpec &m_pinSpec;
 	};

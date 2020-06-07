@@ -1,7 +1,7 @@
 /*
-	Heater.cpp - a heater object for MK3Sim. There's not much to it, 
+	Heater.cpp - a heater object for MK3Sim. There's not much to it,
     it just ticks the temperature "up" at a determined rate when active on PWM and down in
-    in an exponential curve when off. 
+    in an exponential curve when off.
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
@@ -45,7 +45,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
         float dT = (m_fCurrentTemp - m_fAmbientTemp)*pow(2.7183,-0.005*0.3);
         m_fCurrentTemp -= m_fCurrentTemp - (m_fAmbientTemp + dT);
     }
-        
+
     TRACE(printf("New temp value: %.02f\n",m_fCurrentTemp));
     RaiseIRQ(TEMP_OUT,(int)m_fCurrentTemp*256);
 
@@ -78,7 +78,7 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
 {
 
     if (m_bIsBed) // The heatbed PWM is based on inverting mode trickery. We can just watch COM0B0 rather than the digital pin output.
-    {   
+    {
         avr_regbit_t inv = AVR_IO_REGBIT(0x24 + 32,4);
         uint8_t COM0B0 = avr_regbit_get(m_pAVR, inv);
         value = COM0B0^1;
@@ -103,7 +103,7 @@ Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 
 }
 
-void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM,avr_irq_t *irqDigital)
+void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)
 {
     _Init(avr, this);
     if(irqPWM) ConnectFrom(irqPWM, PWM_IN);

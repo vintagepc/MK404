@@ -100,7 +100,7 @@ namespace Boards
 		TryConnect(LCD_PINS_RS,lcd, HD44780::RS);
 		TryConnect(LCD_PINS_ENABLE, lcd,HD44780::E);
 		TryConnect(LCD_BL_PIN, lcd, HD44780::BRIGHTNESS_IN);
-		TryConnect(LCD_BL_PIN, lcd, HD44780::BRIGHTNESS_PWM_IN);
+		lcd.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), HD44780::BRIGHTNESS_PWM_IN);
 
 		AddHardware(encoder);
 		TryConnect(encoder, RotaryEncoder::OUT_A, BTN_EN2);
@@ -170,7 +170,10 @@ namespace Boards
 		TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
 
 		AddHardware(PowerPanic);
-		TryConnect(PowerPanic, Button::BUTTON_OUT, UVLO_PIN); // Note - PP is not defined in pins_einsy, it's an EXTINT.
+		TryConnect(PowerPanic, Button::BUTTON_OUT, UVLO_PIN);
+
+		if (m_wiring.IsPin(W25X20CL_PIN_CS))
+			AddHardware(spiFlash,GetDIRQ(W25X20CL_PIN_CS));
 
 	}
 

@@ -223,13 +223,13 @@ void Prusa_MK3S::OnKeyPress(unsigned char key, int x, int y)
 			printf("Pause: %u\n",m_bPaused);
 			break;
 		case 'l':
-			m_pVis->ClearPrint();
+			if (m_pVis)m_pVis->ClearPrint();
 			break;
 		case 'n':
-			m_pVis->ToggleNozzleCam();
+			if (m_pVis)m_pVis->ToggleNozzleCam();
 		break;
 		case '`':
-			m_pVis->ResetCamera();
+			if (m_pVis)m_pVis->ResetCamera();
 			break;
 		/* case 'r':
 			printf("Starting VCD trace; press 's' to stop\n");

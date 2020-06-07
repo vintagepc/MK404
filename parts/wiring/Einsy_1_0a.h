@@ -39,6 +39,7 @@ namespace Wirings
 				return {
 					{BEEPER,84},
 					{BTN_EN1,72},
+					{BTN_EN2,14},
 					{BTN_ENC,9},
 					{E0_DIR_PIN,43},
 					{E0_ENABLE_PIN,26},

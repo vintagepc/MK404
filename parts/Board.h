@@ -64,7 +64,7 @@ namespace Boards
 					return true;
 				}
 				else
-					return false;
+					return _PinNotConnectedMsg(ePin);
 			};
 
 			template <class HW>
@@ -76,7 +76,7 @@ namespace Boards
 					return true;
 				}
 				else
-					return false;
+					return _PinNotConnectedMsg(ePin);
 			};
 
 			inline bool TryConnect(avr_irq_t *src, PinNames::Pin ePin)
@@ -86,7 +86,7 @@ namespace Boards
 					avr_connect_irq(src, m_wiring.DIRQLU(m_pAVR,ePin));
 					return true;
 				}
-				return false;
+				return _PinNotConnectedMsg(ePin);
 			}
 
 			// Start the bootloader first boot instead of jumping right into the main FW.
@@ -214,6 +214,12 @@ namespace Boards
 			void _OnAVRInit();
 
 			void _OnAVRDeinit();
+
+			inline bool _PinNotConnectedMsg(Pin ePin)
+			{
+				printf("Requested connection w/ Digital pin %d on %s, but it is not defined!\n",ePin,m_strBoard.c_str());
+				return false;
+			}
 
 			avr_flashaddr_t LoadFirmware(std::string strFW);
 

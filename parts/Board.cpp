@@ -48,8 +48,14 @@ void Board::CreateAVR()
 void Board::CreateBoard()
 {
 	CreateAVR();
-	m_FWBase = LoadFirmware(m_strFW);
-	m_pAVR->pc = m_FWBase;
+	if (!m_strFW.empty())
+	{
+		m_FWBase = LoadFirmware(m_strFW);
+		m_pAVR->pc = m_FWBase;
+	}
+	else
+		printf("NOTE: No firmware load requested, %s executing purely from flash memory.\n", m_strBoard.c_str());
+
 	if (!m_strBoot.empty())
 	{
 		m_bootBase = LoadFirmware(m_strBoot);

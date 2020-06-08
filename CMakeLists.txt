@@ -130,6 +130,7 @@ message("Defining simavr location as ${LIBSIMAVR}")
 target_include_directories (Einsy PUBLIC
                             "${PROJECT_BINARY_DIR}"
                             "${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/"
+							"${PROJECT_SOURCE_DIR}/3rdParty/TCLAP/include/"
                             "${PROJECT_SOURCE_DIR}/include"
 							"${PROJECT_SOURCE_DIR}/"
                             "${PROJECT_SOURCE_DIR}/parts"

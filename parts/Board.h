@@ -94,6 +94,9 @@ namespace Boards
 
 			inline void WaitForFinish() {pthread_join(m_thread,NULL);}
 
+			inline void SetDisableWorkarounds(bool bVal){m_bNoHacks =bVal;}
+			inline bool GetDisableWorkarounds(){return m_bNoHacks;}
+
 		protected:
 			// Define this method and use it to initialize/attach your hardware to the MCU.
 			virtual void SetupHardware() = 0;
@@ -149,6 +152,8 @@ namespace Boards
 
 			inline void SetResetFlag(){m_bReset = true;}
 			inline void SetQuitFlag(){m_bQuit = true;}
+
+
 			// suppress continuous polling for low INT lines... major performance drain.
 			void DisableInterruptLevelPoll(uint8_t uiNumIntLins)
 			{
@@ -225,7 +230,7 @@ namespace Boards
 
 			int m_fdFlash = 0, m_fdEEPROM = 0;
 
-			bool m_bQuit = false, m_bReset = false;
+			bool m_bQuit = false, m_bReset = false, m_bNoHacks = false;
 			pthread_t m_thread = 0;
 			const Wiring &m_wiring;
 			const std::string m_strFW, m_strBoot;

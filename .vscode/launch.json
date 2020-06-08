@@ -80,6 +80,25 @@
                     "ignoreFailures": true
                 }
             ]
-        }
+		},
+		{
+            "name": "(gdb) Launch Marlin",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Einsy",
+            "args": ["-n","-f Marlin.afx"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
     ]
 }

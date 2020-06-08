@@ -110,9 +110,10 @@ void Prusa_MK3S::SetupHardware()
 		UART0.Connect('0');
 
 	auto fcnSerial = [](avr_t *avr, avr_io_addr_t addr, uint8_t v, void * param)
-		{Prusa_MK3S *p = (Prusa_MK3S*)param; p->FixSerial(avr, addr,v);};
+	{Prusa_MK3S *p = (Prusa_MK3S*)param; p->FixSerial(avr, addr,v);};
 
 	avr_register_io_write(m_pAVR, 0xC0, fcnSerial, this);
+
 }
 
 void Prusa_MK3S::OnAVRCycle()

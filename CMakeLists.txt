@@ -17,26 +17,26 @@ set (FIRMWARE
     )
 
 set(H_FILES
-    hwDefs/ADC_Buttons.h
-    hwDefs/Button.h
-    hwDefs/Einsy_EEPROM.h
-    hwDefs/Fan.h
-    hwDefs/HC595.h
-    hwDefs/hd44780_charROM.h
-    hwDefs/HD44780GL.h
-    hwDefs/HD44780.h
-    hwDefs/Heater.h
-    hwDefs/IRSensor.h
-    hwDefs/LED.h
-    hwDefs/PINDA.h
-    hwDefs/RotaryEncoder.h
-    hwDefs/sd_card.h
-    hwDefs/Thermistor.h
-    hwDefs/TMC2130.h
-    hwDefs/UART_Logger.h
-    hwDefs/uart_pty.h
-    hwDefs/VoltageSrc.h
-    hwDefs/w25x20cl.h
+    parts/components/ADC_Buttons.h
+    parts/components/Button.h
+    parts/components/Einsy_EEPROM.h
+    parts/components/Fan.h
+    parts/components/HC595.h
+    parts/components/hd44780_charROM.h
+    parts/components/HD44780GL.h
+    parts/components/HD44780.h
+    parts/components/Heater.h
+    parts/components/IRSensor.h
+    parts/components/LED.h
+    parts/components/PINDA.h
+    parts/components/RotaryEncoder.h
+    parts/components/sd_card.h
+    parts/components/Thermistor.h
+    parts/components/TMC2130.h
+    parts/components/UART_Logger.h
+    parts/components/uart_pty.h
+    parts/components/VoltageSrc.h
+    parts/components/w25x20cl.h
     MMU2.h
 )
 
@@ -68,25 +68,25 @@ set(INCLUDE_FILES
 
 
 set(EINSY_SOURCES
-    hwDefs/ADC_Buttons.cpp
-    hwDefs/Button.cpp
-    hwDefs/Einsy_EEPROM.cpp
-    hwDefs/Fan.cpp
-    hwDefs/HC595.cpp
-    hwDefs/HD44780.cpp
-    hwDefs/HD44780GL.cpp
-    hwDefs/Heater.cpp
-    hwDefs/IRSensor.cpp
-    hwDefs/LED.cpp
-    hwDefs/PINDA.cpp
-    hwDefs/RotaryEncoder.cpp
-    hwDefs/sd_card.c
-    hwDefs/Thermistor.cpp
-    hwDefs/TMC2130.cpp
-    hwDefs/UART_Logger.cpp
-    hwDefs/uart_pty.cpp
-    hwDefs/VoltageSrc.cpp
-    hwDefs/w25x20cl.cpp
+    parts/components/ADC_Buttons.cpp
+    parts/components/Button.cpp
+    parts/components/Einsy_EEPROM.cpp
+    parts/components/Fan.cpp
+    parts/components/HC595.cpp
+    parts/components/HD44780.cpp
+    parts/components/HD44780GL.cpp
+    parts/components/Heater.cpp
+    parts/components/IRSensor.cpp
+    parts/components/LED.cpp
+    parts/components/PINDA.cpp
+    parts/components/RotaryEncoder.cpp
+    parts/components/sd_card.c
+    parts/components/Thermistor.cpp
+    parts/components/TMC2130.cpp
+    parts/components/UART_Logger.cpp
+    parts/components/uart_pty.cpp
+    parts/components/VoltageSrc.cpp
+    parts/components/w25x20cl.cpp
     MMU2.cpp
     include/SerialPipe.cpp
     utility/Color.cpp
@@ -130,11 +130,11 @@ message("Defining simavr location as ${LIBSIMAVR}")
 target_include_directories (Einsy PUBLIC
                             "${PROJECT_BINARY_DIR}"
                             "${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/"
-                            "${PROJECT_SOURCE_DIR}/hwDefs"
                             "${PROJECT_SOURCE_DIR}/include"
 							"${PROJECT_SOURCE_DIR}/"
                             "${PROJECT_SOURCE_DIR}/parts"
                             "${PROJECT_SOURCE_DIR}/parts/boards"
+                            "${PROJECT_SOURCE_DIR}/parts/components"
                             "${PROJECT_SOURCE_DIR}/parts/pinspecs"
                             "${PROJECT_SOURCE_DIR}/parts/wiring"
                             "${PROJECT_SOURCE_DIR}/utility"

@@ -43,6 +43,8 @@ extern "C" {
 	#include "sim_vcd_file.h"
 }
 
+#include <tclap/CmdLine.h>
+
 #include "parts/Board.h"
 #include "Printer.h"
 #include "printers/Prusa_MK3S.h"
@@ -123,70 +125,68 @@ void * glutThread(void* p)
     glutMainLoop();
     return NULL;
 }
-
+using namespace TCLAP;
+using namespace std;
 int main(int argc, char *argv[])
 {
-	std::string strModel = "Prusa_MK3S";
+	CmdLine cmd("tset",' ',"0.1");
+	SwitchArg argWait("w","wait","Wait after the printer (and any PTYs) are set up but before starting execution.");
+	cmd.add(argWait);
+	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");
+	cmd.add(argSpam);
+	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.");
+	cmd.add(argSerial);
+	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
+	cmd.add(argLoad);
+	vector<string> vstrGfx = {"lite","fancy"};
+	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
+	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
+	cmd.add(argGfx);
+	ValueArg<string> argFW("f","firmware","hex/afx Firmware file to load (default MK3S.afx)",false,"MK3S.afx","filename");
+	cmd.add(argFW);
+	MultiSwitchArg argDebug("d","debug","Increases debugging output, where supported.");
+	cmd.add(argDebug);
+	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.");
+	cmd.add(argBootloader);
+
+
+	vector<string> vstrPrinters = {"Prusa_MK3S","Prusa_MK3SMMU2"};
+	ValuesConstraint<string> vcAllowed(vstrPrinters);
+
+	UnlabeledValueArg<string> argModel("printer","Model name of the printer to run",false,"Prusa_MK3S",&vcAllowed);
+	cmd.add(argModel);
+
+	cmd.parse(argc,argv);
+
 	std::string strFW;
-	bool bWait = false, bMMU = false, bLoadFW = false;
-	int iArgStart = 1;
-	if (strncmp(argv[1],"-",1)!=0)
+	if (!argLoad.isSet() && !argFW.isSet())
+		strFW = ""; // No firmware and no load directive.
+	else
+		strFW = argFW.getValue();
+
+	if (!argModel.isSet() || vstrPrinters[0].compare(argModel.getValue())==0)
 	{
-		iArgStart++;
-		// Got a printer model.
-		if (!strcmp(argv[1],"Prusa_MK3SMMU2"))
-		{
-			Prusa_MK3S *p = new Prusa_MK3SMMU2();
+			Prusa_MK3S *p = new Prusa_MK3S(strFW, argSerial.isSet());
+			if (argBootloader.isSet()) p->SetStartBootloader();
 			p->CreateBoard();
 			pBoard = p;
 			printer = p;
-		}
-		else if (!strcmp(argv[1],"Prusa_MK3S"))
-		{
-			Prusa_MK3S *p = new Prusa_MK3S();
-			p->CreateBoard();
-			pBoard = p;
-			printer = p;
-		}
 	}
 	else
 	{
-		Prusa_MK3S *p = new Prusa_MK3S();
-		p->CreateBoard();
-		pBoard = p;
-		printer = p;
+			Prusa_MK3S *p = new Prusa_MK3SMMU2(strFW, argSerial.isSet());
+			if (argBootloader.isSet()) p->SetStartBootloader();
+			p->CreateBoard();
+			pBoard = p;
+			printer = p;
 	}
-
-	int debug = 0;
-	uint8_t chrLogSerial = ' ';
-	int verbose = 1;
-	for (int i = iArgStart; i < argc; i++) {
-		if (!strcmp(argv[i] + strlen(argv[i]) - 4, ".hex"))
-			strFW.copy(argv[i],strlen(argv[i]));
-		else if (!strcmp(argv[i], "-d"))
-			debug++;
-		else if (!strcmp(argv[i], "-v"))
-			verbose++;
-		else if (!strcmp(argv[i], "-b"))
-			pBoard->SetStartBootloader();
-		else if (!strcmp(argv[i], "-w"))
-			bWait = true;
-		else if (!strcmp(argv[i], "-l"))
-			bLoadFW = true;
-		else if (!strcmp(argv[i], "-m"))
-			bMMU = true;
-		else if (!strcmp(argv[i], "--lite"))
+	if (argGfx.isSet())
+	{
+		if (vstrGfx[0].compare(argGfx.getValue())==0)
 			printer->SetVisualType(Printer::VisualType::SIMPLE);
-		else if (!strcmp(argv[i], "--fancy"))
+		else
 			printer->SetVisualType(Printer::VisualType::ADVANCED);
-		else if (!strcmp(argv[i], "-S0"))
-			printer->SetConnectSerial(true);
-		else if (!strncmp(argv[i], "-lg",3))
-			chrLogSerial = argv[i][3];
-		else {
-			fprintf(stderr, "%s: invalid argument %s\n", argv[0], argv[i]);
-			exit(1);
-		}
+
 	}
 
 	glutInit(&argc, argv);		/* initialize GLUT system */
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.
-	if (bWait)
+	if (argWait.isSet())
 	{
 		printf("Paused - press any key to resume execution\n");
 		getchar();

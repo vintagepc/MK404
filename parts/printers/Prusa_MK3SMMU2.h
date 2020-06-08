@@ -28,7 +28,8 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 {
 
 	public:
-		Prusa_MK3SMMU2():Prusa_MK3S(){};
+		template<typename ...Args>
+		Prusa_MK3SMMU2(Args... args):Prusa_MK3S(args...){};
 		~Prusa_MK3SMMU2();
 
 		void Draw() override;

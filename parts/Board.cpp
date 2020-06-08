@@ -158,7 +158,7 @@ avr_flashaddr_t Board::LoadFirmware(string strFW)
 			elf_firmware_t fw;
 			elf_read_firmware(strFW.c_str(), &fw);
 			avr_load_firmware(m_pAVR, &fw);
-			printf("Loaded %u bytes from ELF file: %s\n",uiFWSize, strFW.c_str());
+			printf("Loaded %u bytes from ELF file: %s\n",fw.flashsize, strFW.c_str());
 			return fw.flashbase;
 		}
 	}

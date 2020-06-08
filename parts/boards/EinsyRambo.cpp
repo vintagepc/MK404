@@ -207,9 +207,12 @@ namespace Boards
 
 		m_bFactoryReset = false;
 
-		// TIMSK2
-		avr_regbit_t rb = AVR_IO_REGBITS(0x70, 0, 0b111);
-		avr_regbit_setto(m_pAVR,rb,0x01);
+		// TIMSK2 hack for stock prusa firmware.
+		if (!GetDisableWorkarounds())
+		{
+			avr_regbit_t rb = AVR_IO_REGBITS(0x70, 0, 0b111);
+			avr_regbit_setto(m_pAVR,rb,0x01);
+		}
 
 		//Reset all SPI SS lines
 		SetPin(W25X20CL_PIN_CS,1);

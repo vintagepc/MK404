@@ -136,6 +136,8 @@ int main(int argc, char *argv[])
 	cmd.add(argSpam);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.");
 	cmd.add(argSerial);
+	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.");
+	cmd.add(argNoHacks);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
 	cmd.add(argLoad);
 	vector<string> vstrGfx = {"lite","fancy"};
@@ -168,6 +170,7 @@ int main(int argc, char *argv[])
 	{
 			Prusa_MK3S *p = new Prusa_MK3S(strFW, argSerial.isSet());
 			if (argBootloader.isSet()) p->SetStartBootloader();
+			p->SetDisableWorkarounds(argNoHacks.isSet());
 			p->CreateBoard();
 			pBoard = p;
 			printer = p;
@@ -176,10 +179,12 @@ int main(int argc, char *argv[])
 	{
 			Prusa_MK3S *p = new Prusa_MK3SMMU2(strFW, argSerial.isSet());
 			if (argBootloader.isSet()) p->SetStartBootloader();
+			p->SetDisableWorkarounds(argNoHacks.isSet());
 			p->CreateBoard();
 			pBoard = p;
 			printer = p;
 	}
+
 	if (argGfx.isSet())
 	{
 		if (vstrGfx[0].compare(argGfx.getValue())==0)

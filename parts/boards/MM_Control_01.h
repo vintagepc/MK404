@@ -18,8 +18,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BOARD_MM_CONTROL_01_H__
-#define __BOARD_MM_CONTROL_01_H__
+#pragma once
 
 #include <Board.h>
 
@@ -35,8 +34,8 @@ namespace Boards
 	class MM_Control_01: public Board
 	{
 		public:
-			MM_Control_01(std::string strFW = "MM-control-01.hex", uint32_t uiFreq = 16000000)
-				:Board(m_wiring,strFW,uiFreq){};
+			MM_Control_01(uint32_t uiFreq = 16000000)
+				:Board(m_wiring,uiFreq){};
 
 		protected:
 			void SetupHardware() override;
@@ -55,4 +54,3 @@ namespace Boards
 			const Wirings::MM_Control_01 m_wiring;
 	};
 };
-#endif

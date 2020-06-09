@@ -45,27 +45,27 @@ void Board::CreateAVR()
 	avr_init(m_pAVR);
 }
 
-void Board::CreateBoard()
+void Board::CreateBoard(string strFW, uint8_t uiV, string strBoot)
 {
 	CreateAVR();
-	if (!m_strFW.empty())
+	if (!strFW.empty())
 	{
-		m_FWBase = LoadFirmware(m_strFW);
+		m_FWBase = LoadFirmware(strFW);
 		m_pAVR->pc = m_FWBase;
 	}
 	else
 		printf("NOTE: No firmware load requested, %s executing purely from flash memory.\n", m_strBoard.c_str());
 
-	if (!m_strBoot.empty())
+	if (!strBoot.empty())
 	{
-		m_bootBase = LoadFirmware(m_strBoot);
+		m_bootBase = LoadFirmware(strBoot);
 		m_pAVR->reset_pc = m_bootBase;
 	}
 	m_pAVR->frequency = m_uiFreq;
 	m_pAVR->vcc = 5000;
 	m_pAVR->aref = 0;
 	m_pAVR->avcc = 5000;
-	//m_pAVR->log = 1 + verbose;
+	m_pAVR->log = 1 + uiV;
 
 	// even if not setup at startup, activate gdb if crashing
 	m_pAVR->gdb_port = 1234;

@@ -45,7 +45,7 @@ namespace Boards
 			// Creates a new board with the given pinspec, firmware file, frequency, and (optional) bootloader hex
 			Board(const Wiring &wiring,uint32_t uiFreqHz):m_wiring(wiring),m_uiFreq(uiFreqHz){};
 
-			virtual ~Board(){};
+			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};
 
 			void CreateBoard(string strFW, uint8_t uiVerbose, string strBoot = "stk500boot_v2_mega2560.hex");
 			void StartAVR();

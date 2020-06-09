@@ -39,11 +39,7 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
         // Creates a new MMU2. Does all of the setup and firmware load.
         MMU2();
 
-        // Actually starts the MMU processing thread.
-        void Start();
-
-        // Shuts down the MMU thread.
-        void Stop();
+		~MMU2(){StopAVR();}
 
         // Returns the name of the serial port (for the pipe thread)
         std::string GetSerialPort();
@@ -52,13 +48,13 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
 
     protected:
         void SetupHardware() override;
-        
+
     private:
 
         void* Run();
 
         void OnResetIn(avr_irq_t *irq, uint32_t value);
-        
+
         void OnPulleyFeedIn(avr_irq_t *irq, uint32_t value);
 
         void LEDHandler(avr_irq_t *irq, uint32_t value);
@@ -67,7 +63,7 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
         bool m_bStarted = false;
         bool m_bReset = false;
         pthread_t m_tRun;
-     
+
         std::string m_strTitle = "Missing Material Unit 2";
 
         static MMU2 *g_pMMU; // Needed for GL

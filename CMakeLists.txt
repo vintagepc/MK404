@@ -60,6 +60,7 @@ set(INCLUDE_FILES
     parts/boards/MM_Control_01.h
 	parts/boards/EinsyRambo.h
 	parts/Printer.h
+	parts/PrinterFactory.h
     parts/Wiring.h
     parts/wiring/MM_Control_01.h
 	parts/wiring/Einsy_1_0a.h

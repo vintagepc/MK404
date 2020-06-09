@@ -28,10 +28,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 {
 
 	public:
-		Prusa_MK3S():EinsyRambo(){};
-		Prusa_MK3S(std::string strFW):EinsyRambo(strFW){};
-		Prusa_MK3S(bool bConnSerial):EinsyRambo(),Printer(bConnSerial){};
-		Prusa_MK3S(std::string strFW,bool bConnSerial):EinsyRambo(strFW),Printer(bConnSerial){};
+		Prusa_MK3S():EinsyRambo(),Printer(){};
 
 		void Draw() override;
 		void OnKeyPress(unsigned char key, int x, int y) override;

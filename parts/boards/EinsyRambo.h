@@ -53,8 +53,8 @@ namespace Boards
 	class EinsyRambo: public Board
 	{
 		public:
-			EinsyRambo(std::string strFW = "MK3S.afx", uint32_t uiFreq = 16000000,std::string strBoot = "stk500boot_v2_mega2560.hex")
-				:Board(m_wiring,strFW,uiFreq,strBoot){ SetBoardName("Einsy");};
+			EinsyRambo(uint32_t uiFreq = 16000000)
+				:Board(m_wiring,uiFreq){ SetBoardName("Einsy");};
 
 		protected:
 			void SetupHardware() override;

@@ -43,12 +43,11 @@ namespace Boards
 			typedef signed char MCUPin;
 
 			// Creates a new board with the given pinspec, firmware file, frequency, and (optional) bootloader hex
-			Board(const Wiring &wiring, string strFW, uint32_t uiFreqHz, string strBoot = ""):
-				m_wiring(wiring),m_strFW(strFW),m_uiFreq(uiFreqHz),m_strBoot(strBoot){};
+			Board(const Wiring &wiring,uint32_t uiFreqHz):m_wiring(wiring),m_uiFreq(uiFreqHz){};
 
 			virtual ~Board(){};
 
-			void CreateBoard();
+			void CreateBoard(string strFW, uint8_t uiVerbose, string strBoot = "stk500boot_v2_mega2560.hex");
 			void StartAVR();
 			void StopAVR();
 
@@ -233,7 +232,7 @@ namespace Boards
 			bool m_bQuit = false, m_bReset = false, m_bNoHacks = false;
 			pthread_t m_thread = 0;
 			const Wiring &m_wiring;
-			const std::string m_strFW, m_strBoot;
+			//std::string m_strFW, m_strBoot;
 			std::string m_strBoard;
 			const uint32_t m_uiFreq;
 

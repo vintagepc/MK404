@@ -33,7 +33,7 @@ class Printer
 			ADVANCED = 0x2,
 		};
 
-		Printer(bool bConnSerial = false):m_bConnectSerial(bConnSerial){};
+		Printer(){};
 		// GL methods, use these to render your printer visuals and
 		virtual void Draw(){};
 

@@ -45,10 +45,9 @@ extern "C" {
 
 #include <tclap/CmdLine.h>
 
+#include "PrinterFactory.h"
 #include "parts/Board.h"
 #include "Printer.h"
-#include "printers/Prusa_MK3S.h"
-#include "printers/Prusa_MK3SMMU2.h"
 
 avr_vcd_t vcd_file;
 
@@ -152,7 +151,7 @@ int main(int argc, char *argv[])
 	cmd.add(argBootloader);
 
 
-	vector<string> vstrPrinters = {"Prusa_MK3S","Prusa_MK3SMMU2"};
+	vector<string> vstrPrinters = PrinterFactory::GetModels();
 	ValuesConstraint<string> vcAllowed(vstrPrinters);
 
 	UnlabeledValueArg<string> argModel("printer","Model name of the printer to run",false,"Prusa_MK3S",&vcAllowed);
@@ -166,23 +165,15 @@ int main(int argc, char *argv[])
 	else
 		strFW = argFW.getValue();
 
+	PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),strFW,argSpam.getValue());
+
 	if (!argModel.isSet() || vstrPrinters[0].compare(argModel.getValue())==0)
 	{
-			Prusa_MK3S *p = new Prusa_MK3S(strFW, argSerial.isSet());
-			if (argBootloader.isSet()) p->SetStartBootloader();
-			p->SetDisableWorkarounds(argNoHacks.isSet());
-			p->CreateBoard();
-			pBoard = p;
-			printer = p;
+		//PrinterFactory::CreatePrinter<Prusa_MK3S>(pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(), strFW, argSerial.isSet());
 	}
 	else
 	{
-			Prusa_MK3S *p = new Prusa_MK3SMMU2(strFW, argSerial.isSet());
-			if (argBootloader.isSet()) p->SetStartBootloader();
-			p->SetDisableWorkarounds(argNoHacks.isSet());
-			p->CreateBoard();
-			pBoard = p;
-			printer = p;
+		//PrinterFactory::CreatePrinter<Prusa_MK3SMMU2>(pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(), strFW, argSerial.isSet());
 	}
 
 	if (argGfx.isSet())

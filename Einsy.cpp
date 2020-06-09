@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 	else
 		strFW = argFW.getValue();
 
-	PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),strFW,argSpam.getValue());
+	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),strFW,argSpam.getValue());
 
 	if (!argModel.isSet() || vstrPrinters[0].compare(argModel.getValue())==0)
 	{
@@ -216,6 +216,8 @@ int main(int argc, char *argv[])
 
 	glutLeaveMainLoop();
 	pthread_cancel(run); // Kill the GL thread.
+
+	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);
 
 	printf("Done\n");
 

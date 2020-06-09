@@ -34,60 +34,78 @@
 	sure that's the right way to go yet. I think time will tell once we get more models
 	in place...
 */
-template<class P>
-class _PrinterFactory
-{
-	public:
-		static void CreatePrinter(Boards::Board *&pBoard, Printer *&pPrinter)
-		{
-			P* p = new P();
-			pPrinter = p;
-			pBoard = p;
-		};
-};
-
+//typedef void(*Dtor)();
 class PrinterFactory
 {
 	public:
+
 		template<typename ...Args>
-		static void CreatePrinter(string strPrinter, Boards::Board *&pBoard, Printer *&pPrinter, bool bBL, bool bNoHacks, Args...args)
+		static void* CreatePrinter(string strPrinter, Boards::Board *&pBoard, Printer *&pPrinter, bool bBL, bool bNoHacks, Args...args)
 		{
-				GetPrinterByName(strPrinter,pBoard,pPrinter);
+				void* p = (GetPrinterByName(strPrinter,pBoard,pPrinter));
 				if (bBL) pBoard->SetStartBootloader();
 				pBoard->SetDisableWorkarounds(bNoHacks);
 				pBoard->CreateBoard(args...);
+				return p;
 		};
 
 		static vector<string> GetModels()
 		{
-			auto models = GetMap();
 			vector<string> strModels;
-			for(map<string,Ctor>::iterator it = models.begin(); it != models.end(); ++it)
+			for(auto it = m_Models.begin(); it != m_Models.end(); ++it)
 				strModels.push_back(it->first);
 			return strModels;
 		}
 
-		static void GetPrinterByName(const string &strModel,Boards::Board *&pBoard, Printer *&pPrinter)
+		static void* GetPrinterByName(const string &strModel,Boards::Board *&pBoard, Printer *&pPrinter)
 		{
-			auto models = GetMap();
-			if (!models.count(strModel))
+			if (!m_Models.count(strModel))
 			{
 				fprintf(stderr, "ERROR: Cannot create printer model '%s'. It is not registered. (Also, how did you bypass the argument constraints?!?\n",strModel.c_str());
 				pBoard = nullptr;
 				pPrinter = nullptr;
+				return nullptr;
 			}
-			models.at(strModel)(pBoard,pPrinter);
-
+			Ctor fnCreate = m_Models.at(strModel).first;
+			return fnCreate(pBoard,pPrinter);
 		}
 
-	private:
-		typedef void(*Ctor)(Boards::Board *&pBoard, Printer *&pPrinter);
-		// TODO: maybe a way to have printer classes register dynamically instead of needing to add them to the map?
-		static map<string,Ctor> GetMap() {
-			map<string,Ctor> m_Models = {
-				std::make_pair("Prusa_MK3S",&_PrinterFactory<Prusa_MK3S>::CreatePrinter),
-				std::make_pair("Prusa_MK3SMMU2",&_PrinterFactory<Prusa_MK3SMMU2>::CreatePrinter),
-			};
-			return m_Models;
+		static void DestroyPrinterByName(const string &strModel, void* p)
+		{
+			if (!m_Models.count(strModel))
+			{
+				fprintf(stderr, "ERROR: Cannot delete printer model '%s'. It is not registered. (Also, how did you bypass the argument constraints?!?\n",strModel.c_str());
+				return;
+			}
+			m_Models.at(strModel).second(p);
+		}
+
+		template<class P>
+		static void* _CreatePrinter(Boards::Board *&pBoard, Printer *&pPrinter)
+		{
+			P* p = new P();
+			pPrinter = p;
+			pBoard = p;
+			return p;
 		};
+
+		template<class P>
+		static void _DestroyPrinter(void *p)
+		{
+			P* printer = (P*)p;
+			printer->StopAVR();
+			delete printer;
+		};
+
+	private:
+		typedef void*(*Ctor)(Boards::Board *&pBoard, Printer *&pPrinter);
+		typedef void(*Dtor)(void* p);
+
+		// TODO: maybe a way to have printer classes register dynamically instead of needing to add them to the map?
+		static map<string,pair<Ctor,Dtor>> m_Models;
+};
+
+map<string,pair<PrinterFactory::Ctor,PrinterFactory::Dtor>>  PrinterFactory::m_Models  = {
+	std::make_pair("Prusa_MK3S",		make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3S>	, &PrinterFactory::_DestroyPrinter<Prusa_MK3S>)),
+	std::make_pair("Prusa_MK3SMMU2",	make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3SMMU2>, &PrinterFactory::_DestroyPrinter<Prusa_MK3SMMU2>))
 };

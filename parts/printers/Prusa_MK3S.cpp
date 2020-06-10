@@ -75,7 +75,7 @@ void Prusa_MK3S::OnVisualTypeSet(VisualType type)
 	if (type==VisualType::MINIMAL)
 		return;
 
-	m_pVis = new MK3SGL(type==VisualType::SIMPLE,GetHasMMU());
+	m_pVis = new MK3SGL(type==VisualType::SIMPLE,GetHasMMU(),this);
 
 	AddHardware(*m_pVis);
 

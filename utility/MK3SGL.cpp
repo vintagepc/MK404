@@ -38,7 +38,7 @@
 
 MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
 
-MK3SGL::MK3SGL(bool bLite, bool bMMU):m_bLite(bLite),m_bMMU(bMMU)
+MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bMMU),m_pParent(pParent)
 {
 	if (g_pMK3SGL)
 	{
@@ -59,7 +59,9 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU):m_bLite(bLite),m_bMMU(bMMU)
 	glMatrixMode(GL_PROJECTION);
 	auto fcnDraw = []() { g_pMK3SGL->Draw();};
 	glutDisplayFunc(fcnDraw);
-	//glutKeyboardFunc(fcnKey); // same func as main window.
+
+	auto fcnKey = [](unsigned char c, int x, int y) { g_pMK3SGL->KeyCB(c,x,y);};
+	glutKeyboardFunc(fcnKey); // same func as main window.
 
 	auto fwd = [](int button, int state, int x, int y) {g_pMK3SGL->MouseCB(button,state,x,y);};
 	glutMouseFunc(fwd);
@@ -108,6 +110,12 @@ void MK3SGL::ResetCamera()
 	m_camera.setWindowSize(800,800);
 	m_camera.setEye(0,0.5,3);
 	m_camera.setCenter(0,0,0);
+}
+
+void MK3SGL::KeyCB(unsigned char c, int x, int y)
+{
+	if (m_pParent)
+		m_pParent->OnKeyPress(c,x,y);
 }
 
 void MK3SGL::Init(avr_t *avr)

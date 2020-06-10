@@ -49,7 +49,7 @@ class MK3SGL: public BasePeripheral
         // Twists the displayed knob in response to input from mouse/keyboard.
         void TwistKnob(bool bDir);
 
-        // Attaches the GL LCD for rendering. 
+        // Attaches the GL LCD for rendering.
         void SetLCD(HD44780GL* pLCD){m_pLCD = pLCD;}
 
         // Clears the displayed print.
@@ -78,7 +78,7 @@ class MK3SGL: public BasePeripheral
 
 
     private:
-       
+
         GLObj m_Extruder = GLObj("assets/X_AXIS.obj");
         GLObj m_Z = GLObj("assets/Z_AXIS.obj");
         GLObj m_Y = GLObj("assets/Y_AXIS.obj");
@@ -138,10 +138,10 @@ class MK3SGL: public BasePeripheral
         float m_fEPos = 0;
         float m_fERetract= 0; bool m_bInRetract = false;
         float m_fSelCorr = 0.025f, m_fSelPos = 0.0f;
-        
+
         // This is going to be in degrees rotation instead of mm
         float m_fIdlCorr = 20.00f, m_fIdlPos = 0.0f;
-        
+
         int m_iKnobPos = 0, m_iFanPos = 0, m_iPFanPos = 0;
 
         bool m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false, m_bPINDAOn = false;
@@ -149,6 +149,7 @@ class MK3SGL: public BasePeripheral
 
         int height = 800, width = 800, m_iWindow = 0;
 
+		static MK3SGL *g_pMK3SGL;
 
         float maxExtent;
 };

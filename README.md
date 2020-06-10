@@ -15,6 +15,10 @@ Remaining To-Dos of note:
 
 ![](https://user-images.githubusercontent.com/53943260/80157964-63404880-8595-11ea-9bfe-55668a0d4807.png)
 
+- Fancy graphics:
+
+![](images/Advanced_gfx.png)
+
 - Bootloader works
 - LCD works 99% of the way. Brightness support has been fixed.
 - Encoder and buttons are simulated
@@ -28,13 +32,11 @@ Remaining To-Dos of note:
 - TMC2130s are sufficiently simulated for general operations.
 - Motor/positioning tracking present, but crude.
 - SPI flash for language support works, but must be manually flashed in two stages due to lack of DTR on PTYs.
-
-- Full boot (Serial bug fixed)
-
-![](https://user-images.githubusercontent.com/53943260/78808917-1f91f000-7994-11ea-87ae-fd7fa096972b.png)
-
 - The timer bug has been resolved using a customized build of SimAVR.
 - Einsy eeprom is persisted between reboots.
+- Virtual MMU support:
+
+![](images/MMU2.png)
 
 # Getting Started:
 

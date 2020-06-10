@@ -88,7 +88,7 @@ void MotionCB(int x, int y)
 void timerCB(int i)
 {
 	glutTimerFunc(50, timerCB, i^1);
-	glutPostRedisplay();
+	displayCB();
 }
 
 int initGL(int w, int h)
@@ -176,15 +176,6 @@ int main(int argc, char *argv[])
 		//PrinterFactory::CreatePrinter<Prusa_MK3SMMU2>(pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(), strFW, argSerial.isSet());
 	}
 
-	if (argGfx.isSet())
-	{
-		if (vstrGfx[0].compare(argGfx.getValue())==0)
-			printer->SetVisualType(Printer::VisualType::SIMPLE);
-		else
-			printer->SetVisualType(Printer::VisualType::ADVANCED);
-
-	}
-
 	glutInit(&argc, argv);		/* initialize GLUT system */
 
 	std::pair<int,int> winSize = printer->GetWindowSize();
@@ -197,6 +188,15 @@ int main(int argc, char *argv[])
 	window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
 
 	initGL(w * pixsize, h * pixsize);
+
+	if (argGfx.isSet())
+	{
+		if (vstrGfx[0].compare(argGfx.getValue())==0)
+			printer->SetVisualType(Printer::VisualType::SIMPLE);
+		else
+			printer->SetVisualType(Printer::VisualType::ADVANCED);
+
+	}
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.

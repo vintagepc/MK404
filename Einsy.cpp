@@ -128,7 +128,7 @@ using namespace TCLAP;
 using namespace std;
 int main(int argc, char *argv[])
 {
-	CmdLine cmd("tset",' ',"0.1");
+	CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',"0.1");
 	SwitchArg argWait("w","wait","Wait after the printer (and any PTYs) are set up but before starting execution.");
 	cmd.add(argWait);
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
 	cmd.add(argGfx);
-	ValueArg<string> argFW("f","firmware","hex/afx Firmware file to load (default MK3S.afx)",false,"MK3S.afx","filename");
+	ValueArg<string> argFW("f","firmware","hex/afx/elf Firmware file to load (default MK3S.afx)",false,"MK3S.afx","filename");
 	cmd.add(argFW);
 	MultiSwitchArg argDebug("d","debug","Increases debugging output, where supported.");
 	cmd.add(argDebug);

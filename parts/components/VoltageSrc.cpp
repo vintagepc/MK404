@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "Util.h"
 #include "avr_adc.h"
 #include "VoltageSrc.h"
 
@@ -43,7 +42,7 @@ VoltageSrc::VoltageSrc(float fVScale,float fStart):m_fCurrentV(fStart), m_fVScal
 
 void VoltageSrc::Init(struct avr_t * avr , uint8_t uiMux)
 {
-    _Init(avr,uiMux,this);	
+    _Init(avr,uiMux,this);
     RegisterNotify(VALUE_IN, MAKE_C_CALLBACK(VoltageSrc,OnInput), this);
 }
 

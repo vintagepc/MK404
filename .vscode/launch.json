@@ -10,7 +10,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Einsy",
-            "args": [],
+            "args": ["Prusa_MK3S"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [],
@@ -29,7 +29,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Einsy",
-            "args": ["-m"],
+            "args": ["Prusa_MK3SMMU2"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [],
@@ -48,7 +48,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Einsy",
-            "args": ["--fancy"],
+            "args": ["Prusa_MK3SMMU2","--fancy"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [],
@@ -67,7 +67,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Einsy",
-            "args": ["--lite"],
+            "args": ["Prusa_MK3SMMU2","--lite"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [],
@@ -80,6 +80,25 @@
                     "ignoreFailures": true
                 }
             ]
-        }
+		},
+		{
+            "name": "(gdb) Launch Marlin",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Einsy",
+            "args": ["-n","-f Marlin.afx"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
     ]
 }

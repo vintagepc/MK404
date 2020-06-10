@@ -1,7 +1,5 @@
 /*
-
-    Util.h - convenience helpers for working with SimAVR.
-
+	Einsy_1_1a.h - Pin definition for an Einsy 1.1a
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK3SIM.
@@ -22,4 +20,33 @@
 
 #pragma once
 
-// This file is currently empty.
+#include <Einsy_1_0a.h>
+namespace Wirings
+{
+	class Einsy_1_1a : public Einsy_1_0a
+	{
+		public:
+			Einsy_1_1a():Einsy_1_0a()
+			{
+				m_mPins = GetPinMap();
+			};
+
+		protected:
+			std::map<Pin, MCUPin> GetPinMap() override {
+				auto baseMap = Einsy_1_0a::GetPinMap();
+				baseMap[IR_SENSOR_PIN] = 62;
+				baseMap.erase(KILL_PIN);
+				baseMap[LCD_BL_PIN] = 5;
+				baseMap[MMU_HWRESET] = 76;
+				baseMap[TACH_0] = 79;
+				baseMap[TACH_1] = 80;
+				baseMap[TEMP_PINDA_PIN] = 3;
+				baseMap[UVLO_PIN] = 2;
+				baseMap[VOLT_BED_PIN] = 9;
+				baseMap[VOLT_IR_PIN] = 8;
+				baseMap[VOLT_PWR_PIN] = 4;
+				baseMap[W25X20CL_PIN_CS] = 32;
+				return baseMap;
+			};
+	};
+};

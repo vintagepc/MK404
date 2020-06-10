@@ -30,9 +30,12 @@
 class Einsy_EEPROM: public BasePeripheral {
 	public:
 
+	Einsy_EEPROM(){};
 	// Loads EEPROM from a file or initializes the file for the first time.
-	Einsy_EEPROM(struct avr_t * avr, const char* path);
+	Einsy_EEPROM(struct avr_t * avr, const char* path)
+	{ Load(avr, path);};
 
+	void Load(struct avr_t * avr, const char* path);
 	// Saves EEPROM to the file
 	void Save();
 
@@ -46,7 +49,7 @@ class Einsy_EEPROM: public BasePeripheral {
 	private:
 		char m_strPath[1024];
 		int m_fdEEPROM = 0;
-		const uint16_t m_uiSize = 4096;
+		uint16_t m_uiSize = 4096;
 
 };
 

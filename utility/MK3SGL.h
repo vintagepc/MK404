@@ -26,6 +26,7 @@
 #include "HD44780GL.h"
 #include <GLPrint.h>
 #include <Camera.hpp>
+#include "Printer.h"
 
 class MK3SGL: public BasePeripheral
 {
@@ -38,7 +39,7 @@ class MK3SGL: public BasePeripheral
 
 
         // Creates new MK3SGL object, with lite graphics (or full) and an MMU (or not)
-        MK3SGL(bool bLite, bool bMMU);
+        MK3SGL(bool bLite, bool bMMU, Printer *pParent = nullptr);
 
         // IRQ registration helper.
         void Init(avr_t *avr);
@@ -73,12 +74,12 @@ class MK3SGL: public BasePeripheral
 
         // GL helpers needed for the window and mouse callbacks, use when creating the GL window.
         void MouseCB(int button, int state, int x, int y);
-        void MotionCB(int x, int y);
+		void MotionCB(int x, int y);
+        void KeyCB(unsigned char key, int x, int y);
         void SetWindow(int iWin) { m_iWindow = iWin;};
 
 
     private:
-
         GLObj m_Extruder = GLObj("assets/X_AXIS.obj");
         GLObj m_Z = GLObj("assets/Z_AXIS.obj");
         GLObj m_Y = GLObj("assets/Y_AXIS.obj");
@@ -94,6 +95,8 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUBase = GLObj("assets/MMU_stationary.obj");
         GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
+
+		Printer *m_pParent = nullptr;
 
         GLPrint m_Print;
 

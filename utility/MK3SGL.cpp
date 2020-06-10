@@ -34,8 +34,50 @@
 
 #include <GL/glew.h>
 #include <GL/glut.h>
-MK3SGL::MK3SGL(bool bLite, bool bMMU):m_bLite(bLite),m_bMMU(bMMU)
+#include <GL/freeglut.h>
+
+MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
+
+MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bMMU),m_pParent(pParent)
 {
+	if (g_pMK3SGL)
+	{
+		fprintf(stderr,"ERROR: Cannot have multiple MK3SGL instances due to freeglut limitations.\n");
+		exit(1);
+	}
+	g_pMK3SGL = this;
+
+	glewInit();
+
+	glutSetOption(GLUT_MULTISAMPLE,4);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE) ;
+	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
+	m_iWindow = glutCreateWindow("Fancy Graphics");	/* create window */
+
+
+	glViewport(0, 0, 800, 800);
+	glMatrixMode(GL_PROJECTION);
+	auto fcnDraw = []() { g_pMK3SGL->Draw();};
+	glutDisplayFunc(fcnDraw);
+
+	auto fcnKey = [](unsigned char c, int x, int y) { g_pMK3SGL->KeyCB(c,x,y);};
+	glutKeyboardFunc(fcnKey); // same func as main window.
+
+	auto fwd = [](int button, int state, int x, int y) {g_pMK3SGL->MouseCB(button,state,x,y);};
+	glutMouseFunc(fwd);
+
+	auto fcnMove = [](int x, int y) { g_pMK3SGL->MotionCB(x,y);};
+
+	glutMotionFunc(fcnMove);
+
+	glLoadIdentity();
+	gluPerspective(45.0, (float)800 / (float)800, 0.01f, 100.0f);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glEnable(GL_MULTISAMPLE);
+
 	ResetCamera();
 	for(int i=0; i<m_vObjLite.size(); i++)
 		m_vObjLite[i]->Load();
@@ -68,6 +110,12 @@ void MK3SGL::ResetCamera()
 	m_camera.setWindowSize(800,800);
 	m_camera.setEye(0,0.5,3);
 	m_camera.setCenter(0,0,0);
+}
+
+void MK3SGL::KeyCB(unsigned char c, int x, int y)
+{
+	if (m_pParent)
+		m_pParent->OnKeyPress(c,x,y);
 }
 
 void MK3SGL::Init(avr_t *avr)
@@ -176,7 +224,7 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 	static constexpr uint8_t iLedBase[2] = {38, 32}; // G, R
 	static constexpr uint8_t iLedObj[10] = {4,4,0,0,1,1,2,2,3,3};
 	static constexpr uint8_t iMtlOff[2] = {32, 31};
-	static constexpr uint8_t iMtlOn[2] = {38,37}; 
+	static constexpr uint8_t iMtlOn[2] = {38,37};
 	for (int i=0; i<10; i++)
 	{
 		if ((bChanged>>i) &1)
@@ -217,12 +265,14 @@ void MK3SGL::Draw()
 {
 		//if (!m_bDirty)
 		//    return;
-		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
-		glClearDepth(1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	int iOldWin = glutGetWindow();
+	glutSetWindow(m_iWindow);
+	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+	glClearDepth(1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_TEXTURE_2D);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_TEXTURE_2D);
 	glLoadIdentity();
 	//printf("eye: %f %f %f\n",curr_quat[0],curr_quat[1], curr_quat[2]);
 		float pos[] = {2,2,2,0};
@@ -243,7 +293,7 @@ void MK3SGL::Draw()
 		glLightfv(GL_LIGHT0,GL_POSITION, pos);
 		glEnable(GL_LIGHT0);
 
-		glEnable(GL_LIGHTING); 
+		glEnable(GL_LIGHTING);
 		glMatrixMode(GL_MODELVIEW);
 		glEnable(GL_NORMALIZE);
 		glLoadIdentity();
@@ -253,7 +303,7 @@ void MK3SGL::Draw()
 			float fSize = 0.1f;
 			float fBase[3];
 			glLineWidth(2.f);
-			// If a mouse button is pressed, draw the "look at" axis. 
+			// If a mouse button is pressed, draw the "look at" axis.
 			glPushMatrix();
 				glEnable(GL_COLOR_MATERIAL);
 				glBegin(GL_LINES);
@@ -275,11 +325,11 @@ void MK3SGL::Draw()
 		float fExtent = m_Base.GetScaleFactor();
 		if (m_bLite)
 			fExtent = m_Y.GetScaleFactor();
-			
+
 		// Fit to -1, 1
 		glScalef(1.0f / fExtent, 1.0f / fExtent, 1.0f / fExtent);
 		float fTransform[3];
-		if (m_bLite)	
+		if (m_bLite)
 			m_Y.GetCenteringTransform(fTransform);
 		else
 			m_Base.GetCenteringTransform(fTransform);
@@ -292,7 +342,7 @@ void MK3SGL::Draw()
 				fLook[1]-=0.15f;
 			gluLookAt(fLook[0]+.001, fLook[1]+.003 ,fLook[2]+.08, fLook[0],fLook[1],fLook[2] ,0,1,0);
 		}
-		glPushMatrix();   
+		glPushMatrix();
 			glTranslatef(0,-m_fZCorr + (m_fZPos),0);
 			m_Z.Draw();
 			glPushMatrix();
@@ -347,11 +397,11 @@ void MK3SGL::Draw()
 					glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
 					glRotatef((float)m_iFanPos,1,0,0);
 					glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
-					
+
 					m_EFan.Draw();
 				glPopMatrix();
-	
-				glPushMatrix();  
+
+				glPushMatrix();
 					glScalef(fMM2M,fMM2M,fMM2M);
 					m_EVis.GetCenteringTransform(fTransform);
 					fTransform[1] +=1.5f;
@@ -383,7 +433,7 @@ void MK3SGL::Draw()
 		glPushMatrix();
 			glTranslatef(0.215,0.051,0.501);
 			glRotatef(-45.f,1,0,0);
-			glPushMatrix();  
+			glPushMatrix();
 				glRotatef((float)m_iKnobPos,0,0,1);
 				m_Knob.Draw();
 			glPopMatrix();
@@ -393,7 +443,7 @@ void MK3SGL::Draw()
 			glPushMatrix();
 				glTranslatef(0.101,0.0549,0.4925);
 				glRotatef(-45.f,1,0,0);
-				glPushMatrix();  
+				glPushMatrix();
 				float fScale = (4.f*0.076f)/500.f; // Disp is 76mm wide, lcd is drawn 500 wide at 4x scale
 					glScalef(fScale,fScale,fScale);
 					glScalef(1.0,-1.0f,-0.1f);
@@ -412,6 +462,7 @@ void MK3SGL::Draw()
 			DrawMMU();
 		glutSwapBuffers();
 		m_bDirty = false;
+		glutSetWindow(iOldWin);
 }
 
 void MK3SGL::DrawLED(float r, float g, float b)
@@ -443,8 +494,8 @@ void MK3SGL::DrawMMU()
 				m_MMUSel.GetCenteringTransform(fTransform);
 				glTranslatef(m_fSelPos - m_fSelCorr,0.062,0.123);
 				glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
-				glRotatef(-90,1,0,0);					
-				glRotatef(-2.5,0,1,0);					
+				glRotatef(-90,1,0,0);
+				glRotatef(-2.5,0,1,0);
 				glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 				m_MMUSel.Draw();
 			glPopMatrix();
@@ -454,37 +505,37 @@ void MK3SGL::DrawMMU()
 				fTransform[1]=-0.071;
 				fTransform[2]=-0.0929;
 				glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
-				glRotatef(-m_fIdlPos - m_fIdlCorr,1,0,0);					
+				glRotatef(-m_fIdlPos - m_fIdlCorr,1,0,0);
 				glRotatef(180,0,1,0);
 				glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 				m_MMUIdl.Draw();
 			glPopMatrix();
 
 		glPopMatrix();
-	}	
+	}
 
 
 void MK3SGL::MouseCB(int button, int action, int x, int y)
 {
  	if (button == GLUT_LEFT_BUTTON) {
-		if (action == GLUT_DOWN) 
+		if (action == GLUT_DOWN)
 			m_camera.beginRotate();
-		else if (action == GLUT_UP) 
+		else if (action == GLUT_UP)
 			m_camera.endRotate();
 	}
 	if (button == GLUT_RIGHT_BUTTON) {
-		if (action == GLUT_DOWN) 
+		if (action == GLUT_DOWN)
 			m_camera.beginPan();
-		else if (action == GLUT_UP) 
+		else if (action == GLUT_UP)
 			m_camera.endPan();
-		
+
 	}
 	if (button == GLUT_MIDDLE_BUTTON) {
 		if (action == GLUT_DOWN)
 			m_camera.beginZoom();
-		else if (action == GLUT_UP) 
+		else if (action == GLUT_UP)
 			m_camera.endZoom();
-		
+
 	}
 	if (button==3)
 		m_camera.zoom(0.5f);

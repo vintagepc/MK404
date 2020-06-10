@@ -1,7 +1,5 @@
 /*
-
-    Util.h - convenience helpers for working with SimAVR.
-
+	MM_Control_01.h - Board definition for the Prusa MMU2
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK3SIM.
@@ -22,4 +20,37 @@
 
 #pragma once
 
-// This file is currently empty.
+#include <Board.h>
+
+#include "uart_pty.h"
+#include "ADC_Buttons.h"
+#include "HC595.h"
+#include "LED.h"
+#include "TMC2130.h"
+
+#include <wiring/MM_Control_01.h>
+namespace Boards
+{
+	class MM_Control_01: public Board
+	{
+		public:
+			MM_Control_01(uint32_t uiFreq = 16000000)
+				:Board(m_wiring,uiFreq){};
+
+		protected:
+			void SetupHardware() override;
+
+		//	void CustomAVRInit() override;
+
+		//	void CustomAVRDeinit() override;
+
+			uart_pty m_UART;
+			HC595 m_shift;
+			TMC2130 m_Sel, m_Idl, m_Extr;
+			LED m_lGreen[5], m_lRed[5], m_lFINDA;
+			ADC_Buttons m_buttons;
+
+		private:
+			const Wirings::MM_Control_01 m_wiring;
+	};
+};

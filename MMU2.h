@@ -24,15 +24,11 @@
 
 #include <pthread.h>
 
-#include "uart_pty.h"
-#include "ADC_Buttons.h"
-#include "HC595.h"
-#include "LED.h"
-#include "TMC2130.h"
 
 #include "BasePeripheral.h"
+#include "boards/MM_Control_01.h"
 
-class MMU2: public BasePeripheral
+class MMU2: public BasePeripheral, public Boards::MM_Control_01
 {
 
     public:
@@ -40,52 +36,35 @@ class MMU2: public BasePeripheral
                         _IRQ(SELECTOR_OUT,">sel_pos.out") _IRQ(IDLER_OUT,">idler_pos.out") _IRQ(LEDS_OUT,">leds.out")
         #include "IRQHelper.h"
 
-        // Creates a new MMU2
+        // Creates a new MMU2. Does all of the setup and firmware load.
         MMU2();
 
-        // Initializes the AVR and loads the firmware.
-        void Init();
-
-        // Actually starts the MMU processing thread.
-        void Start();
-
-        // Creates the GL window and context for the visuals.
-        void StartGL();
-
-        // Shuts down the MMU thread.
-        void Stop();
+		~MMU2(){StopAVR();}
 
         // Returns the name of the serial port (for the pipe thread)
         std::string GetSerialPort();
+
+        void Draw();
+
+    protected:
+        void SetupHardware() override;
 
     private:
 
         void* Run();
 
-        void Draw();
-
-        void InitGL();
-
-        void OnDisplayTimer(int i);
-
         void OnResetIn(avr_irq_t *irq, uint32_t value);
 
-        void LEDHandler(avr_irq_t *irq, uint32_t value);
-        
         void OnPulleyFeedIn(avr_irq_t *irq, uint32_t value);
 
-        void SetupHardware();
+        void LEDHandler(avr_irq_t *irq, uint32_t value);
 
         bool m_bQuit = false;
         bool m_bStarted = false;
         bool m_bReset = false;
         pthread_t m_tRun;
-        uart_pty m_UART0;
-        HC595 m_shift;
-        TMC2130 m_Sel, m_Idl, m_Extr;
-        LED m_lGreen[5], m_lRed[5], m_lFINDA;
-        ADC_Buttons m_buttons;
-        int m_iWindow = 0, m_iWinW = 0, m_iWinH = 0;
+
+        std::string m_strTitle = "Missing Material Unit 2";
 
         static MMU2 *g_pMMU; // Needed for GL
 };

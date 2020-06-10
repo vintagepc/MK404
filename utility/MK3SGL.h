@@ -26,6 +26,7 @@
 #include "HD44780GL.h"
 #include <GLPrint.h>
 #include <Camera.hpp>
+#include "Printer.h"
 
 class MK3SGL: public BasePeripheral
 {
@@ -38,7 +39,7 @@ class MK3SGL: public BasePeripheral
 
 
         // Creates new MK3SGL object, with lite graphics (or full) and an MMU (or not)
-        MK3SGL(bool bLite, bool bMMU);
+        MK3SGL(bool bLite, bool bMMU, Printer *pParent = nullptr);
 
         // IRQ registration helper.
         void Init(avr_t *avr);
@@ -49,7 +50,7 @@ class MK3SGL: public BasePeripheral
         // Twists the displayed knob in response to input from mouse/keyboard.
         void TwistKnob(bool bDir);
 
-        // Attaches the GL LCD for rendering. 
+        // Attaches the GL LCD for rendering.
         void SetLCD(HD44780GL* pLCD){m_pLCD = pLCD;}
 
         // Clears the displayed print.
@@ -73,12 +74,12 @@ class MK3SGL: public BasePeripheral
 
         // GL helpers needed for the window and mouse callbacks, use when creating the GL window.
         void MouseCB(int button, int state, int x, int y);
-        void MotionCB(int x, int y);
+		void MotionCB(int x, int y);
+        void KeyCB(unsigned char key, int x, int y);
         void SetWindow(int iWin) { m_iWindow = iWin;};
 
 
     private:
-       
         GLObj m_Extruder = GLObj("assets/X_AXIS.obj");
         GLObj m_Z = GLObj("assets/Z_AXIS.obj");
         GLObj m_Y = GLObj("assets/Y_AXIS.obj");
@@ -94,6 +95,8 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUBase = GLObj("assets/MMU_stationary.obj");
         GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
+
+		Printer *m_pParent = nullptr;
 
         GLPrint m_Print;
 
@@ -138,10 +141,10 @@ class MK3SGL: public BasePeripheral
         float m_fEPos = 0;
         float m_fERetract= 0; bool m_bInRetract = false;
         float m_fSelCorr = 0.025f, m_fSelPos = 0.0f;
-        
+
         // This is going to be in degrees rotation instead of mm
         float m_fIdlCorr = 20.00f, m_fIdlPos = 0.0f;
-        
+
         int m_iKnobPos = 0, m_iFanPos = 0, m_iPFanPos = 0;
 
         bool m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false, m_bPINDAOn = false;
@@ -149,6 +152,7 @@ class MK3SGL: public BasePeripheral
 
         int height = 800, width = 800, m_iWindow = 0;
 
+		static MK3SGL *g_pMK3SGL;
 
         float maxExtent;
 };

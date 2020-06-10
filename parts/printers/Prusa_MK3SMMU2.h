@@ -1,7 +1,5 @@
 /*
-
-    Util.h - convenience helpers for working with SimAVR.
-
+	Prusa_MK3SMMU2.h - Printer definition for the Prusa MK3S w/MMU2
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK3SIM.
@@ -22,4 +20,33 @@
 
 #pragma once
 
-// This file is currently empty.
+#include "Prusa_MK3S.h"
+#include "SerialPipe.h"
+#include "MMU2.h"
+
+class Prusa_MK3SMMU2 : public Prusa_MK3S
+{
+
+	public:
+		Prusa_MK3SMMU2():Prusa_MK3S(){};
+		~Prusa_MK3SMMU2();
+
+		void Draw() override;
+		void OnVisualTypeSet(VisualType type) override;
+
+		bool GetHasMMU() override {return true;}
+
+		std::pair<int,int> GetWindowSize() override;
+
+	protected:
+		void SetupHardware() override;
+
+		void OnMMUFeed(avr_irq_t *irq, uint32_t value);// Helper for MMU IR sensor triggering.
+
+		MMU2 m_MMU;
+		SerialPipe *m_pipe = nullptr;
+
+	private:
+
+
+};

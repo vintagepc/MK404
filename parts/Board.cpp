@@ -43,6 +43,7 @@ void Board::CreateAVR()
 	m_pAVR->custom.deinit = [](avr_t *p, void *param){Board *board = (Board*)param; board->_OnAVRDeinit();};
 	m_pAVR->custom.data = this;
 	avr_init(m_pAVR);
+	m_EEPROM.Load(m_pAVR,GetStorageFileName("eeprom").c_str());
 }
 
 void Board::CreateBoard(string strFW, uint8_t uiV, string strBoot)
@@ -96,8 +97,7 @@ void Board::StopAVR()
 
 void Board::_OnAVRInit()
 {
-	std::string strFlash = GetStorageFileName("flash"),
-		strEEPROM = GetStorageFileName("eeprom");
+	std::string strFlash = GetStorageFileName("flash");
 
 	m_fdFlash = open(strFlash.c_str(), O_RDWR|O_CREAT, 0644);
 	if (m_fdFlash < 0) {
@@ -115,7 +115,7 @@ void Board::_OnAVRInit()
 			exit(1);
 		}
 	}
-	m_EEPROM.Load(m_pAVR,strEEPROM.c_str());
+	// NB: EEPROM happens later, because the AVR is not ready yet right now.
 	OnAVRInit();
 }
 

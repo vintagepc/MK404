@@ -40,11 +40,12 @@ class PrinterFactory
 	public:
 
 		template<typename ...Args>
-		static void* CreatePrinter(string strPrinter, Boards::Board *&pBoard, Printer *&pPrinter, bool bBL, bool bNoHacks, Args...args)
+		static void* CreatePrinter(string strPrinter, Boards::Board *&pBoard, Printer *&pPrinter, bool bBL, bool bNoHacks, bool bSerial, Args...args)
 		{
 				void* p = (GetPrinterByName(strPrinter,pBoard,pPrinter));
 				if (bBL) pBoard->SetStartBootloader();
 				pBoard->SetDisableWorkarounds(bNoHacks);
+				pPrinter->SetConnectSerial(bSerial);
 				pBoard->CreateBoard(args...);
 				return p;
 		};

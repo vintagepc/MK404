@@ -25,6 +25,7 @@
 #include "BasePeripheral.h"
 #include "HD44780GL.h"
 #include <GLPrint.h>
+#include <vector>
 #include <Camera.hpp>
 #include "Printer.h"
 
@@ -34,7 +35,7 @@ class MK3SGL: public BasePeripheral
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
                             _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
                             _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in") _IRQ(PFAN_IN,"<PFAN.in") _IRQ(SEL_IN,"<Sel.in") \
-                            _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in")
+                            _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in") _IRQ(TOOL_IN,"8<TOOL_IN")
         #include "IRQHelper.h"
 
 
@@ -54,7 +55,7 @@ class MK3SGL: public BasePeripheral
         void SetLCD(HD44780GL* pLCD){m_pLCD = pLCD;}
 
         // Clears the displayed print.
-        void ClearPrint() { m_Print.Clear(); }
+        void ClearPrint() { for (int i=0; i<5; i++) m_vPrints[i]->Clear(); }
 
         // Resets the camera view to the starting position.
         void ResetCamera();
@@ -70,6 +71,8 @@ class MK3SGL: public BasePeripheral
 
         // Sets nozzle cam mode enabled to an explicit value.
         void SetFollowNozzle(bool bFollow) { m_bFollowNozzle = bFollow;}
+
+
 
 
         // GL helpers needed for the window and mouse callbacks, use when creating the GL window.
@@ -98,7 +101,10 @@ class MK3SGL: public BasePeripheral
 
 		Printer *m_pParent = nullptr;
 
-        GLPrint m_Print;
+		int m_iCurTool = 0;
+        GLPrint m_Print = GLPrint(0.8,0,0), m_T1 = GLPrint(0,0.8,0), m_T2 = GLPrint(0,0,0.8), m_T3 = GLPrint(0.8,0.4,0), m_T4 = GLPrint(0.8,0,0.8);
+
+		std::vector<GLPrint*> m_vPrints = {&m_Print, &m_T1, &m_T2, &m_T3, &m_T4};
 
         Camera m_camera;
 
@@ -132,6 +138,7 @@ class MK3SGL: public BasePeripheral
         void OnPFanChanged(avr_irq_t *irq, uint32_t value);
         void OnBedChanged(avr_irq_t *irq, uint32_t value);
         void OnPINDAChanged(avr_irq_t *irq, uint32_t value);
+		void OnToolChanged(avr_irq_t *irq, uint32_t iIdx);
 
 
         // Correction parameters to get the model at 0,0,0 and aligned with the simulated starting positions.

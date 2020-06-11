@@ -28,7 +28,7 @@ class GLPrint
 	public:
 
 	// Creates a new GLPrint.
-	GLPrint();
+	GLPrint(float fR, float fG, float fB);
 
 	// Clears the current print from the bed. You probably shouldn't call this when mid print.
 	void Clear();
@@ -36,13 +36,13 @@ class GLPrint
 	// Draws the print within the current GL matrix context.
 	void Draw();
 
-	// Function to receive new coordinate updates from your simulated printer's stepper drivers. 
+	// Function to receive new coordinate updates from your simulated printer's stepper drivers.
 	void NewCoord(float fX, float fY, float fZ, float fE);
 
 	private:
 
-		static inline void CrossProduct(const float fA[3], const float fB[3], float fOut[3]) 
-		{	
+		static inline void CrossProduct(const float fA[3], const float fB[3], float fOut[3])
+		{
 			fOut[0] = (fA[1]*fB[2]) - (fA[2]*fB[1]);
 			fOut[1] = (fA[2]*fB[0]) - (fA[0]*fB[2]);
 			fOut[2] = (fA[0]*fB[1]) - (fA[1]*fB[0]);
@@ -69,5 +69,6 @@ class GLPrint
 		std::vector<float*> m_vpfLayer1, m_vpfLayer2, *m_pCurLayer = &m_vpfLayer1, *m_pPrevLayer = &m_vpfLayer2;
 		float m_fCurZ = -1, m_fLastZ = -1;
 		float m_fEMax = 0;
+		const float m_fColR, m_fColG, m_fColB;
 		bool m_bExtruding = false;
 };

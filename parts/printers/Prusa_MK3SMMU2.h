@@ -22,6 +22,7 @@
 
 #include "Prusa_MK3S.h"
 #include "SerialPipe.h"
+#include "GCodeSniffer.h"
 #include "MMU2.h"
 
 class Prusa_MK3SMMU2 : public Prusa_MK3S
@@ -44,6 +45,7 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 		void OnMMUFeed(avr_irq_t *irq, uint32_t value);// Helper for MMU IR sensor triggering.
 
 		MMU2 m_MMU;
+		GCodeSniffer m_sniffer = GCodeSniffer('T');
 		SerialPipe *m_pipe = nullptr;
 
 	private:

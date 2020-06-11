@@ -133,7 +133,7 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(BED_IN, MAKE_C_CALLBACK(MK3SGL, OnBedChanged), this);
 	RegisterNotify(SD_IN, MAKE_C_CALLBACK(MK3SGL,OnSDChanged),this);
 	RegisterNotify(PINDA_IN, MAKE_C_CALLBACK(MK3SGL,OnPINDAChanged),this);
-
+	RegisterNotify(TOOL_IN,MAKE_C_CALLBACK(MK3SGL,OnToolChanged),this);
 	RegisterNotify(MMU_LEDS_IN,MAKE_C_CALLBACK(MK3SGL,OnMMULedsChanged),this);
 
 	m_bDirty = true;
@@ -250,7 +250,7 @@ void MK3SGL::OnEChanged(avr_irq_t *irq, uint32_t value)
 {
 	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
 	m_fEPos = fPos[0]/1000.f;
-	m_Print.NewCoord(m_fXPos,m_fYPos,m_fZPos,m_fEPos);
+	m_vPrints[m_iCurTool]->NewCoord(m_fXPos,m_fYPos,m_fZPos,m_fEPos);
 	m_bDirty = true;
 }
 
@@ -260,6 +260,12 @@ void MK3SGL::OnZChanged(avr_irq_t *irq, uint32_t value)
 	m_fZPos =  fPos[0]/1000.f;
 	m_bDirty = true;
 }
+
+void MK3SGL::OnToolChanged(avr_irq_t *irq, uint32_t iIdx)
+{
+	// Need to stop the old tool and start the new one at the right location.
+	m_iCurTool = iIdx;
+};
 
 void MK3SGL::Draw()
 {
@@ -421,7 +427,8 @@ void MK3SGL::Draw()
 			glPushMatrix();
 				glScalef(1,1,-1);
 				glTranslatef(0.001,0.001,0.013);
-				m_Print.Draw();
+				for (int i=0; i<m_vPrints.size(); i++)
+					m_vPrints[i]->Draw();
 			glPopMatrix();
 			if (m_bBedOn)
 			{

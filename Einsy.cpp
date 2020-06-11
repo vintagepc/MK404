@@ -167,15 +167,6 @@ int main(int argc, char *argv[])
 
 	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),strFW,argSpam.getValue());
 
-	if (!argModel.isSet() || vstrPrinters[0].compare(argModel.getValue())==0)
-	{
-		//PrinterFactory::CreatePrinter<Prusa_MK3S>(pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(), strFW, argSerial.isSet());
-	}
-	else
-	{
-		//PrinterFactory::CreatePrinter<Prusa_MK3SMMU2>(pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(), strFW, argSerial.isSet());
-	}
-
 	glutInit(&argc, argv);		/* initialize GLUT system */
 
 	std::pair<int,int> winSize = printer->GetWindowSize();

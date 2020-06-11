@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 	else
 		strFW = argFW.getValue();
 
-	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),strFW,argSpam.getValue());
+	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(),strFW,argSpam.getValue());
 
 	glutInit(&argc, argv);		/* initialize GLUT system */
 

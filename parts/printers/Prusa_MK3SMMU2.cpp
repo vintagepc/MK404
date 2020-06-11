@@ -41,8 +41,13 @@ void Prusa_MK3SMMU2::SetupHardware()
 
 void Prusa_MK3SMMU2::OnVisualTypeSet(VisualType type)
 {
+	if (type==VisualType::MINIMAL)
+		return;
 	Prusa_MK3S::OnVisualTypeSet(type);
 	// Wire up the additional MMU stuff.
+
+	AddHardware(m_sniffer,'2');
+	m_pVis->ConnectFrom(m_sniffer.GetIRQ(GCodeSniffer::CODEVAL_OUT),MK3SGL::TOOL_IN);
 	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);
 	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::IDLER_OUT), MK3SGL::IDL_IN);
 	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::LEDS_OUT),MK3SGL::MMU_LEDS_IN);

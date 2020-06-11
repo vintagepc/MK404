@@ -73,6 +73,7 @@ set(EINSY_SOURCES
     parts/components/Button.cpp
     parts/components/Einsy_EEPROM.cpp
     parts/components/Fan.cpp
+	parts/components/GCodeSniffer.cpp
     parts/components/HC595.cpp
     parts/components/HD44780.cpp
     parts/components/HD44780GL.cpp

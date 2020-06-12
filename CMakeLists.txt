@@ -82,7 +82,7 @@ set(EINSY_SOURCES
     parts/components/LED.cpp
     parts/components/PINDA.cpp
     parts/components/RotaryEncoder.cpp
-    parts/components/sd_card.c
+    parts/components/SDCard.cpp
     parts/components/Thermistor.cpp
     parts/components/TMC2130.cpp
     parts/components/UART_Logger.cpp

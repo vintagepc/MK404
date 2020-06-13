@@ -96,6 +96,9 @@ namespace Boards
 			inline void SetDisableWorkarounds(bool bVal){m_bNoHacks =bVal;}
 			inline bool GetDisableWorkarounds(){return m_bNoHacks;}
 
+			inline void SetSDCardFile(string strFile){m_strSDFile = strFile;}
+			inline string GetSDCardFile(){return m_strSDFile.empty()?GetStorageFileName("SDcard"):m_strSDFile;}
+
 		protected:
 			// Define this method and use it to initialize/attach your hardware to the MCU.
 			virtual void SetupHardware() = 0;
@@ -234,6 +237,8 @@ namespace Boards
 			const Wiring &m_wiring;
 			//std::string m_strFW, m_strBoot;
 			std::string m_strBoard;
+
+			std::string m_strSDFile = "";
 			const uint32_t m_uiFreq;
 
 			uint8_t m_uiLastMCUSR = 0;

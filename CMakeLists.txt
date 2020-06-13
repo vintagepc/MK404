@@ -186,7 +186,9 @@ add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
                             && cp ../Prusa-Firmware-build/Firmware.ino.elf MK3S.afx
                             && avr-objdump -d MK3S.afx > MK3S.txt)
 
-add_custom_target(FAT32.img COMMAND unzip -o ${PROJECT_SOURCE_DIR}/assets/FAT32.zip)
+
+add_custom_target(FAT32.img COMMAND Einsy --sdimage FAT32.img --image-size 256M)
+add_dependencies(FAT32.img Einsy)
 add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PROJECT_SOURCE_DIR}/SDCard/* ::
                                                 COMMAND mv FAT32.img Einsy_atmega2560_SDcard.bin)
 add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)

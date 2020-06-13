@@ -30,9 +30,9 @@
 #include "Heater.h"
 #include "IRSensor.h"
 #include "LED.h"
-//#include "MMU2.h"
 #include "PINDA.h"
 #include "RotaryEncoder.h"
+#include "SDCard.h"
 #include "Thermistor.h"
 #include "TMC2130.h"
 #include "UART_Logger.h"
@@ -43,7 +43,6 @@
 
 extern "C"
 {
-	#include "sd_card.h"
 	#include "../include/MK3/Configuration_prusa.h"
 	#undef MMU_HWRESET
 }
@@ -78,7 +77,7 @@ namespace Boards
 			Heater hExtruder = Heater(1.5,25.0,false,'H',30,250),
 				hBed = Heater(0.25, 25, true,'B',30,100);
 			w25x20cl spiFlash;
-			sd_card_t sd_card;
+			SDCard sd_card = SDCard();
 			TMC2130 X, Y, Z, E;
 			VoltageSrc vMain = VoltageSrc(fScale24v, 24.f),
 				vBed = VoltageSrc(fScale24v,23.9);

@@ -87,7 +87,7 @@ void Prusa_MK3S::OnVisualTypeSet(VisualType type)
 	m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::SPEED_OUT), MK3SGL::EFAN_IN);
 	m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::SPEED_OUT), MK3SGL::PFAN_IN);
 	m_pVis->ConnectFrom(hBed.GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
-	m_pVis->ConnectFrom(sd_card.irq + IRQ_SD_CARD_PRESENT, MK3SGL::SD_IN);
+	m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
 	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
 	m_pVis->SetLCD(&lcd);
 }
@@ -182,15 +182,15 @@ void Prusa_MK3S::OnAVRCycle()
 				IR.Toggle();
 				break;
 			case 'c':
-				if (sd_card.data==NULL)
+				if (!sd_card.IsMounted())
 				{
 					printf("Mounting SD image...\n");
-					sd_card_mount_file(m_pAVR, &sd_card, sd_card.filepath,0);
+					sd_card.Mount(); // Remounts last image.
 				}
 				else
 				{
 					printf("SD card removed...\n");
-					sd_card_unmount_file(m_pAVR, &sd_card);
+					sd_card.Unmount();
 				}
 				break;
 			case 'q':

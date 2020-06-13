@@ -8,7 +8,7 @@ Remaining To-Dos of note:
 - Beeper
 - Better visuals (in progress)
 
-*Current state of affairs*:
+*Current state of affairs and features*:
 - ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg)
 - **The simulator can complete a self test!**
 
@@ -20,27 +20,30 @@ Remaining To-Dos of note:
 ![](images/Advanced_gfx.png)
 
 - Bootloader works
-- LCD works 99% of the way. Brightness support has been fixed.
+- LCD works. Brightness support has been fixed.
 - Encoder and buttons are simulated
 - Power panic (fake button) is wired up
-- 2 UARTS are defined but not attached externally by default. Can be enabled by passing "-S0" to access the primary serial port. UART2 is used for the MMU.
+- 2 UARTS are defined but not attached externally by default. Can be enabled by passing "-s" to access the primary serial port. UART2 is used for the MMU.
 - Thermistors are defined for the bed, PINDA, ambient and hotend. Bed/PINDA read higher than expected over 40C due to code in the official firmware (prusa3d#2601)
 - Fans have been attached, and can be controlled by the PWM output (or manually overridden to simulate conditions).
 - Heater behaviour has been implemented. A Hotend heater is attached and appears functional. Same goes for the heatbed.
 - PINDA simulation is present for both MBL and xyz cal. Toggle "sheet on bed" flag with the 'Y' key.
 - Simulated SD card, some improvements pending (#71)
 - TMC2130s are sufficiently simulated for general operations.
-- Motor/positioning tracking present, but crude.
+- Motor/positioning tracking present.
 - SPI flash for language support works, but must be manually flashed in two stages due to lack of DTR on PTYs.
 - The timer bug has been resolved using a customized build of SimAVR.
-- Einsy eeprom is persisted between reboots.
+- Einsy flash/eeprom is persisted between reboots.
 - Virtual MMU support:
 
 ![](images/MMU2.png)
 
+- The MMU supports multicolour printing:
+![](https://user-images.githubusercontent.com/53943260/84335826-c432d880-ab63-11ea-9534-6cc61ae1a745.png)
+
 # Getting Started:
 
-To get stared, clone the MK3Sim repo. the 3rdParty/simavr folder may be empty, you will need to cd into the MK3Sim checkout and run `git submodule init` and `git submodule update` from within it to pull down the correct simavr dependency.
+To get stared, clone the MK3Sim repo. the 3rdParty/simavr folder may be empty, you will need to cd into the MK3Sim checkout and run `git submodule init` and `git submodule update` from within it to pull down the correct simavr dependency. This should also initialize the `tinyobjloader` and `TCLAP` dependencies.
 
 This is now a `cmake` project and independent of simAVR. You can follow normal cmake procedures, using your favourite IDE (or with cmake-gui). The SimAVR submodule will be built automatically and taken care of for you.
 

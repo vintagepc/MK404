@@ -97,12 +97,10 @@ class SDCard:public SPIPeripheral
 		static const int BLOCK_SIZE = (1<<READ_BL_LEN); // Bytes
 		static inline bool IsBlockAligned(int iBlock){ return ((iBlock % BLOCK_SIZE) == 0);};
 
-		static inline uint32_t UINT8_ARRAY_TO_UINT32(const uint8_t a[4]){return ((((uint32_t)a[0]) << 24) | (((uint32_t) a[1]) << 16) | (((uint32_t) a[2]) << 8) | ((uint32_t) a[3]));}
-
 		inline void CRC_ADD(const uint8_t data) {m_CRC = m_crctab[(m_CRC >> 8 ^ data) & 0XFF] ^ (m_CRC << 8); }
 
 		/* TODO: See diskio.c */
-		enum class Command{
+		enum Command {
 			CMD0 = 0,
 			CMD8 = 8,
 			CMD9 = 9,
@@ -122,17 +120,24 @@ class SDCard:public SPIPeripheral
 
 		/* Internal state. */
 		State m_state = State::IDLE;
+		union {
+			uint64_t all : 48;
+			struct {
+				uint8_t checksum :8;
+				unsigned int address :32;
+				Command cmd :6;
+				unsigned char :2; // Start/position
+			} __attribute__ ((__packed__)) bits;
+			uint8_t bytes[6];
+		} m_CmdIn {.all = 0};
 
-		struct {
-			Command command;
-			uint8_t params[4];
-			uint8_t checksum;
-		} m_command_header;
+		uint8_t m_CmdCount = 0;
+
 		struct {
 			uint8_t data[5];
 			uint8_t length; /* number of bytes of data which are valid */
 		} m_command_response;
-		uint8_t m_command_index;
+
 		bool m_bSelected = false;
 
 		union {

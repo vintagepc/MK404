@@ -114,9 +114,9 @@ SDCard::State SDCard::ProcessCommand()
 {
 	SDCard::State next_state = State::IDLE;
 
-	DEBUG ("Processing command %u.", m_command_header.command);
+	DEBUG ("Processing command %u.", m_CmdIn.bits.cmd);
 
-	switch (m_command_header.command) {
+	switch (m_CmdIn.bits.cmd) {
 		case Command::CMD0:
 			/* GO_IDLE_STATE. Return that we are in the idle state if we have a disk mounted; return an error otherwise. */
 			/* TODO: checksum isn't checked */
@@ -134,7 +134,7 @@ SDCard::State SDCard::ProcessCommand()
 			m_command_response.data[1] = 0x00;
 			m_command_response.data[2] = 0x00;
 			m_command_response.data[3] = 0x01;
-			m_command_response.data[4] = m_command_header.params[3];
+			m_command_response.data[4] = m_CmdIn.bytes[1];
 			m_command_response.length = 5;
 			break;
 		case Command::CMD9:
@@ -162,7 +162,7 @@ SDCard::State SDCard::ProcessCommand()
 			/* SET_BLOCKLEN. */
 			uint32_t blocklen;
 
-			blocklen = UINT8_ARRAY_TO_UINT32(m_command_header.params);
+			blocklen = m_CmdIn.bits.address;
 			assert (blocklen == 512);
 			/* TODO: only 512B blocks are supported at the moment. */
 
@@ -175,7 +175,7 @@ SDCard::State SDCard::ProcessCommand()
 
 			/* READ_SINGLE_BLOCK. Reads a block of the size selected by the SET_BLOCKLEN command.
 			 * Initiate a 512B read (TODO: we ignore SET_BLOCKLEN) from the address provided in the command. */
-			addr = AddressToDataIdx(UINT8_ARRAY_TO_UINT32(m_command_header.params));
+			addr = AddressToDataIdx(m_CmdIn.bits.address);
 
 			DEBUG ("Read single block (CMD17) from address %lu.", addr);
 
@@ -201,7 +201,7 @@ SDCard::State SDCard::ProcessCommand()
 
 			/* WRITE_BLOCK. Writes a block of the size selected by the SET_BLOCKLEN command.
 			 * TODO: we ignore SET_BLOCKLEN. */
-			addr = AddressToDataIdx(UINT8_ARRAY_TO_UINT32(m_command_header.params));
+			addr = AddressToDataIdx(m_CmdIn.bits.address);
 
 			DEBUG ("Write block (CMD24) from address %lu.", addr);
 
@@ -237,7 +237,7 @@ SDCard::State SDCard::ProcessCommand()
 		default:
 			/* Illegal command. */
 			COMMAND_RESPONSE_R1 (R1_ILLEGAL_COMMAND);
-			fprintf (stderr, "%lu: sdcard: Unknown SD card command ‘%u’.\n", m_pAVR->cycle, m_command_header.command);
+			fprintf (stderr, "%lu: sdcard: Unknown SD card command ‘%u’.\n", m_pAVR->cycle, m_CmdIn.bits.cmd);
 			break;
 	}
 
@@ -265,7 +265,7 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *irq, uint32_t value)
 				break;
 			} else {
 				m_state = State::COMMAND_REQUEST;
-				m_command_index = 0;
+				m_CmdCount = 0;
 
 				/* Fall through. */
 			}
@@ -273,18 +273,13 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *irq, uint32_t value)
 			/* Fall through. */
 		case State::COMMAND_REQUEST:
 			/* Receive a 6-byte command header. */
-			if (m_command_index == 0) {
-				m_command_header.command = (Command)(value & 0x3f);
-			} else if (m_command_index == 5) {
-				m_command_header.checksum = value;
-			} else {
-				m_command_header.params[m_command_index - 1] = value;
-			}
+			m_CmdIn.all<<=8;
+			m_CmdIn.all |= (uint8_t)value;
 
-			if (++m_command_index > 5) {
+			if (++m_CmdCount > 5) {
 				/* If we've finished receiving the packet, process it and move to the response state. */
 				m_state = State::COMMAND_RESPONSE;
-				m_command_index = 0;
+				m_CmdCount = 0;
 			}
 
 			/* Dummy response for each of the header bytes. */
@@ -296,18 +291,18 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *irq, uint32_t value)
 			State next_state = State::IDLE;
 
 			/* Process the command. We do this here so that we can move directly into the DATA_READ state afterwards if required. */
-			if (m_command_index == 0) {
+			if (m_CmdCount == 0) {
 				next_state = ProcessCommand();
 			}
 
 			/* Output the response stored in m_command_response. */
-			if (m_command_index < m_command_response.length) {
+			if (m_CmdCount < m_command_response.length) {
 				/* Outputting response bytes. */
-				uiReply = m_command_response.data[m_command_index];
+				uiReply = m_command_response.data[m_CmdCount];
 			}  // Else sends 0xFF
 			SetSendReplyFlag();
 
-			if (++m_command_index >= m_command_response.length) {
+			if (++m_CmdCount >= m_command_response.length) {
 				/* Have we finished transmitting the response? */
 				m_state = next_state;
 			}

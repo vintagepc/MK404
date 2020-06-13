@@ -457,9 +457,19 @@ int SDCard::Mount(std::string filename, off_t image_size)
 {
 	int fd;
 	void *mapped;
-	int saved_errno;
+	bool bLocked = false; /* boolean */
+
+	auto OnError  = [fd, bLocked](int err)
+	{
+		/* Clean up after an error. */
+		if (bLocked) {
+			flock (fd, LOCK_UN);
+		}
+		close (fd);
+		return err;
+	};
+
 	struct stat stat_buf;
-	uint8_t locked = 0; /* boolean */
 	off_t blocknr;
 	if (!filename.empty())
 		m_strFile = filename; // New file given.
@@ -467,26 +477,18 @@ int SDCard::Mount(std::string filename, off_t image_size)
 	/* Open the specified disk image. */
 	fd = open (m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR);
 
-	if (fd == -1) {
-		/* Error. */
+	if (fd == -1)
 		return errno;
-	}
 
 	/* Lock it for exclusive access. */
-	if (flock (fd, LOCK_EX) == -1) {
-		/* Error. */
-		saved_errno = errno;
-		goto error;
-	}
+	if (flock (fd, LOCK_EX) == -1)
+		return OnError(errno);
 
-	locked = 1;
+	bLocked = true;
 
 	/* Check its size. If it's smaller than the requested size, expand it. Otherwise, ignore any excess size. */
-	if (fstat (fd, &stat_buf) == -1) {
-		/* Error. */
-		saved_errno = errno;
-		goto error;
-	}
+	if (fstat (fd, &stat_buf) == -1)
+		return OnError(errno);
 
 	if (image_size == 0)
 	{
@@ -494,28 +496,21 @@ int SDCard::Mount(std::string filename, off_t image_size)
 		if (image_size==0)
 		{
 			printf("No SD image found. Aborting mount.\n");
-			saved_errno = -1;
-			goto error;
+			return OnError(-1);
 		}
 		printf("Autodetected SD image size as %lu Mb\n",image_size>>20); // >>20 = div by 1024*1024
 	}
 	else if (stat_buf.st_size < image_size)
 	{
-		if (ftruncate (fd, image_size) == -1) {
-			/* Error. */
-			saved_errno = errno;
-			goto error;
-		}
+		if (ftruncate (fd, image_size) == -1)
+			return OnError(errno);
 	}
 
 	/* Map it into memory. */
 	mapped = mmap (NULL, image_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-	if (mapped == MAP_FAILED) {
-		/* Error. */
-		saved_errno = errno;
-		goto error;
-	}
+	if (mapped == MAP_FAILED)
+		return OnError(errno);
 
 	/* Success. */
 	m_data = (uint8_t*)mapped;
@@ -528,16 +523,6 @@ int SDCard::Mount(std::string filename, off_t image_size)
 	RaiseIRQ(CARD_PRESENT,0);
 
 	return 0;
-
-error:
-	/* Clean up after the error. */
-	if (locked == 1) {
-		flock (fd, LOCK_UN);
-	}
-
-	close (fd);
-
-	return saved_errno;
 }
 
 int SDCard::Unmount()

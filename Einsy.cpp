@@ -49,6 +49,8 @@ extern "C" {
 #include "parts/Board.h"
 #include "Printer.h"
 
+#include "FatImage.h"
+
 avr_vcd_t vcd_file;
 
 uint8_t gbPrintPC = 0;
@@ -141,6 +143,10 @@ int main(int argc, char *argv[])
 	cmd.add(argNoHacks);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
 	cmd.add(argLoad);
+	vector<string> vstrSizes = FatImage::GetSizes();
+	ValuesConstraint<string> vcSizes(vstrSizes);
+	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes);
+	cmd.add(argImgSize);
 	vector<string> vstrGfx = {"lite","fancy"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
@@ -152,7 +158,6 @@ int main(int argc, char *argv[])
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.");
 	cmd.add(argBootloader);
 
-
 	vector<string> vstrPrinters = PrinterFactory::GetModels();
 	ValuesConstraint<string> vcAllowed(vstrPrinters);
 
@@ -160,6 +165,19 @@ int main(int argc, char *argv[])
 	cmd.add(argModel);
 
 	cmd.parse(argc,argv);
+
+	// Make new image.
+	if (argImgSize.isSet())
+	{
+		if(!argSD.isSet())
+		{
+			fprintf(stderr,"Cannot create an SD image without a filename.\n");
+			exit(1);
+		}
+		FatImage::MakeFatImage(argSD.getValue(), argImgSize.getValue());
+		printf("Wrote %s. You can now use mcopy to copy gcode files into the image.\n",argSD.getValue().c_str());
+		return 0;
+	}
 
 	std::string strFW;
 	if (!argLoad.isSet() && !argFW.isSet())

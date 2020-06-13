@@ -30,7 +30,6 @@ set(H_FILES
     parts/components/LED.h
     parts/components/PINDA.h
     parts/components/RotaryEncoder.h
-    parts/components/sd_card.h
     parts/components/Thermistor.h
     parts/components/TMC2130.h
     parts/components/UART_Logger.h
@@ -46,6 +45,7 @@ set(INCLUDE_FILES
     include/Util.h
     include/thermistortables.h
     utility/Color.h
+	utility/FatImage.h
     utility/MK3SGL.h
     utility/GLObj.h
     utility/GLPrint.h
@@ -92,6 +92,7 @@ set(EINSY_SOURCES
     MMU2.cpp
     include/SerialPipe.cpp
     utility/Color.cpp
+	utility/FatImage.cpp
     parts/Board.cpp
     parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp

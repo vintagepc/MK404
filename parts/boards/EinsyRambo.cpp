@@ -41,7 +41,7 @@ namespace Boards
 		AddHardware(UART0);
 
 		// SD card
-		string strSD = GetStorageFileName("SDcard");
+		string strSD = GetSDCardFile();
 		sd_card = SDCard(strSD);
 		AddHardware(sd_card);
 		TryConnect(PinNames::Pin::SDSS, sd_card, SDCard::SPI_CSEL);

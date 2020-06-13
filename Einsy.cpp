@@ -133,6 +133,8 @@ int main(int argc, char *argv[])
 	cmd.add(argWait);
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");
 	cmd.add(argSpam);
+	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img");
+	cmd.add(argSD);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.");
 	cmd.add(argSerial);
 	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.");
@@ -165,7 +167,7 @@ int main(int argc, char *argv[])
 	else
 		strFW = argFW.getValue();
 
-	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(),strFW,argSpam.getValue());
+	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,strFW,argSpam.getValue());
 
 	glutInit(&argc, argv);		/* initialize GLUT system */
 

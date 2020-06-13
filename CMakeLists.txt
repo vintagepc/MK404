@@ -30,7 +30,6 @@ set(H_FILES
     parts/components/LED.h
     parts/components/PINDA.h
     parts/components/RotaryEncoder.h
-    parts/components/sd_card.h
     parts/components/Thermistor.h
     parts/components/TMC2130.h
     parts/components/UART_Logger.h
@@ -46,6 +45,7 @@ set(INCLUDE_FILES
     include/Util.h
     include/thermistortables.h
     utility/Color.h
+	utility/FatImage.h
     utility/MK3SGL.h
     utility/GLObj.h
     utility/GLPrint.h
@@ -82,7 +82,7 @@ set(EINSY_SOURCES
     parts/components/LED.cpp
     parts/components/PINDA.cpp
     parts/components/RotaryEncoder.cpp
-    parts/components/sd_card.c
+    parts/components/SDCard.cpp
     parts/components/Thermistor.cpp
     parts/components/TMC2130.cpp
     parts/components/UART_Logger.cpp
@@ -92,6 +92,7 @@ set(EINSY_SOURCES
     MMU2.cpp
     include/SerialPipe.cpp
     utility/Color.cpp
+	utility/FatImage.cpp
     parts/Board.cpp
     parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp
@@ -185,7 +186,9 @@ add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
                             && cp ../Prusa-Firmware-build/Firmware.ino.elf MK3S.afx
                             && avr-objdump -d MK3S.afx > MK3S.txt)
 
-add_custom_target(FAT32.img COMMAND unzip -o ${PROJECT_SOURCE_DIR}/assets/FAT32.zip)
+
+add_custom_target(FAT32.img COMMAND Einsy --sdimage FAT32.img --image-size 256M)
+add_dependencies(FAT32.img Einsy)
 add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PROJECT_SOURCE_DIR}/SDCard/* ::
                                                 COMMAND mv FAT32.img Einsy_atmega2560_SDcard.bin)
 add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)

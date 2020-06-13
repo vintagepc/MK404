@@ -41,22 +41,22 @@ namespace Boards
 		AddHardware(UART0);
 
 		// SD card
-		sd_card_init (m_pAVR, &sd_card);
-		sd_card_attach (m_pAVR, &sd_card, AVR_IOCTL_SPI_GETIRQ (0), m_wiring.DIRQLU(m_pAVR,SDSS));
+		string strSD = GetSDCardFile();
+		sd_card = SDCard(strSD);
+		AddHardware(sd_card);
+		TryConnect(PinNames::Pin::SDSS, sd_card, SDCard::SPI_CSEL);
 
 		// wire up the SD present signal.
-		TryConnect(sd_card.irq + IRQ_SD_CARD_PRESENT, SDCARDDETECT);
+		TryConnect(sd_card, SDCard::CARD_PRESENT, SDCARDDETECT);
 
 		// Add indicator first so it captures the mount IRQ
 		AddHardware(lSD);
 		TryConnect(SDCARDDETECT, lSD, LED::LED_IN);
 
-		std::string strSD = GetStorageFileName("SDcard");
-		snprintf(sd_card.filepath, sizeof(sd_card.filepath), strSD.c_str());
-		int mount_error = sd_card_mount_file (m_pAVR, &sd_card, sd_card.filepath, 0);
+		int mount_error = sd_card.Mount();
 
 		if (mount_error != 0) {
-			fprintf (stderr, "SD card image ‘%s’ could not be mounted (error %i).\n", sd_card.filepath, mount_error);
+			fprintf (stderr, "SD card image ‘%s’ could not be mounted (error %i).\n", strSD.c_str(), mount_error);
 		}
 
 		// Heaters
@@ -186,7 +186,7 @@ namespace Boards
 	void EinsyRambo::OnAVRDeinit()
 	{
 		spiFlash.Save();
-		sd_card_unmount_file(m_pAVR, &sd_card);
+		sd_card.Unmount();
 	}
 
 	void EinsyRambo::OnAVRReset()

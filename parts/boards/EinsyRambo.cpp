@@ -40,6 +40,8 @@ namespace Boards
 		AddSerialPty(UART2,'2');
 		AddHardware(UART0);
 
+		AddHardware(m_Mon0,'0');
+
 		// SD card
 		string strSD = GetSDCardFile();
 		sd_card = SDCard(strSD);

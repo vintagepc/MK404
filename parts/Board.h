@@ -28,14 +28,15 @@
 #include <uart_pty.h>
 #include "Einsy_EEPROM.h"
 #include <pthread.h>
-
+#include <Scriptable.h>
+#include <ScriptHost.h>
 
 using namespace PinNames;
 using namespace Wirings;
 using namespace std;
 namespace Boards
 {
-	class Board
+	class Board : public Scriptable
 	{
 		public:
 			// Making a type so that this is easy to update
@@ -43,7 +44,12 @@ namespace Boards
 			typedef signed char MCUPin;
 
 			// Creates a new board with the given pinspec, firmware file, frequency, and (optional) bootloader hex
-			Board(const Wiring &wiring,uint32_t uiFreqHz):m_wiring(wiring),m_uiFreq(uiFreqHz){};
+			Board(const Wiring &wiring,uint32_t uiFreqHz):m_wiring(wiring),m_uiFreq(uiFreqHz),Scriptable("Board")
+			{
+				RegisterAction("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
+				RegisterAction("WaitSeconds","Waits the specified number of board-seconds (based on board frequency) before continuing",
+								ScriptAction::WaitSeconds, {"int"});
+			};
 
 			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};
 
@@ -99,6 +105,9 @@ namespace Boards
 			inline void SetSDCardFile(string strFile){m_strSDFile = strFile;}
 			inline string GetSDCardFile(){return m_strSDFile.empty()?GetStorageFileName("SDcard"):m_strSDFile;}
 
+			inline void SetResetFlag(){m_bReset = true;}
+			inline void SetQuitFlag(){m_bQuit = true;}
+
 		protected:
 			// Define this method and use it to initialize/attach your hardware to the MCU.
 			virtual void SetupHardware() = 0;
@@ -116,6 +125,18 @@ namespace Boards
 			// Helper called every cycle - use it to process keys, mouse, etc.
 			// within the context of the AVR run thread.
 			virtual void OnAVRCycle(){};
+
+			virtual LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override
+			{
+				switch (ID)
+				{
+					case Quit:
+						SetQuitFlag();
+						return LineStatus::Finished;
+					case WaitSeconds:
+						return LineStatus::Waiting;
+				}
+			}
 
 			virtual void* RunAVR()
 			{
@@ -139,6 +160,8 @@ namespace Boards
 							OnAVRReset();
 					}
 					OnAVRCycle();
+					if (ScriptHost::IsInitialized())
+						ScriptHost::OnAVRCycle();
 					if (m_bReset)
 					{
 						m_bReset = 0;
@@ -152,8 +175,7 @@ namespace Boards
 				return nullptr;
 			};
 
-			inline void SetResetFlag(){m_bReset = true;}
-			inline void SetQuitFlag(){m_bQuit = true;}
+
 
 
 			// suppress continuous polling for low INT lines... major performance drain.
@@ -246,6 +268,12 @@ namespace Boards
 			avr_flashaddr_t m_bootBase, m_FWBase;
 
 			// Loads an ELF or HEX file into the MCU. Returns boot PC
+			enum ScriptAction
+			{
+				Quit,
+				WaitSeconds
+			};
+
 
 			Einsy_EEPROM m_EEPROM;
 	};

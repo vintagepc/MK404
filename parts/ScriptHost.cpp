@@ -164,8 +164,8 @@ void ScriptHost::OnAVRCycle()
 	if (m_lnState.iLine != m_iLine || !m_bStarted)
 	{
 		m_bStarted = true;
-		ParseLine(m_iLine);
 		printf("ScriptHost: Executing line %s\n",m_script.at(m_iLine).c_str());
+		ParseLine(m_iLine);
 	}
 
 	if (m_lnState.isValid)
@@ -190,7 +190,12 @@ void ScriptHost::OnAVRCycle()
 				}
 
 		}
-		if (m_iLine>m_script.size())
+		if (m_iLine==m_script.size())
 			printf("ScriptHost: Script FINISHED\n");
+	}
+	else
+	{
+		printf("ScriptHost: ERROR: Invalid line/unrecognized command:%d %s\n",m_iLine,m_script.at(m_iLine).c_str());
+		m_iLine = m_script.size();
 	}
 }

@@ -48,6 +48,7 @@ namespace Boards
 			{
 				RegisterAction("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
 				RegisterAction("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
+				RegisterAction("WaitMs","Waits the specified number of milliseconds (in AVR-clock time)", ScriptAction::Wait,{"int"});
 			};
 
 			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};
@@ -135,6 +136,17 @@ namespace Boards
 					case Reset:
 						SetResetFlag();
 						return LineStatus::Finished;
+					case Wait:
+						if (m_uiWtCycleCount >0)
+							if (--m_uiWtCycleCount==0)
+								return LineStatus::Finished;
+							else
+								return LineStatus::Waiting;
+						else
+						{
+							m_uiWtCycleCount = (m_uiFreq/1000)*stoi(vArgs.at(0));
+							return LineStatus::Waiting;
+						}
 				}
 			}
 
@@ -265,13 +277,16 @@ namespace Boards
 
 			uint8_t m_uiLastMCUSR = 0;
 
+			unsigned int m_uiWtCycleCount = 0;
+
 			avr_flashaddr_t m_bootBase, m_FWBase;
 
 			// Loads an ELF or HEX file into the MCU. Returns boot PC
 			enum ScriptAction
 			{
 				Quit,
-				Reset
+				Reset,
+				Wait
 			};
 
 

@@ -23,17 +23,29 @@
 
 #include <string.h>
 #include <stdio.h>
-
-
 #include "Thermistor.h"
 
-Thermistor::Thermistor(float fStartTemp):m_fCurrentTemp(fStartTemp)
+Thermistor::Thermistor(float fStartTemp):m_fCurrentTemp(fStartTemp),Scriptable("Thermistor")
 {
+	RegisterAction("Disconnect","Disconnects the thermistor as though it has gone open circuit",Actions::OpenCircuit);
+	RegisterAction("Short","Short the thermistor out",Actions::Shorted);
+	RegisterAction("Reconnct","Restores the normal thermistor state",Actions::Connected);
+}
 
+
+Scriptable::LineStatus Thermistor::ProcessAction(unsigned int iAction, const vector<string> &args)
+{
+	m_eState = (Actions)iAction;
+	return LineStatus::Finished;
 }
 
 uint32_t Thermistor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
+	if (m_eState == Shorted)
+		return 0;
+	else if (m_eState == OpenCircuit)
+		return 5000;
+
 	short *t = m_pTable, *lt = NULL;
 	for (int ei = 0; ei < m_uiTableEntries; ei++, lt = t, t += 2) {
 		if (t[1] <= m_fCurrentTemp) {
@@ -66,7 +78,7 @@ void Thermistor::OnTempIn(struct avr_irq_t * irq, uint32_t value)
 
 void Thermistor::Init(struct avr_t * avr, uint8_t uiMux)
 {
-	
+
 	_Init(avr, uiMux,this);
 	RegisterNotify(TEMP_IN,MAKE_C_CALLBACK(Thermistor,OnTempIn),this);
 	printf("%s on ADC %d start %.2f\n", __func__, GetMuxNumber(), m_fCurrentTemp);

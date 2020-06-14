@@ -22,12 +22,12 @@
  */
 
 
-#ifndef __THERMISTOR_H___
-#define __THERMISTOR_H___
+#pragma once
 
 #include "ADCPeripheral.h"
+#include "Scriptable.h"
 
-class Thermistor: public ADCPeripheral
+class Thermistor: public ADCPeripheral, public Scriptable
 {
 
 	public:
@@ -46,17 +46,25 @@ class Thermistor: public ADCPeripheral
 
 		// Set the temperature explicitly.
 		void Set(float fTemp);
+	protected:
+		LineStatus ProcessAction(unsigned int iAction, const vector<string> &args);
 
 	private:
 
 		uint32_t OnADCRead(avr_irq_t *irq, uint32_t value);
 
+		enum Actions
+		{
+			OpenCircuit,
+			Shorted,
+			Connected
+		};
+
 		void OnTempIn(avr_irq_t *irq, uint32_t value);
 
-			short * m_pTable = nullptr;
-			unsigned int m_uiTableEntries = 0;
-			int 		m_iOversampling = 16;
-			float	m_fCurrentTemp = 25;
+		short * m_pTable = nullptr;
+		unsigned int m_uiTableEntries = 0;
+		int 		m_iOversampling = 16;
+		float	m_fCurrentTemp = 25;
+		Actions m_eState = Connected;
 };
-
-#endif /* __THERMISTOR_H___ */

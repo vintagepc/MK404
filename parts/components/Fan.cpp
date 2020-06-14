@@ -26,9 +26,10 @@
 #define TRACE(_w)
 #endif
 
-Fan::Fan(uint16_t iMaxRPM):m_uiMaxRPM(iMaxRPM)
+Fan::Fan(uint16_t iMaxRPM):m_uiMaxRPM(iMaxRPM),Scriptable("Fan")
 {
-
+	RegisterAction("Stall", "Stalls the fan", Actions::Stall);
+	RegisterAction("Resume","Resumes fan from a stall condition",Actions::Resume);
 }
 
 avr_cycle_count_t Fan::OnTachChange(avr_t * avr, avr_cycle_count_t when)
@@ -36,6 +37,20 @@ avr_cycle_count_t Fan::OnTachChange(avr_t * avr, avr_cycle_count_t when)
     RaiseIRQ(TACH_OUT, m_bPulseState^=1);
     RegisterTimerUsec(m_fcnTachChange,m_uiUsecPulse,this);
     return 0;
+}
+
+
+Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const vector<string> &vArgs)
+{
+	switch (ID)
+	{
+		case Actions::Stall:
+			Set(0);
+			return LineStatus::Finished;
+		case Actions::Resume:
+			Resume_Auto();
+			return LineStatus::Finished;
+	}
 }
 
 void Fan::OnPWMChange(struct avr_irq_t * irq, uint32_t value)
@@ -69,7 +84,7 @@ void Fan::OnDigitalChange(struct avr_irq_t * irq, uint32_t value)
 void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM)
 {
     _Init(avr, this);
-    
+
     if(irqPWM)  ConnectFrom(irqPWM, PWM_IN);
     if(irqDigital) ConnectFrom(irqDigital, DIGITAL_IN);
     if(irqTach) ConnectTo(TACH_OUT,irqTach);
@@ -77,11 +92,6 @@ void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr
     RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnPWMChange), this);
     RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalChange), this);
 
-}
-
-void Fan::Stall(bool bStall)
-{
-    m_bStalled = bStall;
 }
 
 void Fan::Set(uint16_t iRPM)

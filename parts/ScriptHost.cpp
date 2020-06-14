@@ -126,6 +126,35 @@ void ScriptHost::ParseLine(unsigned int iLine)
 	m_lnState.isValid = true;
 }
 
+void ScriptHost::AddScriptable(string strName, Scriptable* src)
+{
+	if (m_clients.count(strName)==0)
+	{
+		m_clients[strName] = src;
+	}
+	else if (m_clients.at(strName)!=src)
+	{
+		int i=0;
+		string strNew;
+		printf("ScriptHost: NOTE: Duplicate context name (%s) with different pointer. Incrementing ID...\n", strName.c_str());
+		while (i<10)
+		{
+			i++;
+			strNew = strName + to_string(i);
+			if (m_clients.count(strNew)==0)
+			{
+				m_clients[strNew] = src;
+				src->SetName(strNew);
+				return;
+			}
+			else if (m_clients.at(strNew) == src)
+				return;
+		};
+		printf("ScriptHost: More than 10 duplicate identifiers. You should do something about that.\n");
+
+	}
+}
+
 using LS = Scriptable::LineStatus;
 void ScriptHost::OnAVRCycle()
 {

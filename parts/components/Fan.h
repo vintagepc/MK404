@@ -18,16 +18,16 @@
 	You should have received a copy of the GNU General Public License
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __FAN_H__
-#define __FAN_H__
+#pragma once
 
 #include "BasePeripheral.h"
+#include "Scriptable.h"
 
-class Fan: public BasePeripheral
+class Fan: public BasePeripheral, public Scriptable
 {
 
 public:
-    // Macro to define a set of IRQs and string names. 
+    // Macro to define a set of IRQs and string names.
     #define IRQPAIRS    _IRQ(PWM_IN,"<Fan.pwm_in") \
                         _IRQ(DIGITAL_IN, "<Fan.digital_in>")\
                         _IRQ(TACH_OUT, ">Fan.tach_out")\
@@ -43,13 +43,16 @@ public:
 	void Init(struct avr_t* avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM);
 
 	// Flags the fan as stalled/jammed. or not.
-	void Stall(bool bStall);
-	
+	void SetStall(bool bStall);
+
 	// Sets the RPM to a given value. Overrides auto control.
 	void Set(uint16_t iRPM);
 
 	// Clears an explicitly set RPM value and returns to automatic RPM calc.
 	void Resume_Auto();
+
+	protected:
+			LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
 
 	private:
 		// Callback for tach pulse update.
@@ -61,7 +64,6 @@ public:
 		// Callback for full on/off
 		void OnDigitalChange(avr_irq_t *irq, uint32_t value);
 
-		bool m_bStalled = false;
 		bool m_bAuto = true;
 		bool m_bPulseState = false;
 		uint8_t m_uiPWM = 0;
@@ -71,6 +73,10 @@ public:
 
 		avr_cycle_timer_t m_fcnTachChange = MAKE_C_TIMER_CALLBACK(Fan,OnTachChange);
 
-};
+		enum Actions
+		{
+			Stall,
+			Resume
+		};
 
-#endif /* __FAN_H__ */
+};

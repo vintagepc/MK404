@@ -58,12 +58,11 @@ class ScriptHost
 			return g_pHost;
 		}
 
-		static void AddScriptable(string strName, Scriptable* src)
+		static void AddScriptable(string strName, Scriptable* src);
+
+		static inline bool IsRegistered(string strName)
 		{
-			if (m_clients.count(strName)==0)
-			{
-				m_clients[strName] = src;
-			}
+			return m_clients.count(strName)!=0;
 		}
 
 		static void PrintScriptHelp();

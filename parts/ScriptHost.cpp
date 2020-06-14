@@ -29,15 +29,17 @@
 
 map<string, Scriptable*> ScriptHost::m_clients;
 vector<string> ScriptHost::m_script;
-unsigned int ScriptHost::m_iLine;
+unsigned int ScriptHost::m_iLine, ScriptHost::m_uiAVRFreq;
 ScriptHost::linestate_t ScriptHost::m_lnState = linestate_t();
 shared_ptr<ScriptHost> ScriptHost::g_pHost;
 bool ScriptHost::m_bStarted = false;
+int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
 
 
 void ScriptHost::PrintScriptHelp()
 {
 	printf("Scripting options for the current context:\n");
+	printf("\tScriptHost::\n\t\tSetTimeoutMs(int)  Sets the timeout on actions that wait for an event. 'time' is relative to the AVR, e.g. based off frequency)\n");
 	for (auto it=m_clients.begin();it!=m_clients.end();it++)
 		it->second->PrintRegisteredActions();
 }
@@ -73,13 +75,37 @@ bool ScriptHost::GetLineParts(const string &strLine, string &strCtxt, string& st
 	return true;
 }
 
+void ScriptHost::ProcessAction(const string &strAct, const vector<string> &vArgs)
+{
+	if (strAct.compare("SetTimeoutMs")==0)
+	{
+		int iTime = stoi(vArgs.at(0));
+		m_iTimeoutCycles = iTime *(m_uiAVRFreq/1000);
+		printf("ScriptHost::SetTimeoutMs changed to %d (%d cycles)\n",iTime,m_iTimeoutCycles);
+		m_iTimeoutCount = 0;
+	}
+}
+
 void ScriptHost::ParseLine(unsigned int iLine)
 {
 	string strCtxt, strAct;
 	m_lnState.isValid = false;
 	m_lnState.vArgs.clear();
-	if (!ScriptHost::GetLineParts(m_script.at(iLine),strCtxt,strAct,m_lnState.vArgs))
-		return;
+	bool bIsInternal = false;
+	do {
+		if (!ScriptHost::GetLineParts(m_script.at(iLine),strCtxt,strAct,m_lnState.vArgs))
+			return;
+		if(strCtxt.compare("ScriptHost")==0)
+		{
+			ProcessAction(strAct,m_lnState.vArgs);
+			m_iLine++;
+			iLine = m_iLine;
+			bIsInternal = true;
+			m_lnState.vArgs.clear();
+		}
+		else
+			bIsInternal = false;
+	} while (bIsInternal);
 
 	m_lnState.iLine = iLine;
 	if(!m_clients.count(strCtxt) || m_clients.at(strCtxt)==nullptr)
@@ -120,9 +146,22 @@ void ScriptHost::OnAVRCycle()
 		{
 			case LS::Finished:
 				m_iLine++; // This line is done, mobe on.
+				m_iTimeoutCount = 0;
 				break;
 			case LS::Error:
+				printf("ScriptHost: Script FAILED on line %d\n",m_iLine);
 				m_iLine = m_script.size(); // Error, end scripting.
+				break;
+			case LS::Waiting:
+				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount>m_iTimeoutCycles)
+				{
+					printf("ScriptHost: Script TIMED OUT on %s\n",m_script.at(m_iLine).c_str());
+					m_iLine++;
+					m_iTimeoutCount = 0;
+				}
+
 		}
+		if (m_iLine>m_script.size())
+			printf("ScriptHost: Script FINISHED\n");
 	}
 }

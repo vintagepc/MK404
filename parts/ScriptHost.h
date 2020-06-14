@@ -47,14 +47,14 @@ class ScriptHost
 		{
 			return g_pHost!=nullptr;
 		}
-		static shared_ptr<ScriptHost> Init(std::string strFile)
+		static shared_ptr<ScriptHost> Init(std::string strFile, unsigned int uiFreq)
 		{
 			if (g_pHost!=nullptr)
 			{
 				fprintf(stderr,"ERROR: Duplicate initialization attempt for scripthost!\n");
 				return g_pHost;
 			}
-			new ScriptHost(strFile);
+			new ScriptHost(strFile,uiFreq);
 			return g_pHost;
 		}
 
@@ -75,14 +75,18 @@ class ScriptHost
 		static void ParseLine(unsigned int iLine);
 		static bool GetLineParts(const string &strLine, string &strCtxt, string& strAct, vector<string>&vArgs);
 
-		ScriptHost(string strScript){
+		//We can't register ourselves as a scriptable so just fake it with a processing func.
+		static void ProcessAction(const string &strAct, const vector<string> &vArgs);
+
+		ScriptHost(string strScript, unsigned int uiFreq){
 			g_pHost.reset(this);
+			m_uiAVRFreq = uiFreq;
 			LoadScript(strScript);
 		}
 		static shared_ptr<ScriptHost> g_pHost;
 		static map<string, Scriptable*> m_clients;
 		static vector<string> m_script;
-		static unsigned int m_iLine;
+		static unsigned int m_iLine, m_uiAVRFreq;
 		static bool m_bStarted;
 		typedef struct linestate_t{
 			linestate_t(){strCtxt = "", iActID = 0, vArgs = {""}, iLine = 0, pClient = nullptr, isValid = false;};
@@ -93,6 +97,8 @@ class ScriptHost
 			Scriptable *pClient;
 			bool isValid;
 		}linestate_t;
+
+		static int m_iTimeoutCycles, m_iTimeoutCount;
 
 		static linestate_t m_lnState;
 

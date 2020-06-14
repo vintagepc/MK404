@@ -21,13 +21,13 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BUTTON_H__
-#define __BUTTON_H__
+#pragma once
 
 #include "BasePeripheral.h"
 #include <string>
+#include "Scriptable.h"
 
-class Button:public BasePeripheral
+class Button:public BasePeripheral, public Scriptable
 {
 	public:
 	#define IRQPAIRS _IRQ(BUTTON_OUT,">button.out")
@@ -42,6 +42,9 @@ class Button:public BasePeripheral
 	// Presses the button for a given duration (us, default 1000)
 	void Press(uint32_t uiUSec = 1000);
 
+	protected:
+		LineStatus ProcessAction(unsigned int iAction, const vector<string> &vArgs) override;
+
 	private:
 		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);
 
@@ -50,5 +53,11 @@ class Button:public BasePeripheral
 		bool m_bValue = false;
 		std::string m_strName;
 
+		enum Actions
+		{
+			ActPress,
+			ActRelease,
+			ActPressAndRelease
+		};
+
 };
-#endif /* __BUTTON_H__*/

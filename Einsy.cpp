@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 
 	if (argScript.isSet())
 	{
-		ScriptHost::Init(argScript.getValue());
+		ScriptHost::Init(argScript.getValue(), pBoard->GetAVR()->frequency);
 	}
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can

@@ -39,7 +39,7 @@ void SerialLineMonitor::OnByteIn(struct avr_irq_t * irq, uint32_t value)
 
 Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const vector<string> &args)
 {
-	if (m_type != None) // already in wait state
+	if (m_type != None && m_strMatch.compare(args.at(0))==0) // already in wait state for same find
 	{
 		if (!m_bMatched)
 			return LineStatus::Waiting;

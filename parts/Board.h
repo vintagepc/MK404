@@ -47,8 +47,7 @@ namespace Boards
 			Board(const Wiring &wiring,uint32_t uiFreqHz):m_wiring(wiring),m_uiFreq(uiFreqHz),Scriptable("Board")
 			{
 				RegisterAction("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
-				RegisterAction("WaitSeconds","Waits the specified number of board-seconds (based on board frequency) before continuing",
-								ScriptAction::WaitSeconds, {"int"});
+				RegisterAction("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
 			};
 
 			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};
@@ -133,8 +132,9 @@ namespace Boards
 					case Quit:
 						SetQuitFlag();
 						return LineStatus::Finished;
-					case WaitSeconds:
-						return LineStatus::Waiting;
+					case Reset:
+						SetResetFlag();
+						return LineStatus::Finished;
 				}
 			}
 
@@ -271,7 +271,7 @@ namespace Boards
 			enum ScriptAction
 			{
 				Quit,
-				WaitSeconds
+				Reset
 			};
 
 

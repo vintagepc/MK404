@@ -34,7 +34,7 @@ class Scriptable
 {
 	friend ScriptHost;
     public:
-		Scriptable(const string &strName):m_strName(strName){};
+		Scriptable(const string &strName="Unnamed"):m_strName(strName){};
 
 	enum class LineStatus
 	{
@@ -50,6 +50,14 @@ class Scriptable
 		{
 			printf("WARN: %s has registered actions but does not have an action handler!\n");
 			return LineStatus::Error;
+		}
+
+		void SetName(const string &strName)
+		{
+			if (m_bRegistered)
+				printf("ERROR: Tried to change a Scriptable object's name after it has already registered.\n");
+			else
+				m_strName = strName;
 		}
 
 		// Prints help text for this Scriptable
@@ -88,6 +96,7 @@ class Scriptable
 			m_mHelp[ID] = strDesc;
 			m_ActionArgs[ID].clear();
 			ScriptHost::AddScriptable(m_strName,this);
+			m_bRegistered = true;
 			return true;
 		}
 
@@ -103,7 +112,8 @@ class Scriptable
 
 
     private:
-		const string m_strName;
+		string m_strName;
+		bool m_bRegistered = false;
 		map<unsigned int, vector<string>> m_ActionArgs;
 		map<string, unsigned int> m_ActionIDs;
 		map<unsigned int,string> m_mHelp;

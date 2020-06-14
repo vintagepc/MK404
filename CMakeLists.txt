@@ -30,6 +30,7 @@ set(H_FILES
     parts/components/LED.h
     parts/components/PINDA.h
     parts/components/RotaryEncoder.h
+	parts/components/SerialLineMonitor.h
     parts/components/Thermistor.h
     parts/components/TMC2130.h
     parts/components/UART_Logger.h
@@ -83,6 +84,7 @@ set(EINSY_SOURCES
     parts/components/PINDA.cpp
     parts/components/RotaryEncoder.cpp
     parts/components/SDCard.cpp
+	parts/components/SerialLineMonitor.cpp
     parts/components/Thermistor.cpp
     parts/components/TMC2130.cpp
     parts/components/UART_Logger.cpp
@@ -93,6 +95,7 @@ set(EINSY_SOURCES
     include/SerialPipe.cpp
     utility/Color.cpp
 	utility/FatImage.cpp
+	parts/ScriptHost.cpp
     parts/Board.cpp
     parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp

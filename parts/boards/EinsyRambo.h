@@ -38,7 +38,7 @@
 #include "UART_Logger.h"
 #include "VoltageSrc.h"
 #include "w25x20cl.h"
-
+#include "SerialLineMonitor.h"
 #include <wiring/Einsy_1_1a.h>
 
 extern "C"
@@ -72,6 +72,7 @@ namespace Boards
 			RotaryEncoder encoder;
 			Button PowerPanic = Button("Power Panic");
 			uart_pty UART0, UART2;
+			SerialLineMonitor m_Mon0 = SerialLineMonitor("Serial0");
 			Thermistor tExtruder, tBed, tPinda, tAmbient;
 			Fan fExtruder = Fan(3300), fPrint = Fan(5000);
 			Heater hExtruder = Heater(1.5,25.0,false,'H',30,250),

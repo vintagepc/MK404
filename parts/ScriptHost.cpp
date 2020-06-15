@@ -31,8 +31,9 @@ vector<string> ScriptHost::m_script;
 unsigned int ScriptHost::m_iLine, ScriptHost::m_uiAVRFreq;
 ScriptHost::linestate_t ScriptHost::m_lnState = linestate_t();
 shared_ptr<ScriptHost> ScriptHost::g_pHost;
-bool ScriptHost::m_bStarted = false;
+ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
+bool ScriptHost::m_bQuitOnTimeout = false;
 
 
 void ScriptHost::PrintScriptHelp()
@@ -78,12 +79,20 @@ IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const vector<
 	switch (ID)
 	{
 		case ActSetTimeoutMs:
+		{
 			int iTime = stoi(vArgs.at(0));
 			m_iTimeoutCycles = iTime *(m_uiAVRFreq/1000);
 			printf("ScriptHost::SetTimeoutMs changed to %d (%d cycles)\n",iTime,m_iTimeoutCycles);
 			m_iTimeoutCount = 0;
 			break;
+		}
+		case ActSetQuitOnTimeout:
+		{
+			m_bQuitOnTimeout = stoi(vArgs.at(0))!=0;
+			break;
+		}
 	}
+	return LineStatus::Finished;
 }
 
 bool ScriptHost::ValidateScript()
@@ -234,9 +243,9 @@ void ScriptHost::OnAVRCycle()
 	if (m_iLine>=m_script.size())
 		return; // Done.
 
-	if (m_lnState.iLine != m_iLine || !m_bStarted)
+	if (m_lnState.iLine != m_iLine || m_state == State::Idle)
 	{
-		m_bStarted = true;
+		m_state = State::Running;
 		printf("ScriptHost: Executing line %s\n",m_script.at(m_iLine).c_str());
 		ParseLine(m_iLine);
 	}
@@ -253,10 +262,20 @@ void ScriptHost::OnAVRCycle()
 			case LS::Error:
 				printf("ScriptHost: Script FAILED on line %d\n",m_iLine);
 				m_iLine = m_script.size(); // Error, end scripting.
+				m_state = State::Error;
 				break;
 			case LS::Waiting:
 				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount>m_iTimeoutCycles)
 				{
+					m_state = State::Timeout;
+					if (m_bQuitOnTimeout)
+					{
+						printf("ScriptHost: Script TIMED OUT on %s. Quitting...\n",m_script.at(m_iLine).c_str());
+						int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
+						m_clients.at("Board")->ProcessAction(ID,{});
+						m_iLine = m_script.size();
+						return;
+					}
 					printf("ScriptHost: Script TIMED OUT on %s\n",m_script.at(m_iLine).c_str());
 					m_iLine++;
 					m_iTimeoutCount = 0;
@@ -264,11 +283,15 @@ void ScriptHost::OnAVRCycle()
 
 		}
 		if (m_iLine==m_script.size())
+		{
 			printf("ScriptHost: Script FINISHED\n");
+			m_state = State::Finished;
+		}
 	}
 	else
 	{
 		printf("ScriptHost: ERROR: Invalid line/unrecognized command:%d %s\n",m_iLine,m_script.at(m_iLine).c_str());
+		m_state = State::Error;
 		m_iLine = m_script.size();
 	}
 }

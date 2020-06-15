@@ -34,6 +34,18 @@ using namespace std;
 #include <vector>
 class Scriptable;
 class ScriptHost;
+
+// Argument type options. Note, the const string defs live in ScriptHost.cpp, update those too!
+enum class ArgType
+{
+	Int,
+	String,
+	Bool,
+	Float
+
+
+};
+
 class IScriptable
 {
 	friend Scriptable;
@@ -48,13 +60,7 @@ class IScriptable
 		Running,
 		Finished
 	};
-	enum class ArgType
-	{
-		Int,
-		String,
-		Bool,
-		Float
-	};
+
 
     protected:
 		virtual LineStatus ProcessAction(unsigned int iAction, const vector<string> &args)
@@ -83,7 +89,7 @@ class IScriptable
 				if (m_ActionArgs[ID].size()>0)
 				{
 					for (int i=0; i<m_ActionArgs[ID].size(); i++)
-						strArgFmt.append(m_ActionArgs.at(ID).at(i)).append(", ");
+						strArgFmt += m_ArgToString.at(m_ActionArgs.at(ID).at(i)) + ", ";
 					strArgFmt[strArgFmt.size()-2] = ')';
 				}
 				else
@@ -110,7 +116,7 @@ class IScriptable
 
 		// Registers a scriptable action Name::strAct(), help description strDesc, internal ID, and a vector of argument types.
 		// The types are (currently) for display only but the count is used to sanity-check lines before passing them to you in ProcessAction.
-		inline void RegisterAction(const string &strAct, const string& strDesc, unsigned int ID, const vector<string>& vTypes)
+		inline void RegisterAction(const string &strAct, const string& strDesc, unsigned int ID, const vector<ArgType>& vTypes)
 		{
 			if (!RegisterAction(strAct,strDesc, ID))
 				return;
@@ -120,8 +126,9 @@ class IScriptable
     private:
 		string m_strName;
 		bool m_bRegistered = false;
-		map<unsigned int, vector<string>> m_ActionArgs;
+		map<unsigned int, vector<ArgType>> m_ActionArgs;
 		map<string, unsigned int> m_ActionIDs;
 		map<unsigned int,string> m_mHelp;
+		static const map<ArgType,string> m_ArgToString;
 
 };

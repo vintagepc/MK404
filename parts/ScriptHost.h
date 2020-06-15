@@ -73,13 +73,14 @@ class ScriptHost: public IScriptable
 		static void LoadScript(const string &strScript);
 		static void ParseLine(unsigned int iLine);
 		static bool GetLineParts(const string &strLine, string &strCtxt, string& strAct, vector<string>&vArgs);
+		static bool CheckArg(const ArgType &type, const string &val);
 
 		//We can't register ourselves as a scriptable so just fake it with a processing func.
 		LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
 
 		ScriptHost(string strScript, unsigned int uiFreq):IScriptable("ScriptHost"){
 			g_pHost.reset(this);
-			RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{"int"});
+			RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{ArgType::Int});
 			m_clients[m_strName] = this;
 			m_uiAVRFreq = uiFreq;
 			if (!strScript.empty())

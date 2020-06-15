@@ -48,7 +48,7 @@ namespace Boards
 			{
 				RegisterAction("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
 				RegisterAction("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
-				RegisterAction("WaitMs","Waits the specified number of milliseconds (in AVR-clock time)", ScriptAction::Wait,{"int"});
+				RegisterAction("WaitMs","Waits the specified number of milliseconds (in AVR-clock time)", ScriptAction::Wait,{ArgType::Int});
 			};
 
 			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};

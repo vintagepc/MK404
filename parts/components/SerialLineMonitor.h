@@ -36,8 +36,8 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 		// Creates a logger that sniffs for
 		SerialLineMonitor(string strName):Scriptable(strName)
 		{
-			RegisterAction("WaitForLine","Waits for the provided line to appear on the serial output.",WaitForLine, {"string"});
-			RegisterAction("WaitForLineContains","Waits for the serial output to contain a line with the given string.",WaitForContains,{"string"});
+			RegisterAction("WaitForLine","Waits for the provided line to appear on the serial output.",WaitForLine, {ArgType::String});
+			RegisterAction("WaitForLineContains","Waits for the serial output to contain a line with the given string.",WaitForContains,{ArgType::String});
 		};
 
 		// Shuts down

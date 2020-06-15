@@ -86,6 +86,59 @@ void ScriptHost::ProcessAction(const string &strAct, const vector<string> &vArgs
 	}
 }
 
+bool ScriptHost::ValidateScript()
+{
+	vector<string> vArgs;
+	string strCtxt, strAct;
+	printf("Validating script...\n");
+	bool bClean = true;
+	auto fcnErr = [](const string &sMsg, const int iLine) { printf("ScriptHost: Validation failed: %s on line %d : %s\n",sMsg.c_str(), iLine, m_script.at(iLine).c_str());};
+	for (int i=0; i<m_script.size(); i++)
+	{
+		vArgs.clear();
+		if (!ScriptHost::GetLineParts(m_script.at(i),strCtxt,strAct,vArgs))
+		{
+			bClean = false;
+			fcnErr("Parse error: Line is not of the form Context::Action([arg1,arg2,...])",i);
+			continue;
+		}
+		if (m_clients.count(strCtxt)==0)
+		{
+			bClean = false;
+			fcnErr("Unknown context " + strCtxt, i);
+			string strCtxts = "Available contexts:";
+			for (auto it=m_clients.begin(); it!=m_clients.end(); it++)
+			{
+				strCtxts += " " + it->first + ",";
+			}
+			strCtxts.pop_back();
+			printf("%s\n",strCtxts.c_str());
+			continue;
+		}
+		if (m_clients.at(strCtxt)->m_ActionIDs.count(strAct)==0)
+		{
+			bClean = false;
+			fcnErr("Unknown action " + strCtxt + "::" + strAct,i);
+			printf("Available actions:\n");
+			m_clients.at(strCtxt)->PrintRegisteredActions();
+			continue;
+		}
+		int ID = m_clients.at(strCtxt)->m_ActionIDs.at(strAct);
+		const vector<string> vArgTypes = m_clients.at(strCtxt)->m_ActionArgs.at(ID);
+		if (vArgTypes.size()!=vArgs.size())
+		{
+			bClean = false;
+			fcnErr("Argument count mismatch, expected "+to_string(vArgTypes.size()),i);
+						m_clients.at(strCtxt)->PrintRegisteredActions();
+			continue;
+		}
+
+
+	}
+	printf("Script validation finished.\n");
+	return bClean;
+}
+
 void ScriptHost::ParseLine(unsigned int iLine)
 {
 	string strCtxt, strAct;

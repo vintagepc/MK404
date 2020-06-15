@@ -32,11 +32,10 @@ using namespace std;
 #include <sim_avr.h>
 
 // Forward declare.
-class Scriptable;
+#include "IScriptable.h"
 
-class ScriptHost
+class ScriptHost: public IScriptable
 {
-	//friend ScriptHost;
     public:
 		static shared_ptr<ScriptHost> Get()
 		{
@@ -58,7 +57,7 @@ class ScriptHost
 			return ValidateScript();
 		}
 
-		static void AddScriptable(string strName, Scriptable* src);
+		static void AddScriptable(string strName, IScriptable* src);
 
 		static inline bool IsRegistered(string strName)
 		{
@@ -76,15 +75,18 @@ class ScriptHost
 		static bool GetLineParts(const string &strLine, string &strCtxt, string& strAct, vector<string>&vArgs);
 
 		//We can't register ourselves as a scriptable so just fake it with a processing func.
-		static void ProcessAction(const string &strAct, const vector<string> &vArgs);
+		LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
 
-		ScriptHost(string strScript, unsigned int uiFreq){
+		ScriptHost(string strScript, unsigned int uiFreq):IScriptable("ScriptHost"){
 			g_pHost.reset(this);
+			RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{"int"});
+			m_clients[m_strName] = this;
 			m_uiAVRFreq = uiFreq;
-			LoadScript(strScript);
+			if (!strScript.empty())
+				LoadScript(strScript);
 		}
 		static shared_ptr<ScriptHost> g_pHost;
-		static map<string, Scriptable*> m_clients;
+		static map<string, IScriptable*> m_clients;
 		static vector<string> m_script;
 		static unsigned int m_iLine, m_uiAVRFreq;
 		static bool m_bStarted;
@@ -94,9 +96,14 @@ class ScriptHost
 			unsigned int iActID;
 			vector<string> vArgs;
 			unsigned int iLine;
-			Scriptable *pClient;
+			IScriptable *pClient;
 			bool isValid;
 		}linestate_t;
+
+		enum Actions
+		{
+			ActSetTimeoutMs
+		};
 
 		static int m_iTimeoutCycles, m_iTimeoutCount;
 

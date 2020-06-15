@@ -63,6 +63,7 @@ set(INCLUDE_FILES
 	parts/Printer.h
 	parts/PrinterFactory.h
     parts/Wiring.h
+	parts/IScriptable.h
     parts/wiring/MM_Control_01.h
 	parts/wiring/Einsy_1_0a.h
 	parts/wiring/Einsy_1_1a.h

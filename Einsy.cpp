@@ -254,5 +254,7 @@ int main(int argc, char *argv[])
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);
 
 	printf("Done\n");
+	if (argScript.isSet())
+		return (int)ScriptHost::GetState();
 
 }

@@ -64,9 +64,21 @@ class ScriptHost: public IScriptable
 			return m_clients.count(strName)!=0;
 		}
 
+
 		static void PrintScriptHelp();
 
 		static void OnAVRCycle();
+
+		enum class State
+		{
+			Finished, // First because 0 return code is OK.
+			Idle,
+			Running,
+			Timeout,
+			Error
+		};
+
+		static inline State GetState(){ return m_state;}
 
     private:
 		static bool ValidateScript();
@@ -81,6 +93,7 @@ class ScriptHost: public IScriptable
 		ScriptHost(string strScript, unsigned int uiFreq):IScriptable("ScriptHost"){
 			g_pHost.reset(this);
 			RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{ArgType::Int});
+			RegisterAction("SetQuitOnTimeout","If 1, quits when a timeout occurs. Exit code will be non-zero.",ActSetQuitOnTimeout,{ArgType::Bool});
 			m_clients[m_strName] = this;
 			m_uiAVRFreq = uiFreq;
 			if (!strScript.empty())
@@ -90,7 +103,9 @@ class ScriptHost: public IScriptable
 		static map<string, IScriptable*> m_clients;
 		static vector<string> m_script;
 		static unsigned int m_iLine, m_uiAVRFreq;
-		static bool m_bStarted;
+		static ScriptHost::State m_state;
+		static bool m_bQuitOnTimeout;
+
 		typedef struct linestate_t{
 			linestate_t(){strCtxt = "", iActID = 0, vArgs = {""}, iLine = 0, pClient = nullptr, isValid = false;};
 			string strCtxt;
@@ -103,7 +118,8 @@ class ScriptHost: public IScriptable
 
 		enum Actions
 		{
-			ActSetTimeoutMs
+			ActSetTimeoutMs,
+			ActSetQuitOnTimeout
 		};
 
 		static int m_iTimeoutCycles, m_iTimeoutCount;

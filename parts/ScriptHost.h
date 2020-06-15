@@ -47,15 +47,15 @@ class ScriptHost
 		{
 			return g_pHost!=nullptr;
 		}
-		static shared_ptr<ScriptHost> Init(std::string strFile, unsigned int uiFreq)
+		static bool Init(std::string strFile, unsigned int uiFreq)
 		{
 			if (g_pHost!=nullptr)
 			{
 				fprintf(stderr,"ERROR: Duplicate initialization attempt for scripthost!\n");
-				return g_pHost;
+				return false;
 			}
 			new ScriptHost(strFile,uiFreq);
-			return g_pHost;
+			return ValidateScript();
 		}
 
 		static void AddScriptable(string strName, Scriptable* src);
@@ -70,6 +70,7 @@ class ScriptHost
 		static void OnAVRCycle();
 
     private:
+		static bool ValidateScript();
 		static void LoadScript(const string &strScript);
 		static void ParseLine(unsigned int iLine);
 		static bool GetLineParts(const string &strLine, string &strCtxt, string& strAct, vector<string>&vArgs);

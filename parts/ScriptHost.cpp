@@ -124,7 +124,7 @@ bool ScriptHost::ValidateScript()
 			continue;
 		}
 		int ID = m_clients.at(strCtxt)->m_ActionIDs.at(strAct);
-		const vector<string> vArgTypes = m_clients.at(strCtxt)->m_ActionArgs.at(ID);
+		const vector<ArgType> vArgTypes = m_clients.at(strCtxt)->m_ActionArgs.at(ID);
 		if (vArgTypes.size()!=vArgs.size())
 		{
 			bClean = false;
@@ -132,11 +132,43 @@ bool ScriptHost::ValidateScript()
 						m_clients.at(strCtxt)->PrintRegisteredActions();
 			continue;
 		}
-
+		for (int j=0; j<vArgTypes.size(); j++)
+		{
+			if (!CheckArg(vArgTypes.at(j),vArgs.at(j)))
+			{
+				bClean = false;
+				fcnErr("Conversion error, expected \"" + m_ArgToString.at(vArgTypes.at(j)) + "\" but could not convert \"" + vArgs.at(j) + "\"",i);
+				continue;
+			}
+		}
 
 	}
 	printf("Script validation finished.\n");
 	return bClean;
+}
+
+bool ScriptHost::CheckArg(const ArgType &type, const string &val)
+{
+	try
+	{
+		switch (type)
+		{
+			case ArgType::Int:
+				stoi(val);
+				return true;
+			case ArgType::Float:
+				stof(val);
+				return true;
+			case ArgType::Bool:
+				stoi(val);
+				return true;
+		}
+	}
+	catch(const std::exception &e)
+	{
+		return false;
+	}
+
 }
 
 void ScriptHost::ParseLine(unsigned int iLine)
@@ -240,3 +272,10 @@ void ScriptHost::OnAVRCycle()
 		m_iLine = m_script.size();
 	}
 }
+
+const map<ArgType,string> IScriptable::m_ArgToString = {
+	make_pair(ArgType::Bool,"bool"),
+	make_pair(ArgType::Float,"float"),
+	make_pair(ArgType::Int,"int"),
+	make_pair(ArgType::String,"string"),
+};

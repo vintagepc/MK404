@@ -53,7 +53,7 @@ class Scriptable: public IScriptable
 				return false;
 		}
 		//Forwarder:
-		inline void RegisterAction(const string &strAct, const string& strDesc, unsigned int ID, const vector<string>& vTypes)
+		inline void RegisterAction(const string &strAct, const string& strDesc, unsigned int ID, const vector<ArgType>& vTypes)
 		{
 			IScriptable::RegisterAction(strAct,strDesc,ID, vTypes);
 		}

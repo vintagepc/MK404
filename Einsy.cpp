@@ -218,6 +218,7 @@ int main(int argc, char *argv[])
 	};
 	if (argScriptHelp.isSet())
 	{
+		ScriptHost::Init("",0);
 		ScriptHost::PrintScriptHelp();
 		return 0;
 	}

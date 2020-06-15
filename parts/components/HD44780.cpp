@@ -60,6 +60,18 @@ avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t * avr,avr_cycle_count_t wh
 	return 0;
 }
 
+Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector<string> &args)
+{
+	switch (iAction)
+	{
+		case ActDesync:
+			ToggleFlag(HD44780_FLAG_LOWNIBBLE);
+			return LineStatus::Finished;
+		case ActWaitForText:
+			return LineStatus::Waiting;
+	}
+}
+
 void HD44780::IncrementCursor()
 {
 

@@ -65,7 +65,7 @@ class IScriptable
     protected:
 		virtual LineStatus ProcessAction(unsigned int iAction, const vector<string> &args)
 		{
-			printf("WARN: %s has registered actions but does not have an action handler!\n");
+			printf("WARN: %s has registered actions but does not have an action handler!\n",m_strName.c_str());
 			return LineStatus::Error;
 		}
 

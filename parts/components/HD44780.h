@@ -23,9 +23,9 @@
 
 /*
  * This "Part" simulates the business end of a HD44780 LCD display
- * It supports from 8x1 to 20x4 or even 40x4 (not sure that exists)
+ * It supports from 8x1 to 20x4.
  *
- * It works both in 4 bits and 8 bits mode and supports a "quicky" method
+ * It works both in 4 bit and 8 bit modes and supports a "quickie" method
  * of driving that is commonly used on AVR, namely
  * (msb) RW:E:RS:D7:D6:D5:D4 (lsb)
  *
@@ -33,8 +33,8 @@
  *   specific number of cycles as per the datasheet (37uS between operations)
  * + If you decide to use the RW pin, the "busy" flag is supported and will
  *   be automaticly cleared on the second read, to exercisee the code a bit.
- * + Cursor is supported, but now "display shift"
- * + The Character RAM is supported, but is not currently drawn.
+ * + Cursor is supported, but not "display shift"
+ * + The Character RAM is fully supported and custom characters are rendered.
  *
  * To interface this part, you can use the "INPUT" IRQs and hook them to the
  * simavr instance, if you use the RW pins or read back frim the display, you
@@ -43,17 +43,17 @@
  * The "part" also provides various IRQs that are there to be placed in a VCD file
  * to show what is sent, and some of the internal status.
  *
- * This part has been tested with two different implementation of an AVR driver
- * for the hd44780. The one shipped in this directory is straight out of the
- * avr-libc example code.
+ * This part has been tested extensively through use on the MK3Sim printer simulator
+ * and it works on stock out of the box firmware.
  */
-#ifndef __HD44780_H__
-#define __HD44780_H__
+
+#pragma once
 
 #include "BasePeripheral.h"
 #include <stdio.h>
+#include <Scriptable.h>
 
-class HD44780:public BasePeripheral
+class HD44780:public BasePeripheral, public Scriptable
 {
 	public:
 		#define IRQPAIRS _IRQ(ALL,"7=hd44780.pins") \
@@ -77,7 +77,11 @@ class HD44780:public BasePeripheral
 		#include "IRQHelper.h"
 
 		// Makes a display with the given dimensions.
-		HD44780(uint8_t width = 20, uint8_t height = 4):m_uiHeight(height),m_uiWidth(width) {};
+		HD44780(uint8_t width = 20, uint8_t height = 4):m_uiHeight(height),m_uiWidth(width),Scriptable("LCD")
+		{
+			RegisterAction("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
+			RegisterAction("WaitForText","Waits for a given string to appear on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
+		};
 
 		// Registers IRQs with SimAVR.
 		void Init(avr_t *avr);
@@ -91,6 +95,8 @@ class HD44780:public BasePeripheral
         uint8_t	m_uiWidth = 20, m_uiHeight = 4;				// width and height of the LCD
         uint8_t  m_vRam[104];
         uint8_t  m_cgRam[64];
+
+		virtual LineStatus ProcessAction(unsigned int iAction, const vector<string> &args) override;
 
 		inline void ToggleFlag(uint16_t bit)
 		{
@@ -108,12 +114,12 @@ class HD44780:public BasePeripheral
 		{
 			return (m_flags &  (1 << bit)) != 0;
 		}
-        
+
 
 		enum {
 			HD44780_FLAG_F = 0,         // 1: 5x10 Font, 0: 5x7 Font
 			HD44780_FLAG_N,             // 1: 2/4-lines Display, 0: 1-line Display,
-			HD44780_FLAG_D_L,           // 1: 4-Bit Interface, 0: 8-Bit Interface
+			HD44780_FLAG_D_L,           // 1: 8-Bit Interface, 0: 4-Bit Interface
 			HD44780_FLAG_R_L,           // 1: Shift right, 0: shift left
 			HD44780_FLAG_S_C,           // 1: Display shift, 0: Cursor move
 			HD44780_FLAG_B,             // 1: Cursor Blink
@@ -132,7 +138,11 @@ class HD44780:public BasePeripheral
 			HD44780_FLAG_DIRTY,			// 1: needs redisplay...
 		};
 	private:
-
+		enum Actions
+		{
+			ActDesync,
+			ActWaitForText
+		};
 
         void ResetCursor();
         void ClearScreen();
@@ -163,5 +173,3 @@ class HD44780:public BasePeripheral
         uint8_t  m_uiReadPins = 0;
         volatile uint16_t m_flags = 0;				// LCD flags ( HD44780_FLAG_*)
 };
-
-#endif 

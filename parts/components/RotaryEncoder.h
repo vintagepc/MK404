@@ -22,12 +22,12 @@
  */
 
 
-#ifndef __ROTARYENCODER_H__
-#define __ROTARYENCODER_H__
+#pragma once
 
 #include "BasePeripheral.h"
+#include "Scriptable.h"
 
-class RotaryEncoder:public BasePeripheral
+class RotaryEncoder:public BasePeripheral,public Scriptable
 {
     public:
         #define IRQPAIRS _IRQ(OUT_A,">encoder.a") _IRQ(OUT_B,">encoder.b") _IRQ(OUT_BUTTON,">encoder.button")
@@ -37,6 +37,8 @@ class RotaryEncoder:public BasePeripheral
             CW_CLICK = 0,
             CCW_CLICK
         } Direction;
+
+		RotaryEncoder();
 
         // Registers a rotary encoder with "avr"
         void Init(avr_t *avr);
@@ -51,10 +53,12 @@ class RotaryEncoder:public BasePeripheral
         void PushAndHold();
 
         // Does press event without a release for mouse control.
-        void MousePush(); 
+        void MousePush();
 
-        // Release event for mouse push. 
-        void Release(); 
+        // Release event for mouse push.
+        void Release();
+	protected:
+		LineStatus ProcessAction(unsigned int action, const vector<string> &vArgs);
 
     private:
 
@@ -67,6 +71,15 @@ class RotaryEncoder:public BasePeripheral
 
         avr_cycle_timer_t m_fcnRelease = MAKE_C_TIMER_CALLBACK(RotaryEncoder,OnButtonReleaseTimer);
 
+		enum Actions
+		{
+			ActTwistCW,
+			ActTwistCCW,
+			ActPress,
+			ActRelease,
+			ActPressAndRelease
+		};
+
         bool m_bVerbose = false;
         uint8_t m_uiPulseCt = 0;
         Direction m_eDirection = CCW_CLICK;
@@ -74,5 +87,3 @@ class RotaryEncoder:public BasePeripheral
         bool m_bTimerRunning = false;
 
 };
-
-#endif /* __ROTENC_H__*/

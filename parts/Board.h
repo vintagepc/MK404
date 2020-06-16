@@ -26,7 +26,7 @@
 #include <BasePeripheral.h>
 #include <avr_extint.h>
 #include <uart_pty.h>
-#include "Einsy_EEPROM.h"
+#include "EEPROM.h"
 #include <pthread.h>
 #include <Scriptable.h>
 #include <ScriptHost.h>
@@ -264,7 +264,7 @@ namespace Boards
 
 			avr_flashaddr_t LoadFirmware(std::string strFW);
 
-			int m_fdFlash = 0, m_fdEEPROM = 0;
+			int m_fdFlash = 0;
 
 			bool m_bQuit = false, m_bReset = false, m_bNoHacks = false;
 			pthread_t m_thread = 0;
@@ -290,6 +290,6 @@ namespace Boards
 			};
 
 
-			Einsy_EEPROM m_EEPROM;
+			EEPROM m_EEPROM;
 	};
 };// Boards

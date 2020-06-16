@@ -20,22 +20,30 @@
  */
 
 
-#ifndef __EINSY_EEPROM_H__
-#define __EINSY_EEPROM_H__
+#pragma once
 
 #include "stdlib.h"
 #include "unistd.h"
 #include "BasePeripheral.h"
+#include "Scriptable.h"
+#include <string>
+using namespace std;
 
-class Einsy_EEPROM: public BasePeripheral {
+class EEPROM: public BasePeripheral, public Scriptable {
 	public:
 
-	Einsy_EEPROM(){};
+	EEPROM():Scriptable("EEPROM")
+	{
+		RegisterAction("Poke","Pokes a value into the EEPROM. Args are (address,value)", ActPoke, {ArgType::Int, ArgType::Int});
+	};
 	// Loads EEPROM from a file or initializes the file for the first time.
-	Einsy_EEPROM(struct avr_t * avr, const char* path)
-	{ Load(avr, path);};
+	EEPROM(struct avr_t * avr, const string &strFile):Scriptable("EEPROM")
+	{
+		EEPROM();
+		Load(avr, strFile);
+	};
 
-	void Load(struct avr_t * avr, const char* path);
+	void Load(struct avr_t * avr, const string &strFile);
 	// Saves EEPROM to the file
 	void Save();
 
@@ -45,12 +53,16 @@ class Einsy_EEPROM: public BasePeripheral {
 	// Peeks at a value in the EEPROM.
 	uint8_t Peek(uint16_t address);
 
+	protected:
+		LineStatus ProcessAction(unsigned int uiAct, const vector<string> &vArgs) override;
+
 
 	private:
-		char m_strPath[1024];
+		std::string m_strFile;
 		int m_fdEEPROM = 0;
 		uint16_t m_uiSize = 4096;
+		enum Actions {
+			ActPoke
+		};
 
 };
-
-#endif

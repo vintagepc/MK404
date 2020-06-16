@@ -1,5 +1,5 @@
 /*
-	Einsy_EEPROM.cpp - helper to persist the AVR eeprom (and let us poke about in its internals...)
+	EEPROM.cpp - helper to persist the AVR eeprom (and let us poke about in its internals...)
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
@@ -24,19 +24,19 @@
 #include "assert.h"
 #include <fcntl.h>
 #include "string.h"
-#include "Einsy_EEPROM.h"
+#include "EEPROM.h"
 #include <avr_eeprom.h>
 
 
-void Einsy_EEPROM::Load(struct avr_t *avr, const char* path)
+void EEPROM::Load(struct avr_t *avr, const string &strFile)
 {
 	m_pAVR = avr;
 	m_uiSize = m_pAVR->e2end + 1;
-	strncpy(m_strPath, path, sizeof(m_strPath));
+	m_strFile = strFile;
 
-	m_fdEEPROM = open(m_strPath, O_RDWR | O_CREAT, 0644);
+	m_fdEEPROM = open(m_strFile.c_str(), O_RDWR | O_CREAT, 0644);
 	if (m_fdEEPROM < 0) {
-		perror(m_strPath);
+		perror(m_strFile.c_str());
 		exit(1);
 	}
 	printf("Loading %u bytes of EEPROM\n", m_uiSize);
@@ -47,7 +47,7 @@ void Einsy_EEPROM::Load(struct avr_t *avr, const char* path)
 	printf("Read %d bytes\n",(int)r);
 	if (r !=  io.size) {
 		fprintf(stderr, "unable to load EEPROM\n");
-		perror(m_strPath);
+		perror(m_strFile.c_str());
 		exit(1);
 	}
 	uint8_t bEmpty = 1;
@@ -61,7 +61,7 @@ void Einsy_EEPROM::Load(struct avr_t *avr, const char* path)
     free(io.ee);
 }
 
-void Einsy_EEPROM::Save()
+void EEPROM::Save()
 {
 	// Write out the EEPROM contents:
 	lseek(m_fdEEPROM, SEEK_SET, 0);
@@ -70,24 +70,44 @@ void Einsy_EEPROM::Save()
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); // Should net a pointer to eeprom[0]
 
 	ssize_t r = write(m_fdEEPROM, io.ee, m_uiSize);
-	printf("Wrote %zd bytes of EEPROM to %s\n",r, m_strPath);
+	printf("Wrote %zd bytes of EEPROM to %s\n",r, m_strFile.c_str());
 	if (r != m_uiSize) {
 		fprintf(stderr, "unable to write EEPROM memory\n");
-		perror(m_strPath);
+		perror(m_strFile.c_str());
 	}
 	close(m_fdEEPROM);
 	free(io.ee);
 }
 
+Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<string> &vArgs)
+{
+	switch (uiAct)
+	{
+		case ActPoke:
+			unsigned int uiAddr = stoi(vArgs.at(0));
+			uint8_t uiVal = stoi(vArgs.at(1));
+			if (uiAddr<0 || uiAddr>=m_uiSize)
+			{
+				printf("EEPROM: Error - Address %d is out of range [0 - %d]", uiAddr,m_uiSize);
+				return LineStatus::Error;
+			}
+			else
+			{
+				Poke(uiAddr, uiVal);
+				return LineStatus::Finished;
+			}
+	}
+}
 
-void Einsy_EEPROM::Poke(uint16_t address, uint8_t value)
+
+void EEPROM::Poke(uint16_t address, uint8_t value)
 {
 	avr_eeprom_desc_t io {ee: &value, offset:address, size:1};
 	assert(address<m_uiSize);
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_SET,&io);
 }
 
-uint8_t Einsy_EEPROM::Peek(uint16_t address)
+uint8_t EEPROM::Peek(uint16_t address)
 {
 	uint8_t uiRet = 0;
 	avr_eeprom_desc_t io {ee: &uiRet, offset:address, size:1};

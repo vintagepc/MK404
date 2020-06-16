@@ -24,7 +24,6 @@
 
 #include "uart_pty.h"
 #include "Button.h"
-#include "Einsy_EEPROM.h"
 #include "Fan.h"
 #include "HD44780GL.h"
 #include "Heater.h"

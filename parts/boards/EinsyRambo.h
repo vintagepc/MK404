@@ -78,7 +78,7 @@ namespace Boards
 				hBed = Heater(0.25, 25, true,'B',30,100);
 			w25x20cl spiFlash;
 			SDCard sd_card = SDCard();
-			TMC2130 X, Y, Z, E;
+			TMC2130 X = TMC2130('X'), Y = TMC2130('Y'), Z = TMC2130('Z'), E = TMC2130('E');
 			VoltageSrc vMain = VoltageSrc(fScale24v, 24.f),
 				vBed = VoltageSrc(fScale24v,23.9);
 			IRSensor IR;

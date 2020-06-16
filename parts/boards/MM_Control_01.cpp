@@ -37,7 +37,6 @@ namespace Boards
 		TMC2130::TMC2130_cfg_t cfg;
 		cfg.uiStepsPerMM = 25;
 		cfg.fStartPos = 0;
-		cfg.cAxis = 'P';
 		cfg.bHasNoEndStops = true;
 
 		m_Extr.SetConfig(cfg);
@@ -50,7 +49,6 @@ namespace Boards
 		m_Extr.ConnectFrom(m_shift.GetIRQ(HC595::BIT1),	TMC2130::ENABLE_IN);
 
 		cfg.uiStepsPerMM = 50;
-		cfg.cAxis = 'S';
 		cfg.iMaxMM = 70;
 		cfg.bInverted = true;
 		cfg.bHasNoEndStops = false;
@@ -65,7 +63,6 @@ namespace Boards
 
 		cfg.uiStepsPerMM = 8;
 		cfg.iMaxMM = 200;
-		cfg.cAxis = 'I';
 		m_Idl.SetConfig(cfg);
 		AddHardware(m_Idl);
 		TryConnect(I_TMC2130_CS,m_Idl,TMC2130::SPI_CSEL);

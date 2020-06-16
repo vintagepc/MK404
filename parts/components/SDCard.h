@@ -28,8 +28,9 @@
 #include <string>
 
 #include "SPIPeripheral.h"
+#include "Scriptable.h"
 
-class SDCard:public SPIPeripheral
+class SDCard:public SPIPeripheral, public Scriptable
 {
 	public:
 	#define IRQPAIRS \
@@ -39,14 +40,21 @@ class SDCard:public SPIPeripheral
 			_IRQ(CARD_PRESENT,		">SD.card_present")
 		#include "IRQHelper.h"
 
-		SDCard(std::string strFile = "SDCard.bin"):m_strFile(strFile){};
+		SDCard(const std::string &strFile = "SDCard.bin"):m_strFile(strFile), Scriptable("SDCard")
+		{
+			RegisterAction("Unmount", "Unmounts the currently mounted file, if any.", Actions::ActUnmount);
+			RegisterAction("Remount", "Remounts the last mounted file, if any.", Actions::ActMountLast);
+			RegisterAction("Mount", "Mounts the specified file on the SD card.",ActMountFile,{ArgType::String});
+		};
 
 		void Init(avr_t *avr);
+
+		inline void SetImage(const string &strFile) { m_strFile = strFile;}
 
 		// Mounts the given image file on the virtual card.
 		// If size=0, autodetect the image size.
 		// If filename is empty, remount the last file.
-		int Mount(std::string filename = "", off_t image_size = 0);
+		int Mount(const std::string &filename = "", off_t image_size = 0);
 
 		// Detaches the currently mounted file.
 		int Unmount();
@@ -58,8 +66,17 @@ class SDCard:public SPIPeripheral
 
         virtual void OnCSELIn(struct avr_irq_t * irq, uint32_t value) override;
 
+		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+
 
 	private:
+
+		enum Actions
+		{
+			ActMountFile,
+			ActMountLast,
+			ActUnmount
+		};
 
 		enum class State {
 			IDLE,

@@ -79,8 +79,10 @@ class HD44780:public BasePeripheral, public Scriptable
 		// Makes a display with the given dimensions.
 		HD44780(uint8_t width = 20, uint8_t height = 4):m_uiHeight(height),m_uiWidth(width),Scriptable("LCD")
 		{
+			m_lineOffsets[2] += width;
+			m_lineOffsets[3] += width;
 			RegisterAction("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
-			RegisterAction("WaitForText","Waits for a given string to appear on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
+			RegisterAction("WaitForText","Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
 		};
 
 		// Registers IRQs with SimAVR.
@@ -137,6 +139,9 @@ class HD44780:public BasePeripheral, public Scriptable
 
 			HD44780_FLAG_DIRTY,			// 1: needs redisplay...
 		};
+
+		uint8_t m_lineOffsets[4] = {0, 0x40, 0, 0x40};
+
 	private:
 		enum Actions
 		{
@@ -172,4 +177,7 @@ class HD44780:public BasePeripheral, public Scriptable
         uint8_t	 m_uiDataPins = 0;			// composite of 4 high bits, or 8 bits
         uint8_t  m_uiReadPins = 0;
         volatile uint16_t m_flags = 0;				// LCD flags ( HD44780_FLAG_*)
+
+		uint8_t m_uiLineChg = 0;
+
 };

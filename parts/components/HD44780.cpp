@@ -60,7 +60,7 @@ avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t * avr,avr_cycle_count_t wh
 	return 0;
 }
 
-Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector<string> &args)
+Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector<string> &vArgs)
 {
 	switch (iAction)
 	{
@@ -68,8 +68,29 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 			ToggleFlag(HD44780_FLAG_LOWNIBBLE);
 			return LineStatus::Finished;
 		case ActWaitForText:
+			if (!m_uiLineChg) // NO changes to check against.
 			return LineStatus::Waiting;
+
+			int iLine = stoi(vArgs.at(1));
+			if (iLine>=m_uiHeight || iLine<-1)
+			{
+				printf("LCD: Line index %d out of range. Valid: 0-%d and -1.\n",iLine, m_uiHeight);
+				return LineStatus::Error;
+			}
+			bool bResult = false;
+			// It might be possible to improve this by searching only the changed line region, but that is
+			// not straightforward with strstr and doing it with std::string requires a copy.
+			// Maybe with c++17 string_view, which lets you take a non-copy reference to char[].
+			char* pFind = strstr((char*)m_vRam,vArgs.at(0).c_str());
+			if (iLine<0)
+				bResult =  pFind != NULL;
+			else
+			{
+				int iLoc = (pFind-(char*)m_vRam);
+				bResult = iLoc >=m_lineOffsets[iLine] && iLoc < (m_lineOffsets[iLine] + m_uiWidth);
 	}
+			return bResult ? LineStatus::Finished : LineStatus::Waiting;
+}
 }
 
 void HD44780::IncrementCursor()
@@ -129,6 +150,11 @@ uint32_t HD44780::OnDataReady()
 	else
 	{
 		m_vRam[m_uiCursor] = m_uiDataPins;
+
+		for (int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
+			if (m_uiCursor>= m_lineOffsets[i] && m_uiCursor< (m_lineOffsets[i] + m_uiWidth))
+				m_uiLineChg |= 1<<i;
+
 		TRACE(printf("hd44780_write_data %02x (%c) to %02x\n", m_uiDataPins, m_uiDataPins, m_uiCursor));
 		if (GetFlag(HD44780_FLAG_S_C)) {	// display shift ?
 			printf("Display shift requested. Not implemented, sorry!\n");

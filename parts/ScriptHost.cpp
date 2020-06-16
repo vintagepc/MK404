@@ -263,7 +263,7 @@ void ScriptHost::OnAVRCycle()
 				printf("ScriptHost: Script FAILED on line %d\n",m_iLine);
 				m_iLine = m_script.size(); // Error, end scripting.
 				m_state = State::Error;
-				break;
+				return;
 			case LS::Waiting:
 				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount>m_iTimeoutCycles)
 				{

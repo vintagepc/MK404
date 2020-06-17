@@ -30,7 +30,7 @@ using namespace std;
 class SerialLineMonitor : public BasePeripheral,public Scriptable
 {
 	public:
-		#define IRQPAIRS _IRQ(BYTE_IN,"8<monitor.in")
+		#define IRQPAIRS _IRQ(BYTE_IN,"8<monitor.in") _IRQ(BYTE_OUT,"8>monitor.out")
 		#include "IRQHelper.h"
 
 		// Creates a logger that sniffs for
@@ -38,6 +38,7 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 		{
 			RegisterAction("WaitForLine","Waits for the provided line to appear on the serial output.",WaitForLine, {ArgType::String});
 			RegisterAction("WaitForLineContains","Waits for the serial output to contain a line with the given string.",WaitForContains,{ArgType::String});
+			RegisterAction("SendGCode","Sends the specified string as G-Code.",SendGCode,{ArgType::String});
 		};
 
 		// Shuts down
@@ -56,18 +57,28 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 			Contains
 		};
 		void OnByteIn(avr_irq_t *irq, uint32_t value);
+		void OnXOnIn(avr_irq_t *irq, uint32_t value);
+		void OnXOffIn(avr_irq_t *irq, uint32_t value);
 		void OnNewLine();
+
+		LineStatus SendChar();
 
 		matchType m_type = None;
 
+
 		string m_strLine;
 		string m_strMatch;
+		string m_strGCode;
+
+		std::string::iterator  m_itGCode;
 
 		char m_chrUART = '0';
 		bool m_bMatched = false;
+		bool m_bXOn = false;
 		enum ScriptAction {
 			WaitForLine,
-			WaitForContains
+			WaitForContains,
+			SendGCode
 		};
 
 };

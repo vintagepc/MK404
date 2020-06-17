@@ -61,10 +61,7 @@ Scriptable::LineStatus IRSensor::ProcessAction(int iAct, const vector<string> &v
 		case ActSet:
 			int iVal = stoi(vArgs.at(0));
 			if (iVal<=IR_MIN || iVal >= IR_MAX)
-			{
-				fprintf(stderr,"IR Sensor ERROR: Set value %d is not a valid enum value in the range [%d,%d]",iVal,IR_MIN+1, IR_MAX-1);
-				return LineStatus::Error;
-			}
+				return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [" + to_string(IR_MIN+1) + "," + to_string(IR_MAX-1) + "]" );
 			Set((IRState)iVal);
 			return LineStatus::Finished;
 	}

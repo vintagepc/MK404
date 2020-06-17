@@ -87,10 +87,7 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 			unsigned int uiAddr = stoi(vArgs.at(0));
 			uint8_t uiVal = stoi(vArgs.at(1));
 			if (uiAddr<0 || uiAddr>=m_uiSize)
-			{
-				printf("EEPROM: Error - Address %d is out of range [0 - %d]", uiAddr,m_uiSize);
-				return LineStatus::Error;
-			}
+				return IssueLineError(string("Address ") + to_string(uiAddr) + " is out of range [0," + to_string(m_uiSize-1) + "]");
 			else
 			{
 				Poke(uiAddr, uiVal);

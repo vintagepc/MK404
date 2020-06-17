@@ -63,10 +63,15 @@ class IScriptable
 
 
     protected:
+		inline IScriptable::LineStatus IssueLineError(const string &msg)
+		{
+			fprintf(stderr,"%s ERROR: %s\n",m_strName.c_str(), msg.c_str());
+			return LineStatus::Error;
+		}
+
 		virtual LineStatus ProcessAction(unsigned int iAction, const vector<string> &args)
 		{
-			printf("WARN: %s has registered actions but does not have an action handler!\n",m_strName.c_str());
-			return LineStatus::Error;
+			return IssueLineError(" Has registered actions but does not have an action handler!");
 		}
 
 		void SetName(const string &strName)

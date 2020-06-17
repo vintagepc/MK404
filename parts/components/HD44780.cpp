@@ -74,10 +74,8 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 				return LineStatus::Waiting;
 
 			if (iLine>=m_uiHeight || iLine<-1)
-			{
-				printf("LCD: Line index %d out of range. Valid: 0-%d and -1.\n",iLine, m_uiHeight);
-				return LineStatus::Error;
-			}
+				return IssueLineError(string("Line index ") + to_string(iLine) + " is out of range [-1," + to_string (m_uiHeight) + "]");
+
 			bool bResult = false;
 			// It might be possible to improve this by searching only the changed line region, but that is
 			// not straightforward with strstr and doing it with std::string requires a copy.

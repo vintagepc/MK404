@@ -1,0 +1,4 @@
+Board::WaitMs(1000)
+LCD::WaitForText(verify,3)
+LCD::WaitForText(Original,1)
+Board::Reset()

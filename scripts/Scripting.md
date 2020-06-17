@@ -77,6 +77,7 @@ Scripting options for the current context:
 		SetQuitOnTimeout(bool)        If 1, quits when a timeout occurs. Exit code will be non-zero.
 		SetTimeoutMs(int)             Sets a timeout for actions that wait for an event
 	Serial0::
+		SendGCode(string)             Sends the specified string as G-Code.
 		WaitForLine(string)           Waits for the provided line to appear on the serial output.
 		WaitForLineContains(string)   Waits for the serial output to contain a line with the given string.
 	Thermistor::

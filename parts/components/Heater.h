@@ -1,7 +1,7 @@
 /*
-	Heater.h - a heater object for MK3Sim. There's not much to it, 
+	Heater.h - a heater object for MK3Sim. There's not much to it,
     it just ticks the temperature "up" at a determined rate when active on PWM and down in
-    in an exponential curve when off. 
+    in an exponential curve when off.
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
@@ -22,13 +22,13 @@
  */
 
 
-#ifndef __HEATER_H__
-#define __HEATER_H__
+#pragma once
 
 #include "BasePeripheral.h"
 #include "Color.h"
+#include "Scriptable.h"
 
-class Heater : public BasePeripheral
+class Heater : public BasePeripheral, public Scriptable
 {
 public:
     #define IRQPAIRS _IRQ(PWM_IN,"<heater.pwm_in") _IRQ(DIGITAL_IN,"<heater.digital_in") _IRQ(TEMP_OUT,">heater.temp_out") _IRQ(ON_OUT,">heater.on")
@@ -44,7 +44,7 @@ public:
     void Init(avr_t *avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital);
 
     // Overrides the auto PWM control. Useful for simulating a shorted or open MOSFET/heater.
-    void Set(uint8_t uiPWM); 
+    void Set(uint8_t uiPWM);
 
     // Returns to automatic control after having used Set()
     void Resume_Auto();
@@ -52,7 +52,19 @@ public:
 	// Draws the heater status
 	void Draw();
 
+	protected:
+		Scriptable::LineStatus ProcessAction (unsigned int iAct, const vector<string> &vArgs) override;
+
+
     private:
+
+		enum Actions
+		{
+			ActSetPWM,
+			ActResume,
+			ActStopHeating
+		};
+
         // Hook for PWM change
         void OnPWMChanged(avr_irq_t *irq, uint32_t value);
 
@@ -73,9 +85,7 @@ public:
         uint16_t m_uiPWM = 0;
         bool m_bIsBed = false;
         char m_chrLabel;
-
+		bool m_bStopTicking = false;
 	    static constexpr Color3fv m_colColdTemp = {0, 1, 1};
 	    static constexpr Color3fv m_colHotTemp = {1, 0, 0};
 };
-
-#endif /* __HEATER_H__*/

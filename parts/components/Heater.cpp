@@ -35,6 +35,9 @@
 
 avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
 {
+	if (m_bStopTicking)
+		return 0;
+
     if (m_uiPWM>0)
     {
         float fDelta = (m_fThermalMass*((float)(m_uiPWM)/255.0f))*0.3;
@@ -98,9 +101,31 @@ Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
                                             m_bIsBed(bIsBed),
                                             m_chrLabel(chrLabel),
                                             m_fColdTemp(fColdTemp),
-                                            m_fHotTemp(fHotTemp)
+                                            m_fHotTemp(fHotTemp),Scriptable(string("Heater_") + chrLabel)
 {
+	RegisterAction("SetPWM","Sets the raw heater PWM value",ActSetPWM, {ArgType::Int});
+	RegisterAction("Resume", "Resumes auto PWM control and clears the 'stopheating' flag",ActResume);
+	RegisterAction("StopHeating","Stops heating, as if a thermal runaway is happening due to loose heater or thermistor",ActStopHeating);
+}
 
+Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActSetPWM:
+		{
+			uint8_t uiVal = stoi(vArgs.at(0));
+			Set(uiVal);
+			return LineStatus::Finished;
+		}
+		case ActResume:
+			Resume_Auto();
+			return LineStatus::Finished;
+		case ActStopHeating:
+			m_bStopTicking = true;
+			return LineStatus::Finished;
+
+	}
 }
 
 void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)
@@ -123,6 +148,7 @@ void Heater::Set(uint8_t uiPWM)
 void Heater::Resume_Auto()
 {
     m_bAuto = true;
+	m_bStopTicking = false;
 }
 
 

@@ -68,10 +68,11 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 			ToggleFlag(HD44780_FLAG_LOWNIBBLE);
 			return LineStatus::Finished;
 		case ActWaitForText:
-			if (!m_uiLineChg) // NO changes to check against.
-			return LineStatus::Waiting;
-
 			int iLine = stoi(vArgs.at(1));
+			uint8_t uiLnChk = iLine<0 ? 0xFF : 1<<iLine;
+			if (!(uiLnChk & m_uiLineChg)) // NO changes to check against.
+				return LineStatus::Waiting;
+
 			if (iLine>=m_uiHeight || iLine<-1)
 			{
 				printf("LCD: Line index %d out of range. Valid: 0-%d and -1.\n",iLine, m_uiHeight);

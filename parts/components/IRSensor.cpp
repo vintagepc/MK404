@@ -29,7 +29,7 @@
 #include "IRSensor.h"
 #include "avr_adc.h"
 
-// ADC read trigger. 
+// ADC read trigger.
 uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
     float fVal;
@@ -39,15 +39,35 @@ uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
         fVal = m_fIRVals[IR_FILAMENT_PRESENT];
     else
         fVal = m_fIRVals[IR_NO_FILAMENT];
-    
+
 	uint32_t iVOut =  (fVal)*1000;
 
 	return iVOut;
 }
 
-IRSensor::IRSensor():VoltageSrc()
+IRSensor::IRSensor():VoltageSrc(),Scriptable("IRSensor")
 {
+	RegisterAction("Toggle","Toggles the IR sensor state",ActToggle);
+	RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
+}
 
+Scriptable::LineStatus IRSensor::ProcessAction(int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActToggle:
+			Toggle();
+			return LineStatus::Finished;
+		case ActSet:
+			int iVal = stoi(vArgs.at(0));
+			if (iVal<=IR_MIN || iVal >= IR_MAX)
+			{
+				fprintf(stderr,"IR Sensor ERROR: Set value %d is not a valid enum value in the range [%d,%d]",iVal,IR_MIN+1, IR_MAX-1);
+				return LineStatus::Error;
+			}
+			Set((IRState)iVal);
+			return LineStatus::Finished;
+	}
 }
 
 void IRSensor::Toggle()

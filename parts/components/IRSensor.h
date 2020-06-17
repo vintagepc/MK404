@@ -20,29 +20,31 @@
  */
 
 
-#ifndef __IRSENSOR_H___
-#define __IRSENSOR_H___
+#pragma once
 
 #include "VoltageSrc.h"
+#include "Scriptable.h"
 
-class IRSensor: public VoltageSrc 
+class IRSensor: public VoltageSrc, public Scriptable
 {
 public:
 	// Enumeration for IR sensor states.
 	typedef enum IRState {
+		IR_MIN = -1,
 		IR_SHORT,
 		IR_FILAMENT_PRESENT,
 		IR_UNKNOWN,
 		IR_NO_FILAMENT,
 		IR_NOT_CONNECTED,
-		IR_AUTO // Special state that only respects the auto value.
+		IR_AUTO, // Special state that only respects the auto value.
+		IR_MAX
 	}IRState;
 
 	// Constructs a new IRSensor on ADC mux uiMux
     IRSensor();
 
 
-	// Flips the state between filament and no filament. 
+	// Flips the state between filament and no filament.
 	void Toggle();
 
 	// Sets the sensor output to a given state.
@@ -51,12 +53,22 @@ public:
 	// Consumer for external (auto) sensor hook, set 0 or 1 to signify absence or presence of filament.
 	void Auto_Input(uint32_t val);
 
+	protected:
+		LineStatus ProcessAction(int iAct, const vector<string> &vArgs);
+
 private:
+
+	enum Actions
+	{
+		ActToggle,
+		ActSet
+	};
+
 	// ADC read trigger
  	uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
 	// LUT for states to voltage readouts.
-	float m_fIRVals[IR_AUTO] = 
+	float m_fIRVals[IR_AUTO] =
 	{
 		[IR_SHORT] = 0.1f,
 		[IR_FILAMENT_PRESENT] = 0.4f,
@@ -65,8 +77,6 @@ private:
 		[IR_NOT_CONNECTED] = 4.9f
 	};
 
-	bool m_bExternal = false; 
+	bool m_bExternal = false;
 	IRState m_eCurrent = IR_NO_FILAMENT;
 };
-
-#endif /* __IRSENSOR_H___ */

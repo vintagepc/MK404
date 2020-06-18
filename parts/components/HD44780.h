@@ -81,6 +81,11 @@ class HD44780:public BasePeripheral, public Scriptable
 		{
 			m_lineOffsets[2] += width;
 			m_lineOffsets[3] += width;
+			string strBlnk;
+			strBlnk.assign(width,' ');
+			for (int i=0; i<height; i++)
+				m_vLines.push_back(strBlnk);
+
 			RegisterAction("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
 			RegisterAction("WaitForText","Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
 		};
@@ -177,6 +182,8 @@ class HD44780:public BasePeripheral, public Scriptable
         uint8_t	 m_uiDataPins = 0;			// composite of 4 high bits, or 8 bits
         uint8_t  m_uiReadPins = 0;
         volatile uint16_t m_flags = 0;				// LCD flags ( HD44780_FLAG_*)
+
+		vector<string> m_vLines;
 
 		uint8_t m_uiLineChg = 0;
 

@@ -46,6 +46,8 @@ void HD44780::ClearScreen()
     memset(m_vRam, ' ', sizeof(m_vRam));
 	SetFlag(HD44780_FLAG_DIRTY, 1);
 	RaiseIRQ(ADDR, m_uiCursor);
+	for (int i=0; i<m_uiHeight; i++)
+		m_vLines[i].assign(" ",m_uiWidth);
 }
 
 /*
@@ -77,20 +79,19 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 				return IssueLineError(string("Line index ") + to_string(iLine) + " is out of range [-1," + to_string (m_uiHeight) + "]");
 
 			bool bResult = false;
-			// It might be possible to improve this by searching only the changed line region, but that is
-			// not straightforward with strstr and doing it with std::string requires a copy.
-			// Maybe with c++17 string_view, which lets you take a non-copy reference to char[].
-			char* pFind = strstr((char*)m_vRam,vArgs.at(0).c_str());
 			if (iLine<0)
-				bResult =  pFind != NULL;
+				for (int i=0; i<m_uiHeight; i++)
+				{
+					bResult |= m_vLines.at(i).find(vArgs.at(0))!=string::npos;
+					if (bResult) break;
+				}
 			else
-			{
-				int iLoc = (pFind-(char*)m_vRam);
-				bResult = iLoc >=m_lineOffsets[iLine] && iLoc < (m_lineOffsets[iLine] + m_uiWidth);
-	}
+				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=string::npos;
+			m_uiLineChg^= iLine<0 ? 0xFF : 1<<iLine; // Reset line change tracking.
 			return bResult ? LineStatus::Finished : LineStatus::Waiting;
+	}
 }
-}
+
 
 void HD44780::IncrementCursor()
 {
@@ -152,7 +153,12 @@ uint32_t HD44780::OnDataReady()
 
 		for (int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
 			if (m_uiCursor>= m_lineOffsets[i] && m_uiCursor< (m_lineOffsets[i] + m_uiWidth))
+			{
+				int iPos =m_uiCursor - m_lineOffsets[i];
+				string &line = m_vLines[i];
+				line[iPos] = m_uiDataPins;
 				m_uiLineChg |= 1<<i;
+			}
 
 		TRACE(printf("hd44780_write_data %02x (%c) to %02x\n", m_uiDataPins, m_uiDataPins, m_uiCursor));
 		if (GetFlag(HD44780_FLAG_S_C)) {	// display shift ?

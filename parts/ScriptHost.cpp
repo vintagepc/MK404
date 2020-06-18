@@ -49,12 +49,14 @@ void ScriptHost::LoadScript(const string &strFile)
 	ifstream fileIn(strFile);
 	while (getline(fileIn, strLn))
 	{
-		if (!strLn.empty())
-			m_script.push_back(strLn);
+		if (strLn.empty() || strLn[0]=='#')
+			continue;
+
+		m_script.push_back(strLn);
 	}
 	m_iLine = 0;
 	// TODO... validate script...
-	printf("ScriptHost: Loaded %s\n",strFile.c_str());
+	printf("ScriptHost: Loaded %d lines from %s\n",m_script.size(), strFile.c_str());
 }
 
 // Parse line in the format Context::Action(arg1, arg2,...)
@@ -63,6 +65,7 @@ bool ScriptHost::GetLineParts(const string &strLine, string &strCtxt, string& st
 	int iCtxEnd = strLine.find("::");
 	int iArgBegin = strLine.find('(');
 	int iArgEnd = strLine.find(')');
+	vector<string> args;
 	if (iCtxEnd == string::npos || iArgBegin == string::npos || iArgEnd == string::npos)
 		return false;
 	strCtxt = strLine.substr(0,iCtxEnd);
@@ -70,7 +73,8 @@ bool ScriptHost::GetLineParts(const string &strLine, string &strCtxt, string& st
 	string strTmp, strArgs = strLine.substr(iArgBegin+1, (iArgEnd-iArgBegin)-1);
 	istringstream argsIn(strArgs);
 	while (getline(argsIn, strTmp,','))
-		vArgs.push_back(strTmp);
+		args.push_back(strTmp);
+	vArgs = args;
 	return true;
 }
 
@@ -184,8 +188,7 @@ void ScriptHost::ParseLine(unsigned int iLine)
 {
 	string strCtxt, strAct;
 	m_lnState.isValid = false;
-	m_lnState.vArgs.clear();
-	bool bIsInternal = false;
+	//m_lnState.vArgs.clear();
 	if (!ScriptHost::GetLineParts(m_script.at(iLine),strCtxt,strAct,m_lnState.vArgs))
 		return;
 

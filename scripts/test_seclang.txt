@@ -1,0 +1,6 @@
+# This script is to help you flash the languages to the simulator.
+# Launch with this script and --serial, get PrusaSlicer ready, and then press R to reset and immediately hit the flash button.
+Board::WaitMs(1000)
+LCD::WaitForText(Do not,2)
+LCD::WaitForText(Original,1)
+Board::Reset()

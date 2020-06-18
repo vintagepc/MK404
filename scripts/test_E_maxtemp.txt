@@ -1,0 +1,7 @@
+# This script tests the MAXTEMP error if a thermistor is shorted.
+ScriptHost::SetQuitOnTimeout(1)
+Board::WaitMs(5000)
+ScriptHost::SetTimeoutMs(2000)
+Thermistor::Short()
+LCD::WaitForText(MAXTEMP,3)
+Board::Quit()

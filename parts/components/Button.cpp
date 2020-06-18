@@ -25,8 +25,28 @@
 #include <stdio.h>
 #include "Button.h"
 
-Button::Button(std::string strName):m_strName(strName)
+Button::Button(std::string strName):m_strName(strName),Scriptable(strName)
 {
+	RegisterAction("Press", "Simulate pressing the button", Actions::ActPress);
+	RegisterAction("Release", "Simulate releasing the button", Actions::ActRelease);
+	RegisterAction("PressAndRelease", "Simulate pressing and then releasing  the button", Actions::ActPressAndRelease);
+}
+
+Scriptable::LineStatus Button::ProcessAction(unsigned int iAction, const vector<string> &vArgs)
+{
+	switch (iAction)
+	{
+	case ActPressAndRelease:
+		Press();
+		break;
+	case ActPress:
+		RaiseIRQ(BUTTON_OUT, 0);// press
+		break;
+	case ActRelease:
+		RaiseIRQ(BUTTON_OUT,1);
+		break;
+	}
+	return LineStatus::Finished;
 }
 
 void Button::Init(avr_t* avr)

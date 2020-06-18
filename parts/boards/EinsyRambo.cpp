@@ -40,9 +40,11 @@ namespace Boards
 		AddSerialPty(UART2,'2');
 		AddHardware(UART0);
 
+		AddHardware(m_Mon0,'0');
+
 		// SD card
 		string strSD = GetSDCardFile();
-		sd_card = SDCard(strSD);
+		sd_card.SetImage(strSD);
 		AddHardware(sd_card);
 		TryConnect(PinNames::Pin::SDSS, sd_card, SDCard::SPI_CSEL);
 
@@ -109,7 +111,6 @@ namespace Boards
 
 		TMC2130::TMC2130_cfg_t cfg;
 		cfg.iMaxMM = 255;
-		cfg.cAxis = 'X';
 
 		X.SetConfig(cfg);
 		AddHardware(X);
@@ -121,7 +122,6 @@ namespace Boards
 
 		cfg.uiStepsPerMM = 400;
 		cfg.iMaxMM = 219;
-		cfg.cAxis = 'Z';
 
 		Z.SetConfig(cfg);
 		AddHardware(Z);
@@ -133,7 +133,6 @@ namespace Boards
 
 		cfg.bInverted = true;
 		cfg.uiStepsPerMM = 100;
-		cfg.cAxis = 'Y';
 		cfg.iMaxMM = 220;
 
 		Y.SetConfig(cfg);
@@ -147,7 +146,6 @@ namespace Boards
 		cfg.bHasNoEndStops = true;
 		cfg.fStartPos = 0;
 		cfg.uiStepsPerMM = 280;
-		cfg.cAxis = 'E';
 
 		E.SetConfig(cfg);
 		AddHardware(E);

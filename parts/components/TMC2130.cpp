@@ -28,7 +28,7 @@
 #include "GL/glut.h"
 
 //#define TRACE(_w) _w
-#define TRACE2(_w) if (cfg.cAxis=='S' || cfg.cAxis=='I') _w
+#define TRACE2(_w) if (m_cAxis=='S' || m_cAxis=='I') _w
 #ifndef TRACE
 #define TRACE(_w)
 #endif
@@ -60,7 +60,7 @@ void TMC2130::Draw()
         glPushMatrix();
             glTranslatef(3,7,0);
             glScalef(0.09,-0.05,0);
-            glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,cfg.cAxis);
+            glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_cAxis);
         glPopMatrix();
         glColor3f(1,1,1);
         glPushMatrix();
@@ -124,7 +124,7 @@ void TMC2130::Draw_Simple()
         glPushMatrix();
             glTranslatef(3,7,0);
             glScalef(0.09,-0.05,0);
-            glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,cfg.cAxis);
+            glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_cAxis);
         glPopMatrix();
         glColor3f(1,1,1);
         glPushMatrix();
@@ -163,11 +163,11 @@ void TMC2130::CreateReply()
 // Called when a full command is ready to process.
 void TMC2130::ProcessCommand()
 {
-    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08x\n",cfg.cAxis, m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
+    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08x\n",m_cAxis, m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
     if (m_cmdProc.bitsIn.RW)
     {
         m_regs.raw[m_cmdProc.bitsIn.address] = m_cmdProc.bitsIn.data;
-        //printf("REG %c %02x set to: %010x\n", cfg.cAxis, m_cmdIn.bitsIn.address, m_cmdIn.bitsIn.data);
+        //printf("REG %c %02x set to: %010x\n", m_cAxis, m_cmdIn.bitsIn.address, m_cmdIn.bitsIn.data);
     }
     else
     {
@@ -184,11 +184,11 @@ uint8_t TMC2130::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 {
     m_cmdIn.all<<=8; // Shift bits up
     m_cmdIn.bytes[0] = value;
-    TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",cfg.cAxis,value, m_cmdIn.all));
+    TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",m_cAxis,value, m_cmdIn.all));
     // Clock out a reply byte, MSB first
     uint8_t byte = m_cmdOut.bytes[4];
     m_cmdOut.all<<=8;
-    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",cfg.cAxis,m_cmdOut.all,byte));
+    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",m_cAxis,m_cmdOut.all,byte));
     SetSendReplyFlag();
     return byte; // SPIPeripheral takes care of the reply.
 }
@@ -204,7 +204,7 @@ void TMC2130::CheckDiagOut()
 // Called when CSEL changes.
 void TMC2130::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 {
-	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",cfg.cAxis,value));
+	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",m_cAxis,value));
     if (value == 1) // Just finished a CSEL
     {
         m_cmdProc = m_cmdIn;
@@ -217,7 +217,7 @@ void TMC2130::OnDirIn(struct avr_irq_t * irq, uint32_t value)
 {
     if (irq->value == value)
         return;
-    TRACE(printf("TMC2130 %c: DIR changed to %02x\n",cfg.cAxis,value));
+    TRACE(printf("TMC2130 %c: DIR changed to %02x\n",m_cAxis,value));
     m_bDir = value^cfg.bInverted; // XOR
 }
 
@@ -233,7 +233,7 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     if (!value || irq->value) return; // Only step on rising pulse
     if (!m_bEnable) return;
     CancelTimer(m_fcnStandstill,this);
-	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",cfg.cAxis,value));
+	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",m_cAxis,value));
     if (m_bDir)
         m_iCurStep--;
     else
@@ -257,6 +257,7 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     uint32_t* posOut = (uint32_t*)(&m_fCurPos); // both 32 bits, just mangle it for sending over the wire.
     RaiseIRQ(POSITION_OUT, posOut[0]);
     TRACE(printf("cur pos: %f (%u)\n",m_fCurPos,m_iCurStep));
+	bStall |= m_bStall;
     if (bStall)
     {
         RaiseIRQ(DIAG_OUT, 1);
@@ -278,16 +279,35 @@ void TMC2130::OnEnableIn(struct avr_irq_t * irq, uint32_t value)
 {
     if (irq->value == value && m_bEnable == (value==0))
         return;
-	TRACE2(printf("TMC2130 %c: EN changed to %02x\n",cfg.cAxis,value));
+	TRACE2(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis,value));
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
-TMC2130::TMC2130()
+TMC2130::TMC2130(char cAxis):m_cAxis(cAxis), Scriptable(string("") + cAxis)
 {
     memset(&m_regs.raw, 0, sizeof(m_regs.raw));
     m_regs.defs.DRV_STATUS.stst = true;
     m_regs.defs.DRV_STATUS.SG_RESULT = 250;
     m_regs.defs.GSTAT.reset = 1; // signal reset
+	RegisterAction("ToggleStall","Toggles the stallguard condition on the next step.",ActToggleStall);
+	RegisterAction("Stall","Sets the diag flag immediately.",ActSetDiag);
+	RegisterAction("Reset","Clears the diag flag immediately",ActResetDiag);
+}
+
+Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActToggleStall:
+			m_bStall^=true;
+			return LineStatus::Finished;
+		case ActSetDiag:
+			RaiseIRQ(DIAG_OUT,1);
+			return LineStatus::Finished;
+		case ActResetDiag:
+			RaiseIRQ(DIAG_OUT,0);
+			return LineStatus::Finished;
+	}
 }
 
 void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)

@@ -19,7 +19,7 @@ set (FIRMWARE
 set(H_FILES
     parts/components/ADC_Buttons.h
     parts/components/Button.h
-    parts/components/Einsy_EEPROM.h
+    parts/components/EEPROM.h
     parts/components/Fan.h
     parts/components/HC595.h
     parts/components/hd44780_charROM.h
@@ -30,6 +30,7 @@ set(H_FILES
     parts/components/LED.h
     parts/components/PINDA.h
     parts/components/RotaryEncoder.h
+	parts/components/SerialLineMonitor.h
     parts/components/Thermistor.h
     parts/components/TMC2130.h
     parts/components/UART_Logger.h
@@ -62,6 +63,7 @@ set(INCLUDE_FILES
 	parts/Printer.h
 	parts/PrinterFactory.h
     parts/Wiring.h
+	parts/IScriptable.h
     parts/wiring/MM_Control_01.h
 	parts/wiring/Einsy_1_0a.h
 	parts/wiring/Einsy_1_1a.h
@@ -71,7 +73,7 @@ set(INCLUDE_FILES
 set(EINSY_SOURCES
     parts/components/ADC_Buttons.cpp
     parts/components/Button.cpp
-    parts/components/Einsy_EEPROM.cpp
+    parts/components/EEPROM.cpp
     parts/components/Fan.cpp
 	parts/components/GCodeSniffer.cpp
     parts/components/HC595.cpp
@@ -83,6 +85,7 @@ set(EINSY_SOURCES
     parts/components/PINDA.cpp
     parts/components/RotaryEncoder.cpp
     parts/components/SDCard.cpp
+	parts/components/SerialLineMonitor.cpp
     parts/components/Thermistor.cpp
     parts/components/TMC2130.cpp
     parts/components/UART_Logger.cpp
@@ -93,6 +96,7 @@ set(EINSY_SOURCES
     include/SerialPipe.cpp
     utility/Color.cpp
 	utility/FatImage.cpp
+	parts/ScriptHost.cpp
     parts/Board.cpp
     parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp

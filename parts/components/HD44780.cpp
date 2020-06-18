@@ -46,6 +46,8 @@ void HD44780::ClearScreen()
     memset(m_vRam, ' ', sizeof(m_vRam));
 	SetFlag(HD44780_FLAG_DIRTY, 1);
 	RaiseIRQ(ADDR, m_uiCursor);
+	for (int i=0; i<m_uiHeight; i++)
+		m_vLines[i].assign(" ",m_uiWidth);
 }
 
 /*
@@ -59,6 +61,37 @@ avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t * avr,avr_cycle_count_t wh
 	RaiseIRQ(BUSY, 0);
 	return 0;
 }
+
+Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector<string> &vArgs)
+{
+	switch (iAction)
+	{
+		case ActDesync:
+			ToggleFlag(HD44780_FLAG_LOWNIBBLE);
+			return LineStatus::Finished;
+		case ActWaitForText:
+			int iLine = stoi(vArgs.at(1));
+			uint8_t uiLnChk = iLine<0 ? 0xFF : 1<<iLine;
+			if (!(uiLnChk & m_uiLineChg)) // NO changes to check against.
+				return LineStatus::Waiting;
+
+			if (iLine>=m_uiHeight || iLine<-1)
+				return IssueLineError(string("Line index ") + to_string(iLine) + " is out of range [-1," + to_string (m_uiHeight) + "]");
+
+			bool bResult = false;
+			if (iLine<0)
+				for (int i=0; i<m_uiHeight; i++)
+				{
+					bResult |= m_vLines.at(i).find(vArgs.at(0))!=string::npos;
+					if (bResult) break;
+				}
+			else
+				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=string::npos;
+			m_uiLineChg^= iLine<0 ? 0xFF : 1<<iLine; // Reset line change tracking.
+			return bResult ? LineStatus::Finished : LineStatus::Waiting;
+	}
+}
+
 
 void HD44780::IncrementCursor()
 {
@@ -117,6 +150,16 @@ uint32_t HD44780::OnDataReady()
 	else
 	{
 		m_vRam[m_uiCursor] = m_uiDataPins;
+
+		for (int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
+			if (m_uiCursor>= m_lineOffsets[i] && m_uiCursor< (m_lineOffsets[i] + m_uiWidth))
+			{
+				int iPos =m_uiCursor - m_lineOffsets[i];
+				string &line = m_vLines[i];
+				line[iPos] = m_uiDataPins;
+				m_uiLineChg |= 1<<i;
+			}
+
 		TRACE(printf("hd44780_write_data %02x (%c) to %02x\n", m_uiDataPins, m_uiDataPins, m_uiCursor));
 		if (GetFlag(HD44780_FLAG_S_C)) {	// display shift ?
 			printf("Display shift requested. Not implemented, sorry!\n");

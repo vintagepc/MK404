@@ -20,12 +20,13 @@
  */
 
 
-#ifndef __TMC2130_H__
-#define __TMC2130_H__
+#pragma once
 
 #include "SPIPeripheral.h"
+#include "Scriptable.h"
+#include <string>
 
-class TMC2130: public SPIPeripheral
+class TMC2130: public SPIPeripheral, public Scriptable
 {
     public:
         #define IRQPAIRS \
@@ -38,21 +39,20 @@ class TMC2130: public SPIPeripheral
             _IRQ(ENABLE_IN,         "<tmc2130.en_in") \
             _IRQ(DIAG_OUT,          ">tmc2130.diag_out") \
             _IRQ(MIN_OUT,           ">tmc2130.min_out") \
-            _IRQ(POSITION_OUT,      ">tmc2130.pos_out") 
+            _IRQ(POSITION_OUT,      ">tmc2130.pos_out")
         #include "IRQHelper.h"
 
         struct TMC2130_cfg_t {
-            TMC2130_cfg_t():bInverted(false),uiStepsPerMM(100),cAxis(' '),iMaxMM(200),fStartPos(10.0),bHasNoEndStops(false){};
+            TMC2130_cfg_t():bInverted(false),uiStepsPerMM(100),iMaxMM(200),fStartPos(10.0),bHasNoEndStops(false){};
             bool bInverted;
             uint16_t uiStepsPerMM;
-            char cAxis;
             int16_t iMaxMM;
             float fStartPos;
             bool bHasNoEndStops;
         };
-        
+
         // Default constructor.
-        TMC2130();
+        TMC2130(char cAxis = ' ');
 
         // Sets the configuration to the provided values. (inversion, positions, etc)
         void SetConfig(TMC2130_cfg_t cfg);
@@ -66,7 +66,16 @@ class TMC2130: public SPIPeripheral
         // Draws the position value as a number, without position ticks.
         void Draw_Simple();
 
+	protected:
+		Scriptable::LineStatus ProcessAction (unsigned int iAct, const vector<string> &vArgs) override;
+
     private:
+		enum Actions
+		{
+			ActToggleStall,
+			ActSetDiag,
+			ActResetDiag
+		};
 
         // SPI handlers.
         uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;
@@ -88,8 +97,8 @@ class TMC2130: public SPIPeripheral
         void CheckDiagOut();
 
         bool m_bDir  = 0;
-        bool m_bEnable = true; 
-        
+        bool m_bEnable = true;
+
         TMC2130_cfg_t cfg;
         // Register definitions.
         typedef union tmc2130_cmd_t{
@@ -169,7 +178,7 @@ class TMC2130: public SPIPeripheral
         tmc2130_cmd_t m_cmdProc;
         tmc2130_cmd_t m_cmdOut; // the previous data for output.
         tmc2130_registers_t m_regs;
+		char m_cAxis;
+		bool m_bStall = false;
 
 };
-
-#endif

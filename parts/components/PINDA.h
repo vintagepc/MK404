@@ -19,13 +19,12 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#ifndef __PINDA_H__
-#define __PINDA_H__
+#pragma once
 
 #include "BasePeripheral.h"
+#include "Scriptable.h"
 
-class PINDA:public BasePeripheral{
+class PINDA:public BasePeripheral,public Scriptable{
     public:
         #define IRQPAIRS _IRQ(X_POS_IN,"<pinda.x_in") _IRQ(Y_POS_IN,"<pinda.y_in") _IRQ(Z_POS_IN,"<pinda.Z_in") _IRQ(TRIGGER_OUT,">pinda.out") _IRQ(SHEET_OUT,">sheet.out")
         #include "IRQHelper.h"
@@ -39,14 +38,24 @@ class PINDA:public BasePeripheral{
     // Toggles steel sheet presence. If it is removed, the PINDA will exhibit XY calibration trigger behaviour.
     void ToggleSheet();
 
-// so we can use initializer syntax later
-typedef struct 
-{   
-    float points[49];
-} MBLMap_t;
+	// so we can use initializer syntax later
+	typedef struct
+	{
+		float points[49];
+	} MBLMap_t;
 
+	protected:
+		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs);
 
 private:
+
+	enum Actions
+	{
+		ActToggleSheet,
+		ActSetMBLPoint,
+		ActSetXYCalPont
+	};
+
     void OnXChanged(avr_irq_t *irq, uint32_t value);
     void OnYChanged(avr_irq_t *irq, uint32_t value);
     void OnZChanged(avr_irq_t *irq, uint32_t value);
@@ -62,16 +71,14 @@ private:
 	float m_fZTrigHeight = 1.0; // Trigger height above Z=0, i.e. the "zip tie" adjustment
     float m_fOffset[2] = {0,0}; // pinda X Y offset  from nozzle
     float m_fPos[3] = {10,10,10}; // Current position tracking.
-    MBLMap_t m_mesh;// MBL map 
+    MBLMap_t m_mesh;// MBL map
     bool m_bIsSheetPresent = true; // Is the steel sheet present? IF yes, PINDA will attempt to simulate the bed sensing point for selfcal instead.
-    
+
     // pulled from mesh_bed_calibration.cpp
-    static constexpr float _bed_calibration_points[8] = {
+    float _bed_calibration_points[8] = {
         37.f -2.0, 18.4f -9.4 + 2,
         245.f -2.0, 18.4f - 9.4 + 2,
         245.f -2.0, 210.4f - 9.4 + 2,
         37.f -2.0,  210.4f -9.4 + 2
     };
 };
-
-#endif /* __PINDA_H__*/

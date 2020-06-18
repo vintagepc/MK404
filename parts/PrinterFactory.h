@@ -43,11 +43,11 @@ class PrinterFactory
 		static void* CreatePrinter(string strPrinter, Boards::Board *&pBoard, Printer *&pPrinter, bool bBL, bool bNoHacks, bool bSerial, string strSD, Args...args)
 		{
 				void* p = (GetPrinterByName(strPrinter,pBoard,pPrinter));
-				if (bBL) pBoard->SetStartBootloader();
 				if (!strSD.empty()) pBoard->SetSDCardFile(strSD);
 				pBoard->SetDisableWorkarounds(bNoHacks);
 				pPrinter->SetConnectSerial(bSerial);
 				pBoard->CreateBoard(args...);
+				if (bBL) pBoard->SetStartBootloader();
 				return p;
 		};
 

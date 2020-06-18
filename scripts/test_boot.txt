@@ -1,0 +1,3 @@
+# This script just checks that the printer boots by looking for 'start' on the serial line.
+Serial0::WaitForLine(start)
+Board::Quit()

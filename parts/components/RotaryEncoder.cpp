@@ -66,7 +66,7 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t * avr,avr_cycle_count_
 	}
     RaiseIRQ(OUT_A, m_States[m_iPhase]>>1);
     RaiseIRQ(OUT_B, m_States[m_iPhase]&1);
-	
+
     if(--m_uiPulseCt >0) // Continue ticking the encoder
 		RegisterTimerUsec(m_fcnStateChange,PULSE_DURATION_US,this);
 	else
@@ -139,3 +139,34 @@ void RotaryEncoder::Init(avr_t *avr)
 	_Init(avr, this);
 }
 
+Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActTwistCW:
+			Twist(CW_CLICK);
+			break;
+		case ActTwistCCW:
+			Twist(CCW_CLICK);
+			break;
+		case ActPressAndRelease:
+			Push();
+			break;
+		case ActPress:
+			MousePush();
+			break;
+		case ActRelease:
+			Release();
+			break;
+	}
+	return LineStatus::Finished;
+}
+
+RotaryEncoder::RotaryEncoder():Scriptable("Encoder")
+{
+	RegisterAction("Press", "Presses the encoder button",ActPress);
+	RegisterAction("Release", "Releases the encoder button",ActRelease);
+	RegisterAction("PressAndRelease", "Presses the encoder button",ActPressAndRelease);
+	RegisterAction("TwistCW", "Twists the encoder one cycle clockwise",ActTwistCW);
+	RegisterAction("TwistCCW", "Twists the encoder once cycle counterclockwise",ActTwistCCW);
+}

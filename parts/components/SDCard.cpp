@@ -50,6 +50,22 @@ static uint8_t CRC7(const uint8_t data[], size_t count)
 	return crc | 0x01;
 }
 
+Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActUnmount:
+			Unmount();
+			return LineStatus::Finished;
+		case ActMountLast:
+			Mount();
+			return LineStatus::Finished;
+		case ActMountFile:
+			return Mount(vArgs.at(0)) ? LineStatus::Error : LineStatus::Finished; // 0 = success.
+
+	};
+}
+
 inline void SDCard::COMMAND_RESPONSE_R1(uint8_t status)
 {
 	m_command_response.data[0] = status & 0x7f;
@@ -453,7 +469,7 @@ void SDCard::Init(struct avr_t *avr)
 	InitCSD();
 }
 
-int SDCard::Mount(std::string filename, off_t image_size)
+int SDCard::Mount(const std::string &filename, off_t image_size)
 {
 	int fd;
 	void *mapped;

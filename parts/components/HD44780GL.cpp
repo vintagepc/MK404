@@ -6,7 +6,7 @@
 	Copyright 2011 Michel Pollet <buserror@gmail.com>
 
     Rewritten 2020 VintagePC <https://github.com/vintagepc/>
-        Rewritten for C++ 
+        Rewritten for C++
         Extended with brightness
         Enabled CGRAM functionality
         Changed to baked-in ROM .h
@@ -57,7 +57,7 @@ glColor32U(uint32_t color, bool bMaterial = false)
 	}
 	else
 		glColor4fv(fCol);
-		
+
 }
 
 void HD44780GL::Init(avr_t *avr)
@@ -89,7 +89,7 @@ void HD44780GL::OnBrightnessDigital(struct avr_irq_t * irq,	uint32_t value)
 	else
 		m_uiBrightness = 0x00;
 	SetFlag(HD44780_FLAG_DIRTY,1);
-	
+
 }
 
 void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)
@@ -112,10 +112,10 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 		uiData = (uint8_t*)&hd44780_ROM_AOO.data[c*hd44780_ROM_AOO.h];
 		iCols = 7;
 	}
-		
+
 	for (int i=0; i < iCols; i++)
 	{
-		 TRACE(printf("%u%u%u%u%u\n", 
+		 TRACE(printf("%u%u%u%u%u\n",
 		 	(uiData[i] & 1)==1,
 		 	(uiData[i] & 2)>1,
 		 	(uiData[i] & 4)>1,
@@ -123,7 +123,7 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 			(uiData[i] & 16)>1));
 		for (int j=0; j<5; j++)
 		{
-			
+
 			if (uiData[i] & (16>>j))
 			{
 				float x = (float)j;
@@ -184,16 +184,10 @@ void HD44780GL::Draw(
 		glVertex3f(iCols * m_uiCharW + (iCols - 1) + border, iRows * m_uiCharH
 				+ (iRows - 1) + border, 0);
 	glEnd();
-	// TODO: Something is not right with these offsets. The stock ones
-	// (0, 0x20,0x40,0x60) were totally whack-o, these seem to kinda-sorta work but
-	// there are still lingering display quirks where stuff renders offscreen. Probably the actual memory
-	// mapping needs to change instead of just the offsets since I suspect there are still
-	// corner cases that write into incorrect areas.
-	uint8_t offset[] = {0, 0x40, iCols, static_cast<uint8_t>(iCols+0x40)};
 	for (int v = 0 ; v < m_uiHeight; v++) {
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {
-			GLPutChar(m_vRam[offset[v] + i], character, text, shadow, bMaterial);
+			GLPutChar(m_vRam[m_lineOffsets[v] + i], character, text, shadow, bMaterial);
 			glTranslatef(6, 0, 0);
 		}
 		glPopMatrix();

@@ -28,7 +28,6 @@
 #define TRACE(_w)
 #endif
 
-constexpr float PINDA::_bed_calibration_points[];
 // This creates an inverted parabolic trigger zone above the cal point
 void PINDA::CheckTriggerNoSheet()
 {
@@ -37,9 +36,9 @@ void PINDA::CheckTriggerNoSheet()
     //printf("PINDA: X: %f Y: %f\n", this->fPos[0], this->fPos[1]);
     for (int i=0; i<4; i++)
     {
-        fEdist = sqrt( pow(m_fPos[0] - PINDA::_bed_calibration_points[2*i],2)  + 
+        fEdist = sqrt( pow(m_fPos[0] - PINDA::_bed_calibration_points[2*i],2)  +
             pow(m_fPos[1] - PINDA::_bed_calibration_points[(2*i)+1],2));
-        if (fEdist<10) 
+        if (fEdist<10)
         {
             bFound = true;
             break;  // Stop as soon as we find a near cal point.
@@ -57,19 +56,48 @@ void PINDA::CheckTriggerNoSheet()
     }
 }
 
-// Checks the current XYZ position against the MBL map and does calculations. 
+Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActToggleSheet:
+			ToggleSheet();
+			return LineStatus::Finished;
+		case ActSetMBLPoint:
+		{
+			int iVal = stoi(vArgs.at(0));
+			if (iVal<0 || iVal > 48)
+				return IssueLineError(string("Index ") + to_string(iVal) + " is out of range [0,48]");
+			float fVal = stof(vArgs.at(1));
+			m_mesh.points[iVal] = fVal;
+			return LineStatus::Finished;
+		}
+		case ActSetXYCalPont:
+		{
+			int iVal = stoi(vArgs.at(0));
+			if (iVal<0 | iVal>3)
+				return IssueLineError(string("Index ") + to_string(iVal) + " is out of range [0,3]");
+			float fX = stof(vArgs.at(1)), fY = stof(vArgs.at(2));
+			_bed_calibration_points[2*iVal] = fX;
+			_bed_calibration_points[(2*iVal)+1] = fY;
+			return LineStatus::Finished;
+		}
+	}
+}
+
+// Checks the current XYZ position against the MBL map and does calculations.
 void PINDA::CheckTrigger()
 {
-    // Bail early if too high to matter, to avoid needing to do all the math. 
+    // Bail early if too high to matter, to avoid needing to do all the math.
     if (m_fPos[2]>5)
         return;
 
-    // Just calc the nearest MBL point and report it. 
+    // Just calc the nearest MBL point and report it.
     uint8_t iX = round(((m_fPos[0] - m_fOffset[0])/255.0)*7);
     uint8_t iY = floor(((m_fPos[1] - m_fOffset[1])/210.0)*7);
 
     float fZTrig = m_mesh.points[iX+(7*iY)];
-    
+
     if (m_fPos[2]<=fZTrig)
     {
         //printf("Trig @ %u %u\n",iX,iY);
@@ -132,9 +160,12 @@ void PINDA::ToggleSheet()
     RaiseIRQ(SHEET_OUT,m_bIsSheetPresent);
 }
 
-PINDA::PINDA(float fX, float fY):m_fOffset{fX,fY}
+PINDA::PINDA(float fX, float fY):m_fOffset{fX,fY}, Scriptable("PINDA")
 {
     SetMBLMap();
+	RegisterAction("ToggleSheet","Toggles the presence of the steel sheet",ActToggleSheet);
+	RegisterAction("SetMBLPoint","Sets the given MBL point (0-48) to the given Z value",ActSetMBLPoint,{ArgType::Int,ArgType::Float});
+	RegisterAction("SetXYPoint","Sets the (0-3)rd XY cal point position to x,y. (index, x,y)",ActSetXYCalPont,{ArgType::Int, ArgType::Float,ArgType::Float});
 }
 
 void PINDA::Init(struct avr_t * avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t *irqZ)

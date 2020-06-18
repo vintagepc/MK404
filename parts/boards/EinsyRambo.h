@@ -24,7 +24,6 @@
 
 #include "uart_pty.h"
 #include "Button.h"
-#include "Einsy_EEPROM.h"
 #include "Fan.h"
 #include "HD44780GL.h"
 #include "Heater.h"
@@ -38,7 +37,7 @@
 #include "UART_Logger.h"
 #include "VoltageSrc.h"
 #include "w25x20cl.h"
-
+#include "SerialLineMonitor.h"
 #include <wiring/Einsy_1_1a.h>
 
 extern "C"
@@ -72,13 +71,14 @@ namespace Boards
 			RotaryEncoder encoder;
 			Button PowerPanic = Button("Power Panic");
 			uart_pty UART0, UART2;
+			SerialLineMonitor m_Mon0 = SerialLineMonitor("Serial0");
 			Thermistor tExtruder, tBed, tPinda, tAmbient;
 			Fan fExtruder = Fan(3300), fPrint = Fan(5000);
 			Heater hExtruder = Heater(1.5,25.0,false,'H',30,250),
 				hBed = Heater(0.25, 25, true,'B',30,100);
 			w25x20cl spiFlash;
 			SDCard sd_card = SDCard();
-			TMC2130 X, Y, Z, E;
+			TMC2130 X = TMC2130('X'), Y = TMC2130('Y'), Z = TMC2130('Z'), E = TMC2130('E');
 			VoltageSrc vMain = VoltageSrc(fScale24v, 24.f),
 				vBed = VoltageSrc(fScale24v,23.9);
 			IRSensor IR;

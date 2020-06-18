@@ -2,7 +2,7 @@
 	uart_pty.h
 
 	Copyright 2012 Michel Pollet <buserror@gmail.com>
-	
+
 	Rewritten 2020 to C++ by VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK3SIM.
@@ -22,8 +22,7 @@
  */
 
 
-#ifndef __UART_PTY_H___
-#define __UART_PTY_H___
+#pragma once
 
 #include <pthread.h>
 
@@ -40,6 +39,8 @@ class uart_pty: public BasePeripheral
 		#define IRQPAIRS _IRQ(BYTE_IN,"8<uart_pty.in") _IRQ(BYTE_OUT,"8>uart_pty.out")
 		#include "IRQHelper.h"
 
+		uart_pty();
+
 		// Destructor. Kills the thread, if it was started.
 		~uart_pty();
 
@@ -51,7 +52,7 @@ class uart_pty: public BasePeripheral
 
 		// Resets the newline trap after a printer reset.
 		void Reset() { m_chrLast = '\n';}
-		
+
 		// Gets the slave name (file). Used by the pipe thread.
 		const std::string GetSlaveName() { return std::string(pty.slavename); };
 
@@ -96,6 +97,3 @@ class uart_pty: public BasePeripheral
 
 
 };
-
-
-#endif /* __UART_PTY_H___ */

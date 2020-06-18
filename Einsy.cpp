@@ -139,6 +139,10 @@ int main(int argc, char *argv[])
 	cmd.add(argSD);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.");
 	cmd.add(argSerial);
+	SwitchArg argScriptHelp("","scripthelp", "Prints the available scripting commands for the current printer/context",false);
+	cmd.add(argScriptHelp);
+	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "filename.txt");
+	cmd.add(argScript);
 	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.");
 	cmd.add(argNoHacks);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
@@ -147,7 +151,7 @@ int main(int argc, char *argv[])
 	ValuesConstraint<string> vcSizes(vstrSizes);
 	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes);
 	cmd.add(argImgSize);
-	vector<string> vstrGfx = {"lite","fancy"};
+	vector<string> vstrGfx = {"none","lite","fancy"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
 	cmd.add(argGfx);
@@ -178,6 +182,7 @@ int main(int argc, char *argv[])
 		printf("Wrote %s. You can now use mcopy to copy gcode files into the image.\n",argSD.getValue().c_str());
 		return 0;
 	}
+	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue().compare("none")==0);
 
 	std::string strFW;
 	if (!argLoad.isSet() && !argFW.isSet())
@@ -187,6 +192,8 @@ int main(int argc, char *argv[])
 
 	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,strFW,argSpam.getValue());
 
+	if (!bNoGraphics)
+	{
 	glutInit(&argc, argv);		/* initialize GLUT system */
 
 	std::pair<int,int> winSize = printer->GetWindowSize();
@@ -208,9 +215,22 @@ int main(int argc, char *argv[])
 			printer->SetVisualType(Printer::VisualType::ADVANCED);
 
 	}
+	};
+	if (argScriptHelp.isSet())
+	{
+		ScriptHost::Init("",0);
+		ScriptHost::PrintScriptHelp();
+		return 0;
+	}
+
+	if (argScript.isSet())
+	{
+		if (!ScriptHost::Init(argScript.getValue(), pBoard->GetAVR()->frequency))
+			return 1; // validate will have printed error info.
+	}
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
-	// start socat (or whatever) without worrying about missing a window for something you need to do at boot.
+	// start socat (or whatever) without worrying about missing a window for something you need to do at boot
 	if (argWait.isSet())
 	{
 		printf("Paused - press any key to resume execution\n");
@@ -218,18 +238,23 @@ int main(int argc, char *argv[])
 	}
 
     pthread_t run;
-
-    pthread_create(&run, NULL, glutThread, NULL);
+	if (!bNoGraphics)
+  	  pthread_create(&run, NULL, glutThread, NULL);
 
 	pBoard->StartAVR();
 
 	pBoard->WaitForFinish();
 
-	glutLeaveMainLoop();
-	pthread_cancel(run); // Kill the GL thread.
+	if (!bNoGraphics)
+	{
+		glutLeaveMainLoop();
+		pthread_cancel(run); // Kill the GL thread.
+	}
 
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);
 
 	printf("Done\n");
+	if (argScript.isSet())
+		return (int)ScriptHost::GetState();
 
 }

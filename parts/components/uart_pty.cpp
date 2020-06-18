@@ -2,7 +2,7 @@
 	uart_pty.cpp
 
 	Copyright 2012 Michel Pollet <buserror@gmail.com> as uart_pty.c
-	
+
 	Rewritten 2020 to C++ by VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK3SIM.
@@ -147,6 +147,12 @@ void uart_pty::OnXOffIn(struct avr_irq_t * irq, uint32_t value)
 	CancelTimer(m_fcnFlush,this);
 }
 
+uart_pty::uart_pty()
+{
+	memset(&port[0], 0, sizeof(port[0]));
+	memset(&port[1], 0, sizeof(port[1]));
+}
+
 void* uart_pty::Run()
 {
 	while (!m_bQuit) {
@@ -286,7 +292,7 @@ void uart_pty::Connect(char uart)
 	if (xoff)
 		avr_irq_register_notify(xoff, MAKE_C_CALLBACK(uart_pty,OnXOffIn),this);
 
-	for (int ti = 0; ti < 1; ti++) 
+	for (int ti = 0; ti < 1; ti++)
 		if (port[ti].s) {
 			char link[128];
 			sprintf(link, "/tmp/simavr-uart%s%c", ti == 1 ? "tap" : "", uart);
@@ -305,4 +311,3 @@ void uart_pty::Connect(char uart)
 	} else
 		printf("note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal\n");
 }
-

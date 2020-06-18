@@ -39,6 +39,7 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 			RegisterAction("WaitForLine","Waits for the provided line to appear on the serial output.",WaitForLine, {ArgType::String});
 			RegisterAction("WaitForLineContains","Waits for the serial output to contain a line with the given string.",WaitForContains,{ArgType::String});
 			RegisterAction("SendGCode","Sends the specified string as G-Code.",SendGCode,{ArgType::String});
+			m_strLine.reserve(100);
 		};
 
 		// Shuts down

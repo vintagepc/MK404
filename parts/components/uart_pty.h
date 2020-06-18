@@ -39,6 +39,8 @@ class uart_pty: public BasePeripheral
 		#define IRQPAIRS _IRQ(BYTE_IN,"8<uart_pty.in") _IRQ(BYTE_OUT,"8>uart_pty.out")
 		#include "IRQHelper.h"
 
+		uart_pty();
+
 		// Destructor. Kills the thread, if it was started.
 		~uart_pty();
 

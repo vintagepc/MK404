@@ -21,8 +21,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __W25X20CL_H__
-#define __W25X20CL_H__
+#pragma once
 
 #include "SPIPeripheral.h"
 
@@ -86,11 +85,7 @@ class w25x20cl:public SPIPeripheral
 				uint8_t SRP :1;
 			} bits;
 		} m_status_register;
-		int m_state;
+		w25x20cl_states m_state = STATE_IDLE;
 		char m_filepath[1024];
 
 };
-
-
-
-#endif

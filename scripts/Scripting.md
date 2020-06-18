@@ -18,6 +18,8 @@ All lines are of the format Context::Action(args...) where:
 - Action is the action to take, and
 - args... are the list of comma separated arguments.
 
+Comments are prefixed with `#`
+
 Available actions depend on the hardware being used. You can use `--scripthelp` together with additional
 setup arguments (like printer model) to see what is available within that context.
 

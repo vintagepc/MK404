@@ -53,7 +53,7 @@ namespace Boards
 
 			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};
 
-			void CreateBoard(string strFW, uint8_t uiVerbose, string strBoot = "stk500boot_v2_mega2560.hex");
+			void CreateBoard(string strFW, uint8_t uiVerbose, bool bGDB, string strBoot = "stk500boot_v2_mega2560.hex");
 			void StartAVR();
 			void StopAVR();
 
@@ -107,6 +107,9 @@ namespace Boards
 
 			inline void SetResetFlag(){m_bReset = true;}
 			inline void SetQuitFlag(){m_bQuit = true;}
+
+			inline bool IsStopped(){ return m_pAVR->state == cpu_Stopped;}
+			inline bool IsPaused(){ return m_bPaused;}
 
 		protected:
 			// Define this method and use it to initialize/attach your hardware to the MCU.

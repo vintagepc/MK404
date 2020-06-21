@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <libgen.h>
 #include <errno.h>
+#include <signal.h>
 
 #if __APPLE__
 #include <GLUT/glut.h>
@@ -59,6 +60,14 @@ int window;
 
 Printer *printer = nullptr;
 Boards::Board *pBoard = nullptr;
+
+// Exit cleanly on ^C
+void OnSigINT(int iSig) {
+	printf("Caught SIGINT... stopping...\n");
+	if (pBoard)
+		pBoard->SetQuitFlag();
+
+}
 
 void displayCB(void)		/* function called whenever redisplay needed */
 {
@@ -130,6 +139,8 @@ using namespace TCLAP;
 using namespace std;
 int main(int argc, char *argv[])
 {
+	signal(SIGINT, OnSigINT);
+
 	CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',"0.1");
 	SwitchArg argWait("w","wait","Wait after the printer (and any PTYs) are set up but before starting execution.");
 	cmd.add(argWait);

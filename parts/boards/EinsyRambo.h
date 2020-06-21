@@ -73,7 +73,7 @@ namespace Boards
 			uart_pty UART0, UART2;
 			SerialLineMonitor m_Mon0 = SerialLineMonitor("Serial0");
 			Thermistor tExtruder, tBed, tPinda, tAmbient;
-			Fan fExtruder = Fan(3300), fPrint = Fan(5000);
+			Fan fExtruder = Fan(3300,'E'), fPrint = Fan(5000,'P',true);
 			Heater hExtruder = Heater(1.5,25.0,false,'H',30,250),
 				hBed = Heater(0.25, 25, true,'B',30,100);
 			w25x20cl spiFlash;

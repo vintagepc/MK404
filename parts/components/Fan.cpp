@@ -21,12 +21,13 @@
 #include "Fan.h"
 #include "stdio.h"
 #include <sim_time.h>
+#include <GL/glut.h>
 //#define TRACE(_w)_w
 #ifndef TRACE
 #define TRACE(_w)
 #endif
 
-Fan::Fan(uint16_t iMaxRPM):m_uiMaxRPM(iMaxRPM),Scriptable("Fan")
+Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):m_uiMaxRPM(iMaxRPM),m_chrSym(chrSym),m_bIsSoftPWM(bIsSoftPWM),Scriptable("Fan")
 {
 	RegisterAction("Stall", "Stalls the fan", Actions::Stall);
 	RegisterAction("Resume","Resumes fan from a stall condition",Actions::Resume);
@@ -37,6 +38,39 @@ avr_cycle_count_t Fan::OnTachChange(avr_t * avr, avr_cycle_count_t when)
     RaiseIRQ(TACH_OUT, m_bPulseState^=1);
     RegisterTimerUsec(m_fcnTachChange,m_uiUsecPulse,this);
     return 0;
+}
+
+avr_cycle_count_t Fan::OnSoftPWMChangeTimeout(avr_t * avr, avr_cycle_count_t when)
+{
+	TRACE(printf("Soft PWM timedout\n"));
+	OnPWMChange(GetIRQ(DIGITAL_IN), (GetIRQ(DIGITAL_IN)->value)*255);
+	return 0;
+}
+
+void Fan::Draw()
+{
+	bool bOn = m_uiPWM>0;
+
+    glPushMatrix();
+	    glColor3ub(0,m_uiPWM>>1,0);
+        glBegin(GL_QUADS);
+            glVertex2f(0,10);
+            glVertex2f(20,10);
+            glVertex2f(20,0);
+            glVertex2f(0,0);
+        glEnd();
+        glColor3f(1,1,1);
+        glTranslatef(9,5,-1);
+        glScalef(0.10,-0.05,1);
+		if (bOn)
+			m_uiRot = (m_uiRot + (2*(m_uiPWM)/10))%360;
+		glRotatef(m_uiRot,0,0,-1);
+		glTranslatef(-50,-50,0);
+		glPushAttrib(GL_LINE_BIT);
+			glLineWidth(3);
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrSym);
+		glPopAttrib();
+    glPopMatrix();
 }
 
 
@@ -78,7 +112,25 @@ void Fan::OnPWMChange(struct avr_irq_t * irq, uint32_t value)
 // Just a dummy wrapper to handle non-PWM control (digitalWrite)
 void Fan::OnDigitalChange(struct avr_irq_t * irq, uint32_t value)
 {
-    OnPWMChange(irq, value*0xFF);
+	if (!m_bIsSoftPWM) // For softpwm,
+	{
+    	OnPWMChange(irq, value*0xFF);
+		return;
+	}
+	if (value) // Was off, start at full, we'll update rate later.
+	{
+		RegisterTimerUsec(m_fcnSoftTimeout,m_uiFanSoftTimeoutUs,this);
+		m_cntSoftPWM = m_pAVR->cycle;
+	}
+	else if (!value)
+	{
+		uint64_t uiCycleDelta = m_pAVR->cycle - m_cntSoftPWM;
+		TRACE(printf("New soft PWM delta: %d\n",uiCycleDelta/1000));
+		uint8_t uiSoftPWM = ((uiCycleDelta/1000)-1); //62.5 Hz means full on is ~256k cycles.
+		OnPWMChange(irq,uiSoftPWM);
+		RegisterTimerUsec(m_fcnSoftTimeout,m_uiFanSoftTimeoutUs,this);
+	}
+
 }
 
 void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM)

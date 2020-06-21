@@ -92,6 +92,9 @@ namespace Boards
 		AddHardware(hExtruder, nullptr, GetDIRQ(HEATER_0_PIN));
 		hExtruder.ConnectTo(Heater::TEMP_OUT, tExtruder.GetIRQ(Thermistor::TEMP_IN));
 
+		AddHardware(m_buzzer);
+		m_buzzer.ConnectFrom(GetDIRQ(BEEPER),Beeper::DIGITAL_IN);
+
 		AddHardware(lcd);
 		// D4-D7,
 		PinNames::Pin ePins[4] = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};

@@ -21,9 +21,10 @@
 #pragma once
 
 #include "BasePeripheral.h"
+#include "SoftPWMable.h"
 #include "Scriptable.h"
 
-class Fan: public BasePeripheral, public Scriptable
+class Fan:public Scriptable, public SoftPWMable
 {
 
 public:
@@ -55,20 +56,19 @@ public:
 	void Resume_Auto();
 
 	protected:
-			LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
+
+		LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
+
+		// callback for PWM change.
+		void OnPWMChange(avr_irq_t *irq, uint32_t value) override;
+
+		// Callback for full on/off
+		void OnDigitalChange(avr_irq_t *irq, uint32_t value) override;
 
 	private:
 		// Callback for tach pulse update.
 		avr_cycle_count_t OnTachChange(avr_t *avr, avr_cycle_count_t when);
 
-		// Callback for handling full on/off states with softPWM tracking.
-		avr_cycle_count_t OnSoftPWMChangeTimeout(avr_t *avr, avr_cycle_count_t when);
-
-		// callback for PWM change.
-		void OnPWMChange(avr_irq_t *irq, uint32_t value);
-
-		// Callback for full on/off
-		void OnDigitalChange(avr_irq_t *irq, uint32_t value);
 
 		bool m_bAuto = true;
 		bool m_bPulseState = false;
@@ -81,13 +81,8 @@ public:
 		uint16_t m_uiUsecPulse = 0;
 		uint16_t m_uiRot = 0;
 
-		static constexpr uint32_t m_uiFanSoftTimeoutUs = 17 *1000; // 62.5 Hz = 16ms period max...
-
-		avr_cycle_count_t m_cntSoftPWM = 0;
-
 		avr_cycle_timer_t m_fcnTachChange = MAKE_C_TIMER_CALLBACK(Fan,OnTachChange);
 
-		avr_cycle_timer_t m_fcnSoftTimeout = MAKE_C_TIMER_CALLBACK(Fan,OnSoftPWMChangeTimeout);
 
 		enum Actions
 		{

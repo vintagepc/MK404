@@ -27,7 +27,7 @@
 #define TRACE(_w)
 #endif
 
-Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):m_uiMaxRPM(iMaxRPM),m_chrSym(chrSym),m_bIsSoftPWM(bIsSoftPWM),Scriptable("Fan")
+Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):m_uiMaxRPM(iMaxRPM),m_chrSym(chrSym),SoftPWMable(bIsSoftPWM,this),Scriptable("Fan")
 {
 	RegisterAction("Stall", "Stalls the fan", Actions::Stall);
 	RegisterAction("Resume","Resumes fan from a stall condition",Actions::Resume);
@@ -38,13 +38,6 @@ avr_cycle_count_t Fan::OnTachChange(avr_t * avr, avr_cycle_count_t when)
     RaiseIRQ(TACH_OUT, m_bPulseState^=1);
     RegisterTimerUsec(m_fcnTachChange,m_uiUsecPulse,this);
     return 0;
-}
-
-avr_cycle_count_t Fan::OnSoftPWMChangeTimeout(avr_t * avr, avr_cycle_count_t when)
-{
-	TRACE(printf("Soft PWM timedout\n"));
-	OnPWMChange(GetIRQ(DIGITAL_IN), (GetIRQ(DIGITAL_IN)->value)*255);
-	return 0;
 }
 
 void Fan::Draw()
@@ -112,25 +105,7 @@ void Fan::OnPWMChange(struct avr_irq_t * irq, uint32_t value)
 // Just a dummy wrapper to handle non-PWM control (digitalWrite)
 void Fan::OnDigitalChange(struct avr_irq_t * irq, uint32_t value)
 {
-	if (!m_bIsSoftPWM) // For softpwm,
-	{
-    	OnPWMChange(irq, value*0xFF);
-		return;
-	}
-	if (value) // Was off, start at full, we'll update rate later.
-	{
-		RegisterTimerUsec(m_fcnSoftTimeout,m_uiFanSoftTimeoutUs,this);
-		m_cntSoftPWM = m_pAVR->cycle;
-	}
-	else if (!value)
-	{
-		uint64_t uiCycleDelta = m_pAVR->cycle - m_cntSoftPWM;
-		TRACE(printf("New soft PWM delta: %d\n",uiCycleDelta/1000));
-		uint8_t uiSoftPWM = ((uiCycleDelta/1000)-1); //62.5 Hz means full on is ~256k cycles.
-		OnPWMChange(irq,uiSoftPWM);
-		RegisterTimerUsec(m_fcnSoftTimeout,m_uiFanSoftTimeoutUs,this);
-	}
-
+   	OnPWMChange(irq, value*0xFF);
 }
 
 void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM)
@@ -142,7 +117,7 @@ void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr
     if(irqTach) ConnectTo(TACH_OUT,irqTach);
 
     RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnPWMChange), this);
-    RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalChange), this);
+    RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalInSPWM), this);
 
 }
 

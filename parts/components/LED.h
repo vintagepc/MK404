@@ -20,15 +20,15 @@
  */
 
 
-#ifndef __LED_H___
-#define __LED_H___
+#pragma once
 
 #include "BasePeripheral.h"
+#include "Util.h"
 
-class LED: public BasePeripheral 
+class LED: public BasePeripheral
 {
 public:
-	#define IRQPAIRS _IRQ(LED_IN,"<LED.in")
+	#define IRQPAIRS _IRQ(LED_IN,"<LED.in") _IRQ(PWM_IN,"<pwm.in")
 	#include "IRQHelper.h"
 
 	// Creates a new LED with RGBA color (A ignored) uiHexColor and char label chrLabel
@@ -43,10 +43,10 @@ public:
 private:
 	// Value changed callback.
 	void OnValueChanged(avr_irq_t *irq, uint32_t value);
-	float m_fColor[3] = {0,1,0};
+	void OnPWMChanged(avr_irq_t *irq, uint32_t value);
+	hexColor_t m_Color = {.hex = 0x00FF0000};
 	char m_chrLabel = ' ';
-	bool m_bOn = false;
+	uint8_t m_uiBrightness = 0;
 	bool m_bInvert = false;
 
 };
-#endif /* __LED_H___ */

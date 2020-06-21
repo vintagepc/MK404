@@ -48,7 +48,9 @@ void Prusa_MK3S::Draw()
 		Z.Draw();
 		glTranslatef(0, 10,0);
 		E.Draw_Simple();
-		glTranslatef(210,0,0);
+		glTranslatef(190,0,0);
+		m_buzzer.Draw();
+		glTranslatef(20,0,0);
 		fPrint.Draw();
 		glTranslatef(20,0,0);
 		fExtruder.Draw();

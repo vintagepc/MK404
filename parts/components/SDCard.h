@@ -59,7 +59,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 		// Detaches the currently mounted file.
 		int Unmount();
 
-		inline bool IsMounted(){return m_data == nullptr;}
+		inline bool IsMounted(){return m_bMounted; }
 
 	protected:
 		virtual uint8_t OnSPIIn(struct avr_irq_t * irq, uint32_t value) override;
@@ -155,7 +155,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 			uint8_t length; /* number of bytes of data which are valid */
 		} m_command_response;
 
-		bool m_bSelected = false;
+		bool m_bSelected = false, m_bMounted = false;
 
 		union {
 			/* Ongoing read operations. */

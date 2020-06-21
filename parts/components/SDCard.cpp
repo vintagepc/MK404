@@ -536,6 +536,7 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 	/* Update the C_SIZE field (number of sectors) in the CSD register. Reference for size calculations: JESD84-A44, Section 8.3, 'C_SIZE'. */
 	SetCSDCSize(image_size);
 
+	m_bMounted = true;
 	RaiseIRQ(CARD_PRESENT,0);
 
 	return 0;
@@ -545,6 +546,7 @@ int SDCard::Unmount()
 {
 	if (m_data == nullptr) {
 		/* No disk mounted. */
+		m_bMounted = false;
 		return 0;
 	}
 
@@ -558,10 +560,11 @@ int SDCard::Unmount()
 	munmap (m_data, m_data_length);
 	close (m_data_fd);
 
-	m_data = NULL;
+	m_data = nullptr;
 	m_data_length = 0;
 	m_data_fd = -1;
 
+	m_bMounted = false;
 	InitCSD();
 	SetCSDCSize(0);
 	RaiseIRQ(CARD_PRESENT,1);

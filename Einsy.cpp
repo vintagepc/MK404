@@ -61,12 +61,22 @@ int window;
 Printer *printer = nullptr;
 Boards::Board *pBoard = nullptr;
 
+bool m_bStopping = false;
+
 // Exit cleanly on ^C
 void OnSigINT(int iSig) {
-	printf("Caught SIGINT... stopping...\n");
-	if (pBoard)
-		pBoard->SetQuitFlag();
-
+	if (!m_bStopping)
+	{
+		printf("Caught SIGINT... stopping...\n");
+		m_bStopping = true;
+		if (pBoard)
+			pBoard->SetQuitFlag();
+	}
+	else
+	{
+		printf("OK, OK! I get the message!\n");
+		exit(2);
+	}
 }
 
 void displayCB(void)		/* function called whenever redisplay needed */

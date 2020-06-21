@@ -29,6 +29,8 @@
 
 #include "HD44780GL.h"
 
+#include "Util.h"
+
 #if __APPLE__
 #include <GLUT/glut.h>
 #else
@@ -43,20 +45,21 @@
 #include "hd44780_charROM.h"	// generated with gimp
 
 static inline void
-glColor32U(uint32_t color, bool bMaterial = false)
+glColorHelper(hexColor_t color, bool bMaterial = false)
 {
-	float fCol[4] = {	(float)((color >> 24) & 0xff) / 255.0f,
-						(float)((color >> 16) & 0xff) / 255.0f,
-						(float)((color >> 8) & 0xff) / 255.0f,
-						(float)((color) & 0xff) / 255.0f };
+
 	if (bMaterial)
 	{
+		float fCol[4] = {	(float)(color.red)/255.0f,
+					(float)(color.green) / 255.0f,
+					(float)(color.blue) / 255.0f,
+					(float)(color.alpha) / 255.0f };
 		float fNone[4] = {0,0,0,1};
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, fNone);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,  fCol);
 	}
 	else
-		glColor4fv(fCol);
+		glColor4ub(color.red, color.green, color.blue, color.alpha);
 
 }
 
@@ -96,7 +99,7 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor32U(character,bMaterial);
+	glColorHelper(character,bMaterial);
 	glBegin(GL_QUADS);
 		glVertex3i(5, 8, -1);
 		glVertex3i(5, 0, -1);
@@ -132,7 +135,7 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 				if (shadow)
 				{
 					glPushMatrix();
-						glColor32U(shadow, bMaterial);
+						glColorHelper(shadow, bMaterial);
 						glBegin(GL_QUADS);
 							glVertex3f(x,y,		-2);
 							glVertex3f(x,y+1,	-2);
@@ -141,7 +144,7 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 						glEnd();
 					glPopMatrix();
 				}
-				glColor32U(text, bMaterial);
+				glColorHelper(text, bMaterial);
 				glBegin(GL_QUADS);
 					glVertex3f(x,y,				-3);
 					glVertex3f(x,y+inset,		-3);
@@ -163,18 +166,21 @@ void HD44780GL::Draw(
 	uint8_t iCols = m_uiWidth;
 	uint8_t iRows = m_uiHeight;
 	int border = 3;
-	uint8_t* iBG = (uint8_t*)&background;
-	float r = iBG[3]/255.0,g = iBG[2]/255.0,blue = iBG[1]/255.0;
-	float fScale = (float)m_uiBrightness/255.0;
+	hexColor_t bg(background);
+	// uint8_t* iBG = (uint8_t*)&background;
+	float fScale = (float)m_uiBrightness/255.f;
+	for (int i=1; i<4; i++)
+		bg.bytes[i] = ((float)bg.bytes[i])*fScale;
+
 	float fNone[4] = {0,0,0,1};
 	if (bMaterial)
 	{
-		float fCopy[4] = {r*fScale,g*fScale,blue*fScale,0.0f};
+		float fCopy[4] = { float(bg.red)/255.f,float(bg.green)/255.f,float(bg.blue)/255.f,0.0f};
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, fNone);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION ,  fCopy);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION , fCopy);
 	}
 	else
-		glColor4f(r*fScale,g*fScale,blue*fScale,1.0f);
+		glColor4ub(bg.red,bg.green,bg.blue,bg.alpha);
 
 	glTranslatef(border, border, 0);
 	glBegin(GL_QUADS);

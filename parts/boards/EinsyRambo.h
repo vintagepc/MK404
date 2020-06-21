@@ -23,6 +23,7 @@
 #include <Board.h>
 
 #include "uart_pty.h"
+#include "Beeper.h"
 #include "Button.h"
 #include "Fan.h"
 #include "HD44780GL.h"
@@ -70,6 +71,7 @@ namespace Boards
 			HD44780GL lcd;
 			RotaryEncoder encoder;
 			Button PowerPanic = Button("Power Panic");
+			Beeper m_buzzer;
 			uart_pty UART0, UART2;
 			SerialLineMonitor m_Mon0 = SerialLineMonitor("Serial0");
 			Thermistor tExtruder, tBed, tPinda, tAmbient;

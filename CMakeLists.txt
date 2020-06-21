@@ -19,6 +19,7 @@ set (FIRMWARE
 set(H_FILES
     parts/components/ADC_Buttons.h
     parts/components/Button.h
+	parts/components/Beeper.h
     parts/components/EEPROM.h
     parts/components/Fan.h
     parts/components/HC595.h
@@ -72,6 +73,7 @@ set(INCLUDE_FILES
 
 set(EINSY_SOURCES
     parts/components/ADC_Buttons.cpp
+	parts/components/Beeper.cpp
     parts/components/Button.cpp
     parts/components/EEPROM.cpp
     parts/components/Fan.cpp

@@ -34,15 +34,17 @@ class Beeper:public SoftPWMable
 		// Initializes the LED to the AVR
 		void Init(avr_t * avr);
 
-
 		// Draws the LED
 		void Draw();
 
 
 	protected:
+		virtual void OnOnCycChange(uint32_t uiTOn) override;
 		virtual void OnDigitalChange(avr_irq_t*, uint32_t) override;
 		virtual void OnPWMChange(avr_irq_t*, uint32_t) override;
 
 	private:
-		uint16_t m_uiFreq = 0; //
+		uint32_t m_uiOnTime = 0;
+		uint16_t m_uiPWM = 0; //
+		uint16_t m_uiFreq = 0;
 };

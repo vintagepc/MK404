@@ -27,8 +27,9 @@ class SoftPWMable : public BasePeripheral
 {
 	public:
 		template<class C>
-		SoftPWMable(bool bEnabled, C *p, uint16_t uiPrescale = 1000):m_bIsSoftPWM(bEnabled),m_uiPrescale(uiPrescale)
+		SoftPWMable(bool bEnabled, C *p, uint16_t uiPrescale = 1000, uint32_t uiTimeoutMs = 17):m_bIsSoftPWM(bEnabled),m_uiPrescale(uiPrescale)
 		{
+			m_uiSoftTimeoutUs = 1000*uiTimeoutMs;
 			m_fcnSoftTimeout = MAKE_C_TIMER_CALLBACK(SoftPWMable,OnSoftPWMChangeTimeout<C>);
 		};
 
@@ -40,6 +41,9 @@ class SoftPWMable : public BasePeripheral
 		// Override this with your normal method for a digital change when NOT soft-PWMed
 		virtual void OnDigitalChange(avr_irq_t *irq, uint32_t value) = 0;
 
+		// Called when the frequency changes.
+		virtual void OnOnCycChange(uint32_t uiTOn) {};
+
 		// Binding for soft PWM digital input register notify.
 		inline void OnDigitalInSPWM(avr_irq_t *irq, uint32_t value)
 		{
@@ -50,16 +54,17 @@ class SoftPWMable : public BasePeripheral
 			}
 			if (value) // Was off, start at full, we'll update rate later.
 			{
-				RegisterTimerUsec(m_fcnSoftTimeout,m_uiFanSoftTimeoutUs,this);
+				RegisterTimerUsec(m_fcnSoftTimeout,m_uiSoftTimeoutUs,this);
 				m_cntSoftPWM = m_pAVR->cycle;
 			}
 			else if (!value)
 			{
 				uint64_t uiCycleDelta = m_pAVR->cycle - m_cntSoftPWM;
 				//TRACE(printf("New soft PWM delta: %d\n",uiCycleDelta/1000));
-				uint8_t uiSoftPWM = ((uiCycleDelta/m_uiPrescale)-1); //62.5 Hz means full on is ~256k cycles.
+				uint16_t uiSoftPWM = ((uiCycleDelta/m_uiPrescale)-1); //62.5 Hz means full on is ~256k cycles.
 				OnPWMChange(irq,uiSoftPWM);
-				RegisterTimerUsec(m_fcnSoftTimeout,m_uiFanSoftTimeoutUs,this);
+				OnOnCycChange(uiCycleDelta);
+				RegisterTimerUsec(m_fcnSoftTimeout,m_uiSoftTimeoutUs,this);
 			}
 		}
 
@@ -67,13 +72,15 @@ class SoftPWMable : public BasePeripheral
 		template<class C>
 		avr_cycle_count_t OnSoftPWMChangeTimeout(avr_t *avr, avr_cycle_count_t when)
 		{
+			//printf("Timeout\n");
 			OnPWMChange(GetIRQ(C::DIGITAL_IN), (GetIRQ(C::DIGITAL_IN)->value)*255);
+			OnOnCycChange(0);
 			return 0;
 		}
 
 	private:
 
-		static constexpr uint32_t m_uiFanSoftTimeoutUs = 17 *1000; // 62.5 Hz = 16ms period max...
+		uint32_t m_uiSoftTimeoutUs = 17 *1000; // 62.5 Hz = 16ms period max...
 
 		uint16_t m_uiPrescale = 1000;
 		avr_cycle_count_t m_cntSoftPWM = 0;

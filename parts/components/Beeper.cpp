@@ -23,8 +23,9 @@
 #include "stdio.h"
 #include "GL/glut.h"
 
-Beeper::Beeper():SoftPWMable(true,this, 1)
+Beeper::Beeper():SoftPWMable(true,this, 1, 100)
 {
+
 }
 
 void Beeper::OnDigitalChange(avr_irq_t *irq, uint32_t value)
@@ -34,9 +35,19 @@ void Beeper::OnDigitalChange(avr_irq_t *irq, uint32_t value)
 
 void Beeper::OnPWMChange(avr_irq_t* irq, uint32_t value)
 {
-	m_uiFreq = value;
+	m_uiPWM = value;
 	//printf("Beeper PWM change: %d\n", value);
 }
+void Beeper::OnOnCycChange(uint32_t uiTOn)
+{
+	m_uiOnTime = uiTOn<<2;
+	if (uiTOn == 0)
+		m_uiFreq = 0;
+	else
+		m_uiFreq = 2*(1+ ((float)m_uiPWM-1280.f)/1280.f) *(m_pAVR->frequency/m_uiOnTime);
+	//printf("Beeper frequency: %d\n",m_uiFreq);
+	// TODO: actually play the tone.
+};
 
 void Beeper::Init(avr_t *avr)
 {
@@ -47,7 +58,7 @@ void Beeper::Init(avr_t *avr)
 void Beeper::Draw()
 {
 	bool m_bOn = m_uiFreq>0;
-	uint16_t uiBrt = ((m_uiFreq*9)/10)+25;
+	uint16_t uiBrt = 255;//((m_uiFreq*9)/10)+25;
     glPushMatrix();
         if (m_bOn)
             glColor3us(255*uiBrt, 128*uiBrt, 0);

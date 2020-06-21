@@ -37,7 +37,10 @@ public:
     #include <IRQHelper.h>
 
 	// Constructs a new Fan with a max RPM of iMaxRPM (at PWM 255)
-	Fan(uint16_t iMaxRPM);
+	Fan(uint16_t iMaxRPM, char chrSym = ' ', bool bIsSoftPWM = false);
+
+	// Draws a small fan indicator.
+	void Draw();
 
 	// Initializes the fan with avr, and connects to irqTach (out), irqDigital (in), and irqPWM (pwm control value)
 	void Init(struct avr_t* avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM);
@@ -58,6 +61,9 @@ public:
 		// Callback for tach pulse update.
 		avr_cycle_count_t OnTachChange(avr_t *avr, avr_cycle_count_t when);
 
+		// Callback for handling full on/off states with softPWM tracking.
+		avr_cycle_count_t OnSoftPWMChangeTimeout(avr_t *avr, avr_cycle_count_t when);
+
 		// callback for PWM change.
 		void OnPWMChange(avr_irq_t *irq, uint32_t value);
 
@@ -66,12 +72,22 @@ public:
 
 		bool m_bAuto = true;
 		bool m_bPulseState = false;
+		char m_chrSym = ' ';
+		bool m_bIsSoftPWM = false;
+
 		uint8_t m_uiPWM = 0;
 		uint16_t m_uiMaxRPM = 2000;
 		uint16_t m_uiCurrentRPM = 0;
 		uint16_t m_uiUsecPulse = 0;
+		uint16_t m_uiRot = 0;
+
+		static constexpr uint32_t m_uiFanSoftTimeoutUs = 17 *1000; // 62.5 Hz = 16ms period max...
+
+		avr_cycle_count_t m_cntSoftPWM = 0;
 
 		avr_cycle_timer_t m_fcnTachChange = MAKE_C_TIMER_CALLBACK(Fan,OnTachChange);
+
+		avr_cycle_timer_t m_fcnSoftTimeout = MAKE_C_TIMER_CALLBACK(Fan,OnSoftPWMChangeTimeout);
 
 		enum Actions
 		{

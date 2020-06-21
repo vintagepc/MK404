@@ -84,8 +84,35 @@ void displayCB(void)		/* function called whenever redisplay needed */
 	glutSetWindow(window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW); // Select modelview matrix
-
+	int iW = glutGet(GLUT_WINDOW_WIDTH);
+	int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	printer->Draw();
+
+	if (pBoard->IsStopped() || pBoard->IsPaused())
+	{
+		string strState = pBoard->IsStopped() ? "Stopped" : "Paused";
+		glColor4f(.5,.5,.5,0.5);
+		glBegin(GL_QUADS);
+			glVertex2f(0,0);
+			glVertex2f(iW,0);
+			glVertex2f(iW,iH);
+			glVertex2f(0,iH);
+		glEnd();
+		glColor3f(1,0,0);
+		glPushMatrix();
+			glTranslatef(90,40,0);
+			glScalef(0.25,-0.25,1);
+			glTranslatef(0,-50,0);
+			glRotatef(8.f,0,0,1);
+			glPushAttrib(GL_LINE_BIT);
+				glLineWidth(5);
+				for (int i=0; i<strState.length(); i++)
+					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strState[i]);
+			glPopAttrib();
+		glPopMatrix();
+
+
+	}
 
 	glutSwapBuffers();
 }
@@ -127,7 +154,7 @@ int initGL(int w, int h)
 	glutMouseFunc(MouseCB);
 	glutMotionFunc(MotionCB);
 	glutTimerFunc(1000, timerCB, 0);
-
+	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
 
@@ -172,6 +199,8 @@ int main(int argc, char *argv[])
 	ValuesConstraint<string> vcSizes(vstrSizes);
 	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes);
 	cmd.add(argImgSize);
+	SwitchArg argGDB("","gdb","Enable SimAVR's GDB support");
+	cmd.add(argGDB);
 	vector<string> vstrGfx = {"none","lite","fancy"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
@@ -211,7 +240,7 @@ int main(int argc, char *argv[])
 	else
 		strFW = argFW.getValue();
 
-	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,strFW,argSpam.getValue());
+	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,strFW,argSpam.getValue(), argGDB.isSet());
 
 	if (!bNoGraphics)
 	{
@@ -221,8 +250,8 @@ int main(int argc, char *argv[])
 	int w = winSize.first;
 	int h = winSize.second;
 	int pixsize = 4;
-
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+	glutSetOption(GLUT_MULTISAMPLE,2);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
 	glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
 	window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
 

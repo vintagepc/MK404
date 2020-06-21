@@ -23,6 +23,7 @@
 #include <Board.h>
 #include <sim_hex.h>
 #include <sim_elf.h>
+#include <sim_gdb.h>
 #include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
@@ -46,7 +47,7 @@ void Board::CreateAVR()
 	m_EEPROM.Load(m_pAVR,GetStorageFileName("eeprom").c_str());
 }
 
-void Board::CreateBoard(string strFW, uint8_t uiV, string strBoot)
+void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, string strBoot)
 {
 	CreateAVR();
 	if (!strFW.empty())
@@ -70,6 +71,14 @@ void Board::CreateBoard(string strFW, uint8_t uiV, string strBoot)
 
 	// even if not setup at startup, activate gdb if crashing
 	m_pAVR->gdb_port = 1234;
+
+	// Enable full GDB support
+	if (bGDB)
+	{
+		m_pAVR->state = cpu_Stopped;
+		avr_gdb_init(m_pAVR);
+	}
+
 	SetupHardware();
 };
 

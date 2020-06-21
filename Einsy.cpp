@@ -154,7 +154,7 @@ int initGL(int w, int h)
 	glutMouseFunc(MouseCB);
 	glutMotionFunc(MotionCB);
 	glutTimerFunc(1000, timerCB, 0);
-
+	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
 
@@ -250,8 +250,8 @@ int main(int argc, char *argv[])
 	int w = winSize.first;
 	int h = winSize.second;
 	int pixsize = 4;
-
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
+	glutSetOption(GLUT_MULTISAMPLE,2);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
 	glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
 	window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
 

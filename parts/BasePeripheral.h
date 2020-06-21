@@ -23,8 +23,7 @@
 #include <sim_avr.h>
 #include <sim_irq.h>
 
-#ifndef __BASE_PERIPHERAL_H__
-#define __BASE_PERIPHERAL_H__
+#pragma once
 
 // Use lambdas to expose something that can be called from C, but returns to our C++ object
 // TODO: find a way to ditch the macro. I tried and failed, see the template blocks below...
@@ -38,7 +37,7 @@
    [](avr_t * avr, avr_cycle_count_t when, void* param) {class *p = (class*) param; return p->function(avr,when); }
 
 
-class BasePeripheral 
+class BasePeripheral
 {
     public:
         enum IRQ : unsigned int;
@@ -91,7 +90,7 @@ class BasePeripheral
         // void RegisterNotify(unsigned int eDest, void (C::*CFcn)(avr_irq_t *irq, uint32_t value)){
         //     avr_irq_notify_t fCB = [&CFcn](avr_irq_t *irq, unsigned int value, void *param) {
         //         C *p = (C*) param;
-        //         (p->*CFcn)(irq,value); 
+        //         (p->*CFcn)(irq,value);
         //         };
         //     avr_irq_register_notify(m_pIrq + eDest,fCB, this);
         //     };
@@ -108,7 +107,7 @@ class BasePeripheral
             return p;
         }
 
-    
+
         template<class C>
              void RegisterNotify(unsigned int eDest, void (C::*CFcn)(avr_irq_t *irq, uint32_t value), C* pSrc){
                 typedef struct sH_t{
@@ -118,14 +117,12 @@ class BasePeripheral
                 sH_t sO {pFcn:CFcn, pClass:pSrc};
                 auto fCB = [](avr_irq_t *irq, unsigned int value, void *param) {
                     sH_t *p = (sH_t*)param;
-                    (p->pClass->*p->pFcn)(irq,value); 
+                    (p->pClass->*p->pFcn)(irq,value);
                  };
              avr_irq_register_notify(m_pIrq + eDest,fCB, &sO);
              }; */
         avr_irq_t * m_pIrq = nullptr;
         struct avr_t *m_pAVR = nullptr;
-    private:             
+    private:
 
 };
-
-#endif /* __BASE_PERIPHERAL_H__ */

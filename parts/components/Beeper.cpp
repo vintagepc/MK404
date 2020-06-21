@@ -1,5 +1,5 @@
 /*
-	LED.h - Simple LED visualizer.
+	Beeper.cpp - Beeper visualizer for MK3Sim
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
@@ -19,40 +19,40 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "GL/glut.h"
-#include "LED.h"
+#include "Beeper.h"
 #include "stdio.h"
+#include "GL/glut.h"
 
-LED::LED(uint32_t uiHexColor, char chrLabel, bool bInvert):m_chrLabel(chrLabel),m_bInvert(bInvert)
+Beeper::Beeper():SoftPWMable(true,this, 1)
 {
-    m_Color.hex =uiHexColor;
-    m_uiBrightness = 255*bInvert;
 }
 
-
-void LED::OnValueChanged(struct avr_irq_t *irq, uint32_t value)
+void Beeper::OnDigitalChange(avr_irq_t *irq, uint32_t value)
 {
-	m_uiBrightness = (value^m_bInvert)*255;
+	//printf("Beeper turned on: %d\n", value);
 }
 
-void LED::OnPWMChanged(struct avr_irq_t *irq, uint32_t value)
+void Beeper::OnPWMChange(avr_irq_t* irq, uint32_t value)
 {
-	if (m_bInvert)
-		m_uiBrightness = 255-((uint8_t)value);
-	else
-		m_uiBrightness = ((uint8_t)value);
+	m_uiFreq = value;
+	//printf("Beeper PWM change: %d\n", value);
 }
 
-void LED::Draw()
+void Beeper::Init(avr_t *avr)
 {
-	bool m_bOn = m_uiBrightness>0;
-	uint16_t uiBrt = ((m_uiBrightness*9)/10)+25;
+    _Init(avr, this);
+	Beeper::RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Beeper,OnDigitalInSPWM), this);
+}
+
+void Beeper::Draw()
+{
+	bool m_bOn = m_uiFreq>0;
+	uint16_t uiBrt = ((m_uiFreq*9)/10)+25;
     glPushMatrix();
         if (m_bOn)
-            glColor3us(m_Color.red*uiBrt, m_Color.green*uiBrt, m_Color.blue*uiBrt);
+            glColor3us(255*uiBrt, 128*uiBrt, 0);
         else
-            glColor3ub(m_Color.red/10, m_Color.green/10, m_Color.blue/10);
+            glColor3ub(25,12,0);
 
         glBegin(GL_QUADS);
             glVertex2f(0,10);
@@ -63,13 +63,6 @@ void LED::Draw()
         glColor3f(!m_bOn,!m_bOn,!m_bOn);
         glTranslatef(4,7,-1);
         glScalef(0.1,-0.05,1);
-        glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrLabel);
+        glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'T');
     glPopMatrix();
-}
-
-void LED::Init(avr_t *avr)
-{
-    _Init(avr, this);
-    RegisterNotify(LED_IN,MAKE_C_CALLBACK(LED,OnValueChanged),this);
-	RegisterNotify(PWM_IN,MAKE_C_CALLBACK(LED,OnPWMChanged),this);
 }

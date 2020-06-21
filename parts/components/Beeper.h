@@ -1,6 +1,5 @@
 /*
-
-    Util.h - convenience helpers for working with SimAVR.
+	Beeper.h - Beeper visualizer for MK3Sim
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
@@ -22,14 +21,28 @@
 
 #pragma once
 
-typedef union hexColor_t{
-	hexColor_t(const uint32_t &val){hex = val;} // Helper constructor
-	uint32_t hex;
-	struct{
-		uint8_t alpha;
-		uint8_t blue;
-		uint8_t green;
-		uint8_t red;
-	};
-	uint8_t bytes[4];
-} hexColor_t;
+#include "SoftPWMable.h"
+
+class Beeper:public SoftPWMable
+{
+	public:
+		#define IRQPAIRS _IRQ(DIGITAL_IN,"<digital.in") _IRQ(PWM_IN,"<pwm.in")
+		#include "IRQHelper.h"
+
+		Beeper();
+
+		// Initializes the LED to the AVR
+		void Init(avr_t * avr);
+
+
+		// Draws the LED
+		void Draw();
+
+
+	protected:
+		virtual void OnDigitalChange(avr_irq_t*, uint32_t) override;
+		virtual void OnPWMChange(avr_irq_t*, uint32_t) override;
+
+	private:
+		uint16_t m_uiFreq = 0; //
+};

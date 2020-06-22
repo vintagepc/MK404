@@ -27,6 +27,10 @@ setup arguments (like printer model) to see what is available within that contex
 
 ```
 Scripting options for the current context:
+    Beeper::
+		Mute()                        Mutes the beeper
+		ToggleMute()                  Toggles the beeper mute
+		Unmute()                      Unmutes the beeper
 	Board::
 		Quit()                        Sends the quit signal to the AVR
 		Reset()                       Resets the board by resetting the AVR.

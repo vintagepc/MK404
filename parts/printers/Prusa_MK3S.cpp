@@ -177,6 +177,10 @@ void Prusa_MK3S::OnAVRCycle()
 			case 'h':
 				encoder.PushAndHold();
 				break;
+			case 'm':
+				printf("Toggled Mute\n");
+				m_buzzer.ToggleMute();
+				break;
 			case 'y':
 				pinda.ToggleSheet();
 				break;

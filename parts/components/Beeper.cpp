@@ -25,16 +25,16 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_audio.h>
 
-Beeper::Beeper():SoftPWMable(true,this, 1, 50)
+Beeper::Beeper():SoftPWMable(true,this, 1, 75)
 {
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
 		fprintf(stderr,"Failed to init SDL_Audio\n");
 
 	printf("Starting to play tone of %d Hz\n",m_uiFreq);
-    m_specWant.freq = 44100; // number of samples per second
+    m_specWant.freq = m_uiSampleRate; // number of samples per second
     m_specWant.format = AUDIO_S16SYS; // sample type (here: signed short i.e. 16 bit)
     m_specWant.channels = 1; // only one channel
-    m_specWant.samples = 2048; // buffer-size
+    m_specWant.samples = 1024; // buffer-size
     m_specWant.callback = m_fcnSDL; // function SDL calls periodically to refill the buffer
     m_specWant.userdata = this; // counter, keeping track of current sample number
 
@@ -62,10 +62,10 @@ void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)
     {
 		if (m_uiCounter==0)
 		{
-			m_uiCounter = 44100/m_uiFreq;
+			m_uiCounter = m_uiSampleRate/(m_uiPlayFreq<<1);
 			m_bState ^=1;
 		}
-        buffer[i] = m_bState? 12000 : 0;
+        buffer[i] = m_bState? 12000 : -12000;
     }
 }
 
@@ -94,12 +94,16 @@ void Beeper::OnOnCycChange(uint32_t uiTOn)
 		m_uiOnTime = uiTOn<<2;
 		//printf("TOn: %d\n",uiTOn);
 		m_uiFreq = (m_pAVR->frequency/m_uiOnTime)<<1;
-		if (!m_bPlaying)
 		{
+			if (m_bPlaying)
+				SDL_PauseAudio(1);
 			printf("Beeper frequency: %d\n",m_uiFreq);
+			m_uiPlayFreq = m_uiFreq;
+			m_uiCounter = m_uiSampleRate/(m_uiPlayFreq<<1);
 			m_bPlaying = true;
 			SDL_PauseAudio(0);
 		}
+
 	}
 };
 

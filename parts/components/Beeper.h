@@ -56,7 +56,8 @@ class Beeper:public SoftPWMable
 
 		uint32_t m_uiOnTime = 0;
 		uint16_t m_uiPWM = 0; //
-		uint16_t m_uiFreq = 0;
+		uint16_t m_uiFreq = 0, m_uiPlayFreq = 0;
 		uint16_t m_uiCounter = 0;
+		static constexpr uint16_t m_uiSampleRate = 44100;
 		bool m_bState = false;
 };

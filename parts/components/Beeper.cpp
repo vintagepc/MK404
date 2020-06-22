@@ -25,12 +25,11 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_audio.h>
 
-Beeper::Beeper():SoftPWMable(true,this, 1, 75)
+Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 {
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
 		fprintf(stderr,"Failed to init SDL_Audio\n");
 
-	printf("Starting to play tone of %d Hz\n",m_uiFreq);
     m_specWant.freq = m_uiSampleRate; // number of samples per second
     m_specWant.format = AUDIO_S16SYS; // sample type (here: signed short i.e. 16 bit)
     m_specWant.channels = 1; // only one channel
@@ -49,10 +48,30 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 75)
 		printf("Failed to get the desired AudioSpec\n");
 		return;
 	}
+
+	RegisterAction("Mute","Mutes the beeper", ActMute);
+	RegisterAction("Unmute","Unmutes the beeper", ActUnmute);
+	RegisterAction("ToggleMute","Toggles the beeper mute", ActToggle);
+
+}
+
+Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActMute:
+		case ActUnmute:
+			m_bMuted = iAct==ActMute;
+			return LineStatus::Finished;
+		case ActToggle:
+			ToggleMute();
+			return LineStatus::Finished;
+	}
 }
 
 Beeper::~Beeper()
 {
+	SDL_CloseAudio();
 }
 
 void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)
@@ -62,44 +81,34 @@ void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)
     {
 		if (m_uiCounter==0)
 		{
-			m_uiCounter = m_uiSampleRate/(m_uiPlayFreq<<1);
 			m_bState ^=1;
+			m_uiCounter = m_uiSampleRate/ (m_bState? m_uiCtOn : m_uiCtOff );
 		}
         buffer[i] = m_bState? 12000 : -12000;
     }
 }
 
-void Beeper::OnDigitalChange(avr_irq_t *irq, uint32_t value)
+void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 {
-	//printf("Beeper turned on: %d\n", value);
-}
-
-void Beeper::OnPWMChange(avr_irq_t* irq, uint32_t value)
-{
-	m_uiPWM = value;
-	//printf("Beeper PWM change: %d\n", value);
-}
-
-void Beeper::OnOnCycChange(uint32_t uiTOn)
-{
+	if (m_bMuted)
+		return;
+	//printf("Beeper debug: %u on, %u total\n", uiTOn,uiTTotal);
 	if (uiTOn == 0)
 	{
-		m_uiFreq = 0;
-		m_uiOnTime = 0;
 		SDL_PauseAudio(1);
 		m_bPlaying = false;
 	}
 	else
 	{
-		m_uiOnTime = uiTOn<<2;
-		//printf("TOn: %d\n",uiTOn);
-		m_uiFreq = (m_pAVR->frequency/m_uiOnTime)<<1;
+		m_uiCtOn = m_pAVR->frequency/uiTOn;
+		m_uiCtOff = m_pAVR->frequency/(uiTTotal-uiTOn);
+		//printf("Beep @ %u Hz, duty cycle %u %\n",m_pAVR->frequency/uiTTotal, (100*uiTOn)/uiTTotal);
+		if (m_uiCtOn == 0)
+			return;
 		{
 			if (m_bPlaying)
 				SDL_PauseAudio(1);
-			printf("Beeper frequency: %d\n",m_uiFreq);
-			m_uiPlayFreq = m_uiFreq;
-			m_uiCounter = m_uiSampleRate/(m_uiPlayFreq<<1);
+			m_uiCounter = m_uiSampleRate/m_uiCtOn;
 			m_bPlaying = true;
 			SDL_PauseAudio(0);
 		}
@@ -131,6 +140,10 @@ void Beeper::Draw()
         glColor3f(!m_bPlaying,!m_bPlaying,!m_bPlaying);
         glTranslatef(4,7,-1);
         glScalef(0.1,-0.05,1);
-        glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'T');
+		glPushMatrix();
+        	glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'T');
+		glPopMatrix();
+		if (m_bMuted)
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'X');
     glPopMatrix();
 }

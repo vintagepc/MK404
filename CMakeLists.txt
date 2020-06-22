@@ -158,7 +158,7 @@ include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
 
-target_link_libraries(Einsy pthread util glut GL GLU GLEW m tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
+target_link_libraries(Einsy pthread util glut GL GLU GLEW m SDL tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 
 add_custom_command(TARGET Einsy POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different

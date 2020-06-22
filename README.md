@@ -86,6 +86,9 @@ Where:
      If neither -l or -f are provided, the printer executes solely from its
      persisted flash.
 
+   -m,  --mute
+     Tell a printer to mute any audio it may produce.
+
    -n,  --no-hacks
      Disable any special hackery that might have been implemented for a
      board to run its manufacturer firmware, e.g. if you want to run stock

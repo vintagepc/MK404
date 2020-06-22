@@ -22,27 +22,50 @@
 #pragma once
 
 #include "SoftPWMable.h"
+#include <SDL/SDL_audio.h>
+#include "Scriptable.h"
 
-class Beeper:public SoftPWMable
+class Beeper:public SoftPWMable, public Scriptable
 {
 	public:
 		#define IRQPAIRS _IRQ(DIGITAL_IN,"<digital.in") _IRQ(PWM_IN,"<pwm.in")
 		#include "IRQHelper.h"
 
 		Beeper();
-
+		~Beeper();
 		// Initializes the LED to the AVR
 		void Init(avr_t * avr);
-
 
 		// Draws the LED
 		void Draw();
 
+		inline void ToggleMute(){m_bMuted^=1;}
+
 
 	protected:
-		virtual void OnDigitalChange(avr_irq_t*, uint32_t) override;
-		virtual void OnPWMChange(avr_irq_t*, uint32_t) override;
+		virtual void OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal) override;
+
+		Scriptable::LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
 
 	private:
-		uint16_t m_uiFreq = 0; //
+		void StartTone();
+		void SDL_FillBuffer(uint8_t *raw_buffer, int bytes);
+
+		void(*m_fcnSDL)(void* p, uint8_t*, int) = [](void *p, uint8_t *raw_buffer, int bytes){Beeper *self = static_cast<Beeper*>(p); self->SDL_FillBuffer(raw_buffer,bytes);};
+
+		bool m_bPlaying = false;
+
+		SDL_AudioSpec m_specWant, m_specHave;
+
+		uint16_t m_uiCtOn = 0, m_uiCtOff = 0;
+		uint16_t m_uiCounter = 0;
+		static constexpr uint16_t m_uiSampleRate = 44100;
+		bool m_bState = false, m_bMuted = false;
+
+		enum Actions
+		{
+			ActMute,
+			ActUnmute,
+			ActToggle
+		};
 };

@@ -22,6 +22,7 @@
 #pragma once
 
 #include "SoftPWMable.h"
+#include <SDL/SDL_audio.h>
 
 class Beeper:public SoftPWMable
 {
@@ -30,7 +31,7 @@ class Beeper:public SoftPWMable
 		#include "IRQHelper.h"
 
 		Beeper();
-
+		~Beeper();
 		// Initializes the LED to the AVR
 		void Init(avr_t * avr);
 
@@ -44,7 +45,18 @@ class Beeper:public SoftPWMable
 		virtual void OnPWMChange(avr_irq_t*, uint32_t) override;
 
 	private:
+		void StartTone();
+		void SDL_FillBuffer(uint8_t *raw_buffer, int bytes);
+
+		void(*m_fcnSDL)(void* p, uint8_t*, int) = [](void *p, uint8_t *raw_buffer, int bytes){Beeper *self = static_cast<Beeper*>(p); self->SDL_FillBuffer(raw_buffer,bytes);};
+
+		bool m_bPlaying = false;
+
+		SDL_AudioSpec m_specWant, m_specHave;
+
 		uint32_t m_uiOnTime = 0;
 		uint16_t m_uiPWM = 0; //
 		uint16_t m_uiFreq = 0;
+		uint16_t m_uiCounter = 0;
+		bool m_bState = false;
 };

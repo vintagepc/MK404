@@ -193,6 +193,8 @@ int main(int argc, char *argv[])
 	cmd.add(argScript);
 	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.");
 	cmd.add(argNoHacks);
+	SwitchArg argMute("m","mute","Tell a printer to mute any audio it may produce.");
+	cmd.add(argMute);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
 	cmd.add(argLoad);
 	vector<string> vstrSizes = FatImage::GetSizes();
@@ -278,6 +280,10 @@ int main(int argc, char *argv[])
 		if (!ScriptHost::Init(argScript.getValue(), pBoard->GetAVR()->frequency))
 			return 1; // validate will have printed error info.
 	}
+
+	// This is a little lazy, I know. Figure it out once we have non-einsy printers.
+	if (argMute.isSet())
+		printer->OnKeyPress('m',0,0);
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot

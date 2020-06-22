@@ -23,8 +23,9 @@
 
 #include "SoftPWMable.h"
 #include <SDL/SDL_audio.h>
+#include "Scriptable.h"
 
-class Beeper:public SoftPWMable
+class Beeper:public SoftPWMable, public Scriptable
 {
 	public:
 		#define IRQPAIRS _IRQ(DIGITAL_IN,"<digital.in") _IRQ(PWM_IN,"<pwm.in")
@@ -38,11 +39,13 @@ class Beeper:public SoftPWMable
 		// Draws the LED
 		void Draw();
 
+		inline void ToggleMute(){m_bMuted^=1;}
+
 
 	protected:
-		virtual void OnOnCycChange(uint32_t uiTOn) override;
-		virtual void OnDigitalChange(avr_irq_t*, uint32_t) override;
-		virtual void OnPWMChange(avr_irq_t*, uint32_t) override;
+		virtual void OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal) override;
+
+		Scriptable::LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
 
 	private:
 		void StartTone();
@@ -54,10 +57,15 @@ class Beeper:public SoftPWMable
 
 		SDL_AudioSpec m_specWant, m_specHave;
 
-		uint32_t m_uiOnTime = 0;
-		uint16_t m_uiPWM = 0; //
-		uint16_t m_uiFreq = 0, m_uiPlayFreq = 0;
+		uint16_t m_uiCtOn = 0, m_uiCtOff = 0;
 		uint16_t m_uiCounter = 0;
 		static constexpr uint16_t m_uiSampleRate = 44100;
-		bool m_bState = false;
+		bool m_bState = false, m_bMuted = false;
+
+		enum Actions
+		{
+			ActMute,
+			ActUnmute,
+			ActToggle
+		};
 };

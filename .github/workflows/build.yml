@@ -38,7 +38,7 @@ jobs:
       run: mkdir -p packages/partial
       
     - name: Install packages
-      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev
+      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages

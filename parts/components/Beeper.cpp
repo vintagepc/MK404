@@ -37,7 +37,6 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
     m_specWant.callback = m_fcnSDL; // function SDL calls periodically to refill the buffer
     m_specWant.userdata = this; // counter, keeping track of current sample number
 
-    SDL_AudioSpec have;
     if(SDL_OpenAudio(&m_specWant, &m_specHave) != 0)
 	{
 		fprintf(stderr, "Failed to open audio: %s\n", SDL_GetError());
@@ -67,6 +66,7 @@ Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const vector<str
 			ToggleMute();
 			return LineStatus::Finished;
 	}
+	return LineStatus::Unhandled;
 }
 
 Beeper::~Beeper()

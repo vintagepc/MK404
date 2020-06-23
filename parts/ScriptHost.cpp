@@ -55,16 +55,15 @@ void ScriptHost::LoadScript(const string &strFile)
 		m_script.push_back(strLn);
 	}
 	m_iLine = 0;
-	// TODO... validate script...
-	printf("ScriptHost: Loaded %d lines from %s\n",m_script.size(), strFile.c_str());
+	printf("ScriptHost: Loaded %zu lines from %s\n", m_script.size(), strFile.c_str());
 }
 
 // Parse line in the format Context::Action(arg1, arg2,...)
 bool ScriptHost::GetLineParts(const string &strLine, string &strCtxt, string& strAct, vector<string>&vArgs)
 {
-	int iCtxEnd = strLine.find("::");
-	int iArgBegin = strLine.find('(');
-	int iArgEnd = strLine.find(')');
+	size_t iCtxEnd = strLine.find("::");
+	size_t iArgBegin = strLine.find('(');
+	size_t iArgEnd = strLine.find(')');
 	vector<string> args;
 	if (iCtxEnd == string::npos || iArgBegin == string::npos || iArgEnd == string::npos)
 		return false;
@@ -106,7 +105,7 @@ bool ScriptHost::ValidateScript()
 	printf("Validating script...\n");
 	bool bClean = true;
 	auto fcnErr = [](const string &sMsg, const int iLine) { printf("ScriptHost: Validation failed: %s on line %d : %s\n",sMsg.c_str(), iLine, m_script.at(iLine).c_str());};
-	for (int i=0; i<m_script.size(); i++)
+	for (size_t i=0; i<m_script.size(); i++)
 	{
 		vArgs.clear();
 		if (!ScriptHost::GetLineParts(m_script.at(i),strCtxt,strAct,vArgs))
@@ -145,7 +144,7 @@ bool ScriptHost::ValidateScript()
 						m_clients.at(strCtxt)->PrintRegisteredActions();
 			continue;
 		}
-		for (int j=0; j<vArgTypes.size(); j++)
+		for (size_t j=0; j<vArgTypes.size(); j++)
 		{
 			if (!CheckArg(vArgTypes.at(j),vArgs.at(j)))
 			{
@@ -175,12 +174,15 @@ bool ScriptHost::CheckArg(const ArgType &type, const string &val)
 			case ArgType::Bool:
 				stoi(val);
 				return true;
+			case ArgType::String:
+				return true;
 		}
 	}
 	catch(const std::exception &e)
 	{
 		return false;
 	}
+	return false;
 
 }
 
@@ -262,6 +264,8 @@ void ScriptHost::OnAVRCycle()
 				m_iLine++; // This line is done, mobe on.
 				m_iTimeoutCount = 0;
 				break;
+			case LS::Unhandled:
+				printf("ScriptHost: Unhandled action, considering this an error.\n");
 			case LS::Error:
 				printf("ScriptHost: Script FAILED on line %d\n",m_iLine);
 				m_iLine = m_script.size(); // Error, end scripting.
@@ -283,6 +287,9 @@ void ScriptHost::OnAVRCycle()
 					m_iLine++;
 					m_iTimeoutCount = 0;
 				}
+				break;
+			default:
+				break;
 
 		}
 		if (m_iLine==m_script.size())

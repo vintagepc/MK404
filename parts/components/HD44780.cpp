@@ -90,6 +90,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 			m_uiLineChg^= iLine<0 ? 0xFF : 1<<iLine; // Reset line change tracking.
 			return bResult ? LineStatus::Finished : LineStatus::Waiting;
 	}
+	return LineStatus::Unhandled;
 }
 
 

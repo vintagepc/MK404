@@ -38,7 +38,7 @@ void TMC2130::Draw()
 {
         if (!m_pAVR)
             return; // Motors not ready yet.
-        float fEnd = m_uiMaxPos/cfg.uiStepsPerMM;
+        float fEnd = m_iMaxPos/cfg.uiStepsPerMM;
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -102,7 +102,6 @@ void TMC2130::Draw_Simple()
 {
         if (!cfg.uiStepsPerMM)
             return; // Motors not ready yet.
-        float fEnd = cfg.iMaxMM/cfg.uiStepsPerMM;
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -246,9 +245,9 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
             m_iCurStep = 0;
             bStall = true;
         }
-        else if (m_iCurStep>m_uiMaxPos)
+        else if (m_iCurStep>m_iMaxPos)
         {
-            m_iCurStep = m_uiMaxPos;
+            m_iCurStep = m_iMaxPos;
             bStall = true;
         }
     }
@@ -283,7 +282,7 @@ void TMC2130::OnEnableIn(struct avr_irq_t * irq, uint32_t value)
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
-TMC2130::TMC2130(char cAxis):m_cAxis(cAxis), Scriptable(string("") + cAxis)
+TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
 {
     memset(&m_regs.raw, 0, sizeof(m_regs.raw));
     m_regs.defs.DRV_STATUS.stst = true;
@@ -308,13 +307,14 @@ Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const vector<s
 			RaiseIRQ(DIAG_OUT,0);
 			return LineStatus::Finished;
 	}
+	return LineStatus::Unhandled;
 }
 
 void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)
 {
     cfg = cfgIn;
     m_iCurStep = cfg.fStartPos*cfg.uiStepsPerMM;
-    m_uiMaxPos = cfg.iMaxMM*cfg.uiStepsPerMM;
+    m_iMaxPos = cfg.iMaxMM*cfg.uiStepsPerMM;
     m_fCurPos = cfg.fStartPos;
 }
 

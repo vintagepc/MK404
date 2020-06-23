@@ -51,7 +51,7 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 		exit(1);
 	}
 	uint8_t bEmpty = 1;
-	for (int i=0; i<io.size; i++)
+	for (size_t i=0; i<io.size; i++)
 	{
 		bEmpty &= io.ee[i]==0;
 	}
@@ -94,6 +94,7 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 				return LineStatus::Finished;
 			}
 	}
+	return LineStatus::Unhandled;
 }
 
 

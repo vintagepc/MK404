@@ -113,6 +113,7 @@ set(EINSY_SOURCES
 add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${H_FILES} ${INCLUDE_FILES} ${FIRMWARE})
 
 target_compile_features(Einsy PRIVATE cxx_range_for)
+target_compile_options(Einsy PRIVATE -Wall -Werror)
 
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")

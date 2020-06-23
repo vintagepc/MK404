@@ -96,6 +96,7 @@ class FatImage
 				case Size::G2:
 					return 4088;
 			}
+			return 0;
 		};
 
 		static const map<string, Size> NameToSize;

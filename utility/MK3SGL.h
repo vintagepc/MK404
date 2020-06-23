@@ -99,8 +99,6 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
 
-		Printer *m_pParent = nullptr;
-
 		int m_iCurTool = 0;
         GLPrint m_Print = GLPrint(0.8,0,0), m_T1 = GLPrint(0,0.8,0), m_T2 = GLPrint(0,0,0.8), m_T3 = GLPrint(0.8,0.4,0), m_T4 = GLPrint(0.8,0,0.8);
 
@@ -157,9 +155,11 @@ class MK3SGL: public BasePeripheral
         bool m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false, m_bPINDAOn = false;
         bool m_bPFanOn = false;
 
+
         int height = 800, width = 800, m_iWindow = 0;
 
 		static MK3SGL *g_pMK3SGL;
+		Printer *m_pParent = nullptr;
 
         float maxExtent;
 };

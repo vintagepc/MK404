@@ -29,7 +29,7 @@
 class VoltageSrc: public ADCPeripheral {
 public:
 
-    // Macro to define a set of IRQs and string names. 
+    // Macro to define a set of IRQs and string names.
     #define IRQPAIRS    _IRQ(ADC_TRIGGER_IN,"8<voltage.trigger") \
                         _IRQ(ADC_VALUE_OUT, "16>voltage.value_out")\
                         _IRQ(VALUE_IN, "16<voltage.value_in")\
@@ -49,14 +49,14 @@ public:
     void Set(float fVal);
 
 protected:
-    // ADC read trigger. 
+    // ADC read trigger.
     virtual uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
     // Input trigger
     void OnInput(avr_irq_t *pIRQ, uint32_t value);
 
-    float m_fVScale = 1.0f;
     float m_fCurrentV = 0.0f;
+    float m_fVScale = 1.0f;
 };
 
 #endif /* __VOLTAGESRC_H___ */

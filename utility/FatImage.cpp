@@ -135,4 +135,5 @@ bool FatImage::MakeFatImage(string strFile, string strSize)
 	lseek(fd,SEEK_SET, 0);
 	write(fd,data.data(),data.size());
 	close(fd);
+	return true;
 }

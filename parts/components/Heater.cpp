@@ -95,13 +95,14 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
 
 Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 			   char chrLabel, float fColdTemp, float fHotTemp):
+			   								Scriptable(string("Heater_") + chrLabel),
                                             m_fThermalMass(fThermalMass),
                                             m_fAmbientTemp(fAmbientTemp),
                                             m_fCurrentTemp(fAmbientTemp),
                                             m_bIsBed(bIsBed),
                                             m_chrLabel(chrLabel),
                                             m_fColdTemp(fColdTemp),
-                                            m_fHotTemp(fHotTemp),Scriptable(string("Heater_") + chrLabel)
+                                            m_fHotTemp(fHotTemp)
 {
 	RegisterAction("SetPWM","Sets the raw heater PWM value",ActSetPWM, {ArgType::Int});
 	RegisterAction("Resume", "Resumes auto PWM control and clears the 'stopheating' flag",ActResume);
@@ -126,6 +127,7 @@ Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const vector<str
 			return LineStatus::Finished;
 
 	}
+	return LineStatus::Unhandled;
 }
 
 void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)

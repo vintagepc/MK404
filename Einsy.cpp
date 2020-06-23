@@ -106,7 +106,7 @@ void displayCB(void)		/* function called whenever redisplay needed */
 			glRotatef(8.f,0,0,1);
 			glPushAttrib(GL_LINE_BIT);
 				glLineWidth(5);
-				for (int i=0; i<strState.length(); i++)
+				for (size_t i=0; i<strState.length(); i++)
 					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strState[i]);
 			glPopAttrib();
 		glPopMatrix();

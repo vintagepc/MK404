@@ -64,6 +64,7 @@ Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const vector<str
 			return Mount(vArgs.at(0)) ? LineStatus::Error : LineStatus::Finished; // 0 = success.
 
 	};
+	return LineStatus::Unhandled;
 }
 
 inline void SDCard::COMMAND_RESPONSE_R1(uint8_t status)
@@ -471,7 +472,7 @@ void SDCard::Init(struct avr_t *avr)
 
 int SDCard::Mount(const std::string &filename, off_t image_size)
 {
-	int fd;
+	int fd = 0;
 	void *mapped;
 	bool bLocked = false; /* boolean */
 
@@ -486,7 +487,6 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 	};
 
 	struct stat stat_buf;
-	off_t blocknr;
 	if (!filename.empty())
 		m_strFile = filename; // New file given.
 

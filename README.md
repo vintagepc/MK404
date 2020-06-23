@@ -5,8 +5,8 @@ While this repo is private, it's something separate to share status updates, ide
 
 *Summary status:* Mostly functional, should now be able to boot stock Prusa Marlin build for MK3S.
 Remaining To-Dos of note:
-- Beeper
-- Better visuals (in progress)
+- Telemetry system for VCD tracing, scripting
+- a number of lofty goals...
 
 *Current state of affairs and features*:
 - ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg)

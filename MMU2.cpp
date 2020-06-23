@@ -61,7 +61,7 @@ void MMU2::Draw()		/* function called whenever redisplay needed */
 		glTranslatef(20,7,0);
         glColor3f(1,1,1);
 		glScalef(0.09,-0.05,0);
-		for (int i=0; i<m_strTitle.size(); i++)
+		for (size_t i=0; i<m_strTitle.size(); i++)
 			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_strTitle[i]);
 	glPopMatrix();
 	glPushMatrix();

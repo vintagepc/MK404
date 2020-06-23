@@ -44,7 +44,7 @@ namespace Boards
 			typedef signed char MCUPin;
 
 			// Creates a new board with the given pinspec, firmware file, frequency, and (optional) bootloader hex
-			Board(const Wiring &wiring,uint32_t uiFreqHz):m_wiring(wiring),m_uiFreq(uiFreqHz),Scriptable("Board")
+			Board(const Wiring &wiring,uint32_t uiFreqHz):Scriptable("Board"),m_wiring(wiring),m_uiFreq(uiFreqHz)
 			{
 				RegisterAction("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
 				RegisterAction("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
@@ -151,6 +151,7 @@ namespace Boards
 							return LineStatus::Waiting;
 						}
 				}
+				return LineStatus::Unhandled;
 			}
 
 			virtual void* RunAVR()

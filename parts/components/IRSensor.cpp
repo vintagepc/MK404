@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 #include "IRSensor.h"
-#include "avr_adc.h"
+#include <avr_adc.h>
 
 // ADC read trigger.
 uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
@@ -38,7 +38,9 @@ uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
     else if (m_bExternal)
         fVal = m_fIRVals[IR_FILAMENT_PRESENT];
     else
+	{
         fVal = m_fIRVals[IR_NO_FILAMENT];
+	}
 
 	uint32_t iVOut =  (fVal)*1000;
 
@@ -65,6 +67,7 @@ Scriptable::LineStatus IRSensor::ProcessAction(int iAct, const vector<string> &v
 			Set((IRState)iVal);
 			return LineStatus::Finished;
 	}
+	return LineStatus::Unhandled;
 }
 
 void IRSensor::Toggle()

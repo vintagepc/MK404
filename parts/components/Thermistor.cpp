@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include "Thermistor.h"
 
-Thermistor::Thermistor(float fStartTemp):m_fCurrentTemp(fStartTemp),Scriptable("Thermistor")
+Thermistor::Thermistor(float fStartTemp):Scriptable("Thermistor"),m_fCurrentTemp(fStartTemp)
 {
 	RegisterAction("Disconnect","Disconnects the thermistor as though it has gone open circuit",Actions::OpenCircuit);
 	RegisterAction("Short","Short the thermistor out",Actions::Shorted);
@@ -47,7 +47,7 @@ uint32_t Thermistor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 		return 5000;
 
 	short *t = m_pTable, *lt = NULL;
-	for (int ei = 0; ei < m_uiTableEntries; ei++, lt = t, t += 2) {
+	for (unsigned int ei = 0; ei < m_uiTableEntries; ei++, lt = t, t += 2) {
 		if (t[1] <= m_fCurrentTemp) {
 			short tt = t[0];
 			/* small linear regression between table samples */

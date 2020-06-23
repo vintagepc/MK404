@@ -24,7 +24,7 @@
 #include "SoftPWMable.h"
 #include "Scriptable.h"
 
-class Fan:public Scriptable, public SoftPWMable
+class Fan:public SoftPWMable, public Scriptable
 {
 
 public:
@@ -72,7 +72,6 @@ public:
 
 		bool m_bAuto = true;
 		bool m_bPulseState = false;
-		char m_chrSym = ' ';
 		bool m_bIsSoftPWM = false;
 
 		uint8_t m_uiPWM = 0;
@@ -80,6 +79,8 @@ public:
 		uint16_t m_uiCurrentRPM = 0;
 		uint16_t m_uiUsecPulse = 0;
 		uint16_t m_uiRot = 0;
+
+		char m_chrSym = ' ';
 
 		avr_cycle_timer_t m_fcnTachChange = MAKE_C_TIMER_CALLBACK(Fan,OnTachChange);
 

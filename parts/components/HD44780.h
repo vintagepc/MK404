@@ -77,7 +77,7 @@ class HD44780:public BasePeripheral, public Scriptable
 		#include "IRQHelper.h"
 
 		// Makes a display with the given dimensions.
-		HD44780(uint8_t width = 20, uint8_t height = 4):m_uiHeight(height),m_uiWidth(width),Scriptable("LCD")
+		HD44780(uint8_t width = 20, uint8_t height = 4):Scriptable("LCD"),m_uiHeight(height),m_uiWidth(width)
 		{
 			m_lineOffsets[2] += width;
 			m_lineOffsets[3] += width;
@@ -99,7 +99,8 @@ class HD44780:public BasePeripheral, public Scriptable
 
     protected:
     // The GL draw accesses these:
-        uint8_t	m_uiWidth = 20, m_uiHeight = 4;				// width and height of the LCD
+		uint8_t m_uiHeight = 4;				// width and height of the LCD
+        uint8_t	m_uiWidth = 20;
         uint8_t  m_vRam[104];
         uint8_t  m_cgRam[64];
 

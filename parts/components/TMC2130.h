@@ -172,7 +172,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
         } tmc2130_registers_t;
 
         int32_t m_iCurStep = 0;
-        uint32_t m_uiMaxPos = 0;
+        int32_t m_iMaxPos = 0;
         float m_fCurPos = 0; // Tracks position in float for gl
         tmc2130_cmd_t m_cmdIn;
         tmc2130_cmd_t m_cmdProc;

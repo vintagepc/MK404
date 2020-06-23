@@ -58,7 +58,8 @@ class IScriptable
 		Error,
 		Waiting,
 		Running,
-		Finished
+		Finished,
+		Unhandled
 	};
 
 
@@ -93,7 +94,7 @@ class IScriptable
 				strArgFmt.push_back('(');
 				if (m_ActionArgs[ID].size()>0)
 				{
-					for (int i=0; i<m_ActionArgs[ID].size(); i++)
+					for (size_t i=0; i<m_ActionArgs[ID].size(); i++)
 						strArgFmt += m_ArgToString.at(m_ActionArgs.at(ID).at(i)) + ", ";
 					strArgFmt[strArgFmt.size()-2] = ')';
 				}

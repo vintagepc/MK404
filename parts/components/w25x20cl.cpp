@@ -78,7 +78,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 			if (m_rxCnt >= sizeof(m_cmdIn))
 			{
 				printf("w25x20cl_t: error: command too long: ");
-				for (int i = 0; i < sizeof(m_cmdIn); i++)
+				for (size_t i = 0; i < sizeof(m_cmdIn); i++)
 				{
 					printf("%02x, ", m_cmdIn[i]);
 				}
@@ -87,8 +87,8 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 			}
 			m_cmdIn[m_rxCnt] = value;
 			m_rxCnt++;
-			
-			
+
+
 			// Check for a loaded instruction in the cmdIn buffer
 			m_command = m_cmdIn[0];
 			switch(m_command)
@@ -111,7 +111,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 						m_state = STATE_RUNNING;
 					}
 				} break;
-				
+
 				case _CMD_PAGE_PROGRAM:
 				{
 					if (m_rxCnt == 4)
@@ -127,7 +127,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 						m_state = STATE_RUNNING;
 					}
 				} break;
-				
+
 				case _CMD_ENABLE_WR:
 				case _CMD_DISABLE_WR:
 				case _CMD_RD_STATUS_REG:
@@ -136,7 +136,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 				{
 					m_state = STATE_RUNNING;
 				} break;
-				
+
 				case _CMD_RD_UID:
 				{
 					if (m_rxCnt == 5)
@@ -145,7 +145,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 						m_state = STATE_RUNNING;
 					}
 				} break;
-				
+
 				default:
 				{
 				printf("w25x20cl_t: error: unknown command: ");
@@ -156,7 +156,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 				printf("\n");
 				} break;
 			}
-			
+
 		} break;
 		case STATE_RUNNING:
 		{
@@ -199,7 +199,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 			}
 			break;
 		}
-		
+
 		case STATE_IDLE:
 		default:
 		{
@@ -330,4 +330,4 @@ void w25x20cl::Save()
 		fprintf(stderr, "unable to write xflash memory\n");
 		perror(m_filepath);
 	}
-} 
+}

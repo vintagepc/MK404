@@ -209,7 +209,7 @@ void* uart_pty::Run()
 				// write them in fifo
 				uint8_t * dst = buffer;
 				while (!uart_pty_fifo_isempty(&port[ti].in) &&
-						(dst - buffer) < sizeof(buffer)) {
+						(size_t)(dst - buffer) < sizeof(buffer)) {
 					*dst = uart_pty_fifo_read(&port[ti].in);
 					dst++;
 				}

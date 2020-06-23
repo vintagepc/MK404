@@ -79,7 +79,7 @@ Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const v
 			return SendChar();
 
 	}
-
+	return LineStatus::Unhandled;
 }
 
 Scriptable::LineStatus SerialLineMonitor::SendChar()
@@ -93,6 +93,7 @@ Scriptable::LineStatus SerialLineMonitor::SendChar()
 	else
 		return LineStatus::Finished;
 
+	return LineStatus::Unhandled;
 }
 
 void SerialLineMonitor::OnNewLine()
@@ -106,6 +107,8 @@ void SerialLineMonitor::OnNewLine()
 			break;
 		case Contains:
 			m_bMatched = m_strLine.find(m_strMatch) != string::npos;
+			break;
+		case None:
 			break;
 	}
 }

@@ -32,6 +32,9 @@ jobs:
       with:
           path: "packages"
           key: ${{secrets.build_pkg_cache}}
+          
+    - name: Merge PR branch
+      run: git merge "${GITHUB_REF:11}"
       
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}

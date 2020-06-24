@@ -298,7 +298,8 @@ void uart_pty::Connect(char uart)
 		char cmd[256];
 		sprintf(cmd, "xterm -e picocom -b 115200 %s >/dev/null 2>&1 &",
 				tap.slavename);
-		system(cmd);
+		if (system(cmd)<0)
+			printf("Could not launch xterm\n");
 	} else
 		printf("note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal\n");
 }

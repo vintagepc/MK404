@@ -24,6 +24,7 @@
 #include <GL/gl.h>            // for glVertex3f, glColor3f, glBegin, glEnd
 #include <stdio.h>            // for printf
 #include <string.h>           // for memset
+#include <algorithm>          // for min
 
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (m_cAxis=='S' || m_cAxis=='I') _w
@@ -65,7 +66,7 @@ void TMC2130::Draw()
             glTranslatef(280,7,0);
             glScalef(0.09,-0.05,0);
             string strPos = to_string(m_fCurPos);
-            for (size_t i=0; i<strPos.size(); i++)
+            for (int i=0; i<min(7,(int)strPos.size()); i++)
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
 
         glPopMatrix();
@@ -127,7 +128,7 @@ void TMC2130::Draw_Simple()
             glTranslatef(30,7,0);
             glScalef(0.09,-0.05,0);
 			string strPos = to_string(m_fCurPos);
-            for (size_t i=0; i<strPos.size(); i++)
+            for (int i=0; i<min(7,(int)strPos.size()); i++)
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
         glPopMatrix();
 }

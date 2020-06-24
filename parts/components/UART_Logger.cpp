@@ -36,9 +36,10 @@
 void UART_Logger::OnByteIn(struct avr_irq_t * irq, uint32_t value)
 {
     uint8_t c = value;
-    write(m_fdOut,&c,1);
-    // and terminal
-    printf("UART%c: 0x%02x\n",m_chrUART,c);
+    if (write(m_fdOut,&c,1))
+	    printf("UART%c: 0x%02x\n",m_chrUART,c);
+	else
+		printf("UART Logger: failed to write to FD\n");
 }
 
 void UART_Logger::Init(struct avr_t * avr, char chrUART)
@@ -64,7 +65,10 @@ void UART_Logger::Init(struct avr_t * avr, char chrUART)
 		perror(m_strFile.c_str());
 	}
 	// Truncate the file (start new)
-	(void)ftruncate(m_fdOut, 0);
+	if (ftruncate(m_fdOut, 0) < 0) {
+		perror(m_strFile.c_str());
+		exit(1);
+	}
 
     printf("UART %c is now logging to %s\n",m_chrUART,m_strFile.c_str());
 

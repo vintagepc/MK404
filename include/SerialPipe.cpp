@@ -87,7 +87,9 @@ void* SerialPipe::Run()
 		{
 			while ((iChrRd = read(fdPort[0], &chrIn,1))>0)
 			{
-				write(fdPort[1],&chrIn,1);
+				if(write(fdPort[1],&chrIn,1)!=1)
+					fprintf(stderr, "Failed to write byte across serial pipe 0.\n");
+
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
 			{
@@ -99,7 +101,8 @@ void* SerialPipe::Run()
 		{
 			while ((iChrRd = read(fdPort[1], &chrIn,1))>0)
 			{
-				write(fdPort[0],&chrIn,1);
+				if(write(fdPort[0],&chrIn,1) !=1)
+					fprintf(stderr, "Failed to write byte across serial pipe 0.\n");
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
 			{

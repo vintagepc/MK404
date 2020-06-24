@@ -203,7 +203,9 @@ void* uart_pty::Run()
 					dst++;
 				}
 				size_t len = dst - buffer;
-				TRACE(size_t r =) write(port[ti].s, buffer, len);
+				size_t r = write(port[ti].s, buffer, len);
+				if (r!=len)
+					fprintf(stderr,"Failed to write to PTY\n");
 				TRACE(if (!port[ti].tap) hdump("pty send", buffer, r);)
 			}
 		}

@@ -147,7 +147,6 @@ class MK3SGL: public BasePeripheral
         float m_fYCorr = 0.141, m_fYPos = 0.010;
         float m_fZCorr = 0.210, m_fZPos = 0.010;
         float m_fEPos = 0;
-        float m_fERetract= 0; bool m_bInRetract = false;
         float m_fSelCorr = 0.025f, m_fSelPos = 0.0f;
 
         // This is going to be in degrees rotation instead of mm
@@ -159,10 +158,9 @@ class MK3SGL: public BasePeripheral
         bool m_bPFanOn = false;
 
 
-        int height = 800, width = 800, m_iWindow = 0;
+        int m_iWindow = 0;
 
 		static MK3SGL *g_pMK3SGL;
 		Printer *m_pParent = nullptr;
 
-        float maxExtent;
 };

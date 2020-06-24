@@ -19,14 +19,15 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MMU_H___
-#define __MMU_H___
+#pragma once
 
-#include <pthread.h>
-
-
-#include "BasePeripheral.h"
-#include "boards/MM_Control_01.h"
+#include <pthread.h>               // for pthread_t
+#include <stdint.h>                // for uint32_t
+#include <uart_pty.h>              // for _IRQ
+#include <string>                  // for string
+#include "BasePeripheral.h"        // for BasePeripheral
+#include "boards/MM_Control_01.h"  // for MM_Control_01
+#include "sim_irq.h"               // for avr_irq_t
 
 class MMU2: public BasePeripheral, public Boards::MM_Control_01
 {
@@ -68,8 +69,3 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
 
         static MMU2 *g_pMMU; // Needed for GL
 };
-
-
-
-
-#endif

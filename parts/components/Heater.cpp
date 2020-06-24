@@ -21,15 +21,16 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GL/glut.h"
-
 #include "Heater.h"
-#include "stdio.h"
-#include "math.h"
+#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/gl.h>            // for glVertex2f, glBegin, glColor3f, glColor3fv
+#include <math.h>             // for pow
+#include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
 
-//#define TRACE(_w)_w
-#ifndef TRACE
 #define TRACE(_w)
+#ifndef TRACE
+#include <stdio.h>
+#define TRACE(_w)_w
 #endif
 
 
@@ -56,7 +57,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
         RegisterTimerUsec(m_fcnTempTick,300000,this);
     else
     {
-        m_fCurrentTemp = m_fCurrentTemp;
+        m_fCurrentTemp = m_fAmbientTemp;
         RaiseIRQ(TEMP_OUT,(int)m_fCurrentTemp*256);
     }
     return 0;
@@ -95,13 +96,14 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
 
 Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 			   char chrLabel, float fColdTemp, float fHotTemp):
+			   								Scriptable(string("Heater_") + chrLabel),
                                             m_fThermalMass(fThermalMass),
                                             m_fAmbientTemp(fAmbientTemp),
                                             m_fCurrentTemp(fAmbientTemp),
                                             m_bIsBed(bIsBed),
                                             m_chrLabel(chrLabel),
                                             m_fColdTemp(fColdTemp),
-                                            m_fHotTemp(fHotTemp),Scriptable(string("Heater_") + chrLabel)
+                                            m_fHotTemp(fHotTemp)
 {
 	RegisterAction("SetPWM","Sets the raw heater PWM value",ActSetPWM, {ArgType::Int});
 	RegisterAction("Resume", "Resumes auto PWM control and clears the 'stopheating' flag",ActResume);
@@ -126,6 +128,7 @@ Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const vector<str
 			return LineStatus::Finished;
 
 	}
+	return LineStatus::Unhandled;
 }
 
 void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)

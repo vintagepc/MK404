@@ -20,9 +20,13 @@
 
 #pragma once
 
-#include "EinsyRambo.h"
-#include "Printer.h"
-#include "MK3SGL.h"
+#include <stdint.h>         // for uint32_t, uint8_t
+#include <utility>          // for pair
+#include "EinsyRambo.h"     // for EinsyRambo
+#include "Printer.h"        // for Printer, Printer::VisualType
+#include "sim_avr.h"        // for avr_t
+#include "sim_avr_types.h"  // for avr_io_addr_t
+class MK3SGL;
 
 class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 {

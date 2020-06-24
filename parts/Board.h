@@ -22,14 +22,24 @@
 
 #pragma once
 
-#include "Wiring.h"
-#include <BasePeripheral.h>
-#include <avr_extint.h>
-#include <uart_pty.h>
-#include "EEPROM.h"
-#include <pthread.h>
-#include <Scriptable.h>
-#include <ScriptHost.h>
+#include <ScriptHost.h>     // for ScriptHost
+#include <Scriptable.h>     // for Scriptable
+#include <avr_extint.h>     // for avr_extint_set_strict_lvl_trig
+#include <pthread.h>        // for pthread_join, pthread_t
+#include <stdint.h>         // for uint32_t, uint8_t, int8_t
+#include <stdio.h>          // for printf, fprintf, NULL, stderr
+#include <uart_pty.h>       // for uart_pty
+#include <unistd.h>         // for usleep
+#include <string>           // for string, basic_string, stoi
+#include <vector>           // for vector
+#include "EEPROM.h"         // for EEPROM
+#include "IScriptable.h"    // for ArgType, IScriptable::LineStatus, IScript...
+#include "PinNames.h"       // for Pin
+#include "Wiring.h"         // for Wiring
+#include "sim_avr.h"        // for avr_t, avr_flashaddr_t, avr_reset, avr_run
+#include "sim_avr_types.h"  // for avr_regbit_t
+#include "sim_irq.h"        // for avr_connect_irq, avr_irq_t, avr_raise_irq
+#include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_set
 
 using namespace PinNames;
 using namespace Wirings;
@@ -44,7 +54,7 @@ namespace Boards
 			typedef signed char MCUPin;
 
 			// Creates a new board with the given pinspec, firmware file, frequency, and (optional) bootloader hex
-			Board(const Wiring &wiring,uint32_t uiFreqHz):m_wiring(wiring),m_uiFreq(uiFreqHz),Scriptable("Board")
+			Board(const Wiring &wiring,uint32_t uiFreqHz):Scriptable("Board"),m_wiring(wiring),m_uiFreq(uiFreqHz)
 			{
 				RegisterAction("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
 				RegisterAction("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
@@ -151,6 +161,7 @@ namespace Boards
 							return LineStatus::Waiting;
 						}
 				}
+				return LineStatus::Unhandled;
 			}
 
 			virtual void* RunAVR()

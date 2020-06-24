@@ -19,15 +19,8 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <pthread.h>
-#include <string.h>
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-
 #include "IRSensor.h"
-#include "avr_adc.h"
+#include <stdio.h>  // for printf
 
 // ADC read trigger.
 uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
@@ -38,7 +31,9 @@ uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
     else if (m_bExternal)
         fVal = m_fIRVals[IR_FILAMENT_PRESENT];
     else
+	{
         fVal = m_fIRVals[IR_NO_FILAMENT];
+	}
 
 	uint32_t iVOut =  (fVal)*1000;
 
@@ -51,7 +46,7 @@ IRSensor::IRSensor():VoltageSrc(),Scriptable("IRSensor")
 	RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
 }
 
-Scriptable::LineStatus IRSensor::ProcessAction(int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -65,6 +60,7 @@ Scriptable::LineStatus IRSensor::ProcessAction(int iAct, const vector<string> &v
 			Set((IRState)iVal);
 			return LineStatus::Finished;
 	}
+	return LineStatus::Unhandled;
 }
 
 void IRSensor::Toggle()

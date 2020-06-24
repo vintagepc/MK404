@@ -23,11 +23,11 @@
 
 #pragma once
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string>
-#include <map>
-#include <vector>
+#include <stdint.h>  // for uint32_t, uint8_t
+#include <map>       // for _Rb_tree_const_iterator, map
+#include <string>    // for string
+#include <utility>   // for pair
+#include <vector>    // for vector
 
 using namespace std;
 
@@ -96,6 +96,7 @@ class FatImage
 				case Size::G2:
 					return 4088;
 			}
+			return 0;
 		};
 
 		static const map<string, Size> NameToSize;

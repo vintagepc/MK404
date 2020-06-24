@@ -23,7 +23,9 @@
 
 #pragma once
 
-#include "SPIPeripheral.h"
+#include <stdint.h>         // for uint8_t, uint32_t, uint64_t
+#include "SPIPeripheral.h"  // for SPIPeripheral
+#include "sim_irq.h"        // for avr_irq_t
 
 #define W25X20CL_TOTAL_SIZE 262144
 #define W25X20CL_PAGE_SIZE 256

@@ -22,8 +22,13 @@
 
 #pragma once
 
-#include "VoltageSrc.h"
-#include "Scriptable.h"
+#include <stdint.h>       // for uint32_t
+#include <string>         // for string
+#include <vector>         // for vector
+#include "IScriptable.h"  // for IScriptable::LineStatus
+#include "Scriptable.h"   // for Scriptable
+#include "VoltageSrc.h"   // for VoltageSrc
+#include "sim_irq.h"      // for avr_irq_t
 
 class IRSensor: public VoltageSrc, public Scriptable
 {
@@ -54,7 +59,7 @@ public:
 	void Auto_Input(uint32_t val);
 
 	protected:
-		LineStatus ProcessAction(int iAct, const vector<string> &vArgs);
+		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
 
 private:
 

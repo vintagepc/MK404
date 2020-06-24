@@ -20,9 +20,10 @@
  */
 
 #include "GLPrint.h"
-#include "GL/glew.h"
-#include <algorithm>
-#include <functional>
+#include <stdlib.h>    // for abs
+#include <algorithm>   // for transform
+#include <functional>  // for minus
+#include <GL/glew.h>   // for glMaterialfv, GL_FRONT_AND_BACK, glDisableClie...
 
 static constexpr int iPrintRes = 100000; //0.1mm (meters/this)
 

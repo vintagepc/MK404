@@ -24,9 +24,17 @@
 
 #pragma once
 
-#include "BasePeripheral.h"
-#include "Color.h"
-#include "Scriptable.h"
+#include <stdint.h>            // for uint32_t, uint16_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
+#include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
+#include "Color.h"             // for Color3fv
+#include "IScriptable.h"       // for IScriptable::LineStatus
+#include "Scriptable.h"        // for Scriptable
+#include "sim_avr.h"           // for avr_t
+#include "sim_avr_types.h"     // for avr_cycle_count_t
+#include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include "sim_irq.h"           // for avr_irq_t
 
 class Heater : public BasePeripheral, public Scriptable
 {
@@ -77,14 +85,14 @@ public:
         avr_cycle_timer_t m_fcnTempTick = MAKE_C_TIMER_CALLBACK(Heater,OnTempTick);
 
         bool m_bAuto = true;
-        float m_fCurrentTemp = 25.0;
-        float m_fAmbientTemp = 25.0;
-        float m_fColdTemp;
-        float m_fHotTemp;
         float m_fThermalMass = 1.0;
-        uint16_t m_uiPWM = 0;
+        float m_fAmbientTemp = 25.0;
+        float m_fCurrentTemp = 25.0;
         bool m_bIsBed = false;
         char m_chrLabel;
+        float m_fColdTemp;
+        float m_fHotTemp;
+        uint16_t m_uiPWM = 0;
 		bool m_bStopTicking = false;
 	    static constexpr Color3fv m_colColdTemp = {0, 1, 1};
 	    static constexpr Color3fv m_colHotTemp = {1, 0, 0};

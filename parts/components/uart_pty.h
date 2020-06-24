@@ -24,13 +24,16 @@
 
 #pragma once
 
-#include <pthread.h>
-
-#include <iostream>
-
-#include "fifo_declare.h"
-
-#include "BasePeripheral.h"
+#include <pthread.h>           // for pthread_t
+#include <stddef.h>            // for size_t
+#include <stdint.h>            // for uint8_t, uint32_t
+#include <string>              // for string
+#include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
+#include "fifo_declare.h"      // for DECLARE_FIFO, DEFINE_FIFO
+#include "sim_avr.h"           // for avr_t
+#include "sim_avr_types.h"     // for avr_cycle_count_t
+#include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include "sim_irq.h"           // for avr_irq_t
 
 class uart_pty: public BasePeripheral
 {

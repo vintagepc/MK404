@@ -18,8 +18,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MM_CONTROL_01_H__
-#define __MM_CONTROL_01_H__
+#pragma once
 
 #include <Wiring.h>
 #include <PinSpec_32u4.h>
@@ -31,7 +30,7 @@ namespace Wirings
 		public:
 			MM_Control_01():Wiring(m_pSpec)
 			{
-				 m_mPins = GetPinMap(); 
+				 m_mPins = GetPinMap();
 			};
 
 		protected:
@@ -59,4 +58,3 @@ namespace Wirings
 			PinSpec_32u4 m_pSpec = PinSpec_32u4();
 	};
 };
-#endif // __MM_CONTROL_01_H__

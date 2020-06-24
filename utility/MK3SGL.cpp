@@ -21,20 +21,15 @@
 
 
 #include "MK3SGL.h"
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <cstdio>
-#include <iostream>
-#include <limits>
-#include <map>
-#include <string>
-#include <vector>
-#include <cstring>
-
-#include <GL/glew.h>
-#include <GL/glut.h>
 #include <GL/freeglut.h>
+#include <GL/glew.h>          // for glTranslatef, glPopMatrix, glPushMatrix
+#include <stdlib.h>           // for exit
+#include <cstdio>             // for size_t, fprintf, stderr
+#include <vector>             // for vector
+#include "Camera.hpp"         // for Camera
+#include "GLPrint.h"          // for GLPrint
+#include "HD44780GL.h"        // for HD44780GL
+#include "Printer.h"          // for Printer
 
 MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
 
@@ -79,7 +74,7 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bM
 	glEnable(GL_MULTISAMPLE);
 
 	ResetCamera();
-	for(int i=0; i<m_vObjLite.size(); i++)
+	for(size_t i=0; i<m_vObjLite.size(); i++)
 		m_vObjLite[i]->Load();
 
 	if (m_bLite)
@@ -93,11 +88,11 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bM
 			m_Extruder.SetSubobjectVisible(2);
 	}
 	else
-		for(int i=0; i<m_vObj.size(); i++)
+		for(size_t i=0; i<m_vObj.size(); i++)
 			m_vObj[i]->Load();
 	if (m_bMMU)
 	{
-		for(int i=0; i<m_vObjMMU.size(); i++)
+		for(size_t i=0; i<m_vObjMMU.size(); i++)
 			m_vObjMMU[i]->Load();
 		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
 	}
@@ -223,7 +218,7 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 	uint32_t bChanged = irq->value ^ value;
 	static constexpr uint8_t iLedBase[2] = {38, 32}; // G, R
 	static constexpr uint8_t iLedObj[10] = {4,4,0,0,1,1,2,2,3,3};
-	static constexpr uint8_t iMtlOff[2] = {32, 31};
+	//static constexpr uint8_t iMtlOff[2] = {32, 31};
 	static constexpr uint8_t iMtlOn[2] = {38,37};
 	for (int i=0; i<10; i++)
 	{
@@ -281,11 +276,10 @@ void MK3SGL::Draw()
 	glEnable(GL_TEXTURE_2D);
 	glLoadIdentity();
 	//printf("eye: %f %f %f\n",curr_quat[0],curr_quat[1], curr_quat[2]);
-		float pos[] = {2,2,2,0};
-		float fpos[] = {0,1,-1,1};
+		float fPos[] = {2,2,2,0};
 		float fNone[] = {0,0,0,1};
 		float fAmb[] = {.1,.1,.1,1};
-		float fCol2[] = {1,1,1,1};
+	//	float fCol2[] = {1,1,1,1};
 		float fSpec[] = {.4,.4,.4,.5};
 		float fDiff[] = {1.5,1.5,1.5,1};
 		float fLED[4] = {1,0,0,1};
@@ -296,7 +290,7 @@ void MK3SGL::Draw()
 		glLightfv(GL_LIGHT0,GL_AMBIENT, fAmb);
 		glLightfv(GL_LIGHT0,GL_SPECULAR, fSpec);
 		glLightfv(GL_LIGHT0,GL_DIFFUSE, fDiff);
-		glLightfv(GL_LIGHT0,GL_POSITION, pos);
+		glLightfv(GL_LIGHT0,GL_POSITION, fPos);
 		glEnable(GL_LIGHT0);
 
 		glEnable(GL_LIGHTING);
@@ -307,7 +301,7 @@ void MK3SGL::Draw()
 		if (!m_bFollowNozzle)
 		{
 			float fSize = 0.1f;
-			float fBase[3];
+			float fBase[3] = {0,0,0};
 			glLineWidth(2.f);
 			// If a mouse button is pressed, draw the "look at" axis.
 			glPushMatrix();
@@ -427,7 +421,7 @@ void MK3SGL::Draw()
 			glPushMatrix();
 				glScalef(1,1,-1);
 				glTranslatef(0.001,0.001,0.013);
-				for (int i=0; i<m_vPrints.size(); i++)
+				for (size_t i=0; i<m_vPrints.size(); i++)
 					m_vPrints[i]->Draw();
 			glPopMatrix();
 			if (m_bBedOn)

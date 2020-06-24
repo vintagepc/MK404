@@ -19,16 +19,9 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <unistd.h>
-
-#include "avr_adc.h"
-
 #include "ADC_Buttons.h"
 
-uint ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
     //if (raw < 50) return Btn::right;
 	//if (raw > 80 && raw < 100) return Btn::middle;

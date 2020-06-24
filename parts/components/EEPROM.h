@@ -22,11 +22,13 @@
 
 #pragma once
 
-#include "stdlib.h"
-#include "unistd.h"
-#include "BasePeripheral.h"
-#include "Scriptable.h"
-#include <string>
+#include <stdint.h>          // for uint16_t, uint8_t
+#include <string>            // for string
+#include <vector>            // for vector
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "IScriptable.h"     // for ArgType, ArgType::Int, IScriptable::Line...
+#include "Scriptable.h"      // for Scriptable
+
 using namespace std;
 
 class EEPROM: public BasePeripheral, public Scriptable {

@@ -55,8 +55,11 @@ Windows is not officially supported/maintained but current status (as of May 202
 - Current arguments can be viewed with the -h flag, should this README become outdated.
 ```
 
-   ./Einsy  [-b] [-d] ...  [-f <filename>] [-g <lite|fancy>] [--image-size
-            <128M|1G|256M|2G|32M|512M|64M>] [-l] [-n] [-s] [--sdimage
+ USAGE:
+
+   ./MK404  [-b] [-d] ...  [-f <filename>] [-g <none|lite|fancy>] [--gdb]
+            [--image-size <128M|1G|256M|2G|32M|512M|64M>] [-l] [-m] [-n]
+            [--script <filename.txt>] [--scripthelp] [-s] [--sdimage
             <filename.img>] [-v] ...  [-w] [--] [--version] [-h]
             <Prusa_MK3S|Prusa_MK3SMMU2>
 
@@ -73,9 +76,12 @@ Where:
    -f <filename>,  --firmware <filename>
      hex/afx/elf Firmware file to load (default MK3S.afx)
 
-   -g <lite|fancy>,  --graphics <lite|fancy>
+   -g <none|lite|fancy>,  --graphics <none|lite|fancy>
      Whether to enable fancy (advanced) or lite (minimal advanced) visuals.
      If not specified, only the basic 2D visuals are shown.
+
+   --gdb
+     Enable SimAVR's GDB support
 
    --image-size <128M|1G|256M|2G|32M|512M|64M>
      Specify a size for a new SD image. You must specify an image with
@@ -93,6 +99,13 @@ Where:
      Disable any special hackery that might have been implemented for a
      board to run its manufacturer firmware, e.g. if you want to run stock
      marlin and have issues. Effects depend on the board and firmware.
+
+   --script <filename.txt>
+     Execute the given script. Use --scripthelp for syntax.
+
+   --scripthelp
+     Prints the available scripting commands for the current
+     printer/context
 
    -s,  --serial
      Connect a printer's serial port to a PTY instead of printing its
@@ -119,15 +132,16 @@ Where:
 
    <Prusa_MK3S|Prusa_MK3SMMU2>
      Model name of the printer to run
+
 ```
 ### Mouse Functions:
 #### LCD Window:
 - Scroll wheel moves the encoder.
-- Left button down/up controls click/release
+- Left or right button down/up controls click/release
 #### Printer visualization Window (when not in nozzle-cam mode):
 - Left button: Rotate
 - Middle button: Pan
-- Right button & scroll wheel: Zoom/Z travel
+- Right button + move (or scroll wheel): Zoom/Z travel
 
 ### Key functions:
 - `w` and `s` move the encoder.
@@ -140,6 +154,7 @@ Where:
 - `r` resets the printer (X button)
 - `t` does a factory reset (reset & hold encoder)
 - `h` just holds the encoder.
+- `m` toggles audio muting (beeps)
 - `y` adds/removes the steel sheet from the heatbed for PINDA MBL or XYZ cal
 - `f` toggles filament presence
 - `z` pauses Einsy execution without stopping GL interactivity (so you can still pan/scroll/zoom the fancy graphics)

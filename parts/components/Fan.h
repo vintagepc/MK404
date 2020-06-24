@@ -20,11 +20,19 @@
  */
 #pragma once
 
-#include "BasePeripheral.h"
-#include "SoftPWMable.h"
-#include "Scriptable.h"
+#include <stdint.h>            // for uint16_t, uint32_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
+#include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
+#include "IScriptable.h"       // for IScriptable::LineStatus
+#include "Scriptable.h"        // for Scriptable
+#include "SoftPWMable.h"       // for SoftPWMable
+#include "sim_avr.h"           // for avr_t
+#include "sim_avr_types.h"     // for avr_cycle_count_t
+#include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include "sim_irq.h"           // for avr_irq_t
 
-class Fan:public Scriptable, public SoftPWMable
+class Fan:public SoftPWMable, public Scriptable
 {
 
 public:
@@ -35,7 +43,7 @@ public:
                         _IRQ(SPEED_OUT, ">Fan.speed_out")
 
     // Helper to keep pairs in sync.
-    #include <IRQHelper.h>
+    #include "IRQHelper.h"
 
 	// Constructs a new Fan with a max RPM of iMaxRPM (at PWM 255)
 	Fan(uint16_t iMaxRPM, char chrSym = ' ', bool bIsSoftPWM = false);
@@ -72,7 +80,6 @@ public:
 
 		bool m_bAuto = true;
 		bool m_bPulseState = false;
-		char m_chrSym = ' ';
 		bool m_bIsSoftPWM = false;
 
 		uint8_t m_uiPWM = 0;
@@ -80,6 +87,8 @@ public:
 		uint16_t m_uiCurrentRPM = 0;
 		uint16_t m_uiUsecPulse = 0;
 		uint16_t m_uiRot = 0;
+
+		char m_chrSym = ' ';
 
 		avr_cycle_timer_t m_fcnTachChange = MAKE_C_TIMER_CALLBACK(Fan,OnTachChange);
 

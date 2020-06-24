@@ -19,13 +19,12 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "avr_ioport.h"
-#include "avr_spi.h"
 #include "TMC2130.h"
-#include "GL/glut.h"
+#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/gl.h>            // for glVertex3f, glColor3f, glBegin, glEnd
+#include <stdio.h>            // for printf
+#include <string.h>           // for memset
+#include <algorithm>          // for min
 
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (m_cAxis=='S' || m_cAxis=='I') _w
@@ -38,7 +37,7 @@ void TMC2130::Draw()
 {
         if (!m_pAVR)
             return; // Motors not ready yet.
-        float fEnd = m_uiMaxPos/cfg.uiStepsPerMM;
+        float fEnd = m_iMaxPos/cfg.uiStepsPerMM;
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -66,10 +65,9 @@ void TMC2130::Draw()
         glPushMatrix();
             glTranslatef(280,7,0);
             glScalef(0.09,-0.05,0);
-            char pos[7];
-            sprintf(pos,"%3.02f",m_fCurPos);
-            for (int i=0; i<7; i++)
-                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,pos[i]);
+            string strPos = to_string(m_fCurPos);
+            for (int i=0; i<min(7,(int)strPos.size()); i++)
+                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
 
         glPopMatrix();
 		glPushMatrix();
@@ -102,7 +100,6 @@ void TMC2130::Draw_Simple()
 {
         if (!cfg.uiStepsPerMM)
             return; // Motors not ready yet.
-        float fEnd = cfg.iMaxMM/cfg.uiStepsPerMM;
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -130,11 +127,9 @@ void TMC2130::Draw_Simple()
         glPushMatrix();
             glTranslatef(30,7,0);
             glScalef(0.09,-0.05,0);
-            char pos[10];
-            sprintf(pos,"%7.02f",m_fCurPos);
-            for (int i=0; i<7; i++)
-                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,pos[i]);
-
+			string strPos = to_string(m_fCurPos);
+            for (int i=0; i<min(7,(int)strPos.size()); i++)
+                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
         glPopMatrix();
 }
 
@@ -246,9 +241,9 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
             m_iCurStep = 0;
             bStall = true;
         }
-        else if (m_iCurStep>m_uiMaxPos)
+        else if (m_iCurStep>m_iMaxPos)
         {
-            m_iCurStep = m_uiMaxPos;
+            m_iCurStep = m_iMaxPos;
             bStall = true;
         }
     }
@@ -283,7 +278,7 @@ void TMC2130::OnEnableIn(struct avr_irq_t * irq, uint32_t value)
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
-TMC2130::TMC2130(char cAxis):m_cAxis(cAxis), Scriptable(string("") + cAxis)
+TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
 {
     memset(&m_regs.raw, 0, sizeof(m_regs.raw));
     m_regs.defs.DRV_STATUS.stst = true;
@@ -308,13 +303,14 @@ Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const vector<s
 			RaiseIRQ(DIAG_OUT,0);
 			return LineStatus::Finished;
 	}
+	return LineStatus::Unhandled;
 }
 
 void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)
 {
     cfg = cfgIn;
     m_iCurStep = cfg.fStartPos*cfg.uiStepsPerMM;
-    m_uiMaxPos = cfg.iMaxMM*cfg.uiStepsPerMM;
+    m_iMaxPos = cfg.iMaxMM*cfg.uiStepsPerMM;
     m_fCurPos = cfg.fStartPos;
 }
 

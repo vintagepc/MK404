@@ -3,7 +3,7 @@ set(CMAKE_DEBUG_POSTFIX d)
 
 include(ExternalProject)
 
-project(Einsy VERSION 0.1)
+project(MK404 VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -71,7 +71,7 @@ set(INCLUDE_FILES
 )
 
 
-set(EINSY_SOURCES
+set(MK404_SOURCES
     parts/components/ADC_Buttons.cpp
 	parts/components/Beeper.cpp
     parts/components/Button.cpp
@@ -110,9 +110,10 @@ set(EINSY_SOURCES
     3rdParty/arcball/Camera.cpp
 )
 
-add_executable(Einsy Einsy.cpp ${EINSY_SOURCES} ${H_FILES} ${INCLUDE_FILES} ${FIRMWARE})
+add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${INCLUDE_FILES} ${FIRMWARE})
 
-target_compile_features(Einsy PRIVATE cxx_range_for)
+target_compile_features(MK404 PRIVATE cxx_range_for)
+target_compile_options(MK404 PRIVATE -Wall -Werror)
 
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")
@@ -130,13 +131,13 @@ ExternalProject_Add(simavr
 
 )
 
-add_dependencies(Einsy simavr)
+add_dependencies(MK404 simavr)
 
 set (LIBSIMAVR ${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/obj-${SIMAVR_BIN_DIR}/libsimavr.a)
 
 message("Defining simavr location as ${LIBSIMAVR}")
 
-target_include_directories (Einsy PUBLIC
+target_include_directories (MK404 PUBLIC
                             "${PROJECT_BINARY_DIR}"
                             "${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/"
 							"${PROJECT_SOURCE_DIR}/3rdParty/TCLAP/include/"
@@ -158,23 +159,23 @@ include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
 
-target_link_libraries(Einsy pthread util glut GL GLU GLEW m SDL tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
+target_link_libraries(MK404 pthread util glut GL GLU GLEW m SDL tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 
-add_custom_command(TARGET Einsy POST_BUILD
+add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/MM-control-01.hex"
                     "${PROJECT_BINARY_DIR}/MM-control-01.hex")
-add_custom_command(TARGET Einsy POST_BUILD
+add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/MK3S.afx"
                     "${PROJECT_BINARY_DIR}/MK3S.afx")
-add_custom_command(TARGET Einsy POST_BUILD
+add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/stk500boot_v2_mega2560.hex"
                     "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
 
 # Copies the models/materials:
-add_custom_command(TARGET Einsy POST_BUILD
+add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/assets"
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/assets/*.obj"
@@ -184,8 +185,8 @@ add_custom_command(TARGET Einsy POST_BUILD
                     "${PROJECT_BINARY_DIR}/assets/")
 
 
-add_custom_target(Build_Run COMMAND cd ${PROJECT_BINARY_DIR} && ./Einsy &)
-add_dependencies(Build_Run Einsy)
+add_custom_target(Build_Run COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 &)
+add_dependencies(Build_Run MK404)
 
 add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
                             && ./build-fw.sh
@@ -193,8 +194,8 @@ add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
                             && avr-objdump -d MK3S.afx > MK3S.txt)
 
 
-add_custom_target(FAT32.img COMMAND Einsy --sdimage FAT32.img --image-size 256M)
-add_dependencies(FAT32.img Einsy)
+add_custom_target(FAT32.img COMMAND MK404 --sdimage FAT32.img --image-size 256M)
+add_dependencies(FAT32.img MK404)
 add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PROJECT_SOURCE_DIR}/SDCard/* ::
                                                 COMMAND mv FAT32.img Einsy_atmega2560_SDcard.bin)
 add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)

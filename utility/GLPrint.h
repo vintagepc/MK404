@@ -19,9 +19,11 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <vector>
-#include <tuple>
-#include <math.h>
+#pragma once
+
+#include <array>   // for array
+#include <cmath>   // for sqrt
+#include <vector>  // for vector
 
 class GLPrint
 {

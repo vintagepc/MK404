@@ -49,9 +49,16 @@
 
 #pragma once
 
-#include "BasePeripheral.h"
-#include <stdio.h>
-#include <Scriptable.h>
+#include "Scriptable.h"        // for Scriptable
+#include <stdint.h>            // for uint8_t, uint16_t, uint32_t
+#include <string>              // for string
+#include <vector>              // for vector
+#include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
+#include "IScriptable.h"       // for ArgType, ArgType::Int, ArgType::String
+#include "sim_avr.h"           // for avr_t
+#include "sim_avr_types.h"     // for avr_cycle_count_t
+#include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include "sim_irq.h"           // for avr_irq_t
 
 class HD44780:public BasePeripheral, public Scriptable
 {
@@ -77,7 +84,7 @@ class HD44780:public BasePeripheral, public Scriptable
 		#include "IRQHelper.h"
 
 		// Makes a display with the given dimensions.
-		HD44780(uint8_t width = 20, uint8_t height = 4):m_uiHeight(height),m_uiWidth(width),Scriptable("LCD")
+		HD44780(uint8_t width = 20, uint8_t height = 4):Scriptable("LCD"),m_uiHeight(height),m_uiWidth(width)
 		{
 			m_lineOffsets[2] += width;
 			m_lineOffsets[3] += width;
@@ -99,7 +106,8 @@ class HD44780:public BasePeripheral, public Scriptable
 
     protected:
     // The GL draw accesses these:
-        uint8_t	m_uiWidth = 20, m_uiHeight = 4;				// width and height of the LCD
+		uint8_t m_uiHeight = 4;				// width and height of the LCD
+        uint8_t	m_uiWidth = 20;
         uint8_t  m_vRam[104];
         uint8_t  m_cgRam[64];
 

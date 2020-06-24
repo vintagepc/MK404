@@ -28,21 +28,23 @@
  */
 
 #include "HD44780GL.h"
-
-#include "Util.h"
-
+#include "BasePeripheral.h"   // for MAKE_C_CALLBACK
+#include "Util.h"             // for hexColor_t, hexColor_t::(anonymous)
+#include "hd44780_charROM.h"  // for (anonymous), hd44780_ROM_AOO
+#include "sim_avr_types.h"    // for avr_regbit_t
+#include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
 #if __APPLE__
-#include <GLUT/glut.h>
+#include <GLUT/gl.h>
 #else
-#include <GL/glut.h>
+#include <GL/gl.h>            // for glVertex3f, glBegin, glEnd, glMaterialfv
 #endif
+
 
 //#define TRACE(_w) _w
 #ifndef TRACE
 #define TRACE(_w)
 #endif
 
-#include "hd44780_charROM.h"	// generated with gimp
 
 static inline void
 glColorHelper(hexColor_t color, bool bMaterial = false)

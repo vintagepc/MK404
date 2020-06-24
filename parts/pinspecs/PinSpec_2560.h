@@ -21,8 +21,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PINSPEC_2560_H__
-#define __PINSPEC_2560_H__
+#pragma once
 
 #include "PinSpec.h"
 #include "PinSpec_Helper.h"
@@ -312,5 +311,3 @@ class PinSpec_2560 : public PinSpec
 
 
 };
-
-#endif

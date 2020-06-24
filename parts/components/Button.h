@@ -23,9 +23,15 @@
 
 #pragma once
 
-#include "BasePeripheral.h"
-#include <string>
-#include "Scriptable.h"
+#include <stdint.h>            // for uint32_t
+#include <string>              // for string
+#include <vector>              // for vector
+#include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
+#include "IScriptable.h"       // for IScriptable::LineStatus
+#include "Scriptable.h"        // for Scriptable
+#include "sim_avr.h"           // for avr_t
+#include "sim_avr_types.h"     // for avr_cycle_count_t
+#include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 
 class Button:public BasePeripheral, public Scriptable
 {
@@ -50,7 +56,6 @@ class Button:public BasePeripheral, public Scriptable
 
 		avr_cycle_timer_t m_fcnRelease = MAKE_C_TIMER_CALLBACK(Button,AutoRelease);
 
-		bool m_bValue = false;
 		std::string m_strName;
 
 		enum Actions

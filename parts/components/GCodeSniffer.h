@@ -22,8 +22,11 @@
 
 #pragma once
 
-#include "BasePeripheral.h"
-#include <string>
+#include <stdint.h>          // for uint32_t
+#include <string>            // for string
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
 
 using namespace std;
 

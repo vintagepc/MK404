@@ -42,7 +42,7 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t * avr,avr_cycle_count_
 	switch (m_eDirection) {
 		case CW_CLICK:
 			// Advance phase forwards
-            m_iPhase = (++m_iPhase)%STATE_COUNT;
+            m_iPhase = (m_iPhase+1)%STATE_COUNT;
 
 			if (m_bVerbose) {
 				printf("ROTENC: CW twist, pins A:%x, B:%x\n",

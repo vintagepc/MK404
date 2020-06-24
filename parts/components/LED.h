@@ -47,7 +47,7 @@ private:
 	// Value changed callback.
 	void OnValueChanged(avr_irq_t *irq, uint32_t value);
 	void OnPWMChanged(avr_irq_t *irq, uint32_t value);
-	hexColor_t m_Color = {.hex = (uint32_t)0x00FF0000};
+	hexColor_t m_Color = hexColor_t(0x00FF0000);
 	char m_chrLabel = ' ';
 	uint8_t m_uiBrightness = 0;
 	bool m_bInvert = false;

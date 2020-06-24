@@ -20,8 +20,8 @@
  */
 
 #include "PINDA.h"
-#include "math.h"
-#include <stdio.h>
+#include <stdio.h>  // for printf
+#include <cmath>    // for pow, floor, round, sqrt
 
 //#define TRACE(_w)_w
 #ifndef TRACE

@@ -23,16 +23,15 @@
 
 #pragma once
 
+
+#include <stdio.h>        // for fprintf, stderr
+#include <map>            // for map
+#include <memory>         // for operator!=, shared_ptr
+#include <string>         // for string
+#include <vector>         // for vector
+#include "IScriptable.h"  // for ArgType, ArgType::Bool, ArgType::Int, IScri...
+
 using namespace std;
-
-#include <stdlib.h>
-#include <memory>
-#include <map>
-#include <vector>
-#include <sim_avr.h>
-
-// Forward declare.
-#include "IScriptable.h"
 
 class ScriptHost: public IScriptable
 {

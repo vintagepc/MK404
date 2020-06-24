@@ -21,20 +21,15 @@
 
 
 #include "MK3SGL.h"
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <cstdio>
-#include <iostream>
-#include <limits>
-#include <map>
-#include <string>
-#include <vector>
-#include <cstring>
-
-#include <GL/glew.h>
-#include <GL/glut.h>
 #include <GL/freeglut.h>
+#include <GL/glew.h>          // for glTranslatef, glPopMatrix, glPushMatrix
+#include <stdlib.h>           // for exit
+#include <cstdio>             // for size_t, fprintf, stderr
+#include <vector>             // for vector
+#include "Camera.hpp"         // for Camera
+#include "GLPrint.h"          // for GLPrint
+#include "HD44780GL.h"        // for HD44780GL
+#include "Printer.h"          // for Printer
 
 MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
 

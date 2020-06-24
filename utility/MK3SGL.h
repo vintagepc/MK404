@@ -19,15 +19,18 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GLObj.h"
-#include <tiny_obj_loader.h>
-#include <GL/glew.h>
-#include "BasePeripheral.h"
-#include "HD44780GL.h"
-#include <GLPrint.h>
-#include <vector>
-#include <Camera.hpp>
-#include "Printer.h"
+#include <GLPrint.h>         // for GLPrint
+#include <stdint.h>          // for uint32_t
+#include <Camera.hpp>        // for Camera
+#include <string>            // for string
+#include <vector>            // for vector
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "GLObj.h"           // for GLObj
+#include "HD44780.h"         // for _IRQ
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
+class HD44780GL;
+class Printer;
 
 class MK3SGL: public BasePeripheral
 {

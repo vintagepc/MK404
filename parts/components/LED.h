@@ -22,8 +22,11 @@
 
 #pragma once
 
-#include "BasePeripheral.h"
-#include "Util.h"
+#include <stdint.h>          // for uint32_t, uint8_t
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "Util.h"            // for hexColor_t
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
 
 class LED: public BasePeripheral
 {
@@ -44,7 +47,7 @@ private:
 	// Value changed callback.
 	void OnValueChanged(avr_irq_t *irq, uint32_t value);
 	void OnPWMChanged(avr_irq_t *irq, uint32_t value);
-	hexColor_t m_Color = {.hex = 0x00FF0000};
+	hexColor_t m_Color = {.hex = (uint32_t)0x00FF0000};
 	char m_chrLabel = ' ';
 	uint8_t m_uiBrightness = 0;
 	bool m_bInvert = false;

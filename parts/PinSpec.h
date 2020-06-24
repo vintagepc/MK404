@@ -17,8 +17,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PINSPEC_H__
-#define __PINSPEC_H__
+#pragma once
 
 #include <string>
 
@@ -36,12 +35,12 @@ class PinSpec {
 		// Returns the port index/bitshift for the pin.
 		inline unsigned char PIN(unsigned int n) const {return m_pDPin2Mask[n];}
 
-		// Get Char rep of the timer port. 
+		// Get Char rep of the timer port.
 		inline unsigned char TIMER_CHAR(unsigned int n) const { return '0' + (m_pDPin2Timer[n]>>4); }
 
-		// Get index of the timer 
+		// Get index of the timer
 		inline unsigned char TIMER_IDX(unsigned int n) const { return m_pDPin2Timer[n]&0xF; }
-		
+
 		// Returns the MCU this spec is for. Used to designate the
 		// CPU in a board using this pinspec.
 		inline std::string GetMCUName() const { return m_strMCU; }
@@ -55,5 +54,3 @@ class PinSpec {
 
 		std::string m_strMCU;
 };
-
-#endif

@@ -19,8 +19,24 @@
  */
 
 #include "Prusa_MK3S.h"
-#include <GL/glut.h>
-#include <stdio.h>
+#include <GL/glew.h>
+//#include <GL/gl.h>          // for glTranslatef, glLoadIdentity, glPopMatrix
+#include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
+#include <stdio.h>            // for printf
+#include "Beeper.h"           // for Beeper
+#include "Button.h"           // for Button
+#include "Fan.h"              // for Fan
+#include "HD44780GL.h"        // for HD44780GL
+#include "Heater.h"           // for Heater
+#include "IRSensor.h"         // for IRSensor
+#include "LED.h"              // for LED
+#include "MK3SGL.h"           // for MK3SGL, TMC2130::IRQ::POSITION_OUT, Fan...
+#include "PINDA.h"            // for PINDA
+#include "RotaryEncoder.h"    // for RotaryEncoder, RotaryEncoder::::CCW_CLICK
+#include "SDCard.h"           // for SDCard
+#include "TMC2130.h"          // for TMC2130
+#include "sim_io.h"           // for avr_register_io_write
+#include "uart_pty.h"         // for uart_pty
 
 void Prusa_MK3S::Draw()
 {

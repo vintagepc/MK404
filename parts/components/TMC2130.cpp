@@ -19,13 +19,11 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "avr_ioport.h"
-#include "avr_spi.h"
 #include "TMC2130.h"
-#include "GL/glut.h"
+#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/gl.h>            // for glVertex3f, glColor3f, glBegin, glEnd
+#include <stdio.h>            // for printf
+#include <string.h>           // for memset
 
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (m_cAxis=='S' || m_cAxis=='I') _w
@@ -66,10 +64,9 @@ void TMC2130::Draw()
         glPushMatrix();
             glTranslatef(280,7,0);
             glScalef(0.09,-0.05,0);
-            char pos[7];
-            sprintf(pos,"%3.02f",m_fCurPos);
-            for (int i=0; i<7; i++)
-                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,pos[i]);
+            string strPos = to_string(m_fCurPos);
+            for (size_t i=0; i<strPos.size(); i++)
+                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
 
         glPopMatrix();
 		glPushMatrix();
@@ -129,11 +126,9 @@ void TMC2130::Draw_Simple()
         glPushMatrix();
             glTranslatef(30,7,0);
             glScalef(0.09,-0.05,0);
-            char pos[10];
-            sprintf(pos,"%7.02f",m_fCurPos);
-            for (int i=0; i<7; i++)
-                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,pos[i]);
-
+			string strPos = to_string(m_fCurPos);
+            for (size_t i=0; i<strPos.size(); i++)
+                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
         glPopMatrix();
 }
 

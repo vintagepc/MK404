@@ -22,8 +22,10 @@
 #ifndef SimpleArcballCamera_Camera_hpp
 #define SimpleArcballCamera_Camera_hpp
 
-#include "ArcBall.hpp"
-#include "Matrix.hpp"
+#include "ArcBall.hpp"  // for ArcBall
+#include "Matrix.hpp"   // for mat4
+#include "Vectors.hpp"  // for vec3, vec2
+
 
 //  Represents a camera. Enables the user to move the camera and at the end
 //  get the according view transformation matrix.

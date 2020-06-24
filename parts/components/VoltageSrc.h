@@ -20,23 +20,22 @@
  */
 
 
-#ifndef __VOLTAGESRC_H___
-#define __VOLTAGESRC_H___
+#pragma once
 
-#include <string.h>
-#include <ADCPeripheral.h>
+#include <ADCPeripheral.h>  // for ADCPeripheral
+#include <stdint.h>         // for uint32_t, uint8_t
+#include "sim_irq.h"        // for avr_irq_t
 
 class VoltageSrc: public ADCPeripheral {
 public:
-
     // Macro to define a set of IRQs and string names.
     #define IRQPAIRS    _IRQ(ADC_TRIGGER_IN,"8<voltage.trigger") \
-                        _IRQ(ADC_VALUE_OUT, "16>voltage.value_out")\
-                        _IRQ(VALUE_IN, "16<voltage.value_in")\
+                        _IRQ(ADC_VALUE_OUT, "16>voltage.value_out") \
+                        _IRQ(VALUE_IN, "16<voltage.value_in") \
                         _IRQ(DIGITAL_OUT, ">voltage.digital_out")
 
-    // Helper to keep pairs in sync.
     #include <IRQHelper.h>
+    // Helper to keep pairs in sync.
 
     // Constructs a new VoltageSrc on ADC mux uiMux, with a v scale factor of fVScale and a starting reading of fStartV
     VoltageSrc(float fVScale = 1.0f, // voltage scale factor to bring it in line with the ADC 0-5v input.
@@ -58,5 +57,3 @@ protected:
     float m_fCurrentV = 0.0f;
     float m_fVScale = 1.0f;
 };
-
-#endif /* __VOLTAGESRC_H___ */

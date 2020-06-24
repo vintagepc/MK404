@@ -18,8 +18,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _EINSY_1_0A_H
-#define _EINSY_1_0A_H
+#pragma once
 
 #include <Wiring.h>
 #include <PinSpec_2560.h>
@@ -88,4 +87,3 @@ namespace Wirings
 			const PinSpec_2560 m_EinsyPins = PinSpec_2560();
 	};
 };
-#endif //_EINSY_1_0A_H

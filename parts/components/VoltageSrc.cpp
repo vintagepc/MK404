@@ -19,11 +19,8 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include "avr_adc.h"
 #include "VoltageSrc.h"
-
+#include "BasePeripheral.h"  // for MAKE_C_CALLBACK
 
 uint32_t VoltageSrc::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {

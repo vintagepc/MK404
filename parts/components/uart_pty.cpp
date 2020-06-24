@@ -22,31 +22,20 @@
  */
 
 
-#include "sim_network.h"
-#include <stdlib.h>
-#include <pthread.h>
-#include <string.h>
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <signal.h>
-#ifdef __APPLE__
-#include <util.h>
-#elif defined (__FreeBSD__)
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <termios.h>
-#include <libutil.h>
-#else
-#include <pty.h>
-#endif
-
 #include "uart_pty.h"
-#include "avr_uart.h"
-#include "sim_time.h"
-#include "sim_hex.h"
-
-
+#include <bits/types/struct_timeval.h>  // for timeval
+#include <errno.h>                      // for errno
+#include <pthread.h>                    // for pthread_create, pthread_join
+#include <pty.h>                        // for openpty
+#include <stdio.h>                      // for printf, NULL, fprintf, sprintf
+#include <stdlib.h>                     // for getenv, atoi, system
+#include <string.h>                     // for memset, strerror
+#include <sys/select.h>                 // for select, FD_ISSET, FD_SET, FD_...
+#include <termios.h>                    // for cfmakeraw, tcgetattr, tcsetattr
+#include <unistd.h>                     // for close, read, symlink, unlink
+#include "avr_uart.h"                   // for AVR_IOCTL_UART_GETIRQ, ::AVR_...
+#include "sim_io.h"                     // for avr_io_getirq, avr_ioctl
+#include "sim_time.h"                   // for avr_hz_to_cycles
 
 //#define TRACE(_w) _w
 #ifndef TRACE

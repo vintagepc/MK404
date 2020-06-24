@@ -21,19 +21,19 @@
 
 
 #include "GLObj.h"
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <cstdio>
-#include <iostream>
-#include <limits>
-#include <map>
-#include <string>
-#include <vector>
-#include <cstring>
-
-#include <GL/glew.h>
-#include <GL/glut.h>
+#include <GL/glew.h>          // for glMaterialfv, GL_FRONT, glBindTexture
+#include <algorithm>          // for max, min
+#include <cassert>            // for assert
+#include <cmath>              // for sqrtf
+#include <cstdio>             // for printf, size_t
+#include <cstring>            // for memcpy
+#include <iostream>           // for operator<<, endl, basic_ostream, cerr
+#include <limits>             // for numeric_limits
+#include <map>                // for map, _Rb_tree_iterator
+#include <scoped_allocator>   // for allocator_traits<>::value_type
+#include <string>             // for string, operator<<, char_traits
+#include <vector>             // for vector
+#include "tiny_obj_loader.h"  // for attrib_t, index_t, mesh_t, shape_t, Loa...
 
 
 // This disables textures and vertex colors, not used in favor of materials anyway.

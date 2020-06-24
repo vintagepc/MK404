@@ -18,8 +18,9 @@
 	You should have received a copy of the GNU General Public License
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <pthread.h>
-#include <iostream>
+
+#include <pthread.h>  // for pthread_t
+#include <string>     // for string
 
 class SerialPipe
 {
@@ -27,7 +28,7 @@ class SerialPipe
 	// Constructs a new serial pipe betwen the named UARTs (typically /tmp/simavr-uart#)
 	SerialPipe(std::string strUART0, std::string strUART1);
 
-	// Destructor, shuts down the pipe thread. 
+	// Destructor, shuts down the pipe thread.
 	~SerialPipe();
 
     private:

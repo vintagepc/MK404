@@ -21,17 +21,19 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __HC595_H__
-#define __HC595_H__
+#pragma once
 
-#include "BasePeripheral.h"
+#include <stdint.h>          // for uint32_t, uint8_t
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
 
 /*
  * this one is quite fun, it simulated a 74HC595 shift register
  * driven by an SPI signal.
- * For the interest of the simulation, they can be chained, but 
+ * For the interest of the simulation, they can be chained, but
  * for practicality sake the shift register is kept 32 bits
- * wide so it acts as 4 of them "daisy chained" already. 
+ * wide so it acts as 4 of them "daisy chained" already.
  */
 
 class HC595: public BasePeripheral
@@ -94,7 +96,6 @@ class HC595: public BasePeripheral
 		uint32_t	m_uiLatch = 0;		// value "on the pins"
 		uint32_t 	m_uiValue = 0;		// value shifted in
 		uint8_t		m_uiCurBit =0;
-		uint8_t		m_uiCurByte = 0;
+		//uint8_t		m_uiCurByte = 0;
 
 };
-#endif

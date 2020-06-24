@@ -21,12 +21,13 @@
  */
 
 #include <Board.h>
-#include <sim_hex.h>
-#include <sim_elf.h>
-#include <sim_gdb.h>
-#include <cstring>
-#include <fcntl.h>
-#include <unistd.h>
+#include <fcntl.h>    // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <sim_elf.h>  // for avr_load_firmware, elf_firmware_t, elf_read_fir...
+#include <sim_gdb.h>  // for avr_gdb_init
+#include <sim_hex.h>  // for read_ihex_file
+#include <stdlib.h>   // for exit, free
+#include <unistd.h>   // for close, ftruncate, lseek, read, write, ssize_t
+#include <cstring>    // for memcpy, NULL
 
 using namespace std;
 using namespace Boards;

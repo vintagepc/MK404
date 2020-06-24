@@ -19,9 +19,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#ifndef __ADC_PERIPHERAL_H__
-#define __ADC_PERIPHERAL_H__
+#pragma once
 
 #include "BasePeripheral.h"
 #include <avr_adc.h>
@@ -63,7 +61,7 @@ class ADCPeripheral: public BasePeripheral
             avr_adc_mux_t v = u.v;
 
             if (v.src != m_uiMux)
-                return;  
+                return;
             uint32_t uiVal = OnADCRead(irq,value);
             if (uiVal == m_uiLast)
                 return;
@@ -87,5 +85,3 @@ class ADCPeripheral: public BasePeripheral
 
         uint32_t m_uiLast = 0;
 };
-
-#endif

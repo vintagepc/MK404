@@ -5,25 +5,24 @@
 //
 //    This file is part of SimpleArcballCamera.
 //
-//    SimpleArcballCamera is free software: you can redistribute it and/or 
+//    SimpleArcballCamera is free software: you can redistribute it and/or
 //    modify it under the terms of the GNU General Public License as published
 //    by the Free Software Foundation, either version 3 of the License, or
 //    (at your option) any later version.
-//    
+//
 //    SimpleArcballCamera is distributed in the hope that it will be useful,
 //    but WITHOUT ANY WARRANTY; without even the implied warranty of
 //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with SimpleArcballCamera.  If not, 
+//    along with SimpleArcballCamera.  If not,
 //    see <http://www.gnu.org/licenses/>.
 
-#include <iostream>
-
 #include "Camera.hpp"
+#include <math.h>
 
-// ========================= CAMERA SETUP ================================ 
+// ========================= CAMERA SETUP ================================
 
 Camera::Camera() : center_(0,0,0), eyeDir_(0,0,-1)
 {
@@ -74,19 +73,19 @@ void Camera::setCurrentMousePos(float x, float y)
     arcBall_.set_cur(x, y);
 
     y = windowHeight_ - y;
-    
+
     lastMousePos_ = currentMousePos_;
     currentMousePos_.set(x, y);
-    
+
     if (currentMode_ != IDLE) {
         // Compute delta
         math::vec2 mouseDelta = currentMousePos_ - lastMousePos_;
-        
+
         switch (currentMode_) {
             case PANNING:
                 pan(mouseDelta[0], mouseDelta[1]);
                 break;
-                
+
             case ZOOMING:
                 zoom(mouseDelta[1]);
             default:
@@ -101,12 +100,12 @@ void Camera::setCurrentMousePos(float x, float y)
 void Camera::setWindowSize(float w, float h)
 {
     arcBall_.set_win_size(w, h);
-    
+
     windowWidth_ = w;
     windowHeight_ = h;
 }
 
-// ========================= CAMERA MOVEMENT ============================= 
+// ========================= CAMERA MOVEMENT =============================
 
 
 // Starts the arcballs rotation
@@ -150,12 +149,12 @@ void Camera::pan(float x, float y)
 {
     x = x / windowWidth_;
     y = y / windowHeight_;
-    
+
     float length = 2 * eyeDir_.length() * tan(30*M_PI/180.0f);
-    
+
     math::vec3 deltax = currentRight() * - x * (length * (windowWidth_/windowHeight_));
     math::vec3 deltay = currentUp() * - y * length;
-    
+
     center_ += deltax + deltay;
     updateViewMatrix();
 }
@@ -169,7 +168,7 @@ void Camera::zoom(float deltaz)
 }
 
 
-// ========================= MATRIX GETTER =============================== 
+// ========================= MATRIX GETTER ===============================
 
 // Returns the OpenGL formatted view matrix
 const float * Camera::getViewMatrix()
@@ -191,27 +190,27 @@ const float * Camera::getViewMatrix()
 void Camera::updateViewMatrix()
 {
     math::vec3 eye = center_ - eyeDir_;
-    
+
     // Get the lookat matrices
     math::mat4 lookatRot(center_,eye, math::vec3(0,1,0));
     math::mat4 lookAtTranslation(1,0,0,-eye[0],
                      0,1,0,-eye[1],
                      0,0,1,-eye[2],
                      0,0,0,1);
-    
+
     // Create the translation matrices into and out of the view center
     math::mat4 translation = math::mat4(1,0,0,0,
                                         0,1,0,0,
                                         0,0,1,eyeDir_.length(),
                                         0,0,0,1);
-    
+
     math::mat4 invtranslation = math::mat4(1,0,0,0,
                                         0,1,0,0,
                                         0,0,1,-eyeDir_.length(),
                                         0,0,0,1);
-    
+
     math::mat4 arcRot = arcBall_.get_mat();
-    
+
     viewMatrix_ =  (invtranslation * arcRot.transpose() * translation  * lookatRot * lookAtTranslation).transpose();
 }
 
@@ -228,6 +227,3 @@ math::vec3 Camera::currentRight()
     math::vec4 right = viewMatrix_.colvec(0);
     return math::vec3(right[0],right[1],right[2]);
 }
-
-
-

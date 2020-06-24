@@ -23,8 +23,11 @@
  */
 
 #include <ScriptHost.h>
+#include <exception>    // for exception
+#include <fstream>      // for basic_istream, char_traits, ifstream, istring...
 #include <sstream>
-#include <fstream>
+#include <type_traits>  // for __decay_and_strip<>::__type
+#include <utility>      // for make_pair, pair
 
 map<string, IScriptable*> ScriptHost::m_clients;
 vector<string> ScriptHost::m_script;

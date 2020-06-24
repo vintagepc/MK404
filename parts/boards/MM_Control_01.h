@@ -20,15 +20,16 @@
 
 #pragma once
 
-#include <Board.h>
+#include <Board.h>                 // for Board
+#include <stdint.h>                // for uint32_t
+#include <wiring/MM_Control_01.h>  // for MM_Control_01
+#include "ADC_Buttons.h"           // for ADC_Buttons
+#include "HC595.h"                 // for HC595
+#include "LED.h"                   // for LED
+#include "MM_Control_01.h"
+#include "TMC2130.h"               // for TMC2130
+#include "uart_pty.h"              // for uart_pty
 
-#include "uart_pty.h"
-#include "ADC_Buttons.h"
-#include "HC595.h"
-#include "LED.h"
-#include "TMC2130.h"
-
-#include <wiring/MM_Control_01.h>
 namespace Boards
 {
 	class MM_Control_01: public Board

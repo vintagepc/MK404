@@ -25,10 +25,14 @@
 
 #pragma once
 
-#include <string>
-
-#include "SPIPeripheral.h"
-#include "Scriptable.h"
+#include <stdint.h>         // for uint8_t, uint32_t, uint16_t, uint64_t
+#include <sys/types.h>      // for off_t
+#include <string>           // for string
+#include <vector>           // for vector
+#include "IScriptable.h"    // for ArgType, ArgType::String, IScriptable::Li...
+#include "SPIPeripheral.h"  // for SPIPeripheral
+#include "Scriptable.h"     // for Scriptable
+#include "sim_avr.h"        // for avr_t
 
 class SDCard:public SPIPeripheral, public Scriptable
 {

@@ -21,9 +21,14 @@
 
 #pragma once
 
-#include "BasePeripheral.h"
-#include "Scriptable.h"
-#include <string>
+#include <stdint.h>          // for uint32_t
+#include <string>            // for string, basic_string
+#include <vector>            // for vector
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "IScriptable.h"     // for ArgType, ArgType::String, IScriptable::L...
+#include "Scriptable.h"      // for Scriptable
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
 
 using namespace std;
 

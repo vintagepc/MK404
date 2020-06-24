@@ -1,6 +1,6 @@
 
 /*
-	HD44780_charROM.h - A00 character ROM data for the HD44780 LCD. 
+	HD44780_charROM.h - A00 character ROM data for the HD44780 LCD.
 
   Copyright 2020, VintagePC <https://github.com/vintagepc/>
 
@@ -20,8 +20,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __HD44780_CHARROM_H__
-#define __HD44780_CHARROM_H__
+#pragma once
 
 static const struct {
   unsigned int w;
@@ -1823,5 +1822,3 @@ static const struct {
     0x1f,
     0x1f}
   };
-
-#endif

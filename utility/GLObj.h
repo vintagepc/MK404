@@ -20,10 +20,13 @@
  */
 
 
-#include <vector>
-#include <type_traits>
-#include <tiny_obj_loader.h>
-#include <GL/glew.h>
+#include <GL/glew.h>          // for GLuint
+#include <stddef.h>           // for size_t
+#include <sys/types.h>        // for uint
+#include <tiny_obj_loader.h>  // for material_t
+#include <map>                // for map
+#include <string>             // for string
+#include <vector>             // for vector
 
 class GLObj
 {

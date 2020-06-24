@@ -20,9 +20,17 @@
  */
 
 #include "MMU2.h"
-#include <stdio.h>
-#include "avr_uart.h"
-#include "GL/glut.h"
+#include <GL/freeglut_std.h>  // for glutGet, glutStrokeCharacter, GLUT_STRO...
+#include <GL/gl.h>            // for glTranslatef, glVertex3f, glColor3f
+#include <stdio.h>            // for fprintf, size_t, stderr
+#include <stdlib.h>           // for exit
+#include "HC595.h"            // for HC595, TMC2130::IRQ::POSITION_OUT, MMU2...
+#include "LED.h"              // for LED
+#include "MM_Control_01.h"    // for MM_Control_01
+#include "PinNames.h"         // for Pin::FINDA_PIN
+#include "TMC2130.h"          // for TMC2130
+#include "uart_pty.h"         // for uart_pty
+
 
 // Yes yes, globals are bad. But we don't have any choice because freeglut calls
 // don't have parameter void pointers to retain the c++ class pointer. :-/

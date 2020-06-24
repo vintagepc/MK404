@@ -21,9 +21,9 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
-#include <stdio.h>
 #include "Thermistor.h"
+#include <stdio.h>           // for printf, NULL
+#include "BasePeripheral.h"  // for MAKE_C_CALLBACK
 
 Thermistor::Thermistor(float fStartTemp):Scriptable("Thermistor"),m_fCurrentTemp(fStartTemp)
 {

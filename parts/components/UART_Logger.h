@@ -19,11 +19,13 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __UART_LOGGER_H___
-#define __UART_LOGGER_H___
+#pragma once
 
-#include "BasePeripheral.h"
-#include <iostream>
+#include <stdint.h>          // for uint32_t
+#include <string>            // for string
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
 
 using namespace std;
 
@@ -47,5 +49,3 @@ class UART_Logger : public BasePeripheral
 		char m_chrUART = '0';
 		int m_fdOut = 0; // File handle.
 };
-
-#endif /* __UART_LOGGER_H___ */

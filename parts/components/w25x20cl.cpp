@@ -21,12 +21,13 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include "w25x20cl.h"
+#include <fcntl.h>      // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <stdio.h>      // for printf, perror, fprintf, stderr, size_t
+#include <stdlib.h>     // for exit, free, malloc
+#include <string.h>     // for memset, memcpy, strncpy
+#include <sys/types.h>  // for uint
+#include <unistd.h>     // for close, ftruncate, lseek, read, write, ssize_t
 
 //#define TRACE(_w) _w
 #ifndef TRACE

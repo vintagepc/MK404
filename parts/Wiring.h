@@ -20,8 +20,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __WIRING_H__
-#define __WIRING_H__
+#pragma once
 
 #include <map>
 #include "avr_ioport.h"
@@ -80,4 +79,3 @@ namespace Wirings
 			const PinSpec &m_pinSpec;
 	};
 };
-#endif //__WIRING_H__

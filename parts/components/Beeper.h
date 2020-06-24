@@ -21,9 +21,14 @@
 
 #pragma once
 
-#include "SoftPWMable.h"
-#include <SDL/SDL_audio.h>
-#include "Scriptable.h"
+#include <SDL/SDL_audio.h>  // for SDL_AudioSpec
+#include <stdint.h>         // for uint16_t, uint8_t, uint32_t
+#include <string>           // for string
+#include <vector>           // for vector
+#include "IScriptable.h"    // for IScriptable::LineStatus
+#include "Scriptable.h"     // for Scriptable
+#include "SoftPWMable.h"    // for SoftPWMable
+#include "sim_avr.h"        // for avr_t
 
 class Beeper:public SoftPWMable, public Scriptable
 {

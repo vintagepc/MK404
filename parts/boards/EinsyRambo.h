@@ -20,26 +20,26 @@
 
 #pragma once
 
-#include <Board.h>
-
-#include "uart_pty.h"
-#include "Beeper.h"
-#include "Button.h"
-#include "Fan.h"
-#include "HD44780GL.h"
-#include "Heater.h"
-#include "IRSensor.h"
-#include "LED.h"
-#include "PINDA.h"
-#include "RotaryEncoder.h"
-#include "SDCard.h"
-#include "Thermistor.h"
-#include "TMC2130.h"
-#include "UART_Logger.h"
-#include "VoltageSrc.h"
-#include "w25x20cl.h"
-#include "SerialLineMonitor.h"
-#include <wiring/Einsy_1_1a.h>
+#include <Board.h>                               // for Board
+#include <stdint.h>                              // for uint32_t
+#include "wiring/Einsy_1_1a.h"                   // for Einsy_1_1a
+#include <string>                                // for string
+#include "Beeper.h"                              // for Beeper
+#include "Button.h"                              // for Button
+#include "Fan.h"                                 // for Fan
+#include "HD44780GL.h"                           // for HD44780GL
+#include "Heater.h"                              // for Heater
+#include "IRSensor.h"                            // for IRSensor
+#include "LED.h"                                 // for LED
+#include "PINDA.h"                               // for PINDA
+#include "RotaryEncoder.h"                       // for RotaryEncoder
+#include "SDCard.h"                              // for SDCard
+#include "SerialLineMonitor.h"                   // for SerialLineMonitor
+#include "TMC2130.h"                             // for TMC2130
+#include "Thermistor.h"                          // for Thermistor
+#include "VoltageSrc.h"                          // for VoltageSrc
+#include "uart_pty.h"                            // for uart_pty
+#include "w25x20cl.h"                            // for w25x20cl
 
 extern "C"
 {

@@ -20,9 +20,17 @@
  */
 #pragma once
 
-#include "BasePeripheral.h"
-#include "SoftPWMable.h"
-#include "Scriptable.h"
+#include <stdint.h>            // for uint16_t, uint32_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
+#include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
+#include "IScriptable.h"       // for IScriptable::LineStatus
+#include "Scriptable.h"        // for Scriptable
+#include "SoftPWMable.h"       // for SoftPWMable
+#include "sim_avr.h"           // for avr_t
+#include "sim_avr_types.h"     // for avr_cycle_count_t
+#include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include "sim_irq.h"           // for avr_irq_t
 
 class Fan:public SoftPWMable, public Scriptable
 {
@@ -35,7 +43,7 @@ public:
                         _IRQ(SPEED_OUT, ">Fan.speed_out")
 
     // Helper to keep pairs in sync.
-    #include <IRQHelper.h>
+    #include "IRQHelper.h"
 
 	// Constructs a new Fan with a max RPM of iMaxRPM (at PWM 255)
 	Fan(uint16_t iMaxRPM, char chrSym = ' ', bool bIsSoftPWM = false);

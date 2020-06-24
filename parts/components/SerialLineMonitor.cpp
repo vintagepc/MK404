@@ -20,10 +20,10 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SerialLineMonitor.h"
-#include <stdio.h>
-#include "avr_uart.h"
 
+#include "SerialLineMonitor.h"
+#include "avr_uart.h"  // for AVR_IOCTL_UART_GETIRQ, ::UART_IRQ_INPUT, ::UAR...
+#include "sim_io.h"    // for avr_io_getirq
 
 
 void SerialLineMonitor::OnByteIn(struct avr_irq_t * irq, uint32_t value)

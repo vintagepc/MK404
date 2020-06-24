@@ -21,15 +21,16 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GL/glut.h"
-
 #include "Heater.h"
-#include "stdio.h"
-#include "math.h"
+#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/gl.h>            // for glVertex2f, glBegin, glColor3f, glColor3fv
+#include <math.h>             // for pow
+#include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
 
-//#define TRACE(_w)_w
-#ifndef TRACE
 #define TRACE(_w)
+#ifndef TRACE
+#include <stdio.h>
+#define TRACE(_w)_w
 #endif
 
 
@@ -56,7 +57,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
         RegisterTimerUsec(m_fcnTempTick,300000,this);
     else
     {
-        m_fCurrentTemp = m_fCurrentTemp;
+        m_fCurrentTemp = m_fAmbientTemp;
         RaiseIRQ(TEMP_OUT,(int)m_fCurrentTemp*256);
     }
     return 0;

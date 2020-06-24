@@ -19,9 +19,8 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Fan.h"
-#include "stdio.h"
-#include <sim_time.h>
-#include <GL/glut.h>
+#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/gl.h>            // for glVertex2f, glTranslatef, glBegin, glCo..
 //#define TRACE(_w)_w
 #ifndef TRACE
 #define TRACE(_w)

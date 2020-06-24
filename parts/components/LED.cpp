@@ -20,9 +20,9 @@
  */
 
 
-#include "GL/glut.h"
 #include "LED.h"
-#include "stdio.h"
+#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/gl.h>            // for glVertex2f, glBegin, glColor3f, glEnd
 
 LED::LED(uint32_t uiHexColor, char chrLabel, bool bInvert):m_chrLabel(chrLabel),m_bInvert(bInvert)
 {

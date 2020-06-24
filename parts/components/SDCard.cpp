@@ -178,6 +178,10 @@ SDCard::State SDCard::ProcessCommand()
 			uint32_t blocklen;
 
 			blocklen = m_CmdIn.bits.address;
+			if (blocklen !=512)
+			{
+				fprintf(stderr,"Tried to change blocklen to %u but only 512 is supported.\n",blocklen);
+			}
 			assert (blocklen == 512);
 			/* TODO: only 512B blocks are supported at the moment. */
 

@@ -24,7 +24,6 @@ jobs:
       uses: actions/checkout@v2.2.0
       with:
         repository: vintagepc/MK3SIM.git
-        ref: ${GITHUB_REF:11}
         submodules: true
     
     - name: Cache packages

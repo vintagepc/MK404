@@ -135,7 +135,10 @@ bool FatImage::MakeFatImage(string strFile, string strSize)
 	data.insert(data.end(), DataRegion, DataRegion+26);
 
 	lseek(fd,SEEK_SET, 0);
-	write(fd,data.data(),data.size());
+	size_t s = write(fd,data.data(),data.size());
+	if(s != data.size())
+		fprintf(stderr,"Failed to write full file to disk.\n");
+
 	close(fd);
 	return true;
 }

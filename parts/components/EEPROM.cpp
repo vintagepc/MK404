@@ -45,7 +45,10 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 	printf("Loading %u bytes of EEPROM\n", m_uiSize);
 	avr_eeprom_desc_t io {.ee= (uint8_t*)malloc(m_uiSize), .offset = 0, .size = m_uiSize};
 
-	(void)ftruncate(m_fdEEPROM, m_uiSize);
+	if (ftruncate(m_fdEEPROM, m_uiSize) < 0) {
+		perror(m_strFile.c_str());
+		exit(1);
+	}
 	ssize_t r = read(m_fdEEPROM, io.ee, m_uiSize);
 	printf("Read %d bytes\n",(int)r);
 	if (r !=  io.size) {

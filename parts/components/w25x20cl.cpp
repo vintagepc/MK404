@@ -302,7 +302,10 @@ void w25x20cl::Load(const char* path)
 	}
 	strncpy(m_filepath,path,sizeof(m_filepath));
 	printf("Loading %u bytes of XFLASH\n", W25X20CL_TOTAL_SIZE);
-	(void)ftruncate(m_fdFlash, W25X20CL_TOTAL_SIZE + 1);
+	if (ftruncate(m_fdFlash, W25X20CL_TOTAL_SIZE + 1) < 0) {
+		perror(m_filepath);
+		exit(1);
+	}
 	uint8_t *buffer = (uint8_t*)malloc(W25X20CL_TOTAL_SIZE + 1);
 	ssize_t r = read(m_fdFlash, buffer, W25X20CL_TOTAL_SIZE + 1);
 	printf("Read %d bytes\n", (int)r);

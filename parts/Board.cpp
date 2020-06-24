@@ -117,7 +117,10 @@ void Board::_OnAVRInit()
 	else
 	{
 		// resize and map the file the file
-		(void)ftruncate(m_fdFlash, m_pAVR->flashend + 1);
+		if (ftruncate(m_fdFlash, m_pAVR->flashend + 1) < 0) {
+			perror(strFlash.c_str());
+			exit(1);
+		}
 		ssize_t r = read(m_fdFlash, m_pAVR->flash, m_pAVR->flashend + 1);
 		if (r != m_pAVR->flashend + 1) {
 			fprintf(stderr, "unable to load flash memory\n");

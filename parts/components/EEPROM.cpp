@@ -19,13 +19,16 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "stdio.h"
-#include "unistd.h"
-#include "assert.h"
-#include <fcntl.h>
-#include "string.h"
 #include "EEPROM.h"
-#include <avr_eeprom.h>
+#include <avr_eeprom.h>  // for avr_eeprom_desc_t, AVR_IOCTL_EEPROM_GET, AVR...
+#include <fcntl.h>       // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <stdlib.h>      // for malloc, exit, free, size_t
+#include <sys/types.h>   // for ssize_t
+#include "assert.h"      // for assert
+#include "sim_avr.h"     // for avr_t
+#include "sim_io.h"      // for avr_ioctl
+#include "stdio.h"       // for perror, printf, fprintf, stderr
+#include "unistd.h"      // for close, ftruncate, lseek, read, write
 
 
 void EEPROM::Load(struct avr_t *avr, const string &strFile)
@@ -40,7 +43,7 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 		exit(1);
 	}
 	printf("Loading %u bytes of EEPROM\n", m_uiSize);
-	avr_eeprom_desc_t io {ee:(uint8_t*)malloc(m_uiSize),offset:0, size:m_uiSize};
+	avr_eeprom_desc_t io {.ee= (uint8_t*)malloc(m_uiSize), .offset = 0, .size = m_uiSize};
 
 	(void)ftruncate(m_fdEEPROM, m_uiSize);
 	ssize_t r = read(m_fdEEPROM, io.ee, m_uiSize);
@@ -51,7 +54,7 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 		exit(1);
 	}
 	uint8_t bEmpty = 1;
-	for (int i=0; i<io.size; i++)
+	for (size_t i=0; i<io.size; i++)
 	{
 		bEmpty &= io.ee[i]==0;
 	}
@@ -66,7 +69,7 @@ void EEPROM::Save()
 	// Write out the EEPROM contents:
 	lseek(m_fdEEPROM, SEEK_SET, 0);
 
-	avr_eeprom_desc_t io {ee:(uint8_t*)malloc(m_uiSize), offset:0, size:m_uiSize};
+	avr_eeprom_desc_t io {.ee= (uint8_t*)malloc(m_uiSize), .offset = 0, .size = m_uiSize};
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); // Should net a pointer to eeprom[0]
 
 	ssize_t r = write(m_fdEEPROM, io.ee, m_uiSize);
@@ -86,7 +89,7 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 		case ActPoke:
 			unsigned int uiAddr = stoi(vArgs.at(0));
 			uint8_t uiVal = stoi(vArgs.at(1));
-			if (uiAddr<0 || uiAddr>=m_uiSize)
+			if (uiAddr>=m_uiSize)
 				return IssueLineError(string("Address ") + to_string(uiAddr) + " is out of range [0," + to_string(m_uiSize-1) + "]");
 			else
 			{
@@ -94,12 +97,13 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 				return LineStatus::Finished;
 			}
 	}
+	return LineStatus::Unhandled;
 }
 
 
 void EEPROM::Poke(uint16_t address, uint8_t value)
 {
-	avr_eeprom_desc_t io {ee: &value, offset:address, size:1};
+	avr_eeprom_desc_t io {.ee = &value, .offset = address, .size = 1};
 	assert(address<m_uiSize);
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_SET,&io);
 }
@@ -107,7 +111,7 @@ void EEPROM::Poke(uint16_t address, uint8_t value)
 uint8_t EEPROM::Peek(uint16_t address)
 {
 	uint8_t uiRet = 0;
-	avr_eeprom_desc_t io {ee: &uiRet, offset:address, size:1};
+	avr_eeprom_desc_t io {.ee = &uiRet, .offset = address, .size = 1};
 	assert(address<m_uiSize);
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io);
 	return uiRet;

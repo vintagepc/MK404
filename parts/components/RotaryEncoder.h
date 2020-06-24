@@ -24,8 +24,15 @@
 
 #pragma once
 
-#include "BasePeripheral.h"
-#include "Scriptable.h"
+#include <stdint.h>            // for uint32_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
+#include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
+#include "IScriptable.h"       // for IScriptable::LineStatus
+#include "Scriptable.h"        // for Scriptable
+#include "sim_avr.h"           // for avr_t
+#include "sim_avr_types.h"     // for avr_cycle_count_t
+#include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 
 class RotaryEncoder:public BasePeripheral,public Scriptable
 {

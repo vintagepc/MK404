@@ -20,10 +20,14 @@
  */
 
 #include "Beeper.h"
-#include <stdio.h>
-#include <GL/glut.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_audio.h>
+#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/gl.h>            // for glVertex2f, glPopMatrix, glPushMatrix
+#include <SDL/SDL.h>          // for SDL_Init, SDL_INIT_AUDIO
+#include <SDL/SDL_audio.h>    // for SDL_PauseAudio, SDL_AudioSpec, SDL_Clos...
+#include <SDL/SDL_error.h>    // for SDL_GetError
+#include <SDL/SDL_stdinc.h>   // for Sint16
+#include <stdio.h>            // for fprintf, printf, stderr
+#include "BasePeripheral.h"   // for MAKE_C_CALLBACK
 
 Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 {
@@ -37,7 +41,6 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
     m_specWant.callback = m_fcnSDL; // function SDL calls periodically to refill the buffer
     m_specWant.userdata = this; // counter, keeping track of current sample number
 
-    SDL_AudioSpec have;
     if(SDL_OpenAudio(&m_specWant, &m_specHave) != 0)
 	{
 		fprintf(stderr, "Failed to open audio: %s\n", SDL_GetError());
@@ -67,6 +70,7 @@ Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const vector<str
 			ToggleMute();
 			return LineStatus::Finished;
 	}
+	return LineStatus::Unhandled;
 }
 
 Beeper::~Beeper()

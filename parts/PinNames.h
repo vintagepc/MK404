@@ -1,5 +1,4 @@
-#ifndef __PINS_H__
-#define __PINS_H__
+#pragma once
 
 #define __PIN_COMBO(x,y) x##y
 
@@ -76,5 +75,3 @@ namespace PinNames {
 		PIN_COUNT
 	};
 };
-
-#endif //__PINS_H__

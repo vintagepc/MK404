@@ -21,11 +21,10 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include "Button.h"
+#include <stdio.h>  // for printf
 
-Button::Button(std::string strName):m_strName(strName),Scriptable(strName)
+Button::Button(std::string strName):Scriptable(strName),m_strName(strName)
 {
 	RegisterAction("Press", "Simulate pressing the button", Actions::ActPress);
 	RegisterAction("Release", "Simulate releasing the button", Actions::ActRelease);

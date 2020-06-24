@@ -22,9 +22,17 @@
 
 #pragma once
 
-#include "SPIPeripheral.h"
-#include "Scriptable.h"
-#include <string>
+#include <stdint.h>            // for uint8_t, uint32_t, int32_t, uint16_t
+#include <string>              // for string
+#include <vector>              // for vector
+#include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
+#include "IScriptable.h"       // for IScriptable::LineStatus
+#include "SPIPeripheral.h"     // for SPIPeripheral
+#include "Scriptable.h"        // for Scriptable
+#include "sim_avr.h"           // for avr_t
+#include "sim_avr_types.h"     // for avr_cycle_count_t
+#include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include "sim_irq.h"           // for avr_irq_t
 
 class TMC2130: public SPIPeripheral, public Scriptable
 {
@@ -172,7 +180,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
         } tmc2130_registers_t;
 
         int32_t m_iCurStep = 0;
-        uint32_t m_uiMaxPos = 0;
+        int32_t m_iMaxPos = 0;
         float m_fCurPos = 0; // Tracks position in float for gl
         tmc2130_cmd_t m_cmdIn;
         tmc2130_cmd_t m_cmdProc;

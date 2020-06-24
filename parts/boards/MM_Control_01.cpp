@@ -19,6 +19,7 @@
  */
 
 #include <boards/MM_Control_01.h>
+#include "PinNames.h"  // for Pin::FINDA_PIN, Pin::I_TMC2130_DIAG, Pin::P_TM...
 
 namespace Boards
 {

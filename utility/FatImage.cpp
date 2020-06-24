@@ -22,10 +22,12 @@
  */
 
 #include "FatImage.h"
-#include <stdio.h>
-#include <fcntl.h>
-#include <vector>
-#include <unistd.h>
+#include <fcntl.h>      // for open, O_CREAT, O_WRONLY, SEEK_SET
+#include <stdio.h>      // for perror
+#include <stdlib.h>     // for exit
+#include <unistd.h>     // for close, ftruncate, lseek, write
+#include <type_traits>  // for __decay_and_strip<>::__type
+#include <vector>       // for vector
 
 // const map<FatImage::Size, uint32_t>FatImage::SectorsPerFat =
 // {
@@ -135,4 +137,5 @@ bool FatImage::MakeFatImage(string strFile, string strSize)
 	lseek(fd,SEEK_SET, 0);
 	write(fd,data.data(),data.size());
 	close(fd);
+	return true;
 }

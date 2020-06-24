@@ -19,15 +19,18 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GLObj.h"
-#include <tiny_obj_loader.h>
-#include <GL/glew.h>
-#include "BasePeripheral.h"
-#include "HD44780GL.h"
-#include <GLPrint.h>
-#include <vector>
-#include <Camera.hpp>
-#include "Printer.h"
+#include <GLPrint.h>         // for GLPrint
+#include <stdint.h>          // for uint32_t
+#include <Camera.hpp>        // for Camera
+#include <string>            // for string
+#include <vector>            // for vector
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "GLObj.h"           // for GLObj
+#include "HD44780.h"         // for _IRQ
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
+class HD44780GL;
+class Printer;
 
 class MK3SGL: public BasePeripheral
 {
@@ -99,8 +102,6 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
 
-		Printer *m_pParent = nullptr;
-
 		int m_iCurTool = 0;
         GLPrint m_Print = GLPrint(0.8,0,0), m_T1 = GLPrint(0,0.8,0), m_T2 = GLPrint(0,0,0.8), m_T3 = GLPrint(0.8,0.4,0), m_T4 = GLPrint(0.8,0,0.8);
 
@@ -146,7 +147,6 @@ class MK3SGL: public BasePeripheral
         float m_fYCorr = 0.141, m_fYPos = 0.010;
         float m_fZCorr = 0.210, m_fZPos = 0.010;
         float m_fEPos = 0;
-        float m_fERetract= 0; bool m_bInRetract = false;
         float m_fSelCorr = 0.025f, m_fSelPos = 0.0f;
 
         // This is going to be in degrees rotation instead of mm
@@ -157,9 +157,10 @@ class MK3SGL: public BasePeripheral
         bool m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false, m_bPINDAOn = false;
         bool m_bPFanOn = false;
 
-        int height = 800, width = 800, m_iWindow = 0;
+
+        int m_iWindow = 0;
 
 		static MK3SGL *g_pMK3SGL;
+		Printer *m_pParent = nullptr;
 
-        float maxExtent;
 };

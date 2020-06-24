@@ -20,10 +20,11 @@
  */
 
 
-#ifndef __ADC_BUTTONS_H___
-#define __ADC_BUTTONS_H___
+#pragma once
 
 #include "ADCPeripheral.h"
+#include <stdint.h>         // for uint8_t, uint32_t
+#include "sim_avr.h"        // for avr_t
 
 class ADC_Buttons:public ADCPeripheral
 {
@@ -44,5 +45,3 @@ class ADC_Buttons:public ADCPeripheral
 		uint8_t m_uiCurBtn;
 
 };
-
-#endif /* __MMU_BUTTONS_H___ */

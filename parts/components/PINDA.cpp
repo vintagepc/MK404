@@ -20,8 +20,8 @@
  */
 
 #include "PINDA.h"
-#include "math.h"
-#include <stdio.h>
+#include <stdio.h>  // for printf
+#include <cmath>    // for pow, floor, round, sqrt
 
 //#define TRACE(_w)_w
 #ifndef TRACE
@@ -75,7 +75,7 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<str
 		case ActSetXYCalPont:
 		{
 			int iVal = stoi(vArgs.at(0));
-			if (iVal<0 | iVal>3)
+			if ((iVal<0) | (iVal>3))
 				return IssueLineError(string("Index ") + to_string(iVal) + " is out of range [0,3]");
 			float fX = stof(vArgs.at(1)), fY = stof(vArgs.at(2));
 			_bed_calibration_points[2*iVal] = fX;
@@ -83,6 +83,7 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<str
 			return LineStatus::Finished;
 		}
 	}
+	return LineStatus::Unhandled;
 }
 
 // Checks the current XYZ position against the MBL map and does calculations.
@@ -160,7 +161,7 @@ void PINDA::ToggleSheet()
     RaiseIRQ(SHEET_OUT,m_bIsSheetPresent);
 }
 
-PINDA::PINDA(float fX, float fY):m_fOffset{fX,fY}, Scriptable("PINDA")
+PINDA::PINDA(float fX, float fY):Scriptable("PINDA"),m_fOffset{fX,fY}
 {
     SetMBLMap();
 	RegisterAction("ToggleSheet","Toggles the presence of the steel sheet",ActToggleSheet);

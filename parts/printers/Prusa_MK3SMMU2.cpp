@@ -20,6 +20,13 @@
 
 
 #include "Prusa_MK3SMMU2.h"
+#include "BasePeripheral.h"       // for MAKE_C_CALLBACK
+#include "IRSensor.h"             // for IRSensor, IRSensor::IRState::IR_AUTO
+#include "MK3SGL.h"               // for MK3SGL
+#include "PinNames.h"             // for Pin::MMU_HWRESET
+#include "SerialPipe.h"           // for SerialPipe
+#include "printers/Prusa_MK3S.h"  // for Prusa_MK3S
+#include "uart_pty.h"             // for uart_pty
 
 Prusa_MK3SMMU2::~Prusa_MK3SMMU2()
 {

@@ -21,19 +21,19 @@
 
 
 #include "GLObj.h"
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <cstdio>
-#include <iostream>
-#include <limits>
-#include <map>
-#include <string>
-#include <vector>
-#include <cstring>
-
-#include <GL/glew.h>
-#include <GL/glut.h>
+#include <GL/glew.h>          // for glMaterialfv, GL_FRONT, glBindTexture
+#include <algorithm>          // for max, min
+#include <cassert>            // for assert
+#include <cmath>              // for sqrtf
+#include <cstdio>             // for printf, size_t
+#include <cstring>            // for memcpy
+#include <iostream>           // for operator<<, endl, basic_ostream, cerr
+#include <limits>             // for numeric_limits
+#include <map>                // for map, _Rb_tree_iterator
+#include <scoped_allocator>   // for allocator_traits<>::value_type
+#include <string>             // for string, operator<<, char_traits
+#include <vector>             // for vector
+#include "tiny_obj_loader.h"  // for attrib_t, index_t, mesh_t, shape_t, Loa...
 
 
 // This disables textures and vertex colors, not used in favor of materials anyway.
@@ -42,7 +42,7 @@
 
 GLObj::GLObj(std::string strFile):m_strFile(strFile)
 {
- 
+
 }
 
 void GLObj::Load()
@@ -62,7 +62,7 @@ void GLObj::Load()
 
 void GLObj::SetAllVisible(bool bVisible)
 {
-	for (int i=0; i<m_DrawObjects.size(); i++)
+	for (size_t i=0; i<m_DrawObjects.size(); i++)
 		m_DrawObjects[i].bDraw = bVisible;
 }
 
@@ -73,7 +73,7 @@ void GLObj::SetSubobjectVisible(uint iObj, bool bVisible)
 }
 
 
-void GLObj::SetSubobjectMaterial(uint iObj, int iMat)
+void GLObj::SetSubobjectMaterial(uint iObj, uint iMat)
 {
 	if (iObj<m_DrawObjects.size() && iMat < m_materials.size())
 	{
@@ -106,7 +106,7 @@ void GLObj::Draw() {
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
 
-#if TEX_VCOLOR    
+#if TEX_VCOLOR
 		glEnableClientState(GL_COLOR_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
@@ -131,7 +131,7 @@ void GLObj::Draw() {
 		}
 		glVertexPointer(3, GL_FLOAT, stride, (const void*)0);
 		glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
-#if TEX_VCOLOR    
+#if TEX_VCOLOR
 		glColorPointer(3, GL_FLOAT, stride, (const void*)(sizeof(float) * 6));
 		glTexCoordPointer(2, GL_FLOAT, stride, (const void*)(sizeof(float) * 9));
 #endif
@@ -146,20 +146,6 @@ static std::string GetBaseDir(const std::string &filepath) {
 	if (filepath.find_last_of("/\\") != std::string::npos)
 		return filepath.substr(0, filepath.find_last_of("/\\"));
 	return "";
-}
-
-
-static bool FileExists(const std::string &abs_filename) {
-	bool ret;
-	FILE *fp = fopen(abs_filename.c_str(), "rb");
-	if (fp) {
-		ret = true;
-		fclose(fp);
-	} else {
-		ret = false;
-	}
-
-	return ret;
 }
 
 static void CalcNormal(float N[3], float v0[3], float v1[3], float v2[3]) {
@@ -223,7 +209,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 	{
 			for (size_t m = 0; m < m_materials.size(); m++) {
 					tinyobj::material_t* mp = &m_materials[m];
-					
+
 					if (mp->diffuse_texname.length() > 0) {
 							// Only load the texture if it is not already loaded
 							if (m_textures.find(mp->diffuse_texname) == m_textures.end()) {
@@ -240,7 +226,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 											exit(1);
 										}
 									}
-									
+
 									unsigned char* image = nullptr; //stbi_load(texture_filename.c_str(), &w, &h, &comp, STBI_default);
 									if (!image) {
 											std::cerr << "Unable to load texture: " << texture_filename << std::endl;
@@ -276,7 +262,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 				tinyobj::index_t idx0 = shapes[s].mesh.indices[3 * f + 0];
 				tinyobj::index_t idx1 = shapes[s].mesh.indices[3 * f + 1];
 				tinyobj::index_t idx2 = shapes[s].mesh.indices[3 * f + 2];
-				
+
 				int current_material_id = shapes[s].mesh.material_ids[f];
 
 				if ((current_material_id < 0) || (current_material_id >= static_cast<int>(m_materials.size()))) {
@@ -287,11 +273,12 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 				//    std::cerr << "Invalid material index: " << current_material_id << std::endl;
 				//}
 				//
+#if TEX_VCOLOR
 				float diffuse[3];
 				for (size_t i = 0; i < 3; i++) {
 						diffuse[i] = m_materials[current_material_id].diffuse[i];
 				}
-#if TEX_VCOLOR
+
 				float tc[3][2];
 
 				if (attrib.texcoords.size() > 0) {
@@ -385,7 +372,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 					vb.push_back(c[0] * 0.5 + 0.5);
 					vb.push_back(c[1] * 0.5 + 0.5);
 					vb.push_back(c[2] * 0.5 + 0.5);
-					
+
 					vb.push_back(tc[k][0]);
 					vb.push_back(tc[k][1]);
 #endif
@@ -402,7 +389,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 			} else {
 					o.material_id = m_materials.size() - 1; // = ID for default material.
 			}
-					
+
 			if (vb.size() > 0) {
 				glGenBuffers(1, &o.vb);
 				glBindBuffer(GL_ARRAY_BUFFER, o.vb);

@@ -20,12 +20,11 @@
  */
 
 #include "SerialPipe.h"
-#include <sys/select.h>
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <fcntl.h>
+#include <errno.h>       // for EAGAIN, errno
+#include <fcntl.h>       // for open, O_NONBLOCK, O_RDWR
+#include <stdio.h>       // for fprintf, printf, perror, NULL, stderr
+#include <sys/select.h>  // for FD_ISSET, FD_SET, select, FD_ZERO, fd_set
+#include <unistd.h>      // for read, write, close
 
 SerialPipe::SerialPipe(std::string strUART0, std::string strUART1):m_strPty0(strUART0),m_strPty1(strUART1)
 {
@@ -48,7 +47,7 @@ void* SerialPipe::Run()
 {
 	// Not much to see here, we just open the ports and shuttle characters back and forth across them.
 	printf("Starting serial transfer thread...\n");
-	int fdPort[2]; 
+	int fdPort[2];
 	fd_set fdsIn, fdsErr;
 	unsigned char chrIn;
 	int iLastFd = 0, iReadyRead, iChrRd;
@@ -68,7 +67,7 @@ void* SerialPipe::Run()
 		iLastFd = fdPort[0];
 	else
 		iLastFd = fdPort[1];
-		
+
 	while (!m_bQuit)
 	{
 		FD_ZERO(&fdsIn);
@@ -92,7 +91,7 @@ void* SerialPipe::Run()
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
 			{
-				m_bQuit = true; 
+				m_bQuit = true;
 				break;
 			}
 		}
@@ -104,17 +103,17 @@ void* SerialPipe::Run()
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
 			{
-				m_bQuit = true; 
+				m_bQuit = true;
 				break;
 			}
 		}
 		if (FD_ISSET(fdPort[0], &fdsErr) || FD_ISSET(fdPort[1], &fdsErr))
 		{
 			fprintf(stderr,"Exception reading PTY. Quit.\n");
-			m_bQuit = true; 
+			m_bQuit = true;
 			break;
 		}
-		
+
 	}
 
 	// cleanup.

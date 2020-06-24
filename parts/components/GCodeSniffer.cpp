@@ -21,8 +21,9 @@
  */
 
 #include "GCodeSniffer.h"
-#include <stdio.h>
-#include "avr_uart.h"
+#include <stdio.h>     // for printf
+#include "avr_uart.h"  // for ::UART_IRQ_OUTPUT, AVR_IOCTL_UART_GETIRQ
+#include "sim_io.h"    // for avr_io_getirq
 
 void GCodeSniffer::OnByteIn(struct avr_irq_t * irq, uint32_t value)
 {

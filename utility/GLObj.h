@@ -20,12 +20,15 @@
  */
 
 
-#include <vector>
-#include <type_traits>
-#include <tiny_obj_loader.h>
-#include <GL/glew.h>
+#include <GL/glew.h>          // for GLuint
+#include <stddef.h>           // for size_t
+#include <sys/types.h>        // for uint
+#include <tiny_obj_loader.h>  // for material_t
+#include <map>                // for map
+#include <string>             // for string
+#include <vector>             // for vector
 
-class GLObj 
+class GLObj
 {
     public:
         // Creates a new GLObj for the given .obj file
@@ -41,7 +44,7 @@ class GLObj
         void SetSubobjectVisible(uint iObj, bool bVisible = true);
 
         // Lets you tweak the material for a subobject. An example is a modelled LED turning on/off.
-        void SetSubobjectMaterial(uint iObj, int iMat);
+        void SetSubobjectMaterial(uint iObj, uint iMat);
 
         // Sets all subobjects as visible or invisible.
         void SetAllVisible(bool bVisible = true);
@@ -65,7 +68,7 @@ class GLObj
         float m_extMin[3], m_extMax[3];
         bool m_bLoaded = false;
         std::vector<tinyobj::material_t> m_materials;
-        std::map<std::string, GLuint> m_textures;        
+        std::map<std::string, GLuint> m_textures;
         std::vector<DrawObject> m_DrawObjects;
         std::string m_strFile;
 

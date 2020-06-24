@@ -20,10 +20,10 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SerialLineMonitor.h"
-#include <stdio.h>
-#include "avr_uart.h"
 
+#include "SerialLineMonitor.h"
+#include "avr_uart.h"  // for AVR_IOCTL_UART_GETIRQ, ::UART_IRQ_INPUT, ::UAR...
+#include "sim_io.h"    // for avr_io_getirq
 
 
 void SerialLineMonitor::OnByteIn(struct avr_irq_t * irq, uint32_t value)
@@ -79,7 +79,7 @@ Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const v
 			return SendChar();
 
 	}
-
+	return LineStatus::Unhandled;
 }
 
 Scriptable::LineStatus SerialLineMonitor::SendChar()
@@ -93,6 +93,7 @@ Scriptable::LineStatus SerialLineMonitor::SendChar()
 	else
 		return LineStatus::Finished;
 
+	return LineStatus::Unhandled;
 }
 
 void SerialLineMonitor::OnNewLine()
@@ -106,6 +107,8 @@ void SerialLineMonitor::OnNewLine()
 			break;
 		case Contains:
 			m_bMatched = m_strLine.find(m_strMatch) != string::npos;
+			break;
+		case None:
 			break;
 	}
 }

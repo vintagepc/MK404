@@ -24,8 +24,14 @@
 
 #pragma once
 
-#include "ADCPeripheral.h"
-#include "Scriptable.h"
+#include <stdint.h>         // for uint32_t, uint8_t
+#include <string>           // for string
+#include <vector>           // for vector
+#include "ADCPeripheral.h"  // for ADCPeripheral
+#include "IScriptable.h"    // for IScriptable::LineStatus
+#include "Scriptable.h"     // for Scriptable
+#include "sim_avr.h"        // for avr_t
+#include "sim_irq.h"        // for avr_irq_t
 
 class Thermistor: public ADCPeripheral, public Scriptable
 {

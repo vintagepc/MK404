@@ -20,12 +20,12 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sim_time.h>
-#include <avr_timer.h>
 #include "HD44780.h"
+#include <sim_time.h>        // for avr_usec_to_cycles
+#include <stdio.h>           // for printf
+#include <string.h>          // for memset
+#include <scoped_allocator>  // for allocator_traits<>::value_type
+#include "Scriptable.h"      // for Scriptable
 
 //#define TRACE(_w) _w
 #ifndef TRACE
@@ -90,6 +90,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 			m_uiLineChg^= iLine<0 ? 0xFF : 1<<iLine; // Reset line change tracking.
 			return bResult ? LineStatus::Finished : LineStatus::Waiting;
 	}
+	return LineStatus::Unhandled;
 }
 
 

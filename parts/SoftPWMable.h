@@ -88,9 +88,10 @@ class SoftPWMable : public BasePeripheral
 
 		uint32_t m_uiSoftTimeoutUs = 17 *1000; // 62.5 Hz = 16ms period max...
 
+		bool m_bIsSoftPWM = false;
+
 		uint16_t m_uiPrescale = 1000;
 		avr_cycle_count_t m_cntSoftPWM = 0, m_cntTOn = 0;
 		avr_cycle_timer_t m_fcnSoftTimeout;
 
-		bool m_bIsSoftPWM = false;
 };

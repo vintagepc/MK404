@@ -6,7 +6,7 @@
 	Copyright 2011 Michel Pollet <buserror@gmail.com>
 
     Rewritten 2020 VintagePC <https://github.com/vintagepc/>
-        Rewritten for C++ 
+        Rewritten for C++
         Extended with brightness
         Enabled CGRAM functionality
         Changed to baked-in ROM .h
@@ -26,11 +26,13 @@
 	You should have received a copy of the GNU General Public License
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#ifndef __HD44780_GL_H__
-#define __HD44780_GL_H__
 
-#include "HD44780.h"
+#pragma once
+
+#include <stdint.h>   // for uint32_t, uint8_t
+#include "HD44780.h"  // for HD44780
+#include "sim_avr.h"  // for avr_t
+#include "sim_irq.h"  // for avr_irq_t
 
 class HD44780GL:public HD44780
 {
@@ -57,4 +59,3 @@ class HD44780GL:public HD44780
 		uint8_t m_uiBrightness = 255;
 		uint8_t m_uiPWM = 255;
 };
-#endif

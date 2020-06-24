@@ -21,36 +21,31 @@
  */
 
 
-#include <unistd.h>
-#include <sys/stat.h>
-#include <type_traits>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <libgen.h>
-#include <errno.h>
-#include <signal.h>
-
-#if __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glew.h>
-#include <GL/glut.h>
-#include <GL/freeglut.h>
-#endif
-#include <pthread.h>
-
-extern "C" {
-	#include "sim_vcd_file.h"
-}
-
-#include <tclap/CmdLine.h>
-
-#include "PrinterFactory.h"
-#include "parts/Board.h"
-#include "Printer.h"
-
-#include "FatImage.h"
+#include <GL/glew.h>                  // for glVertex2f, glEnable, glTranslatef
+#include <GL/freeglut.h>          // for glutLeaveMainLoop, glutSetOption
+#include <pthread.h>                  // for pthread_cancel, pthread_create
+#include <signal.h>                   // for signal, SIGINT
+#include <stdint.h>                   // for uint8_t
+#include <stdio.h>                    // for printf, NULL, fprintf, getchar
+#include <stdlib.h>                   // for exit
+#include <tclap/CmdLine.h>            // for CmdLine
+#include <algorithm>                  // for find
+#include <scoped_allocator>           // for allocator_traits<>::value_type
+#include <string>                     // for string, basic_string
+#include <utility>                    // for pair
+#include <vector>                     // for vector
+#include "FatImage.h"                 // for FatImage
+#include "Printer.h"                  // for Printer, Printer::VisualType
+#include "PrinterFactory.h"           // for PrinterFactory
+#include "ScriptHost.h"               // for ScriptHost
+#include "parts/Board.h"              // for Board
+#include "sim_avr.h"                  // for avr_t
+#include "sim_vcd_file.h"             // for avr_vcd_t
+#include "tclap/MultiSwitchArg.h"     // for MultiSwitchArg
+#include "tclap/SwitchArg.h"          // for SwitchArg
+#include "tclap/UnlabeledValueArg.h"  // for UnlabeledValueArg
+#include "tclap/ValueArg.h"           // for ValueArg
+#include "tclap/ValuesConstraint.h"   // for ValuesConstraint
 
 avr_vcd_t vcd_file;
 
@@ -106,7 +101,7 @@ void displayCB(void)		/* function called whenever redisplay needed */
 			glRotatef(8.f,0,0,1);
 			glPushAttrib(GL_LINE_BIT);
 				glLineWidth(5);
-				for (int i=0; i<strState.length(); i++)
+				for (size_t i=0; i<strState.length(); i++)
 					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strState[i]);
 			glPopAttrib();
 		glPopMatrix();

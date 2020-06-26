@@ -29,6 +29,7 @@ set(H_FILES
     parts/components/Heater.h
     parts/components/IRSensor.h
     parts/components/LED.h
+	parts/components/PAT9125.h
     parts/components/PINDA.h
     parts/components/RotaryEncoder.h
 	parts/components/SerialLineMonitor.h

@@ -124,9 +124,20 @@ void Prusa_MK3S::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
 	avr_core_watch_write(avr,addr,v);
 }
 
+void Prusa_MK3S::SetupIR()
+{
+	// Setup the 3S IR sensor.
+	printf("MK3S - adding IR sensor.\n");
+	AddHardware(IR, GetPinNumber(VOLT_IR_PIN));
+	TryConnect(IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
+	TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
+}
+
 void Prusa_MK3S::SetupHardware()
 {
 	EinsyRambo::SetupHardware();
+
+	SetupIR();
 
 	if (GetConnectSerial())
 		UART0.Connect('0');
@@ -205,7 +216,7 @@ void Prusa_MK3S::OnAVRCycle()
 				PowerPanic.Press(500);
 				break;
 			case 'f':
-				IR.Toggle();
+				ToggleFSensor();
 				break;
 			case 'c':
 				if (!sd_card.IsMounted())

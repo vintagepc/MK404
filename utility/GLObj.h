@@ -19,6 +19,7 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 
 #include <GL/glew.h>          // for GLuint
 #include <stddef.h>           // for size_t

@@ -30,7 +30,7 @@ jobs:
     
     - name: Checkout master
       uses: actions/checkout@v2.2.0
-      if: ${{ github.event.push }}
+      if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK3SIM.git
         submodules: true

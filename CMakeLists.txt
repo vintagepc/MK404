@@ -29,7 +29,7 @@ set(H_FILES
     parts/components/Heater.h
     parts/components/IRSensor.h
     parts/components/LED.h
-	#parts/components/PAT9125.h
+	parts/components/PAT9125.h
     parts/components/PINDA.h
     parts/components/RotaryEncoder.h
 	parts/components/SerialLineMonitor.h
@@ -56,6 +56,7 @@ set(INCLUDE_FILES
     parts/ADCPeripheral.h
     parts/BasePeripheral.h
 	parts/SPIPeripheral.h
+	parts/I2CPeripheral.h
     parts/PinSpec.h
     parts/pinspecs/PinSpec_32u4.h
 	parts/pinspecs/PinSpec_2560.h

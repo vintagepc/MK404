@@ -45,6 +45,9 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 	protected:
 		void SetupHardware() override;
 
+		virtual void SetupIR(); // Overridden by the MK3 to setup the PAT.
+		inline virtual void ToggleFSensor(){ IR.Toggle(); };
+
 		void OnAVRCycle() override;
 
 		virtual bool GetHasMMU() {return false;}

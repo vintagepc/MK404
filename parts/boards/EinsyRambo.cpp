@@ -168,13 +168,10 @@ namespace Boards
 		TryConnect(pinda, PINDA::TRIGGER_OUT ,Z_MIN_PIN);
 		AddHardware(lPINDA);
 		lPINDA.ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), LED::LED_IN);
+		AddHardware(lIR);
 
 		AddHardware(vBed, GetPinNumber(VOLT_BED_PIN));
 		AddHardware(vMain, GetPinNumber(VOLT_PWR_PIN));
-		AddHardware(IR, GetPinNumber(VOLT_IR_PIN));
-		TryConnect(IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
-		AddHardware(lIR);
-		TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
 
 		AddHardware(PowerPanic);
 		TryConnect(PowerPanic, Button::BUTTON_OUT, UVLO_PIN);

@@ -33,8 +33,8 @@ jobs:
           path: "packages"
           key: ${{secrets.build_pkg_cache}}
           
-    - name: Merge PR branch
-      run: git merge "${GITHUB_REF:11}"
+    - name: Merge PR ${{ github.event.pull_request.head.sha }}
+      run: git merge ${{ github.event.pull_request.head.sha }}
       
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}

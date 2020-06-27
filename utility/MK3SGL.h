@@ -18,6 +18,7 @@
 	You should have received a copy of the GNU General Public License
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
 #include <GLPrint.h>         // for GLPrint
 #include <stdint.h>          // for uint32_t
@@ -44,6 +45,12 @@ class MK3SGL: public BasePeripheral
 
         // Creates new MK3SGL object, with lite graphics (or full) and an MMU (or not)
         MK3SGL(bool bLite, bool bMMU, Printer *pParent = nullptr);
+
+		~MK3SGL()
+		{
+			g_pMK3SGL = nullptr;
+			m_pParent = nullptr;
+		}
 
         // IRQ registration helper.
         void Init(avr_t *avr);

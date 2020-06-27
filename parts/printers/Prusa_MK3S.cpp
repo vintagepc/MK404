@@ -30,7 +30,6 @@
 #include "Heater.h"           // for Heater
 #include "IRSensor.h"         // for IRSensor
 #include "LED.h"              // for LED
-#include "MK3SGL.h"           // for MK3SGL, TMC2130::IRQ::POSITION_OUT, Fan...
 #include "PINDA.h"            // for PINDA
 #include "RotaryEncoder.h"    // for RotaryEncoder, RotaryEncoder::::CCW_CLICK
 #include "SDCard.h"           // for SDCard
@@ -97,7 +96,7 @@ void Prusa_MK3S::OnVisualTypeSet(VisualType type)
 	if (type==VisualType::MINIMAL)
 		return;
 
-	m_pVis = new MK3SGL(type==VisualType::SIMPLE,GetHasMMU(),this);
+	m_pVis.reset(new MK3SGL(type==VisualType::SIMPLE,GetHasMMU(),this));
 
 	AddHardware(*m_pVis);
 

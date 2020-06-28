@@ -83,6 +83,9 @@ class IScriptable
 				m_strName = strName;
 		}
 
+		// Returns the name. Used by, e.g. TelHost for consistency.
+		inline string GetName() {return m_strName;}
+
 		// Prints help text for this Scriptable
 		void PrintRegisteredActions()
 		{

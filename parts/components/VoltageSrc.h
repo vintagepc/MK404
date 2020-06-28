@@ -33,8 +33,7 @@ public:
                         _IRQ(ADC_VALUE_OUT, "16>voltage.value_out") \
                         _IRQ(VALUE_IN, "16<voltage.value_in") \
                         _IRQ(DIGITAL_OUT, ">voltage.digital_out")
-
-    #include <IRQHelper.h>
+    #include "IRQHelper.h"
     // Helper to keep pairs in sync.
 
     // Constructs a new VoltageSrc on ADC mux uiMux, with a v scale factor of fVScale and a starting reading of fStartV

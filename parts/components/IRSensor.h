@@ -23,12 +23,16 @@
 #pragma once
 
 #include <stdint.h>       // for uint32_t
+#include <map>            // for map
 #include <string>         // for string
+#include <type_traits>    // for __decay_and_strip<>::__type
+#include <utility>        // for make_pair, pair
 #include <vector>         // for vector
 #include "IScriptable.h"  // for IScriptable::LineStatus
 #include "Scriptable.h"   // for Scriptable
 #include "VoltageSrc.h"   // for VoltageSrc
 #include "sim_irq.h"      // for avr_irq_t
+
 
 class IRSensor: public VoltageSrc, public Scriptable
 {
@@ -43,7 +47,7 @@ public:
 		IR_NOT_CONNECTED,
 		IR_AUTO, // Special state that only respects the auto value.
 		IR_MAX
-	}IRState;
+	}IRState_t;
 
 	// Constructs a new IRSensor on ADC mux uiMux
     IRSensor();
@@ -53,7 +57,7 @@ public:
 	void Toggle();
 
 	// Sets the sensor output to a given state.
-	void Set(IRState eVal);
+	void Set(IRState_t eVal);
 
 	// Consumer for external (auto) sensor hook, set 0 or 1 to signify absence or presence of filament.
 	void Auto_Input(uint32_t val);
@@ -73,15 +77,15 @@ private:
  	uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
 	// LUT for states to voltage readouts.
-	float m_fIRVals[IR_AUTO] =
+	map<IRState_t,float> m_mIRVals =
 	{
-		[IR_SHORT] = 0.1f,
-		[IR_FILAMENT_PRESENT] = 0.4f,
-		[IR_UNKNOWN] = 3.0f,
-		[IR_NO_FILAMENT] = 4.5f,
-		[IR_NOT_CONNECTED] = 4.9f
+		make_pair(IR_SHORT,0.1f),
+		make_pair(IR_FILAMENT_PRESENT,0.4f),
+		make_pair(IR_UNKNOWN, 3.0f),
+		make_pair(IR_NO_FILAMENT, 4.5f),
+		make_pair(IR_NOT_CONNECTED, 4.9)
 	};
 
 	bool m_bExternal = false;
-	IRState m_eCurrent = IR_NO_FILAMENT;
+	IRState_t m_eCurrent = IR_NO_FILAMENT;
 };

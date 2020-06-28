@@ -41,7 +41,7 @@ void HC595::OnDataIn(struct avr_irq_t * irq, uint32_t value)
 void HC595::OnClockIn(struct avr_irq_t * irq, uint32_t value)
 {
 	if (irq->value && !value)
-		m_uiValue = m_uiValue<<1 | (m_uiCurBit);	
+		m_uiValue = m_uiValue<<1 | (m_uiCurBit);
 }
 
 /*
@@ -54,7 +54,7 @@ void HC595::OnLatchIn(struct avr_irq_t * irq, uint32_t value)
 		m_uiLatch = m_uiValue;
 		RaiseIRQ(OUT, m_uiLatch);
 		for (int i=0; i<32; i++)
-			if (uiChanged & (1<<i))
+			if (uiChanged & (1U<<i))
 				RaiseIRQ(BIT0+i,(m_uiLatch>>i) & 1);
 
 	}
@@ -78,4 +78,3 @@ void HC595::Init(struct avr_t * avr)
 	RegisterNotify(IN_CLOCK, 	MAKE_C_CALLBACK(HC595,OnClockIn), 	this);
 	RegisterNotify(IN_DATA, 	MAKE_C_CALLBACK(HC595,OnDataIn), 	this);
 }
-

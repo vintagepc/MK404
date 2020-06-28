@@ -57,6 +57,7 @@ set(H_FILES
 	parts/components/SerialLineMonitor.h
 	parts/components/HC595.h
 	parts/components/Button.h
+	parts/components/PAT9125.h
 	parts/components/GCodeSniffer.h
 	parts/components/TMC2130.h
 	parts/components/IRSensor.h

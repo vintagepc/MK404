@@ -59,6 +59,8 @@ namespace Wirings
 					{LED_PIN,13},
 					{SDCARDDETECT,15},
 					{SDSS,77},
+					{SWI2C_SCL, 21},
+					{SWI2C_SDA, 20},
 					{TEMP_0_PIN,0},
 					{TEMP_1_PIN,1},
 					{TEMP_AMBIENT_PIN,6},

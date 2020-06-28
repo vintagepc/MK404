@@ -35,22 +35,22 @@ jobs:
         repository: vintagepc/MK3SIM.git
         submodules: true
 
-#    - name: Cache packages
-#      uses: actions/cache@v1.0.3
-#      id: cache-pkgs
-#      with:
-#          path: "packages"
-#          key: ${{secrets.build_pkg_cache}}
+    - name: Cache packages
+      uses: actions/cache@v1.0.3
+      id: cache-pkgs
+      with:
+          path: "packages"
+          key: ${{secrets.build_pkg_cache}}
 
-#    - name: Setup cache dir
-#      if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
-#      run: mkdir -p packages/partial
-#
-#    - name: Install packages
-#      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev
-#
-#    - name: Cache permissions
-#      run: sudo chmod -R 744 packages
+    - name: Setup cache dir
+      if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
+      run: mkdir -p packages/partial
+
+    - name: Install packages
+      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev
+
+    - name: Cache permissions
+      run: sudo chmod -R 744 packages
 
     - name: Prepare CMake build
       run: mkdir ${{ runner.workspace }}/MK3SIM/build && cd ${{ runner.workspace }}/MK3SIM/build && cmake -DCMAKE_BUILD_TYPE=DEBUG ..

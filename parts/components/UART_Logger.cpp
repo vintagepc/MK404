@@ -22,6 +22,7 @@
 #include "UART_Logger.h"
 #include <fcntl.h>     // for open, O_CREAT, O_RDWR
 #include <stdio.h>     // for printf, perror
+#include <stdlib.h>    // for exit
 #include <unistd.h>    // for close, ftruncate, write
 #include "avr_uart.h"  // for ::AVR_UART_FLAG_STDIO, ::UART_IRQ_OUTPUT, AVR_...
 #include "sim_io.h"    // for avr_ioctl, avr_io_getirq

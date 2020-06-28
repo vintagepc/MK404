@@ -27,12 +27,12 @@ uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
     float fVal;
     if (m_eCurrent != IR_AUTO)
-        fVal = m_fIRVals[m_eCurrent];
+        fVal = m_mIRVals[m_eCurrent];
     else if (m_bExternal)
-        fVal = m_fIRVals[IR_FILAMENT_PRESENT];
+        fVal = m_mIRVals[IR_FILAMENT_PRESENT];
     else
 	{
-        fVal = m_fIRVals[IR_NO_FILAMENT];
+        fVal = m_mIRVals[IR_NO_FILAMENT];
 	}
 
 	uint32_t iVOut =  (fVal)*1000;

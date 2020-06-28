@@ -9,7 +9,7 @@ Remaining To-Dos of note:
 - a number of lofty goals...
 
 *Current state of affairs and features*:
-- ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg)
+- ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg) ![CPPCheck](https://github.com/vintagepc/MK3SIM/workflows/CPPCheck/badge.svg)
 - **The simulator can complete a self test!**
 
 
@@ -45,11 +45,11 @@ Remaining To-Dos of note:
 
 To get stared, clone the MK404 repo. the 3rdParty/simavr folder may be empty, you will need to `cd` into the checkout and run `git submodule init` and `git submodule update` from within it to pull down the correct simavr dependency. This should also initialize the `tinyobjloader` and `TCLAP` dependencies.
 
-This is now a `cmake` project and independent of simAVR. You can follow normal cmake procedures, using your favourite IDE (or with cmake-gui). The SimAVR submodule will be built automatically and taken care of for you.
+This is now a `cmake` project and independent of simAVR. You can follow normal cmake procedures, using your favourite IDE (or with cmake-gui). The submodules will be built automatically and taken care of for you.
 
 You will need to use a fairly recent version of GCC/G++ (I use 7.4.0). Older versions from the 4.8 era may not support some of the syntax used.
 
-Windows is not officially supported/maintained but current status (as of May 2020) is that you can build and execute the program using Cygwin with the appropriate dependencies. You will need to change some of the SimAVR code as described in http://fabricesalvaire.github.io/simavr/gitorious-get-started.html to get it to compile. SimAVR depends on libelf, freeglut, GL, GLEW, bintools, SDL-audio, and pthread.
+Windows is not officially supported/maintained but current status (as of May 2020) is that you can build and execute the program using Cygwin with the appropriate dependencies. You will need to change some of the SimAVR code as described in http://fabricesalvaire.github.io/simavr/gitorious-get-started.html to get it to compile. MK404 depends on libelf, freeglut, GL, GLEW, bintools, SDL-audio, and pthread. Due to SimAVR's heavy dependency on POSIX features (some of which we also use) and the fact I run linux as my day-to-day OS, it is unlikely there will be a native Windows build in the forseeable future.
 
 ### Command line arguments:
 - Current arguments can be viewed with the -h flag, should this README become outdated.

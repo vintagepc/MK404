@@ -21,18 +21,21 @@
 #pragma once
 
 #include <stdint.h>         // for uint32_t, uint8_t
-#include <utility>          // for pair
+#include <memory>           // for unique_ptr
 #include "EinsyRambo.h"     // for EinsyRambo
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "sim_avr.h"        // for avr_t
 #include "sim_avr_types.h"  // for avr_io_addr_t
-class MK3SGL;
+#include <utility>
+#include "MK3SGL.h"
 
 class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 {
 
 	public:
 		Prusa_MK3S():EinsyRambo(),Printer(){};
+
+		~Prusa_MK3S(){};
 
 		void Draw() override;
 		void OnKeyPress(unsigned char key, int x, int y) override;
@@ -52,7 +55,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 
 		virtual bool GetHasMMU() {return false;}
 
-		MK3SGL *m_pVis = nullptr;
+		std::unique_ptr<MK3SGL> m_pVis;
 
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);

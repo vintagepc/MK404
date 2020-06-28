@@ -97,7 +97,7 @@ class PrinterFactory
 		{
 			P* printer = (P*)p;
 			printer->StopAVR();
-			delete printer;
+			printer->~P();
 		};
 
 	private:

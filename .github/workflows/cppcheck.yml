@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI Build
+name: CPPCheck
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -27,14 +27,14 @@ jobs:
         repository: vintagepc/MK3SIM.git
         ref: ${{ github.event.pull_request.head.sha }}
         submodules: true
-    
+
     - name: Checkout master
       uses: actions/checkout@v2.2.0
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK3SIM.git
         submodules: true
-    
+
     - name: Cache packages
       uses: actions/cache@v1.0.3
       id: cache-pkgs
@@ -45,25 +45,15 @@ jobs:
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
       run: mkdir -p packages/partial
-      
+
     - name: Install packages
-      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev
+      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev cppcheck
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
-      
-    - name: Prepare CMake build
-      run: mkdir ${{ runner.workspace }}/MK3SIM/build && cd ${{ runner.workspace }}/MK3SIM/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
-    
-    - name: Build Einsy
-      run: cd ${{ runner.workspace }}/MK3SIM/build && make
- 
-#    - name: Build CMake
-#      uses: ashutoshvarma/action-cmake-build@v1
-#      continue-on-error: true
-#      with:
-#        build-dir: ${{ runner.workspace }}/MK3SIM/build
-#        build-type: Release
-        
-       
 
+    - name: Prepare CMake build
+      run: mkdir ${{ runner.workspace }}/MK3SIM/build && cd ${{ runner.workspace }}/MK3SIM/build && cmake -DCMAKE_BUILD_TYPE=DEBUG ..
+
+    - name: Run CPPCheck
+      run: cd ${{ runner.workspace }}/MK3SIM/build && make CPPCheck

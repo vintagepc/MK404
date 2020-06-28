@@ -9,7 +9,7 @@ Remaining To-Dos of note:
 - a number of lofty goals...
 
 *Current state of affairs and features*:
-- ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg)
+- ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg) ![CPPCheck](https://github.com/vintagepc/MK3SIM/workflows/CPPCheck/badge.svg)
 - **The simulator can complete a self test!**
 
 

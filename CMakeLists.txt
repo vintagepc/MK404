@@ -64,7 +64,7 @@ set(H_FILES
 	parts/IScriptable.h
 	parts/PinSpec_Helper.h
 	parts/Wiring.h
-	parts/IRQHelper.h
+#	parts/IRQHelper.h  Can't be checked/used standalone.
 	parts/printers/Prusa_MK3S.h
 	parts/printers/Prusa_MK3SMMU2.h
 	utility/Color.h

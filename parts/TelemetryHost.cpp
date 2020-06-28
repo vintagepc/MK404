@@ -25,7 +25,6 @@
 
 TelemetryHost* TelemetryHost::m_pHost = new TelemetryHost();
 
-
 void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits)
 {
 	bool bShouldAdd = false;

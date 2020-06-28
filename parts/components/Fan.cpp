@@ -21,6 +21,7 @@
 #include "Fan.h"
 #include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #include <GL/gl.h>            // for glVertex2f, glTranslatef, glBegin, glCo..
+#include "TelemetryHost.h"
 //#define TRACE(_w)_w
 #ifndef TRACE
 #define TRACE(_w)
@@ -118,6 +119,12 @@ void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr
 
     RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnPWMChange), this);
     RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalInSPWM), this);
+
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, PWM_IN,{TC::PWM, TC::Fan},8);
+	pTH->AddTrace(this, DIGITAL_IN, {TC::Fan, TC::OutputPin});
+	pTH->AddTrace(this, TACH_OUT, {TC::Fan, TC::InputPin});
+	pTH->AddTrace(this, SPEED_OUT,{TC::Fan, TC::Misc},16);
 
 }
 

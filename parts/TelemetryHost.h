@@ -37,14 +37,15 @@ using namespace std;
 enum class TelCategory
 {
 	// Type
-	Heater,
-	Stepper,
 	Display,
-	Thermistor,
-	Power,
-	InputPin,
 	Fan,
+	Heater,
+	InputPin,
 	OutputPin, // Output/input relative to board.
+	Power,
+	Stepper,
+	Storage,
+	Thermistor,
 	// Connection
 	Serial,
 	SPI,
@@ -93,6 +94,14 @@ class TelemetryHost: public BasePeripheral
 
 	void SetCategories(const vector<string> &vsCats);
 
+	// Convenience wrapper for scriptable BasePeripherals
+	template<class C>
+	inline void AddTrace(C* p, unsigned int eIRQ, TelCats vCats, uint8_t uiBits = 1)
+	{
+		AddTrace(p->GetIRQ(eIRQ),p->GetName(), vCats, uiBits);
+	}
+
+
 	void AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits = 1);
 
 	void Shutdown()
@@ -124,6 +133,7 @@ class TelemetryHost: public BasePeripheral
 			make_pair("Display",TC::Display),
 			make_pair("Thermistor",TC::Thermistor),
 			make_pair("Power",TC::Power),
+			make_pair("Storage",TC::Storage),
 			make_pair("InputPin",TC::InputPin),
 			make_pair("Fan",TC::Fan),
 			make_pair("OutputPin",TC::OutputPin),

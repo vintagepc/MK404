@@ -187,6 +187,8 @@ int main(int argc, char *argv[])
 	cmd.add(argWait);
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");
 	cmd.add(argSpam);
+	ValueArg<int> argVCDRate("","tracerate", "Sets the logging frequency of the VCD trace (default 100uS)",false, 100,"integer");
+	cmd.add(argVCDRate);
 	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. Omit value to get a printout of available traces",false,"string");
 	cmd.add(argVCD);
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img");
@@ -250,7 +252,8 @@ int main(int argc, char *argv[])
 	else
 		strFW = argFW.getValue();
 
-	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,strFW,argSpam.getValue(), argGDB.isSet());
+	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,
+		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue()); // this line is the CreateBoard() args.
 
 	if (!bNoGraphics)
 	{

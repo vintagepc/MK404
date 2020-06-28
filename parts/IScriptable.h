@@ -34,6 +34,7 @@ using namespace std;
 #include <vector>
 class Scriptable;
 class ScriptHost;
+class TelemetryHost;
 
 // Argument type options. Note, the const string defs live in ScriptHost.cpp, update those too!
 enum class ArgType
@@ -50,6 +51,7 @@ class IScriptable
 {
 	friend Scriptable;
 	friend ScriptHost;
+	friend TelemetryHost;
     public:
 		IScriptable(const string &strName):m_strName(strName){};
 

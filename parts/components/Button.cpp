@@ -23,6 +23,7 @@
 
 #include "Button.h"
 #include <stdio.h>  // for printf
+#include "TelemetryHost.h"
 
 Button::Button(std::string strName):Scriptable(strName),m_strName(strName)
 {
@@ -53,6 +54,10 @@ void Button::Init(avr_t* avr)
 	// if name was not provided, init uses the defaults
 	const char * pName = m_strName.c_str();
 	_Init(avr, this, &pName);
+
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, BUTTON_OUT,{TC::InputPin, TC::Misc});
+
 }
 
 

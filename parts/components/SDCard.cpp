@@ -32,6 +32,7 @@
 #include <sys/mman.h>  // for mmap, msync, munmap, MAP_FAILED, MAP_SHARED
 #include <sys/stat.h>  // for fstat, stat, S_IRUSR, S_IWUSR
 #include <unistd.h>    // for close, off_t, ftruncate
+#include "TelemetryHost.h"
 
 static uint8_t CRC7(const uint8_t data[], size_t count)
 {
@@ -470,6 +471,10 @@ void SDCard::Init(struct avr_t *avr)
 	m_ocr |= 1 << 31; //Card power up status bit
 
 	InitCSD();
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
+	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
+	pTH->AddTrace(this, CARD_PRESENT, {TC::InputPin, TC::Storage});
 }
 
 int SDCard::Mount(const std::string &filename, off_t image_size)

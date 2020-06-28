@@ -49,7 +49,7 @@ void Board::CreateAVR()
 	m_EEPROM.Load(m_pAVR,GetStorageFileName("eeprom").c_str());
 }
 
-void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, string strBoot)
+void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, uint32_t uiVCDRate, string strBoot)
 {
 	CreateAVR();
 	if (!strFW.empty())
@@ -75,7 +75,7 @@ void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, string strBoot)
 	m_pAVR->avcc = 5000;
 	m_pAVR->log = 1 + uiV;
 
-	TelemetryHost::GetHost()->Init(m_pAVR, strVCD);
+	TelemetryHost::GetHost()->Init(m_pAVR, strVCD,uiVCDRate);
 
 	// even if not setup at startup, activate gdb if crashing
 	m_pAVR->gdb_port = 1234;

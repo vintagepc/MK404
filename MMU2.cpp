@@ -46,7 +46,7 @@ MMU2::MMU2():MM_Control_01()
 	}
 	g_pMMU = this;
 	SetBoardName("MMU2");
-	CreateBoard("MM-control-01.hex",0, "");
+	CreateBoard("MM-control-01.hex",0, false, 100,"");
 }
 
 std::string MMU2::GetSerialPort()

@@ -63,7 +63,7 @@ namespace Boards
 
 			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};
 
-			void CreateBoard(string strFW, uint8_t uiVerbose, bool bGDB, string strBoot = "stk500boot_v2_mega2560.hex");
+			void CreateBoard(string strFW, uint8_t uiVerbose, bool bGDB, uint32_t uiVCDRate, string strBoot = "stk500boot_v2_mega2560.hex");
 			void StartAVR();
 			void StopAVR();
 

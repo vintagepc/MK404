@@ -20,8 +20,17 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - name: Checkout
+    - name: Checkout ${{ github.event.pull_request.head.sha }}
       uses: actions/checkout@v2.2.0
+      if: ${{ github.event.pull_request }}
+      with:
+        repository: vintagepc/MK3SIM.git
+        ref: ${{ github.event.pull_request.head.sha }}
+        submodules: true
+    
+    - name: Checkout master
+      uses: actions/checkout@v2.2.0
+      if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK3SIM.git
         submodules: true
@@ -32,7 +41,7 @@ jobs:
       with:
           path: "packages"
           key: ${{secrets.build_pkg_cache}}
-      
+
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
       run: mkdir -p packages/partial

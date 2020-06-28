@@ -28,6 +28,7 @@
 #include <stdlib.h>   // for exit, free
 #include <unistd.h>   // for close, ftruncate, lseek, read, write, ssize_t
 #include <cstring>    // for memcpy, NULL
+#include "TelemetryHost.h"
 
 using namespace std;
 using namespace Boards;
@@ -64,11 +65,17 @@ void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, string strBoot)
 		m_bootBase = LoadFirmware(strBoot);
 		m_pAVR->reset_pc = m_bootBase;
 	}
+	string strVCD = GetStorageFileName("VCD");
+	strVCD.replace(strVCD.end()-3,strVCD.end(), "vcd");
+	printf("Initialized VCD file %s\n",strVCD.c_str());
+
 	m_pAVR->frequency = m_uiFreq;
 	m_pAVR->vcc = 5000;
 	m_pAVR->aref = 0;
 	m_pAVR->avcc = 5000;
 	m_pAVR->log = 1 + uiV;
+
+	TelemetryHost::GetHost()->Init(m_pAVR, strVCD);
 
 	// even if not setup at startup, activate gdb if crashing
 	m_pAVR->gdb_port = 1234;

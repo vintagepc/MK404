@@ -34,6 +34,7 @@ set(H_FILES
 	parts/pinspecs/PinSpec_32u4.h
 	parts/PinSpec.h
 	parts/SoftPWMable.h
+	parts/TelemetryHost.h
 	parts/Printer.h
 	parts/SPIPeripheral.h
 	parts/Scriptable.h
@@ -93,6 +94,7 @@ set(MK404_SOURCES
 	parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp
 	parts/ScriptHost.cpp
+	parts/TelemetryHost.cpp
 	parts/components/GCodeSniffer.cpp
 	parts/components/Beeper.cpp
 	parts/components/HD44780GL.cpp

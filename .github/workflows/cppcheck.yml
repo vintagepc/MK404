@@ -47,7 +47,7 @@ jobs:
       run: mkdir -p packages/partial
 
     - name: Install packages
-      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev
+      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev cppcheck
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages

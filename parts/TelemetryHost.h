@@ -27,6 +27,7 @@
 #include <vector>
 #include <map>
 #include <string.h>
+#include "Scriptable.h"
 
 using namespace std;
 
@@ -57,14 +58,12 @@ enum class TelCategory
 typedef const vector<TelCategory>& TelCats;
 using TC = TelCategory;
 
-class TelemetryHost: public BasePeripheral
+class TelemetryHost: public BasePeripheral, public Scriptable
 {
 	public:
 
 	#define IRQPAIRS
 	#include "IRQHelper.h"
-
-
 
 	inline static TelemetryHost* GetHost()
 	{
@@ -92,6 +91,8 @@ class TelemetryHost: public BasePeripheral
 		avr_vcd_stop(&m_trace);
 	}
 
+	void PrintTelemetry();
+
 	void SetCategories(const vector<string> &vsCats);
 
 	// Convenience wrapper for scriptable BasePeripherals
@@ -101,6 +102,7 @@ class TelemetryHost: public BasePeripheral
 		AddTrace(p->GetIRQ(eIRQ),p->GetName(), vCats, uiBits);
 	}
 
+	LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
 
 	void AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits = 1);
 
@@ -110,7 +112,7 @@ class TelemetryHost: public BasePeripheral
 	}
 
 	private:
-		TelemetryHost()
+		TelemetryHost():Scriptable("TelHost")
 		{
 			if (m_pHost !=nullptr)
 			{
@@ -118,7 +120,13 @@ class TelemetryHost: public BasePeripheral
 				exit(1);
 			}
 			memset(&m_trace, 0, sizeof(m_trace));
+			RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::Int});
 		}
+
+		enum Actions
+		{
+			ActWaitFor
+		};
 
 		avr_vcd_t m_trace;
 
@@ -126,6 +134,11 @@ class TelemetryHost: public BasePeripheral
 		vector<string> m_vsNames;
 
 		static TelemetryHost *m_pHost;
+
+		map<string, avr_irq_t*>m_mIRQs;
+
+		avr_irq_t* m_pCurrentIRQ = nullptr;
+		uint32_t m_uiMatchVal = 0;
 
 		const map<string,TC> m_mCats = {
 			make_pair("Heater", TC::Heater),

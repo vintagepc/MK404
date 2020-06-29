@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 	cmd.add(argSpam);
 	ValueArg<int> argVCDRate("","tracerate", "Sets the logging frequency of the VCD trace (default 100uS)",false, 100,"integer");
 	cmd.add(argVCDRate);
-	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. Omit value to get a printout of available traces",false,"string");
+	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string");
 	cmd.add(argVCD);
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img");
 	cmd.add(argSD);
@@ -278,6 +278,11 @@ int main(int argc, char *argv[])
 				printer->SetVisualType(Printer::VisualType::ADVANCED);
 
 		}
+	}
+	if (argVCD.isSet() && argVCD.getValue().at(0).compare("?")==0)
+	{
+		TelemetryHost::GetHost()->PrintTelemetry();
+		exit(0);
 	}
 
 	if (argScriptHelp.isSet())

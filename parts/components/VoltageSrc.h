@@ -48,7 +48,7 @@ public:
     void Set(float fVal);
 
 	// Needed for telemetryHost because SPI is not scriptable.
-	virtual inline std::string GetName(){return "SPIFlash";}
+	virtual inline std::string GetName(){return std::string("VSrc") + std::to_string(GetMuxNumber()) ;}
 
 protected:
     // ADC read trigger.

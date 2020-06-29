@@ -325,6 +325,7 @@ void TMC2130::Init(struct avr_t * avr)
 
 	auto pTH = TelemetryHost::GetHost();
 	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Stepper},8);
+	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Stepper},8);
 	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Stepper, TC::OutputPin});
 	pTH->AddTrace(this, STEP_IN,{TC::OutputPin, TC::Stepper});
 	pTH->AddTrace(this, DIR_IN,{TC::OutputPin, TC::Stepper});

@@ -24,12 +24,14 @@
 #include "Thermistor.h"
 #include <stdio.h>           // for printf, NULL
 #include "BasePeripheral.h"  // for MAKE_C_CALLBACK
+#include "TelemetryHost.h"
 
 Thermistor::Thermistor(float fStartTemp):Scriptable("Thermistor"),m_fCurrentTemp(fStartTemp)
 {
 	RegisterAction("Disconnect","Disconnects the thermistor as though it has gone open circuit",Actions::OpenCircuit);
 	RegisterAction("Short","Short the thermistor out",Actions::Shorted);
 	RegisterAction("Reconnct","Restores the normal thermistor state",Actions::Connected);
+
 }
 
 
@@ -82,6 +84,10 @@ void Thermistor::Init(struct avr_t * avr, uint8_t uiMux)
 	_Init(avr, uiMux,this);
 	RegisterNotify(TEMP_IN,MAKE_C_CALLBACK(Thermistor,OnTempIn),this);
 	printf("%s on ADC %d start %.2f\n", __func__, GetMuxNumber(), m_fCurrentTemp);
+
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, ADC_VALUE_OUT, {TC::ADC,TC::Thermistor}, 16);
+	pTH->AddTrace(this, TEMP_OUT, {TC::Thermistor,TC::Misc},16);
 }
 
 void Thermistor::SetTable(short *pTable, unsigned int uiEntries, int iOversamp)

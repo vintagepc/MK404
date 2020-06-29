@@ -473,6 +473,7 @@ void SDCard::Init(struct avr_t *avr)
 	InitCSD();
 	auto pTH = TelemetryHost::GetHost();
 	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
+	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
 	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
 	pTH->AddTrace(this, CARD_PRESENT, {TC::InputPin, TC::Storage});
 }

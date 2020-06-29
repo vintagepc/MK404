@@ -64,7 +64,7 @@ class ScriptHost: public IScriptable
 		}
 
 
-		static void PrintScriptHelp();
+		static void PrintScriptHelp(bool bMarkdown);
 
 		static void OnAVRCycle();
 

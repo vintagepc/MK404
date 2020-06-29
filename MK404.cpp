@@ -221,7 +221,8 @@ int main(int argc, char *argv[])
 	cmd.add(argDebug);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.");
 	cmd.add(argBootloader);
-
+	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown");
+	cmd.add(argMD);
 	vector<string> vstrPrinters = PrinterFactory::GetModels();
 	ValuesConstraint<string> vcAllowed(vstrPrinters);
 
@@ -288,7 +289,7 @@ int main(int argc, char *argv[])
 	if (argScriptHelp.isSet())
 	{
 		ScriptHost::Init("",0);
-		ScriptHost::PrintScriptHelp();
+		ScriptHost::PrintScriptHelp(argMD.isSet());
 		return 0;
 	}
 

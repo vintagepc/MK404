@@ -93,6 +93,14 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vec
 			else
 				return LineStatus::Waiting;
 		}
+		case ActStartTrace:
+		{
+			StartTrace();
+			return LineStatus::Finished;
+		}
+		case ActStopTrace:
+			StopTrace();
+			return LineStatus::Finished;
 		default:
 			return LineStatus::Unhandled;
 	}

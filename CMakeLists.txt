@@ -221,3 +221,12 @@ add_dependencies(FAT32.img MK404)
 add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PROJECT_SOURCE_DIR}/SDCard/* ::
                                                 COMMAND mv FAT32.img Einsy_atmega2560_SDcard.bin)
 add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)
+
+add_custom_target(UpdateDocs
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 --scripthelp --markdown | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/Scripting.md
+	COMMAND echo '```' > ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 --help >> ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
+	COMMAND echo '```' >> ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 --markdown --trace ? | grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/TraceOptions.md
+	)
+add_dependencies(Build_Run MK404)

@@ -65,7 +65,8 @@ jobs:
     - name: Push prep
       if: ${{ github.event.pull_request }}
       run: |
-          git add ../ref
+          cd ${{ runner.workspace }}/MK3SIM/
+          git add ref/*
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git commit -m "Regen reference docs"

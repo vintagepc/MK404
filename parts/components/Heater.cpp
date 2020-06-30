@@ -26,6 +26,7 @@
 #include <GL/gl.h>            // for glVertex2f, glBegin, glColor3f, glColor3fv
 #include <math.h>             // for pow
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
+#include "TelemetryHost.h"
 
 #define TRACE(_w)
 #ifndef TRACE
@@ -108,6 +109,11 @@ Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 	RegisterAction("SetPWM","Sets the raw heater PWM value",ActSetPWM, {ArgType::Int});
 	RegisterAction("Resume", "Resumes auto PWM control and clears the 'stopheating' flag",ActResume);
 	RegisterAction("StopHeating","Stops heating, as if a thermal runaway is happening due to loose heater or thermistor",ActStopHeating);
+
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, PWM_IN, {TC::Heater,TC::PWM},8);
+	pTH->AddTrace(this, DIGITAL_IN, {TC::Heater});
+	pTH->AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
 }
 
 Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const vector<string> &vArgs)

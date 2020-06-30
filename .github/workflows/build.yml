@@ -25,7 +25,7 @@ jobs:
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK3SIM.git
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.head.ref }}
         submodules: true
     
     - name: Checkout master
@@ -57,13 +57,24 @@ jobs:
     
     - name: Build Einsy
       run: cd ${{ runner.workspace }}/MK3SIM/build && make
- 
-#    - name: Build CMake
-#      uses: ashutoshvarma/action-cmake-build@v1
-#      continue-on-error: true
-#      with:
-#        build-dir: ${{ runner.workspace }}/MK3SIM/build
-#        build-type: Release
+  
+    - name: Regen docs
+      if: ${{ github.event.pull_request }}
+      run: cd ${{ runner.workspace }}/MK3SIM/build && make UpdateDocs
+      
+    - name: Push prep
+      if: ${{ github.event.pull_request }}
+      run: git add ../ref
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "Regen reference docs" 
+          
+    - name: Push changes 
+      uses: ad-m/github-push-action@master
+      with:
+        branch: ${{ github.event.pull_request.head.ref }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
         
        
 

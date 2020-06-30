@@ -53,7 +53,12 @@ void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uin
 		avr_vcd_add_signal(&m_trace, pIRQ, uiBits, strName.c_str());
 	}
 	if (!m_mIRQs.count(strName))
+	{
 		m_mIRQs[strName] = pIRQ;
+		m_mCatsByName[strName] = vCats;
+		for(auto it = vCats.begin(); it!=vCats.end(); it++)
+			m_mNamesByCat[*it].push_back(strName);
+	}
 	else
 		fprintf(stderr, "ERROR: Trying to add the same IRQ (%s) to a VCD trace multiple times!\n",strName.c_str());
 }
@@ -62,10 +67,10 @@ void TelemetryHost::SetCategories(const vector<string> &vsCats)
 {
 	for (auto it = vsCats.begin(); it!=vsCats.end(); it++)
 	{
-		if (!m_mCats.count(it[0]))
+		if (!m_mStr2Cat.count(it[0]))
 			m_vsNames.push_back(it[0]); // Save non-category for name check later.
-		else if (find(m_VLoglst.begin(), m_VLoglst.end(), m_mCats.at(it[0]))==m_VLoglst.end())
-			m_VLoglst.push_back(m_mCats.at(it[0]));
+		else if (find(m_VLoglst.begin(), m_VLoglst.end(), m_mStr2Cat.at(it[0]))==m_VLoglst.end())
+			m_VLoglst.push_back(m_mStr2Cat.at(it[0]));
 	}
 }
 
@@ -107,9 +112,36 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vec
 }
 
 
-void TelemetryHost::PrintTelemetry()
+void TelemetryHost::PrintTelemetry(bool bMarkdown)
 {
-	printf("Avaliable telemetry in the current context:\n");
-	for (auto it = m_mIRQs.begin(); it!=m_mIRQs.end(); it++)
-		printf("\t%s\n",it->first.c_str());
+	printf("%sAvaliable telemetry streams:\n",bMarkdown?"## ":"");
+	if (bMarkdown)
+	{
+		printf("- [By name](#by-name)\n");
+		printf("- [By category](#by-category)\n");
+	}
+	printf("%sBy Name:\n", bMarkdown?"### ":"\t");
+	if (bMarkdown)
+	{
+		printf("Name | Categories\n");
+		printf("-----|-----------\n");
+	}
+	for (auto it = m_mCatsByName.begin(); it!=m_mCatsByName.end(); it++)
+	{
+		string strCats(bMarkdown?"|":"");
+		for (auto it2 = it->second.begin(); it2!=it->second.end(); it2++)
+			strCats += " `" + m_mCat2Str.at(*it2) + "`";
+
+		if (bMarkdown)
+			printf("%s%s\n",it->first.c_str(),strCats.c_str());
+		else
+			printf("\t%-40s%s\n",it->first.c_str(),strCats.c_str());
+	}
+	printf("%sBy category\n",bMarkdown?"### ":"\t");
+	for (auto it = m_mNamesByCat.begin(); it!=m_mNamesByCat.end(); it++)
+	{
+		printf("%s%s\n",bMarkdown?"#### ":"\t\t",m_mCat2Str.at(it->first).c_str());
+		for (auto it2 = it->second.begin(); it2!=it->second.end(); it2++)
+			printf("%s%s\n", bMarkdown?" - ":"\t\t\t",it2->c_str());
+	}
 }

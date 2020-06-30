@@ -31,30 +31,37 @@
 
 using namespace std;
 
+#define TCENTRIES \
+	_TC(Display,"Display"),\
+	_TC(Fan,"Fan"),\
+	_TC(Heater,"Heater"),\
+	_TC(InputPin,"InputPin"),\
+	_TC(OutputPin,"OutputPin"), /* Output/input relative to board. */ \
+	_TC(Power,"Power"),\
+	_TC(Stepper,"Stepper"),\
+	_TC(Storage,"Storage"),\
+	_TC(Thermistor,"Thermistor"),\
+	/* Connection */ \
+	_TC(Serial,"Serial"),\
+	_TC(SPI,"SPI"),\
+	_TC(I2C,"I2C"),\
+	_TC(ADC,"ADC"),\
+	_TC(PWM,"PWM"),\
+	_TC(Misc,"Misc")
+
+// Ugh, not ideal, but a dirty macro to generate references for string->enum and vice versa.
+#define _TC(x,y) x
+enum class TelCategory {
+    TCENTRIES
+};
+#undef _TC
 // A collection of "categories". A VCD object can
 // list one or more of these when registering a trace.
 // Only items in categries specified by a command line
 // argument (or explicitly named) will be logged.
-enum class TelCategory
-{
-	// Type
-	Display,
-	Fan,
-	Heater,
-	InputPin,
-	OutputPin, // Output/input relative to board.
-	Power,
-	Stepper,
-	Storage,
-	Thermistor,
-	// Connection
-	Serial,
-	SPI,
-	I2C,
-	ADC,
-	PWM,
-	Misc
-};
+
+
+
 typedef const vector<TelCategory>& TelCats;
 using TC = TelCategory;
 
@@ -91,7 +98,7 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 		avr_vcd_stop(&m_trace);
 	}
 
-	void PrintTelemetry();
+	void PrintTelemetry(bool bMarkdown = false);
 
 	void SetCategories(const vector<string> &vsCats);
 
@@ -140,26 +147,22 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 		static TelemetryHost *m_pHost;
 
 		map<string, avr_irq_t*>m_mIRQs;
+		map<string, vector<TC>>m_mCatsByName;
+		map<TC,vector<string>>m_mNamesByCat;
 
 		avr_irq_t* m_pCurrentIRQ = nullptr;
 		uint32_t m_uiMatchVal = 0;
 
-		const map<string,TC> m_mCats = {
-			make_pair("Heater", TC::Heater),
-			make_pair("Stepper",TC::Stepper),
-			make_pair("Display",TC::Display),
-			make_pair("Thermistor",TC::Thermistor),
-			make_pair("Power",TC::Power),
-			make_pair("Storage",TC::Storage),
-			make_pair("InputPin",TC::InputPin),
-			make_pair("Fan",TC::Fan),
-			make_pair("OutputPin",TC::OutputPin),
-			make_pair("Serial",TC::Serial),
-			make_pair("SPI",TC::SPI),
-			make_pair("I2C",TC::I2C),
-			make_pair("ADC",TC::ADC),
-			make_pair("PWM",TC::PWM),
-			make_pair("Misc",TC::Misc)
+
+		#define _TC(x,y) make_pair(y,TC::x)
+		const map<string,TC> m_mStr2Cat = {
+			TCENTRIES
 		};
+		#undef _TC
+		#define _TC(x,y) make_pair(TC::x,y)
+		const map<TC,string> m_mCat2Str = {
+			TCENTRIES
+		};
+		#undef _TC
 
 };

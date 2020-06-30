@@ -109,11 +109,6 @@ Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 	RegisterAction("SetPWM","Sets the raw heater PWM value",ActSetPWM, {ArgType::Int});
 	RegisterAction("Resume", "Resumes auto PWM control and clears the 'stopheating' flag",ActResume);
 	RegisterAction("StopHeating","Stops heating, as if a thermal runaway is happening due to loose heater or thermistor",ActStopHeating);
-
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, PWM_IN, {TC::Heater,TC::PWM},8);
-	pTH->AddTrace(this, DIGITAL_IN, {TC::Heater});
-	pTH->AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
 }
 
 Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
@@ -145,6 +140,12 @@ void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)
 
     RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Heater,OnPWMChanged),this);
     RegisterNotify(DIGITAL_IN, MAKE_C_CALLBACK(Heater,OnDigitalChanged),this);
+
+
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, PWM_IN, {TC::Heater,TC::PWM},8);
+	pTH->AddTrace(this, DIGITAL_IN, {TC::Heater});
+	pTH->AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
 }
 
 void Heater::Set(uint8_t uiPWM)

@@ -63,13 +63,14 @@ jobs:
       run: cd ${{ runner.workspace }}/MK3SIM/build && make UpdateDocs
       
     - name: Check for changed docs
+      if: ${{ github.event.pull_request }}
       run: |
           if output=$(git status --porcelain --untracked=no) && [ -n "$output" ]; then
           echo "::set-env name=needs_commit::1"
           fi
 
     - name: Push prep
-      if: ${{ github.event.pull_request }} && ${{needs_commit}}
+      if: ${{ github.event.pull_request }} && ${{env.needs_commit}}
       run: |
           cd ${{ runner.workspace }}/MK3SIM/
           git add ref/*
@@ -78,7 +79,7 @@ jobs:
           git commit -m "Regen reference docs"
 
     - name: Push changes
-      if:  ${{needs_commit}}
+      if:  ${{env.needs_commit}}
       uses: ad-m/github-push-action@master
       with:
         branch: ${{ github.event.pull_request.head.ref }}

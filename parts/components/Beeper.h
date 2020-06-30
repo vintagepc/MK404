@@ -66,7 +66,7 @@ class Beeper:public SoftPWMable, public Scriptable
 		uint16_t m_uiCounter = 0;
 		static constexpr uint16_t m_uiSampleRate = 44100;
 		bool m_bState = false, m_bMuted = false;
-
+		bool m_bAudioAvail = false;
 		enum Actions
 		{
 			ActMute,

@@ -41,6 +41,10 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
     m_specWant.callback = m_fcnSDL; // function SDL calls periodically to refill the buffer
     m_specWant.userdata = this; // counter, keeping track of current sample number
 
+	RegisterAction("Mute","Mutes the beeper", ActMute);
+	RegisterAction("Unmute","Unmutes the beeper", ActUnmute);
+	RegisterAction("ToggleMute","Toggles the beeper mute", ActToggle);
+
     if(SDL_OpenAudio(&m_specWant, &m_specHave) != 0)
 	{
 		fprintf(stderr, "Failed to open audio: %s\n", SDL_GetError());
@@ -51,10 +55,7 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 		printf("Failed to get the desired AudioSpec\n");
 		return;
 	}
-
-	RegisterAction("Mute","Mutes the beeper", ActMute);
-	RegisterAction("Unmute","Unmutes the beeper", ActUnmute);
-	RegisterAction("ToggleMute","Toggles the beeper mute", ActToggle);
+	m_bAudioAvail = true;
 
 }
 
@@ -99,7 +100,7 @@ void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 	//printf("Beeper debug: %u on, %u total\n", uiTOn,uiTTotal);
 	if (uiTOn == 0)
 	{
-		SDL_PauseAudio(1);
+		if (m_bAudioAvail) SDL_PauseAudio(1);
 		m_bPlaying = false;
 	}
 	else
@@ -110,11 +111,11 @@ void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 		if (m_uiCtOn == 0)
 			return;
 		{
-			if (m_bPlaying)
+			if (m_bPlaying && m_bAudioAvail)
 				SDL_PauseAudio(1);
 			m_uiCounter = m_uiSampleRate/m_uiCtOn;
 			m_bPlaying = true;
-			SDL_PauseAudio(0);
+			if (m_bAudioAvail) SDL_PauseAudio(0);
 		}
 
 	}

@@ -59,7 +59,8 @@ Windows is not officially supported/maintained but current status (as of May 202
 ### Scripting:
 - The simulator supports basic command line scripting. At some point we will probably also support more advanced VCD input options.
 
-[General scripting info](ref/Scripting.md)
+[General scripting info](scripts/Scripting.md)
+
 [Script command reference for default printer](../ref/Scripting.md)
 
 ### Telemetry:

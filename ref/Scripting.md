@@ -1,4 +1,8 @@
 # Scripting options example for the default printer (Prusa_MK3S):
+### Beeper::
+ - `Mute()                        ` - `Mutes the beeper`
+ - `ToggleMute()                  ` - `Toggles the beeper mute`
+ - `Unmute()                      ` - `Unmutes the beeper`
 ### Board::
  - `Quit()                        ` - `Sends the quit signal to the AVR`
  - `Reset()                       ` - `Resets the board by resetting the AVR.`

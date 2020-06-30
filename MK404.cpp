@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
 	}
 	if (argVCD.isSet() && argVCD.getValue().at(0).compare("?")==0)
 	{
-		TelemetryHost::GetHost()->PrintTelemetry();
+		TelemetryHost::GetHost()->PrintTelemetry(argMD.isSet());
 		exit(0);
 	}
 

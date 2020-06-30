@@ -42,7 +42,15 @@ bool ScriptHost::m_bQuitOnTimeout = false;
 void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
 	if (bMarkdown)
-	printf("# Scripting options example for the default printer (Prusa_MK3S):\n");
+	{
+		printf("# Scripting options example for the default printer (Prusa_MK3S):\n");
+		// for (auto it=m_clients.begin();it!=m_clients.end();it++)
+		// {
+		// 	string strRef = it->second->GetName();
+		// 	strRef[0] = tolower(strRef[0]); // Yes, kludgy, I know...
+		// 	printf("- [%s](#%s)\n",it->second->GetName().c_str(),strRef.c_str());
+		// }
+	}
 	else
 		printf("Scripting options for the current context:\n");
 	for (auto it=m_clients.begin();it!=m_clients.end();it++)

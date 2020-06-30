@@ -22,6 +22,12 @@ Fan_<Fan.digital_in>| `Fan` `OutputPin`
 Fan_<Fan.pwm_in| `PWM` `Fan`
 Fan_>Fan.speed_out| `Fan` `Misc`
 Fan_>Fan.tach_out| `Fan` `InputPin`
+Heater_B_<heater.digital_in| `Heater`
+Heater_B_<heater.pwm_in| `Heater` `PWM`
+Heater_B_>heater.on| `Heater` `Misc`
+Heater_H_<heater.digital_in| `Heater`
+Heater_H_<heater.pwm_in| `Heater` `PWM`
+Heater_H_>heater.on| `Heater` `Misc`
 Power Panic_Power Panic| `InputPin` `Misc`
 SDCard_8<SD.byte_in| `SPI` `Storage`
 SDCard_8>SD.byte_out| `SPI` `Storage`
@@ -79,6 +85,13 @@ Z_>tmc2130.diag_out| `InputPin` `Stepper`
  - Fan1_<Fan.digital_in>
  - Fan1_>Fan.tach_out
  - Fan1_>Fan.speed_out
+#### Heater
+ - Heater_B_<heater.pwm_in
+ - Heater_B_<heater.digital_in
+ - Heater_B_>heater.on
+ - Heater_H_<heater.pwm_in
+ - Heater_H_<heater.digital_in
+ - Heater_H_>heater.on
 #### InputPin
  - SDCard_>SD.card_present
  - Fan_>Fan.tach_out
@@ -198,6 +211,8 @@ Z_>tmc2130.diag_out| `InputPin` `Stepper`
 #### PWM
  - Fan_<Fan.pwm_in
  - Fan1_<Fan.pwm_in
+ - Heater_B_<heater.pwm_in
+ - Heater_H_<heater.pwm_in
 #### Misc
  - Thermistor_>temp.out
  - Thermistor1_>temp.out
@@ -205,4 +220,6 @@ Z_>tmc2130.diag_out| `InputPin` `Stepper`
  - Thermistor3_>temp.out
  - Fan_>Fan.speed_out
  - Fan1_>Fan.speed_out
+ - Heater_B_>heater.on
+ - Heater_H_>heater.on
  - Power Panic_Power Panic

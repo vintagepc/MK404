@@ -70,7 +70,7 @@ jobs:
           fi
 
     - name: Push prep
-      if: ${{ github.event.pull_request }} && ${{env.needs_commit}}
+      if: ${{env.needs_commit}}
       run: |
           cd ${{ runner.workspace }}/MK3SIM/
           git add ref/*

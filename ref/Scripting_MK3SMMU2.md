@@ -34,6 +34,7 @@
 ### Heater_B::
  - `Resume()                      ` - `Resumes auto PWM control and clears the 'stopheating' flag`
  - `SetPWM(int)                   ` - `Sets the raw heater PWM value`
+Starting serial transfer thread...
  - `StopHeating()                 ` - `Stops heating, as if a thermal runaway is happening due to loose heater or thermistor`
 ### Heater_H::
  - `Resume()                      ` - `Resumes auto PWM control and clears the 'stopheating' flag`

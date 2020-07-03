@@ -46,10 +46,10 @@ LCD_8>hd44780.DATA_IN| `Display`
 LCD_<hd44780.E| `Display` `OutputPin`
 LCD_<hd44780.RS| `Display` `OutputPin`
 LCD_<hd44780.RW| `Display` `OutputPin`
-Starting serial transfer thread...
 LCD_=hd44780.BRIGHTNESS_IN| `Display` `OutputPin`
 PINDA_>pinda.out| `InputPin` `Misc`
 PINDA_>sheet.out| `InputPin` `Misc`
+Starting serial transfer thread...
 P_8<tmc2130.byte_in| `SPI` `Stepper`
 P_8>tmc2130.byte_out| `SPI` `Stepper`
 P_<tmc2130.cs_in| `SPI` `Stepper` `OutputPin`

@@ -24,6 +24,7 @@
 #include <stdio.h>
 
 #include "RotaryEncoder.h"
+#include "TelemetryHost.h"
 
 static constexpr uint8_t  STATE_COUNT = 4;
 static constexpr uint32_t PULSE_DURATION_US = 10000UL;
@@ -137,6 +138,10 @@ void RotaryEncoder::Twist(Direction eDir)
 void RotaryEncoder::Init(avr_t *avr)
 {
 	_Init(avr, this);
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this,OUT_BUTTON,{TC::InputPin, TC::Display});
+	pTH->AddTrace(this,OUT_A,{TC::InputPin, TC::Display});
+	pTH->AddTrace(this,OUT_B,{TC::InputPin, TC::Display});
 }
 
 Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const vector<string> &vArgs)

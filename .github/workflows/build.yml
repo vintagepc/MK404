@@ -20,21 +20,21 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - name: Checkout ${{ github.event.pull_request.head.sha }}
+    - name: Checkout ${{ github.event.pull_request.head.ref }}
       uses: actions/checkout@v2.2.0
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK3SIM.git
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.head.ref }}
         submodules: true
-    
+
     - name: Checkout master
       uses: actions/checkout@v2.2.0
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK3SIM.git
         submodules: true
-    
+
     - name: Cache packages
       uses: actions/cache@v1.0.3
       id: cache-pkgs
@@ -45,25 +45,42 @@ jobs:
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
       run: mkdir -p packages/partial
-      
+
     - name: Install packages
       run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
-      
+
     - name: Prepare CMake build
       run: mkdir ${{ runner.workspace }}/MK3SIM/build && cd ${{ runner.workspace }}/MK3SIM/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
-    
+
     - name: Build Einsy
       run: cd ${{ runner.workspace }}/MK3SIM/build && make
- 
-#    - name: Build CMake
-#      uses: ashutoshvarma/action-cmake-build@v1
-#      continue-on-error: true
-#      with:
-#        build-dir: ${{ runner.workspace }}/MK3SIM/build
-#        build-type: Release
-        
-       
 
+    - name: Regen docs
+      if: ${{ github.event.pull_request }}
+      run: cd ${{ runner.workspace }}/MK3SIM/build && make UpdateDocs
+      
+    - name: Check for changed docs
+      if: ${{ github.event.pull_request }}
+      run: |
+          if output=$(git status --porcelain --untracked=no) && [ -n "$output" ]; then
+          echo "::set-env name=needs_commit::1"
+          fi
+
+    - name: Push prep
+      if: ${{env.needs_commit}}
+      run: |
+          cd ${{ runner.workspace }}/MK3SIM/
+          git add ref/*
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "Regen reference docs"
+
+    - name: Push changes
+      if:  ${{env.needs_commit}}
+      uses: ad-m/github-push-action@master
+      with:
+        branch: ${{ github.event.pull_request.head.ref }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}

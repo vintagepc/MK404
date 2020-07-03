@@ -25,6 +25,7 @@
 #include <ADCPeripheral.h>  // for ADCPeripheral
 #include <stdint.h>         // for uint32_t, uint8_t
 #include "sim_irq.h"        // for avr_irq_t
+#include <string>
 
 class VoltageSrc: public ADCPeripheral {
 public:
@@ -45,6 +46,9 @@ public:
 
     // Changes the voltage reading to fVal
     void Set(float fVal);
+
+	// Needed for telemetryHost because SPI is not scriptable.
+	virtual inline std::string GetName(){return std::string("VSrc") + std::to_string(GetMuxNumber()) ;}
 
 protected:
     // ADC read trigger.

@@ -39,11 +39,22 @@ int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
 bool ScriptHost::m_bQuitOnTimeout = false;
 
 
-void ScriptHost::PrintScriptHelp()
+void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
-	printf("Scripting options for the current context:\n");
+	if (bMarkdown)
+	{
+		printf("# Scripting options for the selected printer:\n");
+		// for (auto it=m_clients.begin();it!=m_clients.end();it++)
+		// {
+		// 	string strRef = it->second->GetName();
+		// 	strRef[0] = tolower(strRef[0]); // Yes, kludgy, I know...
+		// 	printf("- [%s](#%s)\n",it->second->GetName().c_str(),strRef.c_str());
+		// }
+	}
+	else
+		printf("Scripting options for the current context:\n");
 	for (auto it=m_clients.begin();it!=m_clients.end();it++)
-		it->second->PrintRegisteredActions();
+		it->second->PrintRegisteredActions(bMarkdown);
 }
 
 void ScriptHost::LoadScript(const string &strFile)

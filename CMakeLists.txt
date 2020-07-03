@@ -34,6 +34,7 @@ set(H_FILES
 	parts/pinspecs/PinSpec_32u4.h
 	parts/PinSpec.h
 	parts/SoftPWMable.h
+	parts/TelemetryHost.h
 	parts/Printer.h
 	parts/SPIPeripheral.h
 	parts/Scriptable.h
@@ -93,6 +94,7 @@ set(MK404_SOURCES
 	parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp
 	parts/ScriptHost.cpp
+	parts/TelemetryHost.cpp
 	parts/components/GCodeSniffer.cpp
 	parts/components/Beeper.cpp
 	parts/components/HD44780GL.cpp
@@ -219,3 +221,17 @@ add_dependencies(FAT32.img MK404)
 add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PROJECT_SOURCE_DIR}/SDCard/* ::
                                                 COMMAND mv FAT32.img Einsy_atmega2560_SDcard.bin)
 add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)
+
+add_custom_target(UpdateDocs
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/Scripting_MK3S.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3SMMU2 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/Scripting_MK3SMMU2.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/Scripting_MK3.md
+	COMMAND echo '```' > ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 --help >> ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
+	COMMAND echo '```' >> ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? | grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/TraceOptions_MK3S.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3SMMU2| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/TraceOptions_MK3SMMU2.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/TraceOptions_MK3.md
+	COMMAND cd ${PROJECT_SOURCE_DIR}/ref && sh ./updateTOC.sh
+	)
+add_dependencies(Build_Run MK404)

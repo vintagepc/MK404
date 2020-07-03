@@ -26,6 +26,7 @@
 #include <stdint.h>         // for uint8_t, uint32_t, uint64_t
 #include "SPIPeripheral.h"  // for SPIPeripheral
 #include "sim_irq.h"        // for avr_irq_t
+#include <string>
 
 #define W25X20CL_TOTAL_SIZE 262144
 #define W25X20CL_PAGE_SIZE 256
@@ -53,6 +54,9 @@ class w25x20cl:public SPIPeripheral
 
 	// Saves the SPI flash contents back out to file. (Does not close it in case you want to save multiple times)
 	void Save();
+
+	// Needed for telemetryHost because SPI is not scriptable.
+	inline std::string GetName(){return "SPIFlash";}
 
 	protected:
 		enum w25x20cl_states{

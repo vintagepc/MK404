@@ -21,6 +21,7 @@
 
 #include "VoltageSrc.h"
 #include "BasePeripheral.h"  // for MAKE_C_CALLBACK
+#include "TelemetryHost.h"
 
 uint32_t VoltageSrc::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
@@ -41,6 +42,10 @@ void VoltageSrc::Init(struct avr_t * avr , uint8_t uiMux)
 {
     _Init(avr,uiMux,this);
     RegisterNotify(VALUE_IN, MAKE_C_CALLBACK(VoltageSrc,OnInput), this);
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, ADC_VALUE_OUT, {TC::ADC, TC::Power},16);
+	pTH->AddTrace(this, DIGITAL_OUT,{TC::Power,TC::InputPin});
+
 }
 
 // Sets the voltage readback to the given value, based on the scale factor

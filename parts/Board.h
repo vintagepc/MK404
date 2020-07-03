@@ -63,7 +63,7 @@ namespace Boards
 
 			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};
 
-			void CreateBoard(string strFW, uint8_t uiVerbose, bool bGDB, string strBoot = "stk500boot_v2_mega2560.hex");
+			void CreateBoard(string strFW, uint8_t uiVerbose, bool bGDB, uint32_t uiVCDRate, string strBoot = "stk500boot_v2_mega2560.hex");
 			void StartAVR();
 			void StopAVR();
 
@@ -217,6 +217,8 @@ namespace Boards
 				UART.Init(m_pAVR);
 				UART.Connect(chrNum);
 			}
+
+			void AddUARTTrace(const char chrUART);
 
 			inline void SetPin(PinNames::Pin ePin, uint32_t value)
 			{

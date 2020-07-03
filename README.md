@@ -3,9 +3,9 @@ A project/repo for simulating Einsy (and eventually, other) Prusa (and eventuall
 
 While this repo is private, it's something separate to share status updates, ideas, and related things for this topic. If I invited you to join, you're welcome to sit back and enjoy the ride, or contribute to hardware implementations and ideas as you desire.
 
-*Summary status:* Mostly functional, should now be able to boot stock Prusa Marlin build for MK3S.
+*Summary status:* "Mostly" functional, it runs stock firmware very close to the real thing, and should now be able to boot stock Prusa Marlin build for MK3S. "Mostly" because while the overall system is probably usable for the majority of use cases, some aspects of the hardware are simulated only to the extent necessary to get the system working. For example, the TMC "stallguard" register is minimally implemented, and the microstep count is not.
+
 Remaining To-Dos of note:
-- Telemetry system for VCD tracing, scripting
 - a number of lofty goals...
 
 *Current state of affairs and features*:
@@ -53,87 +53,21 @@ Windows is not officially supported/maintained but current status (as of May 202
 
 ### Command line arguments:
 - Current arguments can be viewed with the -h flag, should this README become outdated.
-```
 
- USAGE:
+[Argument reference](ref/CommandLine.md)
 
-   ./MK404  [-b] [-d] ...  [-f <filename>] [-g <none|lite|fancy>] [--gdb]
-            [--image-size <128M|1G|256M|2G|32M|512M|64M>] [-l] [-m] [-n]
-            [--script <filename.txt>] [--scripthelp] [-s] [--sdimage
-            <filename.img>] [-v] ...  [-w] [--] [--version] [-h]
-            <Prusa_MK3S|Prusa_MK3SMMU2>
+### Scripting:
+- The simulator supports basic command line scripting. At some point we will probably also support more advanced VCD input options.
 
+[General scripting info](scripts/Scripting.md)
 
-Where:
+[Script command reference for default printer](../ref/Scripting.md)
 
-   -b,  --bootloader
-     Run bootloader on first start instead of going straight to the
-     firmware.
+### Telemetry:
+- The simulator's VCD trace system is categorized so you can enable groups or individual trace items from the command line with the `-t` argument.
 
-   -d,  --debug  (accepted multiple times)
-     Increases debugging output, where supported.
+[Look here for an example list of trace options](ref/TraceOptions.md)
 
-   -f <filename>,  --firmware <filename>
-     hex/afx/elf Firmware file to load (default MK3S.afx)
-
-   -g <none|lite|fancy>,  --graphics <none|lite|fancy>
-     Whether to enable fancy (advanced) or lite (minimal advanced) visuals.
-     If not specified, only the basic 2D visuals are shown.
-
-   --gdb
-     Enable SimAVR's GDB support
-
-   --image-size <128M|1G|256M|2G|32M|512M|64M>
-     Specify a size for a new SD image. You must specify an image with
-     --sdimage
-
-   -l,  --loadfw
-     Directs the printer to load the default firmware file. (-f implies -l)
-     If neither -l or -f are provided, the printer executes solely from its
-     persisted flash.
-
-   -m,  --mute
-     Tell a printer to mute any audio it may produce.
-
-   -n,  --no-hacks
-     Disable any special hackery that might have been implemented for a
-     board to run its manufacturer firmware, e.g. if you want to run stock
-     marlin and have issues. Effects depend on the board and firmware.
-
-   --script <filename.txt>
-     Execute the given script. Use --scripthelp for syntax.
-
-   --scripthelp
-     Prints the available scripting commands for the current
-     printer/context
-
-   -s,  --serial
-     Connect a printer's serial port to a PTY instead of printing its
-     output to the console.
-
-   --sdimage <filename.img>
-     Use the given SD card .img file instead of the default
-
-   -v,  --verbose  (accepted multiple times)
-     Increases verbosity of the output, where supported.
-
-   -w,  --wait
-     Wait after the printer (and any PTYs) are set up but before starting
-     execution.
-
-   --,  --ignore_rest
-     Ignores the rest of the labeled arguments following this flag.
-
-   --version
-     Displays version information and exits.
-
-   -h,  --help
-     Displays usage information and exits.
-
-   <Prusa_MK3S|Prusa_MK3SMMU2>
-     Model name of the printer to run
-
-```
 ### Mouse Functions:
 #### LCD Window:
 - Scroll wheel moves the encoder.

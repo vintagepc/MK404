@@ -26,6 +26,7 @@
 #include <GL/gl.h>            // for glVertex2f, glBegin, glColor3f, glColor3fv
 #include <math.h>             // for pow
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
+#include "TelemetryHost.h"
 
 #define TRACE(_w)
 #ifndef TRACE
@@ -139,6 +140,12 @@ void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)
 
     RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Heater,OnPWMChanged),this);
     RegisterNotify(DIGITAL_IN, MAKE_C_CALLBACK(Heater,OnDigitalChanged),this);
+
+
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, PWM_IN, {TC::Heater,TC::PWM},8);
+	pTH->AddTrace(this, DIGITAL_IN, {TC::Heater});
+	pTH->AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
 }
 
 void Heater::Set(uint8_t uiPWM)

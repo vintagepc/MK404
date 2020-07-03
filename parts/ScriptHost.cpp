@@ -43,7 +43,7 @@ void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
 	if (bMarkdown)
 	{
-		printf("# Scripting options example for the default printer (Prusa_MK3S):\n");
+		printf("# Scripting options for the selected printer:\n");
 		// for (auto it=m_clients.begin();it!=m_clients.end();it++)
 		// {
 		// 	string strRef = it->second->GetName();

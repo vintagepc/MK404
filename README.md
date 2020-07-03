@@ -1,3 +1,5 @@
+![](images/Logo.png)
+
 # MK404 - PRINTER NOT FOUND (formerly MK3SIM)
 A project/repo for simulating Einsy (and eventually, other) Prusa (and eventually, other) hardware.
 
@@ -61,7 +63,7 @@ Windows is not officially supported/maintained but current status (as of May 202
 
 [General scripting info](scripts/Scripting.md)
 
-[Script command reference for default printer](../ref/Scripting.md)
+[Script command reference for default printer](ref/Scripting.md)
 
 ### Telemetry:
 - The simulator's VCD trace system is categorized so you can enable groups or individual trace items from the command line with the `-t` argument.

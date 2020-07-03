@@ -1,4 +1,4 @@
-![](images/Logo.png)
+![](assets/Logo.png)
 
 # MK404 - PRINTER NOT FOUND (formerly MK3SIM)
 A project/repo for simulating Einsy (and eventually, other) Prusa (and eventually, other) hardware.

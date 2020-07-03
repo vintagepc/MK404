@@ -34,6 +34,7 @@ using namespace std;
 #include <vector>
 class Scriptable;
 class ScriptHost;
+class TelemetryHost;
 
 // Argument type options. Note, the const string defs live in ScriptHost.cpp, update those too!
 enum class ArgType
@@ -50,6 +51,7 @@ class IScriptable
 {
 	friend Scriptable;
 	friend ScriptHost;
+	friend TelemetryHost;
     public:
 		IScriptable(const string &strName):m_strName(strName){};
 
@@ -83,10 +85,13 @@ class IScriptable
 				m_strName = strName;
 		}
 
+		// Returns the name. Used by, e.g. TelHost for consistency.
+		inline string GetName() {return m_strName;}
+
 		// Prints help text for this Scriptable
-		void PrintRegisteredActions()
+		void PrintRegisteredActions(bool bMarkdown = false)
 		{
-			printf("\t%s::\n",m_strName.c_str());
+			printf("%s%s::\n",bMarkdown?"### ":"\t", m_strName.c_str());
 			for (auto it=m_ActionIDs.begin();it!=m_ActionIDs.end();it++)
 			{
 				unsigned int ID = it->second;
@@ -100,8 +105,10 @@ class IScriptable
 				}
 				else
 					strArgFmt.push_back(')');
-
-				printf("\t\t%-30s%s\n",strArgFmt.c_str(), m_mHelp.at(ID).c_str());
+				if (bMarkdown)
+					printf(" - `%-30s` - `%s`\n",strArgFmt.c_str(), m_mHelp.at(ID).c_str());
+				else
+					printf("\t\t%-30s%s\n",strArgFmt.c_str(), m_mHelp.at(ID).c_str());
 			}
 		}
 		// Registers a new no-argument Scriptable action with the given function, description, and an ID that will be

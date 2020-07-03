@@ -25,6 +25,7 @@
 #include <stdio.h>            // for printf
 #include <string.h>           // for memset
 #include <algorithm>          // for min
+#include "TelemetryHost.h"
 
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (m_cAxis=='S' || m_cAxis=='I') _w
@@ -322,4 +323,12 @@ void TMC2130::Init(struct avr_t * avr)
     RegisterNotify(STEP_IN,     MAKE_C_CALLBACK(TMC2130,OnStepIn), this);
     RegisterNotify(ENABLE_IN,   MAKE_C_CALLBACK(TMC2130,OnEnableIn), this);
 
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Stepper},8);
+	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Stepper},8);
+	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Stepper, TC::OutputPin});
+	pTH->AddTrace(this, STEP_IN,{TC::OutputPin, TC::Stepper});
+	pTH->AddTrace(this, DIR_IN,{TC::OutputPin, TC::Stepper});
+	pTH->AddTrace(this, ENABLE_IN,{TC::OutputPin, TC::Stepper});
+	pTH->AddTrace(this, DIAG_OUT,{TC::InputPin, TC::Stepper});
 }

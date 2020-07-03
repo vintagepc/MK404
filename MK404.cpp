@@ -30,6 +30,7 @@
 #include <stdlib.h>                   // for exit
 #include <tclap/CmdLine.h>            // for CmdLine
 #include <algorithm>                  // for find
+#include <memory>
 #include <scoped_allocator>           // for allocator_traits<>::value_type
 #include <string>                     // for string, basic_string
 #include <utility>                    // for pair
@@ -38,18 +39,14 @@
 #include "Printer.h"                  // for Printer, Printer::VisualType
 #include "PrinterFactory.h"           // for PrinterFactory
 #include "ScriptHost.h"               // for ScriptHost
+#include "TelemetryHost.h"
 #include "parts/Board.h"              // for Board
 #include "sim_avr.h"                  // for avr_t
-#include "sim_vcd_file.h"             // for avr_vcd_t
 #include "tclap/MultiSwitchArg.h"     // for MultiSwitchArg
 #include "tclap/SwitchArg.h"          // for SwitchArg
 #include "tclap/UnlabeledValueArg.h"  // for UnlabeledValueArg
 #include "tclap/ValueArg.h"           // for ValueArg
 #include "tclap/ValuesConstraint.h"   // for ValuesConstraint
-
-avr_vcd_t vcd_file;
-
-uint8_t gbPrintPC = 0;
 
 int window;
 
@@ -114,7 +111,19 @@ void displayCB(void)		/* function called whenever redisplay needed */
 
 void keyCB(unsigned char key, int x, int y)	/* called on key press */
 {
-	printer->OnKeyPress(key,x,y);
+	switch(key)
+	{
+		case '+':
+			TelemetryHost::GetHost()->StartTrace();
+			printf("Enabled VCD trace.\n");
+			break;
+		case '-':
+			TelemetryHost::GetHost()->StopTrace();
+			printf("Stopped VCD trace\n");
+			break;
+		default:
+			printer->OnKeyPress(key,x,y);
+	}
 }
 
 void MouseCB(int button, int action, int x, int y)	/* called on key press */
@@ -178,6 +187,10 @@ int main(int argc, char *argv[])
 	cmd.add(argWait);
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");
 	cmd.add(argSpam);
+	ValueArg<int> argVCDRate("","tracerate", "Sets the logging frequency of the VCD trace (default 100uS)",false, 100,"integer");
+	cmd.add(argVCDRate);
+	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string");
+	cmd.add(argVCD);
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img");
 	cmd.add(argSD);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.");
@@ -208,7 +221,8 @@ int main(int argc, char *argv[])
 	cmd.add(argDebug);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.");
 	cmd.add(argBootloader);
-
+	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown");
+	cmd.add(argMD);
 	vector<string> vstrPrinters = PrinterFactory::GetModels();
 	ValuesConstraint<string> vcAllowed(vstrPrinters);
 
@@ -231,42 +245,51 @@ int main(int argc, char *argv[])
 	}
 	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue().compare("none")==0);
 
+	TelemetryHost::GetHost()->SetCategories(argVCD.getValue());
+
 	std::string strFW;
 	if (!argLoad.isSet() && !argFW.isSet())
 		strFW = ""; // No firmware and no load directive.
 	else
 		strFW = argFW.getValue();
 
-	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,strFW,argSpam.getValue(), argGDB.isSet());
+	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,
+		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue()); // this line is the CreateBoard() args.
 
 	if (!bNoGraphics)
 	{
-	glutInit(&argc, argv);		/* initialize GLUT system */
+		glutInit(&argc, argv);		/* initialize GLUT system */
 
-	std::pair<int,int> winSize = printer->GetWindowSize();
-	int w = winSize.first;
-	int h = winSize.second;
-	int pixsize = 4;
-	glutSetOption(GLUT_MULTISAMPLE,2);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
-	glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
-	window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
+		std::pair<int,int> winSize = printer->GetWindowSize();
+		int w = winSize.first;
+		int h = winSize.second;
+		int pixsize = 4;
+		glutSetOption(GLUT_MULTISAMPLE,2);
+		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
+		glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
+		window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
 
-	initGL(w * pixsize, h * pixsize);
+		initGL(w * pixsize, h * pixsize);
 
-	if (argGfx.isSet())
-	{
-		if (vstrGfx[0].compare(argGfx.getValue())==0)
-			printer->SetVisualType(Printer::VisualType::SIMPLE);
-		else
-			printer->SetVisualType(Printer::VisualType::ADVANCED);
+		if (argGfx.isSet())
+		{
+			if (vstrGfx[0].compare(argGfx.getValue())==0)
+				printer->SetVisualType(Printer::VisualType::SIMPLE);
+			else
+				printer->SetVisualType(Printer::VisualType::ADVANCED);
 
+		}
 	}
-	};
+	if (argVCD.isSet() && argVCD.getValue().at(0).compare("?")==0)
+	{
+		TelemetryHost::GetHost()->PrintTelemetry(argMD.isSet());
+		exit(0);
+	}
+
 	if (argScriptHelp.isSet())
 	{
 		ScriptHost::Init("",0);
-		ScriptHost::PrintScriptHelp();
+		ScriptHost::PrintScriptHelp(argMD.isSet());
 		return 0;
 	}
 
@@ -306,6 +329,6 @@ int main(int argc, char *argv[])
 
 	printf("Done\n");
 	if (argScript.isSet())
-		return (int)ScriptHost::GetState();
+		return static_cast<int>(ScriptHost::GetState());
 
 }

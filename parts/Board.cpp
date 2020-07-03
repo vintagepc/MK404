@@ -28,6 +28,8 @@
 #include <stdlib.h>   // for exit, free
 #include <unistd.h>   // for close, ftruncate, lseek, read, write, ssize_t
 #include <cstring>    // for memcpy, NULL
+#include <avr_uart.h>
+#include "TelemetryHost.h"
 
 using namespace std;
 using namespace Boards;
@@ -48,7 +50,7 @@ void Board::CreateAVR()
 	m_EEPROM.Load(m_pAVR,GetStorageFileName("eeprom").c_str());
 }
 
-void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, string strBoot)
+void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, uint32_t uiVCDRate, string strBoot)
 {
 	CreateAVR();
 	if (!strFW.empty())
@@ -64,11 +66,17 @@ void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, string strBoot)
 		m_bootBase = LoadFirmware(strBoot);
 		m_pAVR->reset_pc = m_bootBase;
 	}
+	string strVCD = GetStorageFileName("VCD");
+	strVCD.replace(strVCD.end()-3,strVCD.end(), "vcd");
+	printf("Initialized VCD file %s\n",strVCD.c_str());
+
 	m_pAVR->frequency = m_uiFreq;
 	m_pAVR->vcc = 5000;
 	m_pAVR->aref = 0;
 	m_pAVR->avcc = 5000;
 	m_pAVR->log = 1 + uiV;
+
+	TelemetryHost::GetHost()->Init(m_pAVR, strVCD,uiVCDRate);
 
 	// even if not setup at startup, activate gdb if crashing
 	m_pAVR->gdb_port = 1234;
@@ -82,6 +90,20 @@ void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, string strBoot)
 
 	SetupHardware();
 };
+
+void Board::AddUARTTrace(const char chrUART)
+{
+		auto pTH = TelemetryHost::GetHost();
+		avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT);
+		avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_INPUT);
+		avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XON);
+		avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XOFF);
+
+		pTH->AddTrace(src, string("UART")+chrUART, {TC::Serial},8);
+		pTH->AddTrace(dst, string("UART")+chrUART, {TC::Serial},8);
+		pTH->AddTrace(xon, string("UART")+chrUART, {TC::Serial});
+		pTH->AddTrace(xoff, string("UART")+chrUART, {TC::Serial});
+}
 
 void Board::StartAVR()
 {

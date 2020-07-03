@@ -47,14 +47,14 @@ class PAT9125: public I2CPeripheral, public Scriptable
 
 		PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125")
 		{
-			printf("\n\n--------- Your attention please! ----------\n");
-			printf("NOTE: PAT9125 is not functional due to a sorely lacking datasheet.\nIf you are familiar with this sensor\n please consider contributing to an implementation.\n");
-			printf("--------- Your attention please! ----------\n\n\n");
 		};
 
 		void Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)
 		{
 			_Init(pAVR, pSDA, pSCL, this);
+			printf("\n\n--------- Your attention please! ----------\n");
+			printf("NOTE: PAT9125 is not functional due to a sorely lacking datasheet.\nIf you are familiar with this sensor\n please consider contributing to an implementation.\n");
+			printf("--------- Your attention please! ----------\n\n\n");
 		}
 
 		inline void Toggle()

@@ -218,6 +218,8 @@ namespace Boards
 				UART.Connect(chrNum);
 			}
 
+			void AddUARTTrace(const char chrUART);
+
 			inline void SetPin(PinNames::Pin ePin, uint32_t value)
 			{
 				avr_raise_irq(m_wiring.DIRQLU(m_pAVR,ePin),value);

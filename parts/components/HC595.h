@@ -27,6 +27,7 @@
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include <string>
 
 /*
  * this one is quite fun, it simulated a 74HC595 shift register
@@ -84,6 +85,8 @@ class HC595: public BasePeripheral
 
 		// Registers with SimAVR
 		void Init(avr_t *avr);
+
+		std::string GetName(){return "HC595";}
 
 	private:
 		// IRQ handlers.

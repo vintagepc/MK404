@@ -22,6 +22,7 @@
 #include "PINDA.h"
 #include <stdio.h>  // for printf
 #include <cmath>    // for pow, floor, round, sqrt
+#include "TelemetryHost.h"
 
 //#define TRACE(_w)_w
 #ifndef TRACE
@@ -181,4 +182,9 @@ void PINDA::Init(struct avr_t * avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t
     RegisterNotify(Y_POS_IN, MAKE_C_CALLBACK(PINDA,OnYChanged),this);
     RegisterNotify(Z_POS_IN, MAKE_C_CALLBACK(PINDA,OnZChanged),this);
     RaiseIRQ(TRIGGER_OUT,0);
+
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, TRIGGER_OUT, {TC::InputPin, TC::Misc});
+	pTH->AddTrace(this, SHEET_OUT, {TC::InputPin, TC::Misc});
+
 }

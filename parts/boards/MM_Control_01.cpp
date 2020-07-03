@@ -30,6 +30,8 @@ namespace Boards
 
 		AddSerialPty(m_UART,'1');
 
+		AddUARTTrace('1');
+
 		AddHardware(m_shift);
 		TryConnect(SHIFT_LATCH,m_shift,HC595::IN_LATCH);
 		TryConnect(SHIFT_DATA,m_shift,HC595::IN_DATA);

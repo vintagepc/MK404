@@ -26,6 +26,7 @@
 #include <string.h>          // for memset
 #include <scoped_allocator>  // for allocator_traits<>::value_type
 #include "Scriptable.h"      // for Scriptable
+#include "TelemetryHost.h"
 
 //#define TRACE(_w) _w
 #ifndef TRACE
@@ -399,4 +400,12 @@ void HD44780::Init(avr_t *avr)
 			37, (int)avr_usec_to_cycles(avr, 37));
 	printf("LCD: %duS is %d cycles for your AVR\n",
 			1, (int)avr_usec_to_cycles(avr, 1));
+
+	auto pTH = TelemetryHost::GetHost();
+	pTH->AddTrace(this, E, {TC::Display, TC::OutputPin});
+	pTH->AddTrace(this, RS, {TC::Display, TC::OutputPin});
+	pTH->AddTrace(this, RW, {TC::Display, TC::OutputPin});
+	pTH->AddTrace(this, DATA_IN, {TC::Display},8);
+	pTH->AddTrace(this, BRIGHTNESS_IN, {TC::Display, TC::OutputPin});
+	pTH->AddTrace(this, BRIGHTNESS_PWM_IN, {TC::Display, TC::PWM});
 }

@@ -28,6 +28,7 @@
 #include <SDL/SDL_stdinc.h>   // for Sint16
 #include <stdio.h>            // for fprintf, printf, stderr
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
+#include "TelemetryHost.h"
 
 Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 {
@@ -125,6 +126,8 @@ void Beeper::Init(avr_t *avr)
 {
     _Init(avr, this);
 	Beeper::RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Beeper,OnDigitalInSPWM), this);
+
+	TelemetryHost::GetHost()->AddTrace(this, DIGITAL_IN, {TC::OutputPin, TC::Misc},8);
 }
 
 void Beeper::Draw()

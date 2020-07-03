@@ -28,6 +28,7 @@
 #include <stdlib.h>   // for exit, free
 #include <unistd.h>   // for close, ftruncate, lseek, read, write, ssize_t
 #include <cstring>    // for memcpy, NULL
+#include <avr_uart.h>
 #include "TelemetryHost.h"
 
 using namespace std;
@@ -89,6 +90,20 @@ void Board::CreateBoard(string strFW, uint8_t uiV,  bool bGDB, uint32_t uiVCDRat
 
 	SetupHardware();
 };
+
+void Board::AddUARTTrace(const char chrUART)
+{
+		auto pTH = TelemetryHost::GetHost();
+		avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT);
+		avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_INPUT);
+		avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XON);
+		avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XOFF);
+
+		pTH->AddTrace(src, string("UART")+chrUART, {TC::Serial},8);
+		pTH->AddTrace(dst, string("UART")+chrUART, {TC::Serial},8);
+		pTH->AddTrace(xon, string("UART")+chrUART, {TC::Serial});
+		pTH->AddTrace(xoff, string("UART")+chrUART, {TC::Serial});
+}
 
 void Board::StartAVR()
 {

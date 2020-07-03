@@ -179,6 +179,9 @@ namespace Boards
 		if (m_wiring.IsPin(W25X20CL_PIN_CS))
 			AddHardware(spiFlash,GetDIRQ(W25X20CL_PIN_CS));
 
+		AddUARTTrace('0'); // External
+		AddUARTTrace('2'); // MMU/internal/P3
+
 	}
 
 	void EinsyRambo::OnAVRInit()

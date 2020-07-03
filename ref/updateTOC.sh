@@ -3,12 +3,12 @@
 echo "# Select a printer to view scripting options:" > Scripting.md
 for i in Scripting_*.md; do
 	TMP=`basename $i .md`;
-	echo "- [${TMP:10}]($i)" >> Scripting.md
+	echo "- [${TMP}]($i)" >> Scripting.md
 done
 
 # Update trace:
 echo "# Select a printer to view trace options:" > TraceOptions.md
 for i in TraceOptions_*.md; do
 	TMP=`basename $i .md`;
-	echo "- [${TMP:13}]($i)" >> TraceOptions.md
+	echo "- [${TMP}]($i)" >> TraceOptions.md
 done

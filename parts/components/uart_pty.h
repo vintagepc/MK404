@@ -27,6 +27,7 @@
 #include <pthread.h>           // for pthread_t
 #include <stddef.h>            // for size_t
 #include <stdint.h>            // for uint8_t, uint32_t
+#include <atomic>
 #include <string>              // for string
 #include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
 #include "fifo_declare.h"      // for DECLARE_FIFO, DEFINE_FIFO
@@ -72,7 +73,7 @@ class uart_pty: public BasePeripheral
 
 		pthread_t	m_thread = 0;
 		bool		m_bXOn = false;
-		bool m_bQuit = false;
+		std::atomic_bool m_bQuit = {false};
 
 		unsigned char m_chrLast = '\n';
 

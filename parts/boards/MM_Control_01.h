@@ -47,8 +47,12 @@ namespace Boards
 
 			uart_pty m_UART;
 			HC595 m_shift;
-			TMC2130 m_Sel = TMC2130('S'), m_Idl = TMC2130('I'), m_Extr = TMC2130('P');
-			LED m_lGreen[5], m_lRed[5], m_lFINDA;
+			TMC2130 m_Sel = {'S'},
+					m_Idl = {'I'},
+					m_Extr = {'P'};
+			LED m_lGreen[5] = {{0x00FF00FF},{0x00FF00FF},{0x00FF00FF},{0x00FF00FF},{0x00FF00FF}},
+				m_lRed[5] = {{0xFF0000FF},{0xFF0000FF},{0xFF0000FF},{0xFF0000FF},{0xFF0000FF}},
+				m_lFINDA = {0xFFCC00FF,'F'};
 			ADC_Buttons m_buttons;
 
 		private:

@@ -27,6 +27,7 @@
 #include <stdint.h>            // for uint32_t, uint16_t, uint8_t
 #include <string>              // for string
 #include <vector>              // for vector
+#include <atomic>
 #include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
 #include "Color.h"             // for Color3fv
 #include "IScriptable.h"       // for IScriptable::LineStatus
@@ -92,7 +93,7 @@ public:
         char m_chrLabel;
         float m_fColdTemp;
         float m_fHotTemp;
-        uint16_t m_uiPWM = 0;
+        atomic_uint16_t m_uiPWM = {0};
 		bool m_bStopTicking = false;
 	    static constexpr Color3fv m_colColdTemp = {0, 1, 1};
 	    static constexpr Color3fv m_colHotTemp = {1, 0, 0};

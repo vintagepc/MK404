@@ -167,7 +167,7 @@ constexpr Color3fv Heater::m_colHotTemp;
 
 void Heater::Draw()
 {
-	bool bOn = m_uiPWM>0;
+	bool bOn = m_uiPWM.load()>0;
 
 	Color3fv colFill;
 	float v = (m_fCurrentTemp - m_fColdTemp) / (m_fHotTemp - m_fColdTemp);

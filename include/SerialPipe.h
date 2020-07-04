@@ -21,6 +21,7 @@
 
 #include <pthread.h>  // for pthread_t
 #include <string>     // for string
+#include <atomic>
 
 class SerialPipe
 {
@@ -36,7 +37,7 @@ class SerialPipe
 		void* Run();
 
 		bool m_bStarted = false;
-		bool m_bQuit = false;
+		std::atomic_bool m_bQuit = {false};
 		pthread_t m_thread = 0;
 
 		std::string m_strPty0, m_strPty1;

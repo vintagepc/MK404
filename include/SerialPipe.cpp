@@ -40,6 +40,7 @@ SerialPipe::~SerialPipe()
 		return;
 	m_bQuit = true;
 	pthread_cancel(m_thread);
+	pthread_join(m_thread,NULL);
 	printf("Serial pipe finished\n");
 }
 

@@ -48,6 +48,7 @@
 void uart_pty::OnByteIn(struct avr_irq_t * irq, uint32_t value)
 {
 	TRACE(printf("uart_pty_in_hook %02x\n", value);)
+	std::lock_guard<std::mutex> lock(m_lock);
 	uart_pty_fifo_write(&pty.in, value);
 
 	if (tap.s) {
@@ -61,6 +62,7 @@ void uart_pty::OnByteIn(struct avr_irq_t * irq, uint32_t value)
 // other side is full
 void uart_pty::FlushData()
 {
+	std::lock_guard<std::mutex> lock(m_lock);
 	while (m_bXOn && !uart_pty_fifo_isempty(&pty.out)) {
 		TRACE(int r = p->pty.out.read;)
 		uint8_t byte = uart_pty_fifo_read(&pty.out);
@@ -152,6 +154,7 @@ void* uart_pty::Run()
 
 		for (int ti = 0; ti < 2; ti++) if (port[ti].s) {
 			// read more only if buffer was flushed
+			std::lock_guard<std::mutex> lock(m_lock);
 			if (port[ti].buffer_len == port[ti].buffer_done) {
 				FD_SET(port[ti].s, &read_set);
 				max = port[ti].s > max ? port[ti].s : max;
@@ -171,6 +174,7 @@ void* uart_pty::Run()
 
 		for (int ti = 0; ti < 2; ti++) if (port[ti].s) {
 			if (FD_ISSET(port[ti].s, &read_set)) {
+				std::lock_guard<std::mutex> lock(m_lock);
 				ssize_t r = read(port[ti].s, port[ti].buffer,
 									sizeof(port[ti].buffer)-1);
 				port[ti].buffer_len = r;
@@ -180,6 +184,7 @@ void* uart_pty::Run()
 			}
 			if (port[ti].buffer_done < port[ti].buffer_len) {
 				// write them in fifo
+				std::lock_guard<std::mutex> lock(m_lock);
 				while (port[ti].buffer_done < port[ti].buffer_len &&
 						!uart_pty_fifo_isfull(&port[ti].out)) {
 					int index = port[ti].buffer_done++;
@@ -194,6 +199,7 @@ void* uart_pty::Run()
 				}
 			}
 			if (FD_ISSET(port[ti].s, &write_set)) {
+				std::lock_guard<std::mutex> lock(m_lock);
 				uint8_t buffer[512];
 				// write them in fifo
 				uint8_t * dst = buffer;

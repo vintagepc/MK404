@@ -282,7 +282,8 @@ namespace Boards
 
 			int m_fdFlash = 0;
 
-			bool m_bQuit = false, m_bReset = false, m_bNoHacks = false;
+			atomic_bool m_bQuit = {false}, m_bReset = {false};
+			bool m_bNoHacks = false;
 			pthread_t m_thread = 0;
 			const Wiring &m_wiring;
 			//std::string m_strFW, m_strBoot;

@@ -27,6 +27,7 @@
 #include <pthread.h>           // for pthread_t
 #include <stddef.h>            // for size_t
 #include <stdint.h>            // for uint8_t, uint32_t
+#include <mutex>
 #include <atomic>
 #include <string>              // for string
 #include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
@@ -80,6 +81,8 @@ class uart_pty: public BasePeripheral
 		DECLARE_FIFO(uint8_t,uart_pty_fifo, 512);
 
 		DEFINE_FIFO(uint8_t,uart_pty_fifo);
+
+		std::mutex m_lock;
 
 		typedef struct uart_pty_port_t {
 			unsigned int	tap : 1, crlf : 1;

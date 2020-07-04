@@ -26,6 +26,7 @@
 #include <map>            // for map
 #include <string>         // for string
 #include <type_traits>    // for __decay_and_strip<>::__type
+#include <atomic>
 #include <utility>        // for make_pair, pair
 #include <vector>         // for vector
 #include "IScriptable.h"  // for IScriptable::LineStatus
@@ -86,6 +87,6 @@ private:
 		make_pair(IR_NOT_CONNECTED, 4.9)
 	};
 
-	bool m_bExternal = false;
+	atomic_bool m_bExternal {false};
 	IRState_t m_eCurrent = IR_NO_FILAMENT;
 };

@@ -263,7 +263,7 @@ namespace Boards
 
 			struct avr_t* m_pAVR = nullptr;
 
-			bool m_bPaused = false;
+			atomic_uint8_t m_bPaused = {false};
 
 		private:
 			void CreateAVR();

@@ -88,7 +88,8 @@ public:
         bool m_bAuto = true;
         float m_fThermalMass = 1.0;
         float m_fAmbientTemp = 25.0;
-        float m_fCurrentTemp = 25.0;
+        float m_fCurrentTemp {25.0};
+		atomic_int16_t m_iDrawTemp = {0};
         bool m_bIsBed = false;
         char m_chrLabel;
         float m_fColdTemp;

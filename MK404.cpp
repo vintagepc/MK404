@@ -323,6 +323,7 @@ int main(int argc, char *argv[])
 	{
 		glutLeaveMainLoop();
 		pthread_cancel(run); // Kill the GL thread.
+		pthread_join(run,NULL);
 	}
 
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);

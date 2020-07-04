@@ -69,8 +69,8 @@ class Beeper:public SoftPWMable, public Scriptable
 
 		SDL_AudioSpec m_specWant, m_specHave;
 
-		uint16_t m_uiCtOn = 0, m_uiCtOff = 0;
-		uint16_t m_uiCounter = 0;
+		atomic_uint16_t m_uiCtOn = {0}, m_uiCtOff = {0};
+		atomic_uint16_t m_uiCounter {0};
 		static constexpr uint16_t m_uiSampleRate = 44100;
 		bool m_bState = false;
 		bool m_bAudioAvail = false;

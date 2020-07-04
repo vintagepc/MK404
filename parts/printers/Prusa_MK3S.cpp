@@ -257,7 +257,7 @@ void Prusa_MK3S::OnKeyPress(unsigned char key, int x, int y)
 			break;
 		case 'z':
 			m_bPaused ^= true;
-			printf("Pause: %u\n",m_bPaused);
+			printf("Pause: %u\n",m_bPaused.load());
 			break;
 		case 'l':
 			if (m_pVis)m_pVis->ClearPrint();

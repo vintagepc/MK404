@@ -23,6 +23,7 @@
 #pragma once
 
 #include <stdint.h>          // for uint32_t, uint8_t
+#include <atomic>
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "Util.h"            // for hexColor_t
 #include "sim_avr.h"         // for avr_t
@@ -49,7 +50,7 @@ private:
 	void OnPWMChanged(avr_irq_t *irq, uint32_t value);
 	hexColor_t m_Color = hexColor_t(0x00FF0000);
 	char m_chrLabel = ' ';
-	uint8_t m_uiBrightness = 0;
+	std::atomic_uint8_t m_uiBrightness = {0};
 	bool m_bInvert = false;
 
 };

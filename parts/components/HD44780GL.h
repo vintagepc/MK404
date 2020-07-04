@@ -30,6 +30,7 @@
 #pragma once
 
 #include <stdint.h>   // for uint32_t, uint8_t
+#include <atomic>
 #include "HD44780.h"  // for HD44780
 #include "sim_avr.h"  // for avr_t
 #include "sim_irq.h"  // for avr_irq_t
@@ -56,6 +57,6 @@ class HD44780GL:public HD44780
 
 
 		uint8_t m_uiCharW = 5, m_uiCharH = 8;
-		uint8_t m_uiBrightness = 255;
-		uint8_t m_uiPWM = 255;
+		std::atomic_uint8_t m_uiBrightness = {255};
+		std::atomic_uint8_t m_uiPWM = {255};
 };

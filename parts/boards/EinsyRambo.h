@@ -76,21 +76,24 @@ namespace Boards
 			uart_pty UART0, UART2;
 			SerialLineMonitor m_Mon0 = SerialLineMonitor("Serial0");
 			Thermistor tExtruder, tBed, tPinda, tAmbient;
-			Fan fExtruder = Fan(3300,'E'), fPrint = Fan(5000,'P',true);
-			Heater hExtruder = Heater(1.5,25.0,false,'H',30,250),
-				hBed = Heater(0.25, 25, true,'B',30,100);
+			Fan fExtruder = {3300,'E'}, fPrint = {5000,'P',true};
+			Heater hExtruder = {1.5,25.0,false,'H',30,250},
+				hBed = {0.25, 25, true,'B',30,100};
 			w25x20cl spiFlash;
 			SDCard sd_card = SDCard();
-			TMC2130 X = TMC2130('X'), Y = TMC2130('Y'), Z = TMC2130('Z'), E = TMC2130('E');
+			TMC2130 X = {'X'},
+				Y = {'Y'},
+				Z = {'Z'},
+				E = {'E'};
 			VoltageSrc vMain = VoltageSrc(fScale24v, 24.f),
 				vBed = VoltageSrc(fScale24v,23.9);
 			IRSensor IR;
 			PAT9125 LaserSensor;
 			PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
 			//MMU2 *mmu = nullptr;
-			LED lPINDA = LED(0xFF0000FF,'P',true),
-				lIR = LED(0xFFCC00FF,'I',true),
-				lSD = LED(0x0000FF00,'C', true);
+			LED lPINDA = {0xFF0000FF,'P',true},
+				lIR = {0xFFCC00FF,'I',true},
+				lSD = {0x0000FF00,'C', true};
 
 		private:
 			const Wirings::Einsy_1_1a m_wiring = Wirings::Einsy_1_1a();

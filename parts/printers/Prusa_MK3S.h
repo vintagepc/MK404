@@ -21,6 +21,7 @@
 #pragma once
 
 #include <stdint.h>         // for uint32_t, uint8_t
+#include <atomic>
 #include <memory>           // for unique_ptr
 #include "EinsyRambo.h"     // for EinsyRambo
 #include "Printer.h"        // for Printer, Printer::VisualType
@@ -60,7 +61,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);
 
-		unsigned char m_key = 0, m_mouseBtn = 0;
+		std::atomic_uchar m_key = {0}, m_mouseBtn = {0};
 
 		unsigned int m_iScheme = 0;
 		uint32_t m_colors[8] = {

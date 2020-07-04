@@ -36,9 +36,8 @@
 
 void TMC2130::Draw()
 {
-        if (!m_pAVR)
+        if (!m_bConfigured)
             return; // Motors not ready yet.
-        float fEnd = m_iMaxPos/cfg.uiStepsPerMM;
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -81,10 +80,10 @@ void TMC2130::Draw()
 				glVertex3f(0,8,0);
 			glEnd();
 			glBegin(GL_QUADS);
-				glVertex3f(fEnd,2,0);
-				glVertex3f(fEnd+2,2,0);
-				glVertex3f(fEnd+2,8,0);
-				glVertex3f(fEnd,8,0);
+				glVertex3f(m_fEnd,2,0);
+				glVertex3f(m_fEnd+2,2,0);
+				glVertex3f(m_fEnd+2,8,0);
+				glVertex3f(m_fEnd,8,0);
 			glEnd();
 			glColor3f(0,1,1);
 			glBegin(GL_QUADS);
@@ -99,7 +98,7 @@ void TMC2130::Draw()
 
 void TMC2130::Draw_Simple()
 {
-        if (!cfg.uiStepsPerMM)
+        if (!m_bConfigured)
             return; // Motors not ready yet.
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
@@ -275,7 +274,7 @@ void TMC2130::OnEnableIn(struct avr_irq_t * irq, uint32_t value)
 {
     if (irq->value == value && m_bEnable == (value==0))
         return;
-	TRACE2(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis,value));
+	TRACE2(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis.load(),value));
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
@@ -313,6 +312,8 @@ void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)
     m_iCurStep = cfg.fStartPos*cfg.uiStepsPerMM;
     m_iMaxPos = cfg.iMaxMM*cfg.uiStepsPerMM;
     m_fCurPos = cfg.fStartPos;
+	m_fEnd = m_iMaxPos/cfg.uiStepsPerMM;
+	m_bConfigured = true;
 }
 
 void TMC2130::Init(struct avr_t * avr)

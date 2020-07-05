@@ -25,6 +25,7 @@
 #include <Camera.hpp>        // for Camera
 #include <string>            // for string
 #include <vector>            // for vector
+#include <atomic>
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "GLObj.h"           // for GLObj
 #include "HD44780.h"         // for _IRQ
@@ -77,7 +78,7 @@ class MK3SGL: public BasePeripheral
         void SetLite(bool bLite) { m_bLite = bLite;}
 
         // Toggles nozzle cam mode.
-        void ToggleNozzleCam() {m_bFollowNozzle^=true;}
+        void ToggleNozzleCam() {m_bFollowNozzle = !m_bFollowNozzle;}
 
         // Sets nozzle cam mode enabled to an explicit value.
         void SetFollowNozzle(bool bFollow) { m_bFollowNozzle = bFollow;}
@@ -109,7 +110,7 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
 
-		int m_iCurTool = 0;
+		atomic_int m_iCurTool = {0};
         GLPrint m_Print = GLPrint(0.8,0,0), m_T1 = GLPrint(0,0.8,0), m_T2 = GLPrint(0,0,0.8), m_T3 = GLPrint(0.8,0.4,0), m_T4 = GLPrint(0.8,0,0.8);
 
 		std::vector<GLPrint*> m_vPrints = {&m_Print, &m_T1, &m_T2, &m_T3, &m_T4};
@@ -124,7 +125,7 @@ class MK3SGL: public BasePeripheral
 
         bool m_bLite = false; // Lite graphics
 
-        bool m_bFollowNozzle = false; // Camera follows nozzle.
+        atomic_bool m_bFollowNozzle = {false}; // Camera follows nozzle.
 
         // MMU draw subfunction.
         void DrawMMU();
@@ -150,19 +151,26 @@ class MK3SGL: public BasePeripheral
 
 
         // Correction parameters to get the model at 0,0,0 and aligned with the simulated starting positions.
-        float m_fXCorr = 0.044, m_fXPos = 0.010;
-        float m_fYCorr = 0.141, m_fYPos = 0.010;
-        float m_fZCorr = 0.210, m_fZPos = 0.010;
-        float m_fEPos = 0;
-        float m_fSelCorr = 0.025f, m_fSelPos = 0.0f;
+        float m_fXCorr = 0.044;
+        float m_fYCorr = 0.141;
+        float m_fZCorr = 0.210;
+        atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01};
+
+        float m_fSelCorr = 0.025f;
+		atomic<float> m_fSelPos = {0.0f};
 
         // This is going to be in degrees rotation instead of mm
-        float m_fIdlCorr = 20.00f, m_fIdlPos = 0.0f;
+        float m_fIdlCorr = 20.00f;
+		atomic<float> m_fIdlPos = {0.0f};
 
-        int m_iKnobPos = 0, m_iFanPos = 0, m_iPFanPos = 0;
+        atomic_int m_iKnobPos {0}, m_iFanPos = {0}, m_iPFanPos = {0};
 
-        bool m_bDirty = false, m_bFanOn = false, m_bMMU = false, m_bBedOn = false, m_bPINDAOn = false;
-        bool m_bPFanOn = false;
+        atomic_bool m_bDirty = {false},
+			m_bFanOn = {false},
+			m_bMMU = {false},
+			m_bBedOn = {false},
+			m_bPINDAOn = {false},
+        	m_bPFanOn = {false};
 
 
         int m_iWindow = 0;

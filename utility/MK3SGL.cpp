@@ -237,7 +237,7 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 void MK3SGL::OnYChanged(avr_irq_t *irq, uint32_t value)
 {
 	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-	m_fYPos =  fPos[0]/1000.f;
+	m_fYPos = fPos[0]/1000.f;
 	m_bDirty = true;
 }
 

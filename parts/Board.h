@@ -32,6 +32,7 @@
 #include <unistd.h>         // for usleep
 #include <string>           // for string, basic_string, stoi
 #include <vector>           // for vector
+#include <atomic>
 #include "EEPROM.h"         // for EEPROM
 #include "IScriptable.h"    // for ArgType, IScriptable::LineStatus, IScript...
 #include "PinNames.h"       // for Pin

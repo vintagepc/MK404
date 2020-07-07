@@ -71,8 +71,15 @@ void OnSigINT(int iSig) {
 	}
 }
 
+bool bIsQuitting = false;
+
 void displayCB(void)		/* function called whenever redisplay needed */
 {
+	if (bIsQuitting || pBoard->GetQuitFlag()) // Stop drawing if shutting down.
+	{
+		bIsQuitting = true;
+		return;
+	}
 	glutSetWindow(window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW); // Select modelview matrix

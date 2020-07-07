@@ -22,6 +22,7 @@
 ### Encoder::
  - `Press()                       ` - `Presses the encoder button`
  - `PressAndRelease()             ` - `Presses the encoder button`
+Starting serial transfer thread...
  - `Release()                     ` - `Releases the encoder button`
  - `TwistCCW()                    ` - `Twists the encoder once cycle counterclockwise`
  - `TwistCW()                     ` - `Twists the encoder one cycle clockwise`
@@ -34,7 +35,6 @@
 ### Heater_B::
  - `Resume()                      ` - `Resumes auto PWM control and clears the 'stopheating' flag`
  - `SetPWM(int)                   ` - `Sets the raw heater PWM value`
-Starting serial transfer thread...
  - `StopHeating()                 ` - `Stops heating, as if a thermal runaway is happening due to loose heater or thermistor`
 ### Heater_H::
  - `Resume()                      ` - `Resumes auto PWM control and clears the 'stopheating' flag`

@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
 
 		if (argGfx.isSet())
 		{
-			if (vstrGfx[0].compare(argGfx.getValue())==0)
+			if (vstrGfx[1].compare(argGfx.getValue())==0)
 				printer->SetVisualType(Printer::VisualType::SIMPLE);
 			else
 				printer->SetVisualType(Printer::VisualType::ADVANCED);

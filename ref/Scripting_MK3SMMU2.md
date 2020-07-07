@@ -22,7 +22,6 @@
 ### Encoder::
  - `Press()                       ` - `Presses the encoder button`
  - `PressAndRelease()             ` - `Presses the encoder button`
-Starting serial transfer thread...
  - `Release()                     ` - `Releases the encoder button`
  - `TwistCCW()                    ` - `Twists the encoder once cycle counterclockwise`
  - `TwistCW()                     ` - `Twists the encoder one cycle clockwise`
@@ -109,3 +108,4 @@ Starting serial transfer thread...
  - `Reset()                       ` - `Clears the diag flag immediately`
  - `Stall()                       ` - `Sets the diag flag immediately.`
  - `ToggleStall()                 ` - `Toggles the stallguard condition on the next step.`
+Starting serial transfer thread...

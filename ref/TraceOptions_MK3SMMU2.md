@@ -29,7 +29,6 @@ HC595_<hc959.clock_in| `OutputPin` `Misc`
 HC595_<hc959.data_in| `OutputPin` `Misc`
 HC595_<hc959.reset_in| `OutputPin` `Misc`
 Heater_B_<heater.digital_in| `Heater`
-Starting serial transfer thread...
 Heater_B_<heater.pwm_in| `Heater` `PWM`
 Heater_B_>heater.on| `Heater` `Misc`
 Heater_H_<heater.digital_in| `Heater`
@@ -355,3 +354,4 @@ Z_>tmc2130.diag_out| `InputPin` `Stepper`
  - PINDA_>pinda.out
  - PINDA_>sheet.out
  - Power Panic_Power Panic
+Starting serial transfer thread...

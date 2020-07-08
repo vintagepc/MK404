@@ -94,21 +94,21 @@ class MK3SGL: public BasePeripheral
 
 
     private:
-        GLObj m_Extruder = GLObj("assets/X_AXIS.obj");
-        GLObj m_Z = GLObj("assets/Z_AXIS.obj");
-        GLObj m_Y = GLObj("assets/Y_AXIS.obj");
-        GLObj m_Sheet = GLObj("assets/SSSheet.obj");
-        GLObj m_Base = GLObj("assets/Stationary.obj");
-        GLObj m_SDCard = GLObj("assets/SDCard.obj");
-        GLObj m_Knob = GLObj("assets/LCD-knobR2.obj");
-        GLObj m_EVis = GLObj("assets/Triangles.obj");
-        GLObj m_EMMU = GLObj("assets/E_MMU.obj");
-        GLObj m_EStd = GLObj("assets/E_STD.obj");
-        GLObj m_EFan = GLObj("assets/E_Fan.obj");
-        GLObj m_EPFan = GLObj("assets/Print-fan_rotor.obj");
-        GLObj m_MMUBase = GLObj("assets/MMU_stationary.obj");
-        GLObj m_MMUSel = GLObj("assets/MMU_Selector.obj");
-        GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
+        GLObj m_Extruder = {"assets/X_AXIS.obj"};
+        GLObj m_Z = {"assets/Z_AXIS.obj"};
+        GLObj m_Y = {"assets/Y_AXIS.obj"};
+        GLObj m_Sheet = {"assets/SSSheet.obj"};
+        GLObj m_Base = {"assets/Stationary.obj"};
+        GLObj m_SDCard = {"assets/SDCard.obj"};
+        GLObj m_Knob = {"assets/LCD-knobR2.obj"};
+        GLObj m_EVis = {"assets/Triangles.obj"};
+        GLObj m_EMMU = {"assets/E_MMU.obj"};
+        GLObj m_EStd = {"assets/E_STD.obj"};
+        GLObj m_EFan = {"assets/E_Fan.obj"};
+        GLObj m_EPFan = {"assets/Print-fan_rotor.obj"};
+        GLObj m_MMUBase = {"assets/MMU_stationary.obj"};
+        GLObj m_MMUSel = {"assets/MMU_Selector.obj"};
+        GLObj m_MMUIdl = {"assets/Idler_moving.obj"};
 
 		atomic_int m_iCurTool = {0};
         GLPrint m_Print = {0.8,0,0}, m_T1 = {0,0.8,0}, m_T2 = {0,0,0.8}, m_T3 = {0.8,0.4,0}, m_T4 = {0.8,0,0.8};

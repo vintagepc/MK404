@@ -28,6 +28,7 @@
  */
 
 #include "HD44780GL.h"
+#include <mutex>
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
 #include "Util.h"             // for hexColor_t, hexColor_t::(anonymous)
 #include "hd44780_charROM.h"  // for (anonymous), hd44780_ROM_AOO
@@ -85,7 +86,7 @@ void HD44780GL::OnBrightnessDigital(struct avr_irq_t * irq,	uint32_t value)
 	avr_regbit_t rb = AVR_IO_REGBIT(0x90,7); // COM3A1
 	if (avr_regbit_get(m_pAVR,rb)) // Restore PWM value if being PWM-driven again after a digitalwrite
 	{
-		m_uiBrightness = m_uiPWM;
+		m_uiBrightness.store(m_uiPWM);
 		return;
 	}
 	//printf("Brightness digital pin changed: %02x\n",value);
@@ -195,6 +196,7 @@ void HD44780GL::Draw(
 	for (int v = 0 ; v < m_uiHeight; v++) {
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {
+			std::lock_guard<std::mutex> lock(m_lock);
 			GLPutChar(m_vRam[m_lineOffsets[v] + i], character, text, shadow, bMaterial);
 			glTranslatef(6, 0, 0);
 		}

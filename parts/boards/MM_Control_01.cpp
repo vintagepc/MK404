@@ -78,12 +78,12 @@ namespace Boards
 
 		for (int i=0; i<5; i++)
 		{
-			m_lGreen[i] = LED(0x00FF00FF);
+//			m_lGreen[i] = {0x00FF00FF};
 			AddHardware(m_lGreen[i]);
-			m_lRed[i] = LED(0xFF0000FF);
+//			m_lRed[i] = {0xFF0000FF};
 			AddHardware(m_lRed[i]);
 		}
-		m_lFINDA = LED(0xFFCC00FF,'F');
+//		m_lFINDA = LED(0xFFCC00FF,'F');
 		AddHardware(m_lFINDA);
 		TryConnect(FINDA_PIN,m_lFINDA,LED::LED_IN);
 		SetPin(FINDA_PIN,0);

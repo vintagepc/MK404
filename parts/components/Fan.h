@@ -23,6 +23,7 @@
 #include <stdint.h>            // for uint16_t, uint32_t, uint8_t
 #include <string>              // for string
 #include <vector>              // for vector
+#include <atomic>
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
@@ -82,7 +83,7 @@ public:
 		bool m_bPulseState = false;
 		bool m_bIsSoftPWM = false;
 
-		uint8_t m_uiPWM = 0;
+		atomic_uint8_t m_uiPWM = {0};
 		uint16_t m_uiMaxRPM = 2000;
 		uint16_t m_uiCurrentRPM = 0;
 		uint16_t m_uiUsecPulse = 0;

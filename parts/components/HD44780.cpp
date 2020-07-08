@@ -44,7 +44,10 @@ void HD44780::ResetCursor()
 
 void HD44780::ClearScreen()
 {
-    memset(m_vRam, ' ', sizeof(m_vRam));
+	{
+		std::lock_guard<std::mutex> lock(m_lock);
+    	memset(m_vRam, ' ', sizeof(m_vRam));
+	}
 	SetFlag(HD44780_FLAG_DIRTY, 1);
 	RaiseIRQ(ADDR, m_uiCursor);
 	for (int i=0; i<m_uiHeight; i++)
@@ -145,13 +148,17 @@ uint32_t HD44780::OnDataReady()
 	uint32_t delay = 37; // uS
 	if (m_bInCGRAM)
 	{
+		std::lock_guard<std::mutex> lock(m_lock);
 		m_cgRam[m_uiCGCursor] = m_uiDataPins;
 		TRACE(printf("hd44780_write_data %02x to CGRAM %02x\n",m_uiDataPins,m_uiCGCursor));
 		IncrementCGRAMCursor();
 	}
 	else
 	{
-		m_vRam[m_uiCursor] = m_uiDataPins;
+		{
+			std::lock_guard<std::mutex> lock(m_lock);
+			m_vRam[m_uiCursor] = m_uiDataPins;
+		}
 
 		for (int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
 			if (m_uiCursor>= m_lineOffsets[i] && m_uiCursor< (m_lineOffsets[i] + m_uiWidth))
@@ -297,7 +304,10 @@ uint32_t HD44780::ProcessRead()
 
 		if (m_uiPinState & (1 << RS)) {	// read data
 			delay = 37;
-			m_uiReadPins = m_vRam[m_uiCursor];
+			{
+				std::lock_guard<std::mutex> lock(m_lock);
+				m_uiReadPins = m_vRam[m_uiCursor];
+			}
 			IncrementCursor();
 		} else {	// read 'command' ie status register
 			delay = 0;	// no raising busy when reading busy !
@@ -384,8 +394,11 @@ void HD44780::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
 void HD44780::Init(avr_t *avr)
 {
     _Init(avr,this);
-	memset(m_cgRam, 0, sizeof(m_cgRam));
-	memset(m_vRam, 0, sizeof(m_vRam));
+	{
+		std::lock_guard<std::mutex> lock(m_lock);
+		memset(m_cgRam, 0, sizeof(m_cgRam));
+		memset(m_vRam, 0, sizeof(m_vRam));
+	}
 	/*
 	 * Register callbacks on all our IRQs
 	 */

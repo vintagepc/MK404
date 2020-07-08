@@ -48,6 +48,7 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 {
 	if (m_fEMax<0) // First cycle/extrusion.
 	{
+		std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 		m_fEMax = fE;
 		m_fExtrEnd = m_fExtrStart = {fX,fZ,fY,fE};
 	}
@@ -82,9 +83,7 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 		// Extruding condition has changed. Start a new segment.
 		if (bExtruding) // Just started extruding. Update the various pointers.
 		{
-			m_iExtrStart = m_iExtrEnd;
-			m_fExtrStart = m_fExtrEnd;
-			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
+
 			m_ivTStart.push_back(m_fvTri.size()/3);
 			if (fZ>m_fCurZ)
 			{
@@ -93,12 +92,19 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 				//m_fCurZ = fZ;
 			}
 			//printf("New extrusion %u at index %u\n",m_ivStart.size(),m_ivStart.back());
-			m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
 			// Add a temporary normal vertex
 			float fCross[3], fA[3],fB[3]= {0,-0.002,0};
 			std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA, std::minus<float>());
 			CrossProduct(fA,fB,fCross);
 			Normalize(fCross);
+			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
+			for (int i=0; i<4; i++)
+			{
+				m_iExtrStart = m_iExtrEnd;
+				m_fExtrStart = m_fExtrEnd;
+			}
+			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
+			m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
 			m_fvNorms.insert(m_fvNorms.end(), fCross, fCross+3);
 
 		}
@@ -109,6 +115,7 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 
 		if (!bExtruding)
 		{
+			std::lock_guard<std::mutex> lock(m_lock);
 			m_ivCount.push_back((m_fvDraw.size()/3) - m_ivStart.back());
 			// m_ivTCount.push_back((m_fvTri.size()/3) - m_ivTStart.back());
 			//printf("Ended extrusion %u (%u vertices)\n", m_ivCount.size(), m_ivCount.back());
@@ -117,9 +124,6 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 	}
 	else if (!bColinear)
 	{
-		// New segment, push it onto the vertex list and update the segment count
-		//printf("New segment: %d\n",m_vCoords.size());
-		m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
 		// First, update the previous normal with the new vertex info.
 		// TODO: fB really should be pointing at the nearest vertex on the layer below, but that's a lot of coordinate
 		// that's going to be disposable once this changes to a geometry or normal shader instead of the current implemetnation
@@ -135,13 +139,20 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 		std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA, std::minus<float>());
 		CrossProduct(fA,fB,fCross);
 		Normalize(fCross);
-		m_fvNorms.insert(m_fvNorms.end(), fCross, fCross+3);
+				// New segment, push it onto the vertex list and update the segment count
+		//printf("New segment: %d\n",m_vCoords.size());
+		{
+			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
+			m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+			m_fvNorms.insert(m_fvNorms.end(), fCross, fCross+3);
+			m_iExtrStart = m_iExtrEnd;
+			m_fExtrStart = m_fExtrEnd;
+		}
 		// m_fvTri.push_back(m_fExtrEnd[0]);
 		// m_fvTri.push_back(m_fExtrEnd[1]-0.0002);
 		// m_fvTri.push_back(m_fExtrEnd[2]);.
 		// m_fvTri.insert(m_fvTri.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
-		m_iExtrStart = m_iExtrEnd;
-		m_fExtrStart = m_fExtrEnd;
+
 	}
 	// Update the end we are tracking.
 	m_fExtrEnd[0] = fX;
@@ -157,7 +168,7 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 void GLPrint::Draw()
 {
 	float fColor[4] = {m_fColR,m_fColG,m_fColB,1};
-	float fG[4] = {0,0.5,0,1};
+	//float fG[4] = {0,0.5,0,1};
 	float fY[4] = {1,1,0,1};
 	float fK[4] = {0,0,0,1};
 	float fSpec[4] = {1,1,1,1};
@@ -170,26 +181,29 @@ void GLPrint::Draw()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fK);
-		glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
+		//glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
 		// glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
 		//glNormal3f(0,1,0);
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor);
-		glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
-		glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
-		glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec);
-		if (m_ivCount.size()>0)
-			glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),((m_fvDraw.size()/3)-m_ivStart.back())-1);
-		if (m_bExtruding && m_fvDraw.size() >0)
 		{
-			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fY);
-			glBegin(GL_LINES);
-				glVertex3fv((&m_fvDraw.back())-2);
-				glVertex3fv(m_fExtrEnd.data());
-			glEnd();
+			std::lock_guard<std::mutex> lock(m_lock);
+			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
+			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
+			glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
+			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec);
+			if (m_ivCount.size()>0)
+				glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),((m_fvDraw.size()/3)-m_ivStart.back())-1);
+			if (m_bExtruding && m_fvDraw.size() >0)
+			{
+				glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fY);
+				glBegin(GL_LINES);
+					glVertex3fv((&m_fvDraw.back())-2);
+					glVertex3fv(m_fExtrEnd.data());
+				glEnd();
+			}
 		}
 		// Uncomment for vertex debugging.
-		 glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fG);
+		 //glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fG);
 		// glPointSize(1.0);
 		// glDrawArrays(GL_POINTS,0,m_fvDraw.size()/3);
 	glDisableClientState(GL_VERTEX_ARRAY);

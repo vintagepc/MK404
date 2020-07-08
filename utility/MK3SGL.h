@@ -111,7 +111,7 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUIdl = GLObj("assets/Idler_moving.obj");
 
 		atomic_int m_iCurTool = {0};
-        GLPrint m_Print = GLPrint(0.8,0,0), m_T1 = GLPrint(0,0.8,0), m_T2 = GLPrint(0,0,0.8), m_T3 = GLPrint(0.8,0.4,0), m_T4 = GLPrint(0.8,0,0.8);
+        GLPrint m_Print = {0.8,0,0}, m_T1 = {0,0.8,0}, m_T2 = {0,0,0.8}, m_T3 = {0.8,0.4,0}, m_T4 = {0.8,0,0.8};
 
 		std::vector<GLPrint*> m_vPrints = {&m_Print, &m_T1, &m_T2, &m_T3, &m_T4};
 

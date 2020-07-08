@@ -28,6 +28,9 @@
 #include <map>                // for map
 #include <string>             // for string
 #include <vector>             // for vector
+#include <atomic>
+
+using namespace std;
 
 class GLObj
 {
@@ -62,8 +65,8 @@ class GLObj
         typedef struct {
             GLuint vb;  // vertex buffer
             int numTriangles;
-            size_t material_id;
-            bool bDraw;
+            atomic_size_t material_id; // Atomic to allow for cross thread
+            atomic_bool bDraw;
         } DrawObject;
         float m_fMaxExtent;
         float m_extMin[3], m_extMax[3];

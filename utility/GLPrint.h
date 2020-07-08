@@ -25,6 +25,7 @@
 #include <cmath>   // for sqrt
 #include <vector>  // for vector
 #include <mutex>
+#include <atomic>
 
 using namespace std;
 

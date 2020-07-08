@@ -28,7 +28,7 @@
 #include <map>                // for map
 #include <string>             // for string
 #include <vector>             // for vector
-#include <atomic>
+#include <mutex>
 
 using namespace std;
 
@@ -65,16 +65,18 @@ class GLObj
         typedef struct {
             GLuint vb;  // vertex buffer
             int numTriangles;
-            atomic_size_t material_id; // Atomic to allow for cross thread
-            atomic_bool bDraw;
+            size_t material_id; // Atomic to allow for cross thread
+            bool bDraw;
         } DrawObject;
         float m_fMaxExtent;
         float m_extMin[3], m_extMax[3];
         bool m_bLoaded = false;
-        std::vector<tinyobj::material_t> m_materials;
-        std::map<std::string, GLuint> m_textures;
-        std::vector<DrawObject> m_DrawObjects;
-        std::string m_strFile;
+        vector<tinyobj::material_t> m_materials;
+        map<std::string, GLuint> m_textures;
+        vector<DrawObject> m_DrawObjects;
+        string m_strFile;
+
+		mutex m_lock;
 
         // Load helper from the tinyobjloader example.
         bool LoadObjAndConvert(const char* filename);

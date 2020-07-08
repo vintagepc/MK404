@@ -62,12 +62,14 @@ void GLObj::Load()
 
 void GLObj::SetAllVisible(bool bVisible)
 {
+	lock_guard<mutex> lock(m_lock);
 	for (size_t i=0; i<m_DrawObjects.size(); i++)
 		m_DrawObjects[i].bDraw = bVisible;
 }
 
 void GLObj::SetSubobjectVisible(uint iObj, bool bVisible)
 {
+	lock_guard<mutex> lock(m_lock);
 	if (iObj<m_DrawObjects.size())
 		m_DrawObjects[iObj].bDraw = bVisible;
 }
@@ -77,6 +79,7 @@ void GLObj::SetSubobjectMaterial(uint iObj, uint iMat)
 {
 	if (iObj<m_DrawObjects.size() && iMat < m_materials.size())
 	{
+		lock_guard<mutex> lock(m_lock);
 		//printf("Changed obj %d to %d\n",iObj,iMat);
 		m_DrawObjects[iObj].material_id = iMat;
 	}
@@ -96,6 +99,7 @@ void GLObj::Draw() {
 #else
 	GLsizei stride = (3 + 3) * sizeof(float);
 #endif
+	lock_guard<mutex> lock(m_lock);
 	for (size_t i = 0; i < m_DrawObjects.size(); i++) {
 		DrawObject o = m_DrawObjects[i];
 		if (o.vb < 1 || !o.bDraw) {

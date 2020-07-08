@@ -49,7 +49,6 @@ LCD_<hd44780.RW| `Display` `OutputPin`
 LCD_=hd44780.BRIGHTNESS_IN| `Display` `OutputPin`
 PINDA_>pinda.out| `InputPin` `Misc`
 PINDA_>sheet.out| `InputPin` `Misc`
-Starting serial transfer thread...
 P_8<tmc2130.byte_in| `SPI` `Stepper`
 P_8>tmc2130.byte_out| `SPI` `Stepper`
 P_<tmc2130.cs_in| `SPI` `Stepper` `OutputPin`
@@ -355,3 +354,4 @@ Z_>tmc2130.diag_out| `InputPin` `Stepper`
  - PINDA_>pinda.out
  - PINDA_>sheet.out
  - Power Panic_Power Panic
+Starting serial transfer thread...

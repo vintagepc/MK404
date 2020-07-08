@@ -50,6 +50,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
         float dT = (m_fCurrentTemp - m_fAmbientTemp)*pow(2.7183,-0.005*0.3);
         m_fCurrentTemp -= m_fCurrentTemp - (m_fAmbientTemp + dT);
     }
+	m_iDrawTemp = m_fCurrentTemp;
 
     TRACE(printf("New temp value: %.02f\n",m_fCurrentTemp));
     RaiseIRQ(TEMP_OUT,(int)m_fCurrentTemp*256);
@@ -170,7 +171,7 @@ void Heater::Draw()
 	bool bOn = m_uiPWM>0;
 
 	Color3fv colFill;
-	float v = (m_fCurrentTemp - m_fColdTemp) / (m_fHotTemp - m_fColdTemp);
+	float v = (float(m_iDrawTemp) - m_fColdTemp) / (m_fHotTemp - m_fColdTemp);
 	colorLerp(m_colColdTemp, m_colHotTemp, v, colFill);
 
     glPushMatrix();

@@ -53,6 +53,8 @@
 #include <stdint.h>            // for uint8_t, uint16_t, uint32_t
 #include <string>              // for string
 #include <vector>              // for vector
+#include <atomic>
+#include <mutex>
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
 #include "IScriptable.h"       // for ArgType, ArgType::Int, ArgType::String
 #include "sim_avr.h"           // for avr_t
@@ -106,8 +108,8 @@ class HD44780:public BasePeripheral, public Scriptable
 
     protected:
     // The GL draw accesses these:
-		uint8_t m_uiHeight = 4;				// width and height of the LCD
-        uint8_t	m_uiWidth = 20;
+		atomic_uint8_t m_uiHeight = {4};				// width and height of the LCD
+        atomic_uint8_t	m_uiWidth = {20};
         uint8_t  m_vRam[104];
         uint8_t  m_cgRam[64];
 
@@ -155,6 +157,8 @@ class HD44780:public BasePeripheral, public Scriptable
 
 		uint8_t m_lineOffsets[4] = {0, 0x40, 0, 0x40};
 
+		mutex m_lock; // Needed for GL thread access to v/cgRAM
+
 	private:
 		enum Actions
 		{
@@ -194,5 +198,7 @@ class HD44780:public BasePeripheral, public Scriptable
 		vector<string> m_vLines;
 
 		uint8_t m_uiLineChg = 0;
+
+
 
 };

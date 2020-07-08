@@ -32,6 +32,7 @@
 #include <unistd.h>         // for usleep
 #include <string>           // for string, basic_string, stoi
 #include <vector>           // for vector
+#include <atomic>
 #include "EEPROM.h"         // for EEPROM
 #include "IScriptable.h"    // for ArgType, IScriptable::LineStatus, IScript...
 #include "PinNames.h"       // for Pin
@@ -117,6 +118,7 @@ namespace Boards
 
 			inline void SetResetFlag(){m_bReset = true;}
 			inline void SetQuitFlag(){m_bQuit = true;}
+			inline volatile bool GetQuitFlag(){return m_bQuit;}
 
 			inline bool IsStopped(){ return m_pAVR->state == cpu_Stopped;}
 			inline bool IsPaused(){ return m_bPaused;}
@@ -263,7 +265,7 @@ namespace Boards
 
 			struct avr_t* m_pAVR = nullptr;
 
-			bool m_bPaused = false;
+			atomic_uint8_t m_bPaused = {false};
 
 		private:
 			void CreateAVR();
@@ -282,7 +284,8 @@ namespace Boards
 
 			int m_fdFlash = 0;
 
-			bool m_bQuit = false, m_bReset = false, m_bNoHacks = false;
+			atomic_bool m_bQuit = {false}, m_bReset = {false};
+			bool m_bNoHacks = false;
 			pthread_t m_thread = 0;
 			const Wiring &m_wiring;
 			//std::string m_strFW, m_strBoot;

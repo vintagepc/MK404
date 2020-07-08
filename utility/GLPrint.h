@@ -24,6 +24,9 @@
 #include <array>   // for array
 #include <cmath>   // for sqrt
 #include <vector>  // for vector
+#include <mutex>
+
+using namespace std;
 
 class GLPrint
 {
@@ -61,16 +64,18 @@ class GLPrint
 		//void FindNearest(const float fVec[3]);
 
 
-		std::array<int,4> m_iExtrEnd, m_iExtrStart;
-		std::array<float,4> m_fExtrEnd, m_fExtrStart;
-		std::vector<int> m_ivStart, m_ivTStart;
-		std::vector<int> m_ivCount, m_ivTCount;
-		std::vector<float> m_fvDraw, m_fvNorms;
-		std::vector<float> m_fvTri;
+		array<int,4> m_iExtrEnd, m_iExtrStart;
+		array<float,4> m_fExtrEnd, m_fExtrStart;
+		vector<int> m_ivStart, m_ivTStart;
+		vector<int> m_ivCount, m_ivTCount;
+		vector<float> m_fvDraw, m_fvNorms;
+		vector<float> m_fvTri;
 		// Layer vertex tracking.
-		std::vector<float*> m_vpfLayer1, m_vpfLayer2, *m_pCurLayer = &m_vpfLayer1, *m_pPrevLayer = &m_vpfLayer2;
+		vector<float*> m_vpfLayer1, m_vpfLayer2, *m_pCurLayer = &m_vpfLayer1, *m_pPrevLayer = &m_vpfLayer2;
 		float m_fCurZ = -1, m_fLastZ = -1;
 		float m_fEMax = 0;
 		const float m_fColR, m_fColG, m_fColB;
-		bool m_bExtruding = false;
+		atomic_bool m_bExtruding = {false};
+
+		std::mutex m_lock;
 };

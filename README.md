@@ -97,3 +97,11 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `l` clears the current print visual from the print bed.
 - `n` toggles "Nozzle cam" mode
 - `` ` `` (backtick) resets the camera view
+
+# Contribution sticky notes:
+
+If you are interested in submitting a fix or improvement, here are a few tidbits you may find useful to know:
+
+- Reference documentation in ref/ (scripting, telemetry, usage readme) are automatically regenerated. The git-bot will push them after it finishes test building your changes for a PR.
+- Your changes are expected to compile with -Wall and -Werror. In addition, pull requests will be run through CPPCheck to look for additional possible pitfalls.
+- As this is a multithreaded application, it is *strongly* suggested your run your code at least once with -fsanitize=thread enabled to look for and fix thread race conditions. This is especially important for the GL Draw() functions as these are called from a separate GL context, less so if your changes do not cross thread boundaries. If, when doing this, you find any not caused in your own changes, please don't hesitate to create an issue so it can be looked at.

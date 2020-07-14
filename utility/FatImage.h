@@ -77,7 +77,7 @@ class FatImage
 
 		static uint32_t GetDataStartAddr(Size imgSize) { return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize))<<1); } // <<10 = 2*512, 2*bytespersector.
 
-		static const uint32_t SectorsPerFat(Size size)
+		static uint32_t SectorsPerFat(Size size)
 		{
 			switch (size)
 			{

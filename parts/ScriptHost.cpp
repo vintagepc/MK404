@@ -280,6 +280,7 @@ void ScriptHost::OnAVRCycle()
 				break;
 			case LS::Unhandled:
 				printf("ScriptHost: Unhandled action, considering this an error.\n");
+				/* FALLTHRU */
 			case LS::Error:
 				printf("ScriptHost: Script FAILED on line %d\n",m_iLine);
 				m_iLine = m_script.size(); // Error, end scripting.

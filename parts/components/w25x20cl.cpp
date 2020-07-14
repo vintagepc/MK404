@@ -306,10 +306,11 @@ void w25x20cl::Load(const char* path)
 		perror(path);
 		exit(1);
 	}
-	strncpy(m_filepath,path,sizeof(m_filepath));
+	m_filepath = path;
+
 	printf("Loading %u bytes of XFLASH\n", W25X20CL_TOTAL_SIZE);
 	if (ftruncate(m_fdFlash, W25X20CL_TOTAL_SIZE + 1) < 0) {
-		perror(m_filepath);
+		perror(path);
 		exit(1);
 	}
 	uint8_t *buffer = (uint8_t*)malloc(W25X20CL_TOTAL_SIZE + 1);
@@ -338,6 +339,6 @@ void w25x20cl::Save()
 	ssize_t r = write(m_fdFlash, m_flash, W25X20CL_TOTAL_SIZE + 1);
 	if (r != W25X20CL_TOTAL_SIZE + 1) {
 		fprintf(stderr, "unable to write xflash memory\n");
-		perror(m_filepath);
+		perror(m_filepath.c_str());
 	}
 }

@@ -92,6 +92,6 @@ class w25x20cl:public SPIPeripheral
 			} bits;
 		} m_status_register;
 		w25x20cl_states m_state = STATE_IDLE;
-		char m_filepath[1024];
+		std::string m_filepath;
 
 };

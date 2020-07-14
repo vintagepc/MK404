@@ -118,7 +118,7 @@ namespace Boards
 
 			inline void SetResetFlag(){m_bReset = true;}
 			inline void SetQuitFlag(){m_bQuit = true;}
-			inline volatile bool GetQuitFlag(){return m_bQuit;}
+			inline bool GetQuitFlag(){return m_bQuit;}
 
 			inline bool IsStopped(){ return m_pAVR->state == cpu_Stopped;}
 			inline bool IsPaused(){ return m_bPaused;}

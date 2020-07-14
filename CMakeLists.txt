@@ -132,7 +132,12 @@ set(MK404_SOURCES
 add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
 
 target_compile_features(MK404 PRIVATE cxx_range_for)
-target_compile_options(MK404 PRIVATE -Wall -Werror)
+target_compile_options(MK404 PRIVATE -Wall)
+
+option(BUILD_WERROR "Build with Warnings as Errors" 1)
+if (BUILD_WERROR)
+	target_compile_options(MK404 PRIVATE -Werror)
+endif ()
 
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")

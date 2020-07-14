@@ -249,7 +249,7 @@ class mat4
 		mat4(void)
 			{ load_identity(); }
 		mat4(const mat4 & m)
-			{ for (int i=0; i<16; ++i) x[i]=m.x[i]; }
+			{ *this = m; }
 		mat4(float x11, float x12, float x13, float x14,
 				float x21, float x22, float x23, float x24,
 				float x31, float x32, float x33, float x34,
@@ -321,6 +321,8 @@ class mat4
 					+	x[ 3]*x[ 4]*x[ 9]*x[14]
 					-	x[15]*x[ 8]*x[ 5]*x[ 2];
 			}
+		inline mat4 & operator = (const mat4 & m)
+			{ for (int i=0; i<16; ++i) x[i]=m.x[i]; return *this; }
 		inline mat4 & operator *= (float f)
 			{ for (int i=0; i<16; ++i) x[i]*=f; return *this; }
 		inline mat4 & operator += (const mat4 & m)

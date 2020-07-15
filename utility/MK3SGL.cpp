@@ -95,6 +95,21 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bM
 		for(size_t i=0; i<m_vObjMMU.size(); i++)
 			m_vObjMMU[i]->Load();
 		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
+		m_MMUBase.SetSubobjectVisible(1, false);
+
+		if (m_bLite)
+		{
+			m_MMUIdl.SetAllVisible(false);
+			m_MMUIdl.SetSubobjectVisible(3);
+			m_MMUSel.SetAllVisible(false);
+			m_MMUSel.SetSubobjectVisible(1);
+			m_MMUSel.SetSubobjectVisible(2);
+			m_EMMU.SetAllVisible(false);
+			m_MMUBase.SetAllVisible(false);
+			m_MMUBase.SetSubobjectVisible(17);
+			for (size_t i=32; i<43; i++)
+				m_MMUBase.SetSubobjectVisible(i); // LEDs
+		}
 	}
 
 }

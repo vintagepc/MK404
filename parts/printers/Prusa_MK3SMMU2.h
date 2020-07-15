@@ -44,6 +44,8 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 
 		std::pair<int,int> GetWindowSize() override;
 
+		void OnKeyPress(unsigned char key, int x, int y) override;
+
 	protected:
 		void SetupHardware() override;
 

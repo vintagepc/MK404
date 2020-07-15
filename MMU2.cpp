@@ -136,10 +136,17 @@ void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)
 void MMU2::OnPulleyFeedIn(struct avr_irq_t * irq,uint32_t value)
 {
 	float* posOut = (float*)(&value);
-   	SetPin(FINDA_PIN,posOut[0]>24.0f);
+	if (m_bAutoFINDA)
+	{
+   		SetPin(FINDA_PIN,posOut[0]>24.0f);
+		// Reflect the distance out for IR sensor triggering.
+		RaiseIRQ(FEED_DISTANCE, value);
+	}
+	else
+	{
+		SetPin(FINDA_PIN, m_bFINDAManual? 1.f : 0.f);
+	}
 
-	// Reflect the distance out for IR sensor triggering.
-	RaiseIRQ(FEED_DISTANCE, value);
 }
 
 void MMU2::LEDHandler(avr_irq_t *irq, uint32_t value)

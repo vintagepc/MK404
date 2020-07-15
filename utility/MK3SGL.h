@@ -160,7 +160,7 @@ class MK3SGL: public BasePeripheral
 		atomic<float> m_fSelPos = {0.0f};
 
         // This is going to be in degrees rotation instead of mm
-        float m_fIdlCorr = 20.00f;
+        float m_fIdlCorr = 120.00f;
 		atomic<float> m_fIdlPos = {0.0f};
 
         atomic_int m_iKnobPos {0}, m_iFanPos = {0}, m_iPFanPos = {0};

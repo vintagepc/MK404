@@ -521,7 +521,7 @@ void MK3SGL::DrawMMU()
 				fTransform[1]=-0.071;
 				fTransform[2]=-0.0929;
 				glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
-				glRotatef(-m_fIdlPos - m_fIdlCorr,1,0,0);
+				glRotatef(m_fIdlPos + m_fIdlCorr,1,0,0);
 				glRotatef(180,0,1,0);
 				glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 				m_MMUIdl.Draw();

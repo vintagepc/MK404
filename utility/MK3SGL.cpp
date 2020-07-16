@@ -124,6 +124,12 @@ void MK3SGL::ResetCamera()
 
 void MK3SGL::KeyCB(unsigned char c, int x, int y)
 {
+	if (c =='+')
+		m_flDbg = m_flDbg+0.001f;
+	else if (c == '-')
+		m_flDbg = m_flDbg-0.001f;
+
+	printf("Offset: %03f\n",m_flDbg.load());
 	if (m_pParent)
 		m_pParent->OnKeyPress(c,x,y);
 }
@@ -143,6 +149,7 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(BED_IN, MAKE_C_CALLBACK(MK3SGL, OnBedChanged), this);
 	RegisterNotify(SD_IN, MAKE_C_CALLBACK(MK3SGL,OnSDChanged),this);
 	RegisterNotify(PINDA_IN, MAKE_C_CALLBACK(MK3SGL,OnPINDAChanged),this);
+	RegisterNotify(FINDA_IN, MAKE_C_CALLBACK(MK3SGL,OnFINDAChanged),this);
 	RegisterNotify(TOOL_IN,MAKE_C_CALLBACK(MK3SGL,OnToolChanged),this);
 	RegisterNotify(MMU_LEDS_IN,MAKE_C_CALLBACK(MK3SGL,OnMMULedsChanged),this);
 
@@ -211,6 +218,12 @@ void MK3SGL::OnSDChanged(avr_irq_t *irq, uint32_t value)
 void MK3SGL::OnPINDAChanged(avr_irq_t *irq, uint32_t value)
 {
 	m_bPINDAOn = value;
+	m_bDirty = true;
+}
+
+void MK3SGL::OnFINDAChanged(avr_irq_t *irq, uint32_t value)
+{
+	m_bFINDAOn = value;
 	m_bDirty = true;
 }
 
@@ -292,12 +305,11 @@ void MK3SGL::Draw()
 	glLoadIdentity();
 	//printf("eye: %f %f %f\n",curr_quat[0],curr_quat[1], curr_quat[2]);
 		float fPos[] = {2,2,2,0};
-		float fNone[] = {0,0,0,1};
+		//float fNone[] = {0,0,0,1};
 		float fAmb[] = {.1,.1,.1,1};
 	//	float fCol2[] = {1,1,1,1};
 		float fSpec[] = {.4,.4,.4,.5};
 		float fDiff[] = {1.5,1.5,1.5,1};
-		float fLED[4] = {1,0,0,1};
 		// camera & rotate
 
 		glEnable(GL_CULL_FACE);
@@ -362,27 +374,10 @@ void MK3SGL::Draw()
 			m_Z.Draw();
 			glPushMatrix();
 				glTranslatef(-m_fXCorr + (m_fXPos),0,0);
-			 m_Extruder.Draw();
-			 if (!m_bPINDAOn)
+				m_Extruder.Draw();
+				if (!m_bPINDAOn)
 				{
-					glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
-					glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
-					glPushMatrix();
-						glTranslatef(0.092,0.3355,0.274);
-						glBegin(GL_TRIANGLE_FAN);
-							glVertex3f( 0,   0,    0);
-							glVertex3f(-0.003,0,0);
-							glVertex3f(-0.002,0,0.002);
-							glVertex3f( 0,   0,     0.003);
-							glVertex3f( 0.002,0,0.002);
-							glVertex3f( 0.003,  0,  0);
-							glVertex3f(0.002, 0,   -0.002);
-							glVertex3f( 0,   0,    -0.003);
-							glVertex3f(-0.002, 0, -0.002);
-							glVertex3f(-0.003,0,0);
-						glEnd();
-					glPopMatrix();
-					glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, fNone);
+					DrawRoundLED();
 				}
 				glPushMatrix();
 					glScalef(fMM2M,fMM2M,fMM2M);
@@ -481,6 +476,30 @@ void MK3SGL::Draw()
 		glutSetWindow(iOldWin);
 }
 
+void MK3SGL::DrawRoundLED()
+{
+	float fLED[4] = {1,0,0,1};
+	float fNone[4] = {0,0,0,1};
+	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
+	glPushMatrix();
+		glTranslatef(0.092,0.3355,0.274);
+		glBegin(GL_TRIANGLE_FAN);
+			glVertex3f( 0,   0,    0);
+			glVertex3f(-0.003,0,0);
+			glVertex3f(-0.002,0,0.002);
+			glVertex3f( 0,   0,     0.003);
+			glVertex3f( 0.002,0,0.002);
+			glVertex3f( 0.003,  0,  0);
+			glVertex3f(0.002, 0,   -0.002);
+			glVertex3f( 0,   0,    -0.003);
+			glVertex3f(-0.002, 0, -0.002);
+			glVertex3f(-0.003,0,0);
+		glEnd();
+	glPopMatrix();
+	glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, fNone);
+}
+
 void MK3SGL::DrawLED(float r, float g, float b)
 {
 		float fLED[4] = {r,g,b,1};
@@ -509,12 +528,20 @@ void MK3SGL::DrawMMU()
 			glPushMatrix();
 				m_MMUSel.GetCenteringTransform(fTransform);
 				glTranslatef(m_fSelPos - m_fSelCorr,0.062,0.123);
+				if (m_bFINDAOn)
+				{
+					glPushMatrix();
+						glTranslatef(-0.075,-0.274,-0.222);
+						DrawRoundLED();
+					glPopMatrix();
+				}
 				glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
 				glRotatef(-90,1,0,0);
 				glRotatef(-2.5,0,1,0);
 				glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 				m_MMUSel.Draw();
 			glPopMatrix();
+
 			glPushMatrix();
 				m_MMUIdl.GetCenteringTransform(fTransform);
 				glTranslatef(-0.03,0.028,0.025);

@@ -50,6 +50,7 @@
  - `Desync()                      ` - `Simulates data corruption by desyncing the 4-bit mode`
  - `WaitForText(string, int)      ` - `Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.`
 ### P::
+Starting serial transfer thread...
  - `Reset()                       ` - `Clears the diag flag immediately`
  - `Stall()                       ` - `Sets the diag flag immediately.`
  - `ToggleStall()                 ` - `Toggles the stallguard condition on the next step.`

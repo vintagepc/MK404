@@ -22,7 +22,6 @@ Fan1_>Fan.tach_out| `Fan` `InputPin`
 Fan_<Fan.digital_in>| `Fan` `OutputPin`
 Fan_<Fan.pwm_in| `PWM` `Fan`
 Fan_>Fan.speed_out| `Fan` `Misc`
-Starting serial transfer thread...
 Fan_>Fan.tach_out| `Fan` `InputPin`
 HC595_32<hc959.latch_in| `OutputPin` `Misc`
 HC595_32>hc959.out| `Misc`
@@ -53,6 +52,7 @@ PINDA_>sheet.out| `InputPin` `Misc`
 P_8<tmc2130.byte_in| `SPI` `Stepper`
 P_8>tmc2130.byte_out| `SPI` `Stepper`
 P_<tmc2130.cs_in| `SPI` `Stepper` `OutputPin`
+Starting serial transfer thread...
 P_<tmc2130.dir_in| `OutputPin` `Stepper`
 P_<tmc2130.en_in| `OutputPin` `Stepper`
 P_<tmc2130.step_in| `OutputPin` `Stepper`

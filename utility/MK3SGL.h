@@ -40,7 +40,7 @@ class MK3SGL: public BasePeripheral
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
                             _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
                             _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in") _IRQ(PFAN_IN,"<PFAN.in") _IRQ(SEL_IN,"<Sel.in") \
-                            _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in") _IRQ(TOOL_IN,"8<TOOL_IN")
+                            _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in") _IRQ(TOOL_IN,"8<TOOL_IN") _IRQ(FINDA_IN,"<finda.in")
         #include "IRQHelper.h"
 
 
@@ -132,6 +132,7 @@ class MK3SGL: public BasePeripheral
 
         // Draws a simple LED at a position.
         void DrawLED(float r, float g, float b);
+		void DrawRoundLED();
 
         // IRQ receivers.
         void OnXChanged(avr_irq_t *irq, uint32_t value);
@@ -147,6 +148,7 @@ class MK3SGL: public BasePeripheral
         void OnPFanChanged(avr_irq_t *irq, uint32_t value);
         void OnBedChanged(avr_irq_t *irq, uint32_t value);
         void OnPINDAChanged(avr_irq_t *irq, uint32_t value);
+		void OnFINDAChanged(avr_irq_t *irq, uint32_t value);
 		void OnToolChanged(avr_irq_t *irq, uint32_t iIdx);
 
 
@@ -170,10 +172,13 @@ class MK3SGL: public BasePeripheral
 			m_bMMU = {false},
 			m_bBedOn = {false},
 			m_bPINDAOn = {false},
+			m_bFINDAOn = {false},
         	m_bPFanOn = {false};
 
 
         int m_iWindow = 0;
+
+		atomic<float> m_flDbg = {0.0f};
 
 		static MK3SGL *g_pMK3SGL;
 		Printer *m_pParent = nullptr;

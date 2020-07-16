@@ -141,10 +141,12 @@ void MMU2::OnPulleyFeedIn(struct avr_irq_t * irq,uint32_t value)
    		SetPin(FINDA_PIN,posOut[0]>24.0f);
 		// Reflect the distance out for IR sensor triggering.
 		RaiseIRQ(FEED_DISTANCE, value);
+		RaiseIRQ(FINDA_OUT,posOut[0]>24.f);
 	}
 	else
 	{
-		SetPin(FINDA_PIN, m_bFINDAManual? 1.f : 0.f);
+		SetPin(FINDA_PIN, m_bFINDAManual? 1:0);
+		RaiseIRQ(FINDA_OUT,m_bFINDAManual? 1 : 0);
 	}
 
 }

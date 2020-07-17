@@ -71,6 +71,7 @@
  - `Unmount()                     ` - `Unmounts the currently mounted file, if any.`
 ### ScriptHost::
  - `SetQuitOnTimeout(bool)        ` - `If 1, quits when a timeout occurs. Exit code will be non-zero.`
+Starting serial transfer thread...
  - `SetTimeoutMs(int)             ` - `Sets a timeout for actions that wait for an event`
 ### Serial0::
  - `SendGCode(string)             ` - `Sends the specified string as G-Code.`

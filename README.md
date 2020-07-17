@@ -93,9 +93,12 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `m` toggles audio muting (beeps)
 - `y` adds/removes the steel sheet from the heatbed for PINDA MBL or XYZ cal
 - `f` toggles filament presence
+- `F` toggles filament presence at FINDA (MMU2 only)
 - `z` pauses Einsy execution without stopping GL interactivity (so you can still pan/scroll/zoom the fancy graphics)
 - `l` clears the current print visual from the print bed.
 - `n` toggles "Nozzle cam" mode
+- `a` restores FINDA (MMU2) to "auto" control
+
 - `` ` `` (backtick) resets the camera view
 
 # Contribution sticky notes:

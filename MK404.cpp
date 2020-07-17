@@ -61,8 +61,8 @@ void OnSigINT(int iSig) {
 	{
 		printf("Caught SIGINT... stopping...\n");
 		m_bStopping = true;
-		if (pBoard)
-			pBoard->SetQuitFlag();
+		if (printer)
+			printer->OnKeyPress('q',0,0);
 	}
 	else
 	{

@@ -58,6 +58,8 @@ void Prusa_MK3SMMU2::OnVisualTypeSet(VisualType type)
 	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);
 	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::IDLER_OUT), MK3SGL::IDL_IN);
 	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::LEDS_OUT),MK3SGL::MMU_LEDS_IN);
+	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::FINDA_OUT),MK3SGL::FINDA_IN);
+	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::FEED_DISTANCE), MK3SGL::FEED_IN);
 }
 
 std::pair<int,int> Prusa_MK3SMMU2::GetWindowSize()
@@ -78,4 +80,25 @@ void Prusa_MK3SMMU2::OnMMUFeed(struct avr_irq_t * irq, uint32_t value)
 {
 	float *fVal = (float*)&value;
 	IR.Auto_Input(fVal[0]>400); // Trigger IR if MMU P pos > 400mm
+}
+
+
+void Prusa_MK3SMMU2::OnKeyPress(unsigned char key, int x, int y)
+{
+	switch (key) {
+		case 'F':
+		{
+			printf("FINDA toggled (in manual control)\n");
+			m_MMU.SetFINDAAuto(false);
+			m_MMU.ToggleFINDA();
+		}
+		break;
+		case 'a':
+		{
+			printf("FINDA in Auto control\n");
+			m_MMU.SetFINDAAuto(true);
+		}
+		default:
+			Prusa_MK3S::OnKeyPress(key,x,y);
+	}
 }

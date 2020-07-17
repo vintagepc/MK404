@@ -52,7 +52,6 @@ PINDA_>sheet.out| `InputPin` `Misc`
 P_8<tmc2130.byte_in| `SPI` `Stepper`
 P_8>tmc2130.byte_out| `SPI` `Stepper`
 P_<tmc2130.cs_in| `SPI` `Stepper` `OutputPin`
-Starting serial transfer thread...
 P_<tmc2130.dir_in| `OutputPin` `Stepper`
 P_<tmc2130.en_in| `OutputPin` `Stepper`
 P_<tmc2130.step_in| `OutputPin` `Stepper`

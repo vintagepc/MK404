@@ -50,7 +50,6 @@
  - `Desync()                      ` - `Simulates data corruption by desyncing the 4-bit mode`
  - `WaitForText(string, int)      ` - `Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.`
 ### P::
-Starting serial transfer thread...
  - `Reset()                       ` - `Clears the diag flag immediately`
  - `Stall()                       ` - `Sets the diag flag immediately.`
  - `ToggleStall()                 ` - `Toggles the stallguard condition on the next step.`
@@ -72,6 +71,7 @@ Starting serial transfer thread...
  - `Unmount()                     ` - `Unmounts the currently mounted file, if any.`
 ### ScriptHost::
  - `SetQuitOnTimeout(bool)        ` - `If 1, quits when a timeout occurs. Exit code will be non-zero.`
+Starting serial transfer thread...
  - `SetTimeoutMs(int)             ` - `Sets a timeout for actions that wait for an event`
 ### Serial0::
  - `SendGCode(string)             ` - `Sends the specified string as G-Code.`

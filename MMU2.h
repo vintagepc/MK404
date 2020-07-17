@@ -28,13 +28,16 @@
 #include "BasePeripheral.h"        // for BasePeripheral
 #include "boards/MM_Control_01.h"  // for MM_Control_01
 #include "sim_irq.h"               // for avr_irq_t
+#include <atomic>
+
+using namespace std;
 
 class MMU2: public BasePeripheral, public Boards::MM_Control_01
 {
 
     public:
         #define IRQPAIRS _IRQ(FEED_DISTANCE,"<mmu.feed_distance") _IRQ(RESET,"<mmu.reset") _IRQ(PULLEY_IN,"<mmu.pulley_in") \
-                        _IRQ(SELECTOR_OUT,">sel_pos.out") _IRQ(IDLER_OUT,">idler_pos.out") _IRQ(LEDS_OUT,">leds.out")
+                        _IRQ(SELECTOR_OUT,">sel_pos.out") _IRQ(IDLER_OUT,">idler_pos.out") _IRQ(LEDS_OUT,">leds.out") _IRQ(FINDA_OUT,">finda.out")
         #include "IRQHelper.h"
 
         // Creates a new MMU2. Does all of the setup and firmware load.
@@ -46,6 +49,10 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
         std::string GetSerialPort();
 
         void Draw();
+
+		inline void SetFINDAAuto(bool bVal) { m_bAutoFINDA = bVal;}
+		inline void SetFINDAState(bool bVal) {m_bFINDAManual = bVal;}
+		inline void ToggleFINDA() { m_bFINDAManual = !m_bFINDAManual;}
 
     protected:
         void SetupHardware() override;
@@ -60,9 +67,10 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
 
         void LEDHandler(avr_irq_t *irq, uint32_t value);
 
-        bool m_bQuit = false;
-        bool m_bStarted = false;
-        bool m_bReset = false;
+        atomic_bool m_bAutoFINDA = {true};
+		atomic_bool m_bFINDAManual = {false};
+        atomic_bool m_bStarted = {false};
+        atomic_bool m_bReset ={false};
         pthread_t m_tRun;
 
         std::string m_strTitle = "Missing Material Unit 2";

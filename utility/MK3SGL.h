@@ -40,7 +40,8 @@ class MK3SGL: public BasePeripheral
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
                             _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
                             _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in") _IRQ(PFAN_IN,"<PFAN.in") _IRQ(SEL_IN,"<Sel.in") \
-                            _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in") _IRQ(TOOL_IN,"8<TOOL_IN") _IRQ(FINDA_IN,"<finda.in")
+                            _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in") _IRQ(TOOL_IN,"8<TOOL_IN") _IRQ(FINDA_IN,"<finda.in") \
+							_IRQ(FEED_IN,"<feed.in")
         #include "IRQHelper.h"
 
 
@@ -139,6 +140,7 @@ class MK3SGL: public BasePeripheral
         void OnYChanged(avr_irq_t *irq, uint32_t value);
         void OnZChanged(avr_irq_t *irq, uint32_t value);
         void OnEChanged(avr_irq_t *irq, uint32_t value);
+		void OnPChanged(avr_irq_t *irq, uint32_t value);
         void OnSelChanged(avr_irq_t *irq, uint32_t value);
         void OnIdlChanged(avr_irq_t *irq, uint32_t value);
         void OnMMULedsChanged(avr_irq_t *irq, uint32_t value);
@@ -156,7 +158,7 @@ class MK3SGL: public BasePeripheral
         float m_fXCorr = 0.044;
         float m_fYCorr = 0.141;
         float m_fZCorr = 0.210;
-        atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01};
+        atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01}, m_fPPos = {0.f};
 
         float m_fSelCorr = 0.025f;
 		atomic<float> m_fSelPos = {0.0f};
@@ -165,7 +167,7 @@ class MK3SGL: public BasePeripheral
         float m_fIdlCorr = 120.00f;
 		atomic<float> m_fIdlPos = {0.0f};
 
-        atomic_int m_iKnobPos {0}, m_iFanPos = {0}, m_iPFanPos = {0};
+        atomic_int m_iKnobPos {0}, m_iFanPos = {0}, m_iPFanPos = {0}, m_iIdlPos = {0};
 
         atomic_bool m_bDirty = {false},
 			m_bFanOn = {false},
@@ -178,7 +180,9 @@ class MK3SGL: public BasePeripheral
 
         int m_iWindow = 0;
 
-		atomic<float> m_flDbg = {0.0f};
+		// Useful for instant positioning.
+
+		atomic<float> m_flDbg = {0.0f}, m_flDbg2 = {0.0f}, m_flDbg3 = {0.0f};
 
 		static MK3SGL *g_pMK3SGL;
 		Printer *m_pParent = nullptr;

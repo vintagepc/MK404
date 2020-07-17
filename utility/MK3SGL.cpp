@@ -124,12 +124,24 @@ void MK3SGL::ResetCamera()
 
 void MK3SGL::KeyCB(unsigned char c, int x, int y)
 {
-	if (c =='+')
-		m_flDbg = m_flDbg+0.001f;
-	else if (c == '-')
-		m_flDbg = m_flDbg-0.001f;
+	// Decomment this block and use the flDbg variables
+	// as your position translation. Then, you can move the
+	// object into place using the numpad, and just read off
+	// the correct position values to use when finished.
+	// if (c =='+')
+	// 	m_flDbg = m_flDbg+0.001f;
+	// else if (c == '-')
+	// 	m_flDbg = m_flDbg-0.001f;
+	// if (c =='*')
+	// 	m_flDbg2 = m_flDbg2+0.001f;
+	// else if (c == '/')
+	// 	m_flDbg2 = m_flDbg2-0.001f;
+	// if (c =='3')
+	// 	m_flDbg3 = m_flDbg3+0.001f;
+	// else if (c == '9')
+	// 	m_flDbg3 = m_flDbg3-0.001f;
 
-	printf("Offset: %03f\n",m_flDbg.load());
+	// printf("Offsets: %03f %03f %03f\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
 	if (m_pParent)
 		m_pParent->OnKeyPress(c,x,y);
 }
@@ -141,6 +153,7 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(Y_IN,MAKE_C_CALLBACK(MK3SGL,OnYChanged),this);
 	RegisterNotify(Z_IN,MAKE_C_CALLBACK(MK3SGL,OnZChanged),this);
 	RegisterNotify(E_IN,MAKE_C_CALLBACK(MK3SGL,OnEChanged),this);
+	RegisterNotify(FEED_IN,MAKE_C_CALLBACK(MK3SGL,OnPChanged),this);
 	RegisterNotify(SEL_IN,MAKE_C_CALLBACK(MK3SGL,OnSelChanged),this);
 	RegisterNotify(IDL_IN,MAKE_C_CALLBACK(MK3SGL,OnIdlChanged),this);
 	RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(MK3SGL, OnSheetChanged), this);
@@ -284,11 +297,21 @@ void MK3SGL::OnZChanged(avr_irq_t *irq, uint32_t value)
 	m_bDirty = true;
 }
 
+
+void MK3SGL::OnPChanged(avr_irq_t *irq, uint32_t value)
+{
+	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
+	m_fPPos =  fPos[0]/1000.f;
+	m_bDirty = true;
+}
+
 void MK3SGL::OnToolChanged(avr_irq_t *irq, uint32_t iIdx)
 {
 	// Need to stop the old tool and start the new one at the right location.
 	m_iCurTool = iIdx;
 };
+
+static constexpr float fMM2M = 1.f/1000.f;
 
 void MK3SGL::Draw()
 {
@@ -345,10 +368,6 @@ void MK3SGL::Draw()
 			glPopMatrix();
 			glMultMatrixf(m_camera.getViewMatrix());
 		}
-
-
-
-		float fMM2M = 1.f/1000.f;
 		float fExtent = m_Base.GetScaleFactor();
 		if (m_bLite)
 			fExtent = m_Y.GetScaleFactor();
@@ -527,19 +546,32 @@ void MK3SGL::DrawMMU()
 			m_MMUBase.Draw();
 			glPushMatrix();
 				m_MMUSel.GetCenteringTransform(fTransform);
-				glTranslatef(m_fSelPos - m_fSelCorr,0.062,0.123);
-				if (m_bFINDAOn)
-				{
-					glPushMatrix();
-						glTranslatef(-0.075,-0.274,-0.222);
-						DrawRoundLED();
-					glPopMatrix();
-				}
-				glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
-				glRotatef(-90,1,0,0);
-				glRotatef(-2.5,0,1,0);
-				glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
-				m_MMUSel.Draw();
+				glPushMatrix();
+					glTranslatef(m_fSelPos - m_fSelCorr,0.062,0.123);
+					if (m_bFINDAOn)
+					{
+						glPushMatrix();
+							glTranslatef(-0.075,-0.274,-0.222);
+							DrawRoundLED();
+						glPopMatrix();
+					}
+					glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
+					glRotatef(-90,1,0,0);
+					glRotatef(-2.5,0,1,0);
+					glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+					m_MMUSel.Draw();
+				glPopMatrix();
+				glPushMatrix();
+					glTranslatef(0.051, -0.299, -0.165);
+					glScalef(fMM2M,fMM2M,fMM2M);
+					m_EVis.GetCenteringTransform(fTransform);
+					fTransform[1] +=1.5f;
+					glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
+					glRotatef(90,0,1,0);
+					glRotatef(360.f*(m_fSelPos/0.008f),0,0,1); // 8mm thread pitch, so we need to rotate 360deg for every 8 of travel.
+					glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+					m_EVis.Draw();
+				glPopMatrix();
 			glPopMatrix();
 
 			glPushMatrix();
@@ -547,11 +579,38 @@ void MK3SGL::DrawMMU()
 				glTranslatef(-0.03,0.028,0.025);
 				fTransform[1]=-0.071;
 				fTransform[2]=-0.0929;
-				glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
-				glRotatef(m_fIdlPos + m_fIdlCorr,1,0,0);
-				glRotatef(180,0,1,0);
+				glPushMatrix();
+					glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
+					glRotatef(m_fIdlPos + m_fIdlCorr,1,0,0);
+					glRotatef(180,0,1,0);
+					glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+					m_MMUIdl.Draw();
+				glPopMatrix();
+				glPushMatrix();
+					glTranslatef(-0.117, -0.300, -0.238);
+					glScalef(fMM2M,fMM2M,fMM2M);
+					m_EVis.GetCenteringTransform(fTransform);
+					fTransform[1] +=1.5f;
+					glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
+					glRotatef(270,0,1,0);
+					glRotatef(-m_fIdlPos,0,0,1);
+					glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+					m_EVis.Draw();
+				glPopMatrix();
+
+
+			glPopMatrix();
+
+			glPushMatrix();
+				glTranslatef(0.061, -0.296, -0.212);
+				glScalef(fMM2M,fMM2M,fMM2M);
+				m_EVis.GetCenteringTransform(fTransform);
+				fTransform[1] +=1.5f;
+				glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
+				glRotatef(90,0,1,0);
+				glRotatef((m_fPPos/0.021f)*360.f,0,0,1); // 1 rotation for every 21mm of travel.
 				glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
-				m_MMUIdl.Draw();
+				m_EVis.Draw();
 			glPopMatrix();
 
 		glPopMatrix();

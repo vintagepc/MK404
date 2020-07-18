@@ -58,6 +58,7 @@ namespace Wirings
 					{LCD_PINS_RS,82},
 					{LED_PIN,13},
 					{SDCARDDETECT,15},
+					{PAT_INT_PIN,75},
 					{SDSS,77},
 					{SWI2C_SCL, 21},
 					{SWI2C_SDA, 20},

@@ -20,6 +20,8 @@
  */
 
 #include "ADC_Buttons.h"
+#include "sim_avr.h"
+#include "IScriptable.h"
 
 uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 {
@@ -29,13 +31,33 @@ uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 
 	uint32_t iVOut = 5000;
     if (m_uiCurBtn == 1)
-        iVOut = 170;
+        iVOut = 170*5000/1023;
     else if (m_uiCurBtn == 2)
-        iVOut = 90;
+        iVOut = 90*5000/1023;
     else if (m_uiCurBtn ==3)
-        iVOut = 25;
+        iVOut = 25*5000/1023;
 
     return iVOut;
+}
+
+Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const vector<string> &vArgs)
+{
+	switch (uiAct)
+	{
+		case 0:
+		{
+			uint8_t uiBtn = stoi(vArgs.at(0));
+			if (uiBtn>0 && uiBtn <4)
+			{
+				Push(uiBtn);
+				return LineStatus::Finished;
+			}
+			else
+				return LineStatus::Error;
+		}
+		default:
+			return Scriptable::LineStatus::Unhandled;
+	}
 }
 
 void ADC_Buttons::Init(struct avr_t * avr, uint8_t adc_mux_number)
@@ -46,5 +68,7 @@ void ADC_Buttons::Init(struct avr_t * avr, uint8_t adc_mux_number)
 
 void ADC_Buttons::Push(uint8_t uiBtn)
 {
+	printf("Pressing button %u\n",uiBtn);
 	m_uiCurBtn = uiBtn;
+	RegisterTimerUsec(m_fcnRelease,2500000, this);
 }

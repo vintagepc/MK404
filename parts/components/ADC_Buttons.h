@@ -25,12 +25,21 @@
 #include "ADCPeripheral.h"
 #include <stdint.h>         // for uint8_t, uint32_t
 #include "sim_avr.h"        // for avr_t
+#include "IScriptable.h"     // for ArgType, ArgType::Int, IScriptable::Line...
+#include "Scriptable.h"      // for Scriptable
+#include <string>
+#include <atomic>
 
-class ADC_Buttons:public ADCPeripheral
+class ADC_Buttons:public ADCPeripheral, public Scriptable
 {
 	public:
 		#define IRQPAIRS _IRQ(ADC_TRIGGER_IN,"<adc.trigger") _IRQ(ADC_VALUE_OUT,">adc.out") _IRQ(DIGITAL_OUT, ">adc.digital_out")
 		#include "IRQHelper.h"
+
+		ADC_Buttons(std::string strName):Scriptable(strName)
+		{
+			RegisterAction("Press","Presses the specified button in the array",0,{ArgType::Int});
+		};
 
 
 		// TODO.. extend this with flexibility for any number of buttons/voltage levels.
@@ -38,10 +47,22 @@ class ADC_Buttons:public ADCPeripheral
 
 		// Pushes a given button: 1= left, 2 = middle, 3= right, 0 = none.
 		void Push(uint8_t uiBtn);
+
+	protected:
+			LineStatus ProcessAction(unsigned int uiAct, const vector<string> &vArgs) override;
 	private:
+
+		inline avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen)
+		{
+			printf("%s button release\n", GetName().c_str());
+			m_uiCurBtn = 0;
+			return 0;
+		};
+
+		avr_cycle_timer_t m_fcnRelease = MAKE_C_TIMER_CALLBACK(ADC_Buttons,AutoRelease);
 
 		uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) override;
 
-		uint8_t m_uiCurBtn;
+		std::atomic_uint8_t m_uiCurBtn = {0};
 
 };

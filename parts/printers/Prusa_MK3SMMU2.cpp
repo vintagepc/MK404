@@ -97,7 +97,13 @@ void Prusa_MK3SMMU2::OnKeyPress(unsigned char key, int x, int y)
 		{
 			printf("FINDA in Auto control\n");
 			m_MMU.SetFINDAAuto(true);
+			break;
 		}
+		case '3':
+		case '4':
+		case '5':
+			m_MMU.PushButton(key - '2'); // button numbers are 1/2/3
+			break;
 		default:
 			Prusa_MK3S::OnKeyPress(key,x,y);
 	}

@@ -20,6 +20,7 @@ Fan1_<Fan.pwm_in| `PWM` `Fan`
 Fan1_>Fan.speed_out| `Fan` `Misc`
 Fan1_>Fan.tach_out| `Fan` `InputPin`
 Fan_<Fan.digital_in>| `Fan` `OutputPin`
+Starting serial transfer thread...
 Fan_<Fan.pwm_in| `PWM` `Fan`
 Fan_>Fan.speed_out| `Fan` `Misc`
 Fan_>Fan.tach_out| `Fan` `InputPin`

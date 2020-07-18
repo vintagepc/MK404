@@ -53,7 +53,7 @@ namespace Boards
 			LED m_lGreen[5] = {{0x00FF00FF},{0x00FF00FF},{0x00FF00FF},{0x00FF00FF},{0x00FF00FF}},
 				m_lRed[5] = {{0xFF0000FF},{0xFF0000FF},{0xFF0000FF},{0xFF0000FF},{0xFF0000FF}},
 				m_lFINDA = {0xFFCC00FF,'F'};
-			ADC_Buttons m_buttons;
+			ADC_Buttons m_buttons = {"MMUButtons"};
 
 		private:
 			const Wirings::MM_Control_01 m_wiring;

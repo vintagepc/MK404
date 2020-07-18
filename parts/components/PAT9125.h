@@ -47,6 +47,8 @@ class PAT9125: public I2CPeripheral, public Scriptable
 
 		PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125")
 		{
+			RegisterAction("Toggle","Toggles the IR sensor state",ActToggle);
+			RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
 		};
 
 		void Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)
@@ -58,7 +60,14 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			RegisterNotify(E_IN, MAKE_C_CALLBACK(PAT9125,OnEMotion),this);
 		}
 
-		inline void Toggle()
+		inline void Set(bool bVal)
+		{
+			if (bVal!=m_bFilament)
+				Toggle();
+			RaiseIRQ(LED_OUT,!m_bFilament); // LED is inverted.
+		}
+
+		void Toggle()
 		{
 			m_bLoading = !m_bFilament;
 			m_bFilament^=1;
@@ -145,8 +154,32 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			return true;
 		};
 
+		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override
+		{
+			switch (iAct)
+			{
+				case ActToggle:
+					Toggle();
+					return LineStatus::Finished;
+				case ActSet:
+					int iVal = stoi(vArgs.at(0));
+					if (iVal<0 || iVal >1)
+						return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [0,1]" );
+					Set(iVal==1);
+					return LineStatus::Finished;
+			}
+			return LineStatus::Unhandled;
+		}
+
 	private:
-		uint8_t m_uiAddr = 0;
+
+	enum Actions
+	{
+		ActToggle,
+		ActSet
+	};
+
+	uint8_t m_uiAddr = 0;
 		float m_fYPos = 0.f;
 		float m_fCurY = 0.f;
 		union m_regs
@@ -163,8 +196,8 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				Sleep2 = 0x10;
 				Res_X = Res_Y = 0x14;
 				Orientation = 0x04;
-				FrameAvg = 100;
-				Shutter = 5;
+				FrameAvg = 40; // "no filament" default.
+				Shutter = 20;// 5;
 			};
 			uint8_t raw[32];
 			struct {

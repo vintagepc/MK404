@@ -98,6 +98,7 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `l` clears the current print visual from the print bed.
 - `n` toggles "Nozzle cam" mode
 - `a` restores FINDA (MMU2) to "auto" control
+- `3/4/5` are MMU buttons 1, 2 and 3, respectively.
 
 - `` ` `` (backtick) resets the camera view
 

@@ -55,49 +55,78 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			printf("\n\n--------- Your attention please! ----------\n");
 			printf("NOTE: PAT9125 is not functional due to a sorely lacking datasheet.\nIf you are familiar with this sensor\n please consider contributing to an implementation.\n");
 			printf("--------- Your attention please! ----------\n\n\n");
+			RegisterNotify(E_IN, MAKE_C_CALLBACK(PAT9125,OnEMotion),this);
 		}
 
 		inline void Toggle()
 		{
+			m_bLoading = !m_bFilament;
 			m_bFilament^=1;
 			printf("Filament Present: %u\n",m_bFilament);
-			RaiseIRQ(LED_OUT,!m_bFilament);
-			// The data sheet is terrible, this should probably also update the motion register?
+			RaiseIRQ(LED_OUT,!m_bFilament); // LED is inverted.
+			m_regs.MStatus = 0x80*m_bFilament;
 		}
 
 	protected:
 		void OnEMotion(avr_irq_t *pIRQ, uint32_t value)
 		{
+			m_bLoading=false; // clear loading flag once E move started.
 			if (m_bFilament)
 			{
 
 				float *fV = reinterpret_cast<float*>(&value);
+				SetYMotion(fV[0]);
 				// (5*PAT9125_YRES/25.4)
-				float fDelta = fV[0]-m_fYPos;
-				int16_t iCounts  = fDelta*(5.f*(float)m_regs.Res_Y/25.4f);
-				m_fCurY = fV[0];
-				m_regs.DeltaXYHi = (iCounts >> 8) & 0xb111;
-				m_regs.DYLow = iCounts & 0xFF;
+
 				//m_regs.MStatus = 0x80;
 			}
 			else
 				m_regs.MStatus = 0;
 		}
 
+		void SetYMotion(const float &fVal)
+		{
+				float fDelta = fVal-m_fYPos;
+				int16_t iCounts  = fDelta*(5.f*(float)m_regs.Res_Y/25.4f);
+				iCounts = -iCounts;
+				m_fCurY = fVal;
+				m_regs.DeltaXYHi = (iCounts >> 8) & 0b1111;
+				m_regs.DYLow = iCounts & 0xFF;
+		}
+
 		virtual uint8_t GetRegVal(uint8_t uiAddr) override
 		{
-			//printf("Read: %02x\n",uiAddr);
-			if (uiAddr == 0x04)
-				m_fYPos = m_fCurY;
-			return m_regs.raw[uiAddr];
+			switch (uiAddr)
+			{
+				case 0x02:
+				{
+					uint8_t val = m_regs.MStatus;
+					if (!m_bLoading)
+						m_regs.MStatus = 0; // clear motion flag.
+					return val;
+				}
+				case 0x04:
+				{
+					if (m_bLoading)
+						SetYMotion(m_fCurY += 1.f);
+					m_fYPos = m_fCurY;
+				}
+				/* FALLTHRU */
+				default:
+					printf("Read: %02x, %02x\n",uiAddr, m_regs.raw[uiAddr]);
+					return m_regs.raw[uiAddr];
+			}
 		};
 
 		virtual bool SetRegVal(uint8_t uiAddr, uint32_t uiData)
 		{
 			if (!(m_uiRW  & (0x01<<uiAddr)))
+			{
+				printf("tried to write RO register\n");
 				return false; // RO register.
-			//printf("Wrote: %02x = %02x\n",uiAddr,uiData);
+			}
 			m_regs.raw[uiAddr] = uiData & 0xFF;
+			printf("Wrote: %02x = %02x (%02x)\n",uiAddr,uiData, m_regs.raw[uiAddr]);
 			return true;
 		};
 
@@ -133,6 +162,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				uint8_t Config;
 				uint8_t :8;
 				uint8_t :8;
+				uint8_t WriteProtect;
 				uint8_t Sleep1;
 				uint8_t Sleep2;
 				uint8_t :8;
@@ -153,6 +183,6 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		}m_regs;
 		uint32_t m_uiRW = 0x2006E60; //1<<addr if RW.
 
-		bool m_bFilament = true;
+		bool m_bFilament = false, m_bLoading = false;
 
 };

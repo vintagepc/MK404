@@ -20,7 +20,6 @@ Fan1_<Fan.pwm_in| `PWM` `Fan`
 Fan1_>Fan.speed_out| `Fan` `Misc`
 Fan1_>Fan.tach_out| `Fan` `InputPin`
 Fan_<Fan.digital_in>| `Fan` `OutputPin`
-Starting serial transfer thread...
 Fan_<Fan.pwm_in| `PWM` `Fan`
 Fan_>Fan.speed_out| `Fan` `Misc`
 Fan_>Fan.tach_out| `Fan` `InputPin`
@@ -62,6 +61,7 @@ SDCard_8<SD.byte_in| `SPI` `Storage`
 SDCard_8>SD.byte_out| `SPI` `Storage`
 SDCard_<SD.cs_in| `SPI` `Storage` `OutputPin`
 SDCard_>SD.card_present| `InputPin` `Storage`
+Starting serial transfer thread...
 SPIFlash_1<w25x20cl.cs_in| `SPI` `Storage` `OutputPin`
 SPIFlash_8<w25x20cl.byte_in| `SPI` `Storage`
 SPIFlash_8>w25x20cl.byte_out| `SPI` `Storage`

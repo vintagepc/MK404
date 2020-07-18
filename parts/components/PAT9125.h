@@ -64,7 +64,18 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			m_bFilament^=1;
 			printf("Filament Present: %u\n",m_bFilament);
 			RaiseIRQ(LED_OUT,!m_bFilament); // LED is inverted.
+			if (m_bFilament)
+			{
+				m_regs.Shutter = 5; // Restore shutter/brightness.
+				m_regs.FrameAvg = 100;
+			}
+			else
+			{
+				m_regs.Shutter = 20; // drop shutter as if underexposed.
+				m_regs.FrameAvg = 40; // and brightness.
+			}
 			m_regs.MStatus = 0x80*m_bFilament;
+
 		}
 
 	protected:
@@ -80,8 +91,12 @@ class PAT9125: public I2CPeripheral, public Scriptable
 
 				//m_regs.MStatus = 0x80;
 			}
-			else
+			else // Clear motion and regs.
+			{
 				m_regs.MStatus = 0;
+				m_regs.DeltaXYHi &= 0xF0;
+				m_regs.DYLow = 0;
+			}
 		}
 
 		void SetYMotion(const float &fVal)
@@ -113,7 +128,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				}
 				/* FALLTHRU */
 				default:
-					printf("Read: %02x, %02x\n",uiAddr, m_regs.raw[uiAddr]);
+					//printf("Read: %02x, %02x\n",uiAddr, m_regs.raw[uiAddr]);
 					return m_regs.raw[uiAddr];
 			}
 		};
@@ -122,11 +137,11 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		{
 			if (!(m_uiRW  & (0x01<<uiAddr)))
 			{
-				printf("tried to write RO register\n");
+				printf("PAT9125: tried to write Read-only register\n");
 				return false; // RO register.
 			}
 			m_regs.raw[uiAddr] = uiData & 0xFF;
-			printf("Wrote: %02x = %02x (%02x)\n",uiAddr,uiData, m_regs.raw[uiAddr]);
+			//printf("Wrote: %02x = %02x (%02x)\n",uiAddr,uiData, m_regs.raw[uiAddr]);
 			return true;
 		};
 

@@ -96,6 +96,9 @@ namespace Boards
 				lSD = {0x0000FF00,'C', true};
 
 		private:
+
+			void DebugPin(avr_irq_t *irq, uint32_t value);
+
 			const Wirings::Einsy_1_1a m_wiring = Wirings::Einsy_1_1a();
 	};
 };

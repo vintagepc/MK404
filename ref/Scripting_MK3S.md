@@ -39,9 +39,6 @@
 ### LCD::
  - `Desync()                      ` - `Simulates data corruption by desyncing the 4-bit mode`
  - `WaitForText(string, int)      ` - `Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.`
-### PAT9125::
- - `Set(int)                      ` - `Sets the sensor state to a specific enum entry. (int value)`
- - `Toggle()                      ` - `Toggles the IR sensor state`
 ### PINDA::
  - `SetMBLPoint(int, float)       ` - `Sets the given MBL point (0-48) to the given Z value`
  - `SetXYPoint(int, float, float) ` - `Sets the (0-3)rd XY cal point position to x,y. (index, x,y)`

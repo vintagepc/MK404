@@ -55,9 +55,6 @@
  - `Reset()                       ` - `Clears the diag flag immediately`
  - `Stall()                       ` - `Sets the diag flag immediately.`
  - `ToggleStall()                 ` - `Toggles the stallguard condition on the next step.`
-### PAT9125::
- - `Set(int)                      ` - `Sets the sensor state to a specific enum entry. (int value)`
- - `Toggle()                      ` - `Toggles the IR sensor state`
 ### PINDA::
  - `SetMBLPoint(int, float)       ` - `Sets the given MBL point (0-48) to the given Z value`
  - `SetXYPoint(int, float, float) ` - `Sets the (0-3)rd XY cal point position to x,y. (index, x,y)`
@@ -92,7 +89,6 @@
 ### Thermistor1::
  - `Disconnect()                  ` - `Disconnects the thermistor as though it has gone open circuit`
  - `Reconnct()                    ` - `Restores the normal thermistor state`
-Starting serial transfer thread...
  - `Short()                       ` - `Short the thermistor out`
 ### Thermistor2::
  - `Disconnect()                  ` - `Disconnects the thermistor as though it has gone open circuit`
@@ -114,3 +110,4 @@ Starting serial transfer thread...
  - `Reset()                       ` - `Clears the diag flag immediately`
  - `Stall()                       ` - `Sets the diag flag immediately.`
  - `ToggleStall()                 ` - `Toggles the stallguard condition on the next step.`
+Starting serial transfer thread...

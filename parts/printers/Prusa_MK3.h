@@ -38,6 +38,7 @@ class Prusa_MK3: public Prusa_MK3S
 			lIR.ConnectFrom(LaserSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 
 			LaserSensor.ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT), PAT9125::E_IN);
+			LaserSensor.Set(false); // No filament - but this just updates the LED.
 		}; // Overridde to setup the PAT.
 
 		inline virtual void ToggleFSensor() override { LaserSensor.Toggle(); };

@@ -55,7 +55,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		{
 			_Init(pAVR, pSDA, pSCL, this);
 			printf("\n\n--------- Your attention please! ----------\n");
-			printf("NOTE: PAT9125 is not functional due to a sorely lacking datasheet.\nIf you are familiar with this sensor\n please consider contributing to an implementation.\n");
+			printf("NOTE: PAT9125 is minimally functional. If you encounter issues or need advanced functionality \n feel free to contribute or open an issue.\n");
 			printf("--------- Your attention please! ----------\n\n\n");
 			RegisterNotify(E_IN, MAKE_C_CALLBACK(PAT9125,OnEMotion),this);
 		}

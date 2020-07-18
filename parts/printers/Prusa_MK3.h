@@ -42,4 +42,6 @@ class Prusa_MK3: public Prusa_MK3S
 		}; // Overridde to setup the PAT.
 
 		inline virtual void ToggleFSensor() override { LaserSensor.Toggle(); };
+
+		PAT9125 LaserSensor;
 };

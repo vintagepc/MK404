@@ -88,7 +88,6 @@ namespace Boards
 			VoltageSrc vMain = VoltageSrc(fScale24v, 24.f),
 				vBed = VoltageSrc(fScale24v,23.9);
 			IRSensor IR;
-			PAT9125 LaserSensor;
 			PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
 			//MMU2 *mmu = nullptr;
 			LED lPINDA = {0xFF0000FF,'P',true},

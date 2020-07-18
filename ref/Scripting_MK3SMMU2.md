@@ -29,6 +29,7 @@
  - `Resume()                      ` - `Resumes fan from a stall condition`
  - `Stall()                       ` - `Stalls the fan`
 ### Fan1::
+Starting serial transfer thread...
  - `Resume()                      ` - `Resumes fan from a stall condition`
  - `Stall()                       ` - `Stalls the fan`
 ### Heater_B::

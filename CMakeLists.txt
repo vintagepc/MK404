@@ -8,6 +8,8 @@ project(MK404 VERSION 0.1)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
+
 # Yells at you if you have extra link args.
 set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 
@@ -137,9 +139,14 @@ target_compile_features(MK404 PRIVATE cxx_range_for)
 target_compile_options(MK404 PRIVATE -Wall)
 
 option(BUILD_WERROR "Build with Warnings as Errors" 1)
+
 if (BUILD_WERROR)
 	target_compile_options(MK404 PRIVATE -Werror)
-endif ()
+endif()
+
+if (ENABLE_THREAD_SANITY)
+	target_compile_options(MK404 PRIVATE -fsanitize=thread)
+endif()
 
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")
@@ -184,6 +191,10 @@ include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
+
+if (ENABLE_THREAD_SANITY)
+	target_link_libraries(MK404 -fsanitize=thread)
+endif()
 
 target_link_libraries(MK404 pthread util glut GL GLU GLEW m SDL tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 

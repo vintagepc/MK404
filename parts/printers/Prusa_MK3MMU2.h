@@ -20,42 +20,17 @@
 
 #pragma once
 
-#include <stdint.h>        // for uint32_t
-#include <utility>         // for pair
-#include "GCodeSniffer.h"  // for GCodeSniffer
-#include "MMU2.h"          // for MMU2
-#include "Printer.h"       // for Printer::VisualType
-#include "Prusa_MK3S.h"    // for Prusa_MK3S
+#include <stdio.h>
+#include "Prusa_MK3SMMU2.h"     // for Prusa_MK3SMMU2
+#include "Prusa_MK3.h"    // for Prusa_MK3
 #include "PAT9125.h"
-#include "sim_irq.h"       // for avr_irq_t
+
 class SerialPipe;
 
 
-class Prusa_MK3MMU2 : public Prusa_MK3S
+class Prusa_MK3MMU2 : public Prusa_MK3SMMU2
 {
-
-	public:
-		Prusa_MK3MMU2():Prusa_MK3S(){};
-		~Prusa_MK3MMU2();
-
-		void Draw() override;
-		void OnVisualTypeSet(VisualType type) override;
-
-		bool GetHasMMU() override {return true;}
-
-		std::pair<int,int> GetWindowSize() override;
-
-		void OnKeyPress(unsigned char key, int x, int y) override;
-
 	protected:
-		void SetupHardware() override;
-
-		void OnMMUFeed(avr_irq_t *irq, uint32_t value);// Helper for MMU IR sensor triggering.
-
-		MMU2 m_MMU;
-		GCodeSniffer m_sniffer = GCodeSniffer('T');
-		SerialPipe *m_pipe = nullptr;
-		
 		void SetupIR() override
 		{
 			avr_raise_irq(GetDIRQ(IR_SENSOR_PIN),1);
@@ -70,8 +45,5 @@ class Prusa_MK3MMU2 : public Prusa_MK3S
 		inline virtual void ToggleFSensor() override { LaserSensor.Toggle(); };
 
 		PAT9125 LaserSensor;
-
-	private:
-
-
 };
+

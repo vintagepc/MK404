@@ -47,6 +47,7 @@
 #include "tclap/UnlabeledValueArg.h"  // for UnlabeledValueArg
 #include "tclap/ValueArg.h"           // for ValueArg
 #include "tclap/ValuesConstraint.h"   // for ValuesConstraint
+#include "Macros.h"
 
 int window;
 
@@ -69,6 +70,20 @@ void OnSigINT(int iSig) {
 		printf("OK, OK! I get the message!\n");
 		exit(2);
 	}
+}
+
+void GLAPIENTRY
+GLErrorCB( GLenum source,
+                 GLenum type,
+                 GLuint id,
+                 GLenum severity,
+                 GLsizei length,
+                 const GLchar* message,
+                 const void* userParam )
+{
+  fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message );
 }
 
 bool bIsQuitting = false;
@@ -286,6 +301,17 @@ int main(int argc, char *argv[])
 				printer->SetVisualType(Printer::VisualType::ADVANCED);
 
 		}
+		else
+		{
+			glewInit();
+		}
+
+		glDebugMessageCallback( GLErrorCB, 0 );
+		glDebugMessageControl(GL_DONT_CARE,
+                      GL_DONT_CARE,
+                      GL_DEBUG_SEVERITY_NOTIFICATION,
+                      0, nullptr, GL_FALSE);
+		glEnable(GL_DEBUG_OUTPUT);
 	}
 	if (argVCD.isSet() && argVCD.getValue().at(0).compare("?")==0)
 	{

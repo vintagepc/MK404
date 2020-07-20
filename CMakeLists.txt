@@ -122,7 +122,6 @@ set(MK404_SOURCES
 	parts/components/Button.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
-	parts/printers/Prusa_MK3MMU2.cpp
 	MMU2.cpp
 	utility/MK3SGL.cpp
 	utility/GLObj.cpp

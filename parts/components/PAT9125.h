@@ -77,6 +77,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			{
 				m_regs.Shutter = 5; // Restore shutter/brightness.
 				m_regs.FrameAvg = 100;
+				m_uiNudgeCt = 0;
 			}
 			else
 			{
@@ -132,7 +133,15 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				case 0x04:
 				{
 					if (m_bLoading)
+					{
 						SetYMotion(m_fCurY += 1.f);
+						m_uiNudgeCt++;
+						if (m_uiNudgeCt>4)
+						{
+							m_uiNudgeCt = 0;
+							m_bLoading = false;
+						}
+					}
 					m_fYPos = m_fCurY;
 				}
 				/* FALLTHRU */
@@ -232,5 +241,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		uint32_t m_uiRW = 0x2006E60; //1<<addr if RW.
 
 		bool m_bFilament = false, m_bLoading = false;
+
+		uint8_t m_uiNudgeCt = 0;
 
 };

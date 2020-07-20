@@ -39,6 +39,7 @@ namespace PinNames {
 		LED_PIN,
 		MMU_HWRESET,
 		__TMC2130_PIN_SET(P)
+		PAT_INT_PIN,
 		PS_ON_PIN,
 		__TMC2130_PIN_SET(S)
 		SDCARDDETECT,

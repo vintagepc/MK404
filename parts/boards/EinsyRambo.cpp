@@ -182,6 +182,14 @@ namespace Boards
 		AddUARTTrace('0'); // External
 		AddUARTTrace('2'); // MMU/internal/P3
 
+		//avr_irq_register_notify(GetDIRQ(PAT_INT_PIN), MAKE_C_CALLBACK(EinsyRambo, DebugPin),this);
+
+	}
+
+	// Convenience function for debug printing a particular pin.
+	void EinsyRambo::DebugPin(avr_irq_t *irq, uint32_t value)
+	{
+		printf("Pin DBG: change to %8x\n",value);
 	}
 
 	void EinsyRambo::OnAVRInit()

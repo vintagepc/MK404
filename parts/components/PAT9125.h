@@ -47,62 +47,148 @@ class PAT9125: public I2CPeripheral, public Scriptable
 
 		PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125")
 		{
+			RegisterAction("Toggle","Toggles the IR sensor state",ActToggle);
+			RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
 		};
 
 		void Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)
 		{
 			_Init(pAVR, pSDA, pSCL, this);
 			printf("\n\n--------- Your attention please! ----------\n");
-			printf("NOTE: PAT9125 is not functional due to a sorely lacking datasheet.\nIf you are familiar with this sensor\n please consider contributing to an implementation.\n");
+			printf("NOTE: PAT9125 is minimally functional. If you encounter issues or need advanced functionality \n feel free to contribute or open an issue.\n");
 			printf("--------- Your attention please! ----------\n\n\n");
+			RegisterNotify(E_IN, MAKE_C_CALLBACK(PAT9125,OnEMotion),this);
 		}
 
-		inline void Toggle()
+		inline void Set(bool bVal)
 		{
+			if (bVal!=m_bFilament)
+				Toggle();
+			RaiseIRQ(LED_OUT,!m_bFilament); // LED is inverted.
+		}
+
+		void Toggle()
+		{
+			m_bLoading = !m_bFilament;
 			m_bFilament^=1;
 			printf("Filament Present: %u\n",m_bFilament);
-			RaiseIRQ(LED_OUT,!m_bFilament);
-			// The data sheet is terrible, this should probably also update the motion register?
+			RaiseIRQ(LED_OUT,!m_bFilament); // LED is inverted.
+			if (m_bFilament)
+			{
+				m_regs.Shutter = 5; // Restore shutter/brightness.
+				m_regs.FrameAvg = 100;
+				m_uiNudgeCt = 0;
+			}
+			else
+			{
+				m_regs.Shutter = 20; // drop shutter as if underexposed.
+				m_regs.FrameAvg = 40; // and brightness.
+			}
+			m_regs.MStatus = 0x80*m_bFilament;
+
 		}
 
 	protected:
 		void OnEMotion(avr_irq_t *pIRQ, uint32_t value)
 		{
+			m_bLoading=false; // clear loading flag once E move started.
 			if (m_bFilament)
 			{
 
 				float *fV = reinterpret_cast<float*>(&value);
+				SetYMotion(fV[0]);
 				// (5*PAT9125_YRES/25.4)
-				float fDelta = fV[0]-m_fYPos;
-				int16_t iCounts  = fDelta*(5.f*(float)m_regs.Res_Y/25.4f);
-				m_fCurY = fV[0];
-				m_regs.DeltaXYHi = (iCounts >> 8) & 0xb111;
-				m_regs.DYLow = iCounts & 0xFF;
+
 				//m_regs.MStatus = 0x80;
 			}
-			else
+			else // Clear motion and regs.
+			{
 				m_regs.MStatus = 0;
+				m_regs.DeltaXYHi &= 0xF0;
+				m_regs.DYLow = 0;
+			}
+		}
+
+		void SetYMotion(const float &fVal)
+		{
+				float fDelta = fVal-m_fYPos;
+				int16_t iCounts  = fDelta*(5.f*(float)m_regs.Res_Y/25.4f);
+				iCounts = -iCounts;
+				m_fCurY = fVal;
+				m_regs.DeltaXYHi = (iCounts >> 8) & 0b1111;
+				m_regs.DYLow = iCounts & 0xFF;
 		}
 
 		virtual uint8_t GetRegVal(uint8_t uiAddr) override
 		{
-			//printf("Read: %02x\n",uiAddr);
-			if (uiAddr == 0x04)
-				m_fYPos = m_fCurY;
-			return m_regs.raw[uiAddr];
+			switch (uiAddr)
+			{
+				case 0x02:
+				{
+					uint8_t val = m_regs.MStatus;
+					if (!m_bLoading)
+						m_regs.MStatus = 0; // clear motion flag.
+					return val;
+				}
+				case 0x04:
+				{
+					if (m_bLoading)
+					{
+						SetYMotion(m_fCurY += 1.f);
+						m_uiNudgeCt++;
+						if (m_uiNudgeCt>4)
+						{
+							m_uiNudgeCt = 0;
+							m_bLoading = false;
+						}
+					}
+					m_fYPos = m_fCurY;
+				}
+				/* FALLTHRU */
+				default:
+					//printf("Read: %02x, %02x\n",uiAddr, m_regs.raw[uiAddr]);
+					return m_regs.raw[uiAddr];
+			}
 		};
 
 		virtual bool SetRegVal(uint8_t uiAddr, uint32_t uiData)
 		{
 			if (!(m_uiRW  & (0x01<<uiAddr)))
+			{
+				printf("PAT9125: tried to write Read-only register\n");
 				return false; // RO register.
-			//printf("Wrote: %02x = %02x\n",uiAddr,uiData);
+			}
 			m_regs.raw[uiAddr] = uiData & 0xFF;
+			//printf("Wrote: %02x = %02x (%02x)\n",uiAddr,uiData, m_regs.raw[uiAddr]);
 			return true;
 		};
 
+		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override
+		{
+			switch (iAct)
+			{
+				case ActToggle:
+					Toggle();
+					return LineStatus::Finished;
+				case ActSet:
+					int iVal = stoi(vArgs.at(0));
+					if (iVal<0 || iVal >1)
+						return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [0,1]" );
+					Set(iVal==1);
+					return LineStatus::Finished;
+			}
+			return LineStatus::Unhandled;
+		}
+
 	private:
-		uint8_t m_uiAddr = 0;
+
+	enum Actions
+	{
+		ActToggle,
+		ActSet
+	};
+
+	uint8_t m_uiAddr = 0;
 		float m_fYPos = 0.f;
 		float m_fCurY = 0.f;
 		union m_regs
@@ -119,8 +205,8 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				Sleep2 = 0x10;
 				Res_X = Res_Y = 0x14;
 				Orientation = 0x04;
-				FrameAvg = 100;
-				Shutter = 5;
+				FrameAvg = 40; // "no filament" default.
+				Shutter = 20;// 5;
 			};
 			uint8_t raw[32];
 			struct {
@@ -133,6 +219,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				uint8_t Config;
 				uint8_t :8;
 				uint8_t :8;
+				uint8_t WriteProtect;
 				uint8_t Sleep1;
 				uint8_t Sleep2;
 				uint8_t :8;
@@ -153,6 +240,8 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		}m_regs;
 		uint32_t m_uiRW = 0x2006E60; //1<<addr if RW.
 
-		bool m_bFilament = true;
+		bool m_bFilament = false, m_bLoading = false;
+
+		uint8_t m_uiNudgeCt = 0;
 
 };

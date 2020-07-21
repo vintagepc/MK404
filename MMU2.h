@@ -53,7 +53,7 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
 		inline void PushButton(uint8_t uiBtn) { m_buttons.Push(uiBtn);}
 		inline void SetFINDAAuto(bool bVal) { m_bAutoFINDA = bVal;}
 		inline void SetFINDAState(bool bVal) {m_bFINDAManual = bVal;}
-		inline void ToggleFINDA() { m_bFINDAManual = !m_bFINDAManual;}
+		void ToggleFINDA();
 
     protected:
         void SetupHardware() override;

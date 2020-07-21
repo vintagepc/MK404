@@ -133,6 +133,14 @@ void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)
         m_bReset = true;
 }
 
+void MMU2::ToggleFINDA()
+{
+		m_bFINDAManual = !m_bFINDAManual;
+		printf("FINDA (manual) toggled: %u\n",m_bFINDAManual?1U:0U);
+		SetPin(FINDA_PIN, m_bFINDAManual? 1:0);
+		RaiseIRQ(FINDA_OUT,m_bFINDAManual? 1 : 0);
+}
+
 void MMU2::OnPulleyFeedIn(struct avr_irq_t * irq,uint32_t value)
 {
 	float* posOut = (float*)(&value);

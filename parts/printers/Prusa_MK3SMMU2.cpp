@@ -97,6 +97,7 @@ void Prusa_MK3SMMU2::OnKeyPress(unsigned char key, int x, int y)
 		{
 			printf("FINDA in Auto control\n");
 			m_MMU.SetFINDAAuto(true);
+			IR.Set(IRSensor::IR_AUTO); // Also restore IR auto handling.
 			break;
 		}
 		case '3':

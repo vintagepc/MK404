@@ -47,7 +47,7 @@ SerialPipe::~SerialPipe()
 void* SerialPipe::Run()
 {
 	// Not much to see here, we just open the ports and shuttle characters back and forth across them.
-	printf("Starting serial transfer thread...\n");
+	//printf("Starting serial transfer thread...\n");
 	int fdPort[2];
 	fd_set fdsIn, fdsErr;
 	unsigned char chrIn;

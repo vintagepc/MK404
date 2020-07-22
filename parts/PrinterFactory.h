@@ -24,6 +24,7 @@
 #include "Board.h"
 #include "Printer.h"
 #include "printers/Prusa_MK3SMMU2.h"
+#include "printers/Prusa_MK3MMU2.h"
 #include "printers/Prusa_MK3S.h"
 #include "printers/Prusa_MK3.h"
 
@@ -111,5 +112,6 @@ class PrinterFactory
 map<string,pair<PrinterFactory::Ctor,PrinterFactory::Dtor>>  PrinterFactory::m_Models  = {
 	std::make_pair("Prusa_MK3",			make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3>	, &PrinterFactory::_DestroyPrinter<Prusa_MK3>)),
 	std::make_pair("Prusa_MK3S",		make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3S>	, &PrinterFactory::_DestroyPrinter<Prusa_MK3S>)),
-	std::make_pair("Prusa_MK3SMMU2",	make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3SMMU2>, &PrinterFactory::_DestroyPrinter<Prusa_MK3SMMU2>))
+	std::make_pair("Prusa_MK3SMMU2",	make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3SMMU2>, &PrinterFactory::_DestroyPrinter<Prusa_MK3SMMU2>)),
+	std::make_pair("Prusa_MK3MMU2",	make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3MMU2>, &PrinterFactory::_DestroyPrinter<Prusa_MK3MMU2>))
 };

@@ -71,6 +71,7 @@ set(H_FILES
 #	parts/IRQHelper.h  Can't be checked/used standalone.
 	parts/printers/Prusa_MK3S.h
 	parts/printers/Prusa_MK3SMMU2.h
+	parts/printers/Prusa_MK3MMU2.h
 	utility/Color.h
 	utility/GLPrint.h
 	utility/FatImage.h
@@ -241,12 +242,14 @@ add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)
 add_custom_target(UpdateDocs
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/Scripting_MK3S.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3SMMU2 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/Scripting_MK3SMMU2.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3MMU2 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/Scripting_MK3MMU2.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/Scripting_MK3.md
 	COMMAND echo '```' > ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 --help >> ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
 	COMMAND echo '```' >> ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? | grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/TraceOptions_MK3S.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3SMMU2| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/TraceOptions_MK3SMMU2.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3MMU2| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/TraceOptions_MK3MMU2.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/TraceOptions_MK3.md
 	COMMAND cd ${PROJECT_SOURCE_DIR}/ref && sh ./updateTOC.sh
 	)

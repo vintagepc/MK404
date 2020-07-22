@@ -35,7 +35,6 @@ Heater_H_<heater.digital_in| `Heater`
 Heater_H_<heater.pwm_in| `Heater` `PWM`
 Heater_H_>heater.on| `Heater` `Misc`
 I_8<tmc2130.byte_in| `SPI` `Stepper`
-Starting serial transfer thread...
 I_8>tmc2130.byte_out| `SPI` `Stepper`
 I_<tmc2130.cs_in| `SPI` `Stepper` `OutputPin`
 I_<tmc2130.dir_in| `OutputPin` `Stepper`

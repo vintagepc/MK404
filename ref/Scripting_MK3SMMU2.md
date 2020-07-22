@@ -30,6 +30,7 @@
  - `Stall()                       ` - `Stalls the fan`
 ### Fan1::
  - `Resume()                      ` - `Resumes fan from a stall condition`
+Starting serial transfer thread...
  - `Stall()                       ` - `Stalls the fan`
 ### Heater_B::
  - `Resume()                      ` - `Resumes auto PWM control and clears the 'stopheating' flag`
@@ -110,4 +111,3 @@
  - `Reset()                       ` - `Clears the diag flag immediately`
  - `Stall()                       ` - `Sets the diag flag immediately.`
  - `ToggleStall()                 ` - `Toggles the stallguard condition on the next step.`
-Starting serial transfer thread...

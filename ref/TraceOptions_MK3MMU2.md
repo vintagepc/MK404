@@ -36,7 +36,6 @@ Heater_H_<heater.pwm_in| `Heater` `PWM`
 Heater_H_>heater.on| `Heater` `Misc`
 I_8<tmc2130.byte_in| `SPI` `Stepper`
 I_8>tmc2130.byte_out| `SPI` `Stepper`
-Starting serial transfer thread...
 I_<tmc2130.cs_in| `SPI` `Stepper` `OutputPin`
 I_<tmc2130.dir_in| `OutputPin` `Stepper`
 I_<tmc2130.en_in| `OutputPin` `Stepper`
@@ -46,6 +45,7 @@ LCD_8<hd44780.BRIGHTNESS_PWM_IN| `Display` `PWM`
 LCD_8>hd44780.DATA_IN| `Display`
 LCD_<hd44780.E| `Display` `OutputPin`
 LCD_<hd44780.RS| `Display` `OutputPin`
+Starting serial transfer thread...
 LCD_<hd44780.RW| `Display` `OutputPin`
 LCD_=hd44780.BRIGHTNESS_IN| `Display` `OutputPin`
 PINDA_>pinda.out| `InputPin` `Misc`
@@ -94,8 +94,6 @@ UART2_>avr.uart2.xoff| `Serial`
 UART2_>avr.uart2.xon| `Serial`
 VSrc4_16>voltage.value_out| `ADC` `Power`
 VSrc4_>voltage.digital_out| `Power` `InputPin`
-VSrc8_16>voltage.value_out| `ADC` `Power`
-VSrc8_>voltage.digital_out| `Power` `InputPin`
 VSrc9_16>voltage.value_out| `ADC` `Power`
 VSrc9_>voltage.digital_out| `Power` `InputPin`
 X_8<tmc2130.byte_in| `SPI` `Stepper`
@@ -165,7 +163,6 @@ Z_>tmc2130.diag_out| `InputPin` `Stepper`
  - VSrc9_>voltage.digital_out
  - VSrc4_>voltage.digital_out
  - Power Panic_Power Panic
- - VSrc8_>voltage.digital_out
 #### OutputPin
  - HC595_32<hc959.latch_in
  - HC595_<hc959.reset_in
@@ -213,8 +210,6 @@ Z_>tmc2130.diag_out| `InputPin` `Stepper`
  - VSrc9_>voltage.digital_out
  - VSrc4_16>voltage.value_out
  - VSrc4_>voltage.digital_out
- - VSrc8_16>voltage.value_out
- - VSrc8_>voltage.digital_out
 #### Stepper
  - P_8<tmc2130.byte_in
  - P_8>tmc2130.byte_out
@@ -330,7 +325,6 @@ Z_>tmc2130.diag_out| `InputPin` `Stepper`
  - Thermistor3_>adc.out
  - VSrc9_16>voltage.value_out
  - VSrc4_16>voltage.value_out
- - VSrc8_16>voltage.value_out
 #### PWM
  - Fan_<Fan.pwm_in
  - Fan1_<Fan.pwm_in

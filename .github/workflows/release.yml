@@ -20,7 +20,6 @@ jobs:
       
     - name: Checkout ${{ steps.get_version.outputs.VERSION }} (${{ github.event.ref }})
       uses: actions/checkout@v2.2.0
-      if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK3SIM.git
         ref: ${{ github.event.ref }}

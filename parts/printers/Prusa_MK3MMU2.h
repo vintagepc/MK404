@@ -1,5 +1,5 @@
 /*
-	Prusa_MK3.h - Printer definition for the Prusa MK3 (Laser sensor)
+	Prusa_MK3MMU2.h - Printer definition for the Prusa MK3 w/MMU2
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK3SIM.
@@ -21,13 +21,14 @@
 #pragma once
 
 #include <stdio.h>
-#include "sim_irq.h"
-#include "Prusa_MK3S.h"     // for Prusa_MK3S
+#include "Prusa_MK3SMMU2.h"     // for Prusa_MK3SMMU2
+#include "Prusa_MK3.h"    // for Prusa_MK3
 #include "PAT9125.h"
 
-class MK3SGL;
+class SerialPipe;
 
-class Prusa_MK3: public Prusa_MK3S
+
+class Prusa_MK3MMU2 : public Prusa_MK3SMMU2
 {
 	protected:
 		void SetupIR() override
@@ -38,12 +39,13 @@ class Prusa_MK3: public Prusa_MK3S
 			lIR.ConnectFrom(LaserSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 
 			LaserSensor.ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT), PAT9125::E_IN);
-			LaserSensor.Set(PAT9125::FS_NO_FILAMENT); // No filament - but this just updates the LED.
+			LaserSensor.ConnectFrom(m_MMU.GetIRQ(MMU2::FEED_DISTANCE), PAT9125::P_IN);
+			LaserSensor.Set(PAT9125::FS_AUTO); // No filament - but this just updates the LED.
 		}; // Overridde to setup the PAT.
 
 		inline virtual void ToggleFSensor() override { LaserSensor.Toggle(); };
 
-		inline virtual void FSensorJam() { LaserSensor.ToggleJam();};
+		inline virtual void FSensorResumeAuto() override { LaserSensor.Set(PAT9125::FS_AUTO);};
 
 		PAT9125 LaserSensor;
 };

@@ -217,6 +217,9 @@ void Prusa_MK3S::OnAVRCycle()
 			case 'f':
 				ToggleFSensor();
 				break;
+			case 'j':
+				FSensorJam();
+				break;
 			case 'c':
 				if (!sd_card.IsMounted())
 				{

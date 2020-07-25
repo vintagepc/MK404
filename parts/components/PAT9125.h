@@ -42,8 +42,18 @@ class PAT9125: public I2CPeripheral, public Scriptable
 	        _IRQ(TX_IN,       "32<PAT9125.i2c_in") \
 	        _IRQ(TX_REPLY,  	"8>PAT9125.byte_out") \
 			_IRQ(E_IN, "f<e_distance.in") \
+			_IRQ(P_IN, "p_distance.in") \
 			_IRQ(LED_OUT, "<presence.out")
 		#include "IRQHelper.h"
+
+		typedef enum FSState {
+			FS_MIN = -1,
+			FS_NO_FILAMENT,
+			FS_FILAMENT_PRESENT,
+			FS_JAM,
+			FS_AUTO, // Special state that only respects the auto value.
+			FS_MAX
+		}FSState_t;
 
 		PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125")
 		{
@@ -58,19 +68,56 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			printf("NOTE: PAT9125 is minimally functional. If you encounter issues or need advanced functionality \n feel free to contribute or open an issue.\n");
 			printf("--------- Your attention please! ----------\n\n\n");
 			RegisterNotify(E_IN, MAKE_C_CALLBACK(PAT9125,OnEMotion),this);
+			RegisterNotify(P_IN, MAKE_C_CALLBACK(PAT9125,OnPMotion),this);
 		}
 
-		inline void Set(bool bVal)
+		inline void Set(FSState eVal)
 		{
-			if (bVal!=m_bFilament)
-				Toggle();
-			RaiseIRQ(LED_OUT,!m_bFilament); // LED is inverted.
+			m_state = eVal;
+			UpdateSensorState();
+		}
+
+		inline void ToggleJam()
+		{
+			if (m_state == FS_JAM)
+				m_state = FS_FILAMENT_PRESENT;
+			else
+				m_state = FS_JAM;
+			printf("PAT9125 Jam: %u\n", m_state == FS_JAM);
+
 		}
 
 		void Toggle()
 		{
-			m_bLoading = !m_bFilament;
-			m_bFilament^=1;
+			switch (m_state)
+			{
+			case FS_AUTO:
+				printf("Leaving PAT9125 Auto mode\n");
+				m_state = m_bFilament ? FS_FILAMENT_PRESENT : FS_NO_FILAMENT;
+				/* FALLTHRU */  // Deliberate fallthrough - will toggle from current.
+			case FS_NO_FILAMENT:
+				m_bLoading = true; // Load from no filament only.
+				/* FALLTHRU */
+			case FS_JAM:
+				m_state = FS_FILAMENT_PRESENT;
+				UpdateSensorState();
+				break;
+			case FS_FILAMENT_PRESENT:
+				m_state = FS_NO_FILAMENT;
+				UpdateSensorState();
+				break;
+			default: // No action
+				break;
+			}
+		}
+
+
+	protected:
+
+		void UpdateSensorState()
+		{
+			if (m_state != FS_AUTO)
+				m_bFilament = m_state == FS_FILAMENT_PRESENT || m_state == FS_JAM;
 			printf("Filament Present: %u\n",m_bFilament);
 			RaiseIRQ(LED_OUT,!m_bFilament); // LED is inverted.
 			if (m_bFilament)
@@ -84,22 +131,33 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				m_regs.Shutter = 20; // drop shutter as if underexposed.
 				m_regs.FrameAvg = 40; // and brightness.
 			}
-			m_regs.MStatus = 0x80*m_bFilament;
-
 		}
 
-	protected:
+		void OnPMotion(avr_irq_t *pIRQ, uint32_t value)
+		{
+			m_bLoading=false; // clear loading flag once E move started.
+			auto fVal = reinterpret_cast<float*>(&value);
+			bool bLoaded = fVal[0]>370.f;
+			if (m_state == FS_AUTO) // Set filament state if auto.
+			{
+				if (m_bFilament != bLoaded)
+				{
+					m_bFilament = bLoaded; // default length is 380, trip a few mm earlier because that's where the sensor is vs gears.
+					UpdateSensorState();
+				}
+			}
+			if (bLoaded) // Pass through if fed enough to reach.
+				SetYMotion(m_fEPos,fVal[0]-370.f);
+
+
+		}
 		void OnEMotion(avr_irq_t *pIRQ, uint32_t value)
 		{
 			m_bLoading=false; // clear loading flag once E move started.
 			if (m_bFilament)
 			{
-
 				float *fV = reinterpret_cast<float*>(&value);
-				SetYMotion(fV[0]);
-				// (5*PAT9125_YRES/25.4)
-
-				//m_regs.MStatus = 0x80;
+				SetYMotion(fV[0], m_fPPos);
 			}
 			else // Clear motion and regs.
 			{
@@ -109,14 +167,24 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			}
 		}
 
-		void SetYMotion(const float &fVal)
+		void SetYMotion(const float &fEVal, const float &fPVal)
 		{
-				float fDelta = fVal-m_fYPos;
+				//printf("YMotion update: %f %f\n",fEVal, fPVal);
+				float fDelta = (fEVal+fPVal)-m_fYPos;
 				int16_t iCounts  = fDelta*(5.f*(float)m_regs.Res_Y/25.4f);
 				iCounts = -iCounts;
-				m_fCurY = fVal;
+				if (fDelta>0 && iCounts==0) // Enforce minimum motion of at least 1 count.
+					iCounts = -1;
+				else if (fDelta<0 && iCounts==0)
+					iCounts = 1;
+				m_fEPos = fEVal;
+				m_fPPos = fPVal;
+				m_fCurY = fEVal+fPVal;
 				m_regs.DeltaXYHi = (iCounts >> 8) & 0b1111;
 				m_regs.DYLow = iCounts & 0xFF;
+				if (m_state != FS_JAM)
+					m_regs.MStatus = 0x80;
+
 		}
 
 		virtual uint8_t GetRegVal(uint8_t uiAddr) override
@@ -128,13 +196,9 @@ class PAT9125: public I2CPeripheral, public Scriptable
 					uint8_t val = m_regs.MStatus;
 					if (!m_bLoading)
 						m_regs.MStatus = 0; // clear motion flag.
-					return val;
-				}
-				case 0x04:
-				{
-					if (m_bLoading)
+					else
 					{
-						SetYMotion(m_fCurY += 1.f);
+						SetYMotion(m_fCurY += 1.f,m_fPPos);
 						m_uiNudgeCt++;
 						if (m_uiNudgeCt>4)
 						{
@@ -142,6 +206,11 @@ class PAT9125: public I2CPeripheral, public Scriptable
 							m_bLoading = false;
 						}
 					}
+					return val;
+				}
+				case 0x04:
+				{
+					printf("Read DY: %d (%f) \n",m_regs.raw[uiAddr], (m_fYPos-m_fCurY));
 					m_fYPos = m_fCurY;
 				}
 				/* FALLTHRU */
@@ -172,9 +241,9 @@ class PAT9125: public I2CPeripheral, public Scriptable
 					return LineStatus::Finished;
 				case ActSet:
 					int iVal = stoi(vArgs.at(0));
-					if (iVal<0 || iVal >1)
-						return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [0,1]" );
-					Set(iVal==1);
+					if (iVal<0 || iVal >= FSState::FS_MAX)
+						return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [0,3]" );
+					Set((FSState)iVal);
 					return LineStatus::Finished;
 			}
 			return LineStatus::Unhandled;
@@ -189,7 +258,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 	};
 
 	uint8_t m_uiAddr = 0;
-		float m_fYPos = 0.f;
+		float m_fYPos = 0.f, m_fPPos = 0.f, m_fEPos = 0.f;
 		float m_fCurY = 0.f;
 		union m_regs
 		{
@@ -241,6 +310,8 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		uint32_t m_uiRW = 0x2006E60; //1<<addr if RW.
 
 		bool m_bFilament = false, m_bLoading = false;
+
+		FSState m_state = FS_NO_FILAMENT;
 
 		uint8_t m_uiNudgeCt = 0;
 

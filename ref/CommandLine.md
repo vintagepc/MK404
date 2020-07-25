@@ -7,7 +7,7 @@ USAGE:
             [-l] [-m] [-n] [--script <filename.txt>] [--scripthelp] [-s]
             [--sdimage <filename.img>] [-t <string>] ...  [--tracerate
             <integer>] [-v] ...  [-w] [--] [--version] [-h] <Prusa_MK3
-            |Prusa_MK3S|Prusa_MK3SMMU2>
+            |Prusa_MK3MMU2|Prusa_MK3S|Prusa_MK3SMMU2>
 
 
 Where: 
@@ -86,7 +86,7 @@ Where:
    -h,  --help
      Displays usage information and exits.
 
-   <Prusa_MK3|Prusa_MK3S|Prusa_MK3SMMU2>
+   <Prusa_MK3|Prusa_MK3MMU2|Prusa_MK3S|Prusa_MK3SMMU2>
      Model name of the printer to run
 
 

@@ -49,6 +49,8 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 	protected:
 		void SetupHardware() override;
 
+		inline virtual void FSensorResumeAuto() { IR.Set(IRSensor::IR_AUTO);}
+
 		void OnMMUFeed(avr_irq_t *irq, uint32_t value);// Helper for MMU IR sensor triggering.
 
 		MMU2 m_MMU;

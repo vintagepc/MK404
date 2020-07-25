@@ -39,11 +39,13 @@ class Prusa_MK3MMU2 : public Prusa_MK3SMMU2
 			lIR.ConnectFrom(LaserSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 
 			LaserSensor.ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT), PAT9125::E_IN);
-			LaserSensor.Set(false); // No filament - but this just updates the LED.
+			LaserSensor.ConnectFrom(m_MMU.GetIRQ(MMU2::FEED_DISTANCE), PAT9125::P_IN);
+			LaserSensor.Set(PAT9125::FS_AUTO); // No filament - but this just updates the LED.
 		}; // Overridde to setup the PAT.
 
 		inline virtual void ToggleFSensor() override { LaserSensor.Toggle(); };
 
+		inline virtual void FSensorResumeAuto() override { LaserSensor.Set(PAT9125::FS_AUTO);};
+
 		PAT9125 LaserSensor;
 };
-

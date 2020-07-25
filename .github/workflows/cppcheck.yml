@@ -24,7 +24,7 @@ jobs:
       uses: actions/checkout@v2.2.0
       if: ${{ github.event.pull_request }}
       with:
-        repository: vintagepc/MK3SIM.git
+        repository: vintagepc/MK404.git
         ref: ${{ github.event.pull_request.head.sha }}
         submodules: true
 
@@ -32,7 +32,7 @@ jobs:
       uses: actions/checkout@v2.2.0
       if: ${{ !github.event.pull_request }}
       with:
-        repository: vintagepc/MK3SIM.git
+        repository: vintagepc/MK404.git
         submodules: true
 
     - name: Cache packages
@@ -53,7 +53,7 @@ jobs:
       run: sudo chmod -R 744 packages
 
     - name: Prepare CMake build
-      run: mkdir ${{ runner.workspace }}/MK3SIM/build && cd ${{ runner.workspace }}/MK3SIM/build && cmake -DCMAKE_BUILD_TYPE=DEBUG ..
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=DEBUG ..
 
     - name: Run CPPCheck
-      run: cd ${{ runner.workspace }}/MK3SIM/build && make CPPCheck
+      run: cd ${{ runner.workspace }}/MK404/build && make CPPCheck

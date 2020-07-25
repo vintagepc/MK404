@@ -253,4 +253,21 @@ add_custom_target(UpdateDocs
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/TraceOptions_MK3.md
 	COMMAND cd ${PROJECT_SOURCE_DIR}/ref && sh ./updateTOC.sh
 	)
-add_dependencies(Build_Run MK404)
+add_dependencies(UpdateDocs MK404)
+
+
+add_custom_target(Release_Package
+
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/MK404-dev"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different MK404 "${PROJECT_BINARY_DIR}/MK404-dev/"
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/MK404-dev/assets"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_BINARY_DIR}/assets/*.mtl" "${PROJECT_BINARY_DIR}/MK404-dev/assets/"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_BINARY_DIR}/assets/*.obj" "${PROJECT_BINARY_DIR}/MK404-dev/assets/"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/README.md" "${PROJECT_BINARY_DIR}/MK404-dev/"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/COPYING" "${PROJECT_BINARY_DIR}/MK404-dev/"
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/MK404-dev/ref"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/ref/*" "${PROJECT_BINARY_DIR}/MK404-dev/ref/"
+	COMMAND cd ${PROJECT_BINARY_DIR}
+	COMMAND tar -jcvf "${PROJECT_BINARY_DIR}/MK404-development-build.tar.bz2" "MK404-dev"
+	)
+add_dependencies(Release_Package MK404)

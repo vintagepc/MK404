@@ -17,14 +17,14 @@ jobs:
     - name: Get the version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-      
+
     - name: Checkout ${{ steps.get_version.outputs.VERSION }} (${{ github.event.ref }})
       uses: actions/checkout@v2.2.0
       with:
-        repository: vintagepc/MK3SIM.git
+        repository: vintagepc/MK404.git
         ref: ${{ github.event.ref }}
         submodules: true
-        
+
     - name: Cache packages
       uses: actions/cache@v1.0.3
       id: cache-pkgs
@@ -43,21 +43,21 @@ jobs:
       run: sudo chmod -R 744 packages
 
     - name: Prepare CMake build
-      run: mkdir ${{ runner.workspace }}/MK3SIM/build && cd ${{ runner.workspace }}/MK3SIM/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
 
     - name: Build Einsy
-      run: cd ${{ runner.workspace }}/MK3SIM/build && make
-        
+      run: cd ${{ runner.workspace }}/MK404/build && make
+
     - name: Assemble artifacts
       run: |
-          cd ${{ runner.workspace }}/MK3SIM/build
+          cd ${{ runner.workspace }}/MK404/build
           make Release_Package
           mv MK404-development-build.tar.bz2 MK404-${{ steps.get_version.outputs.VERSION }}.tar.bz2
-    
+
     - name: Publish release
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
-            ${{ runner.workspace }}/MK3SIM/build/MK404-${{ steps.get_version.outputs.VERSION }}.tar.bz2
+            ${{ runner.workspace }}/MK404/build/MK404-${{ steps.get_version.outputs.VERSION }}.tar.bz2

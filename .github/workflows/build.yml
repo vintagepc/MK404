@@ -84,3 +84,20 @@ jobs:
       with:
         branch: ${{ github.event.pull_request.head.ref }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Assemble artifacts
+      if: ${{ !github.event.pull_request }}
+      run: |
+          cd ${{ runner.workspace }}/MK3SIM/build
+          make Release_Package
+    
+    - name: Publish prerelease
+      if: ${{ !github.event.pull_request }}
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "dev"
+          prerelease: true
+          title: "Latest (Development) Build"
+          files: |
+            ${{ runner.workspace }}/MK3SIM/build/MK404-development-build.tar.bz2

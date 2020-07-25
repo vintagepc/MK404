@@ -348,4 +348,3 @@ Z_>tmc2130.diag_out| `InputPin` `Stepper`
  - PINDA_>pinda.out
  - PINDA_>sheet.out
  - Power Panic_Power Panic
-Starting serial transfer thread...

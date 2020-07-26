@@ -128,8 +128,8 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 			}
 			memset(&m_trace, 0, sizeof(m_trace));
 			RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::Int});
-			RegisterAction("StartTrace", "Starts the telemetry trace. You must have set a category or set of items with the -t option",ActStartTrace);
-			RegisterAction("StopTrace", "Stops a running telemetry trace.",ActStopTrace);
+			RegisterActionAndMenu("StartTrace", "Starts the telemetry trace. You must have set a category or set of items with the -t option",ActStartTrace);
+			RegisterActionAndMenu("StopTrace", "Stops a running telemetry trace.",ActStopTrace);
 		}
 
 		enum Actions

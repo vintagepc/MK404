@@ -77,6 +77,20 @@ class IScriptable
 			return IssueLineError(" Has registered actions but does not have an action handler!");
 		}
 
+		// Processes the menu callback. By default, will try the script handler for no-arg actions.
+		// If this is NOT what you want, overload this in your class.
+		virtual void ProcessMenu(uint iAction)
+		{
+			//printf("m_Act: %u\n", (uint)m_ActionArgs.count(iAction));
+			if (m_ActionArgs.count(iAction)==0 || m_ActionArgs.at(iAction).size()==0) // If no args needed or it wasn't registered, try the script handler.
+			{
+				auto LSResult = ProcessAction(iAction,{});
+				if (LSResult != LineStatus::Error || LSResult != LineStatus::Unhandled)
+					return;
+			}
+			fprintf(stderr, "Programmer error: %s has registered menu items but no valid handler!\n",m_strName.c_str());
+		}
+
 		void SetName(const string &strName)
 		{
 			if (m_bRegistered)

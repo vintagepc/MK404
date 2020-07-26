@@ -57,8 +57,10 @@ namespace Boards
 			// Creates a new board with the given pinspec, firmware file, frequency, and (optional) bootloader hex
 			Board(const Wiring &wiring,uint32_t uiFreqHz):Scriptable("Board"),m_wiring(wiring),m_uiFreq(uiFreqHz)
 			{
-				RegisterAction("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
-				RegisterAction("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
+				RegisterActionAndMenu("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
+				RegisterActionAndMenu("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
+				RegisterActionAndMenu("Pause","Pauses the simulated AVR execution.", ScriptAction::Pause);
+				RegisterActionAndMenu("Resume","Resumes simulated AVR execution.", ScriptAction::Unpause);
 				RegisterAction("WaitMs","Waits the specified number of milliseconds (in AVR-clock time)", ScriptAction::Wait,{ArgType::Int});
 			};
 
@@ -162,6 +164,14 @@ namespace Boards
 							m_uiWtCycleCount = (m_uiFreq/1000)*stoi(vArgs.at(0));
 							return LineStatus::Waiting;
 						}
+						break;
+					case Pause:
+						printf("Pause\n");
+						m_bPaused.store(true);
+						return LineStatus::Finished;
+					case Unpause:
+						m_bPaused.store(false);
+						return LineStatus::Finished;
 				}
 				return LineStatus::Unhandled;
 			}
@@ -175,6 +185,7 @@ namespace Boards
 				int state = cpu_Running;
 				while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){
 							// Re init the special workarounds we need after a reset.
+					ScriptHost::DispatchMenuCB();
 					if (m_bPaused)
 					{
 						usleep(100000);
@@ -190,6 +201,8 @@ namespace Boards
 					OnAVRCycle();
 					if (ScriptHost::IsInitialized())
 						ScriptHost::OnAVRCycle();
+
+
 					if (m_bReset)
 					{
 						m_bReset = 0;
@@ -305,9 +318,10 @@ namespace Boards
 			{
 				Quit,
 				Reset,
-				Wait
+				Wait,
+				Pause,
+				Unpause
 			};
-
 
 			EEPROM m_EEPROM;
 	};

@@ -29,8 +29,8 @@
 
 Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),m_uiMaxRPM(iMaxRPM),m_chrSym(chrSym)
 {
-	RegisterAction("Stall", "Stalls the fan", Actions::Stall);
-	RegisterAction("Resume","Resumes fan from a stall condition",Actions::Resume);
+	RegisterActionAndMenu("Stall", "Stalls the fan", Actions::Stall);
+	RegisterActionAndMenu("Resume","Resumes fan from a stall condition",Actions::Resume);
 }
 
 avr_cycle_count_t Fan::OnTachChange(avr_t * avr, avr_cycle_count_t when)

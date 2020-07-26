@@ -27,6 +27,7 @@
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "sim_avr.h"        // for avr_t
 #include "sim_avr_types.h"  // for avr_io_addr_t
+#include "IRSensor.h"
 #include <utility>
 #include "MK3SGL.h"
 
@@ -48,6 +49,8 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 
 	protected:
 		void SetupHardware() override;
+
+		IRSensor IR{};
 
 		virtual void SetupIR(); // Overridden by the MK3 to setup the PAT.
 		inline virtual void ToggleFSensor(){ IR.Toggle(); };

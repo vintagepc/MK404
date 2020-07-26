@@ -42,9 +42,11 @@ public:
 	typedef enum IRState {
 		IR_MIN = -1,
 		IR_SHORT,
-		IR_FILAMENT_PRESENT,
+		IR_v3_FILAMENT_PRESENT,
+		IR_v4_FILAMENT_PRESENT,
 		IR_UNKNOWN,
-		IR_NO_FILAMENT,
+		IR_v3_NO_FILAMENT,
+		IR_v4_NO_FILAMENT,
 		IR_NOT_CONNECTED,
 		IR_AUTO, // Special state that only respects the auto value.
 		IR_MAX
@@ -71,7 +73,13 @@ private:
 	enum Actions
 	{
 		ActToggle,
-		ActSet
+		ActSet,
+		ActSetV3NoFilament,
+		ActSetV3Filament,
+		ActSetV4NoFilament,
+		ActSetV4Filament,
+		ActSetUnknown,
+		ActSetAuto
 	};
 
 	// ADC read trigger
@@ -81,12 +89,14 @@ private:
 	map<IRState_t,float> m_mIRVals =
 	{
 		make_pair(IR_SHORT,0.1f),
-		make_pair(IR_FILAMENT_PRESENT,0.4f),
+		make_pair(IR_v4_FILAMENT_PRESENT,0.4f),
+		make_pair(IR_v3_FILAMENT_PRESENT,0.2f),
 		make_pair(IR_UNKNOWN, 3.0f),
-		make_pair(IR_NO_FILAMENT, 4.5f),
+		make_pair(IR_v4_NO_FILAMENT, 4.5f),
+		make_pair(IR_v3_NO_FILAMENT, 4.7f),
 		make_pair(IR_NOT_CONNECTED, 4.9)
 	};
 
 	atomic_bool m_bExternal {false};
-	IRState_t m_eCurrent = IR_NO_FILAMENT;
+	IRState_t m_eCurrent = IR_v4_NO_FILAMENT;
 };

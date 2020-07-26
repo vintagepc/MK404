@@ -27,9 +27,9 @@
 
 Button::Button(std::string strName):Scriptable(strName),m_strName(strName)
 {
-	RegisterAction("Press", "Simulate pressing the button", Actions::ActPress);
-	RegisterAction("Release", "Simulate releasing the button", Actions::ActRelease);
-	RegisterAction("PressAndRelease", "Simulate pressing and then releasing  the button", Actions::ActPressAndRelease);
+	RegisterActionAndMenu("Press", "Simulate pressing the button", Actions::ActPress);
+	RegisterActionAndMenu("Release", "Simulate releasing the button", Actions::ActRelease);
+	RegisterActionAndMenu("PressAndRelease", "Simulate pressing and then releasing  the button", Actions::ActPressAndRelease);
 }
 
 Scriptable::LineStatus Button::ProcessAction(unsigned int iAction, const vector<string> &vArgs)

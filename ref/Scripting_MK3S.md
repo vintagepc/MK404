@@ -4,8 +4,10 @@
  - `ToggleMute()                  ` - `Toggles the beeper mute`
  - `Unmute()                      ` - `Unmutes the beeper`
 ### Board::
+ - `Pause()                       ` - `Pauses the simulated AVR execution.`
  - `Quit()                        ` - `Sends the quit signal to the AVR`
  - `Reset()                       ` - `Resets the board by resetting the AVR.`
+ - `Resume()                      ` - `Resumes simulated AVR execution.`
  - `WaitMs(int)                   ` - `Waits the specified number of milliseconds (in AVR-clock time)`
 ### E::
  - `Reset()                       ` - `Clears the diag flag immediately`

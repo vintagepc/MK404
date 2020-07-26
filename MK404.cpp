@@ -269,6 +269,8 @@ int main(int argc, char *argv[])
 
 	TelemetryHost::GetHost()->SetCategories(argVCD.getValue());
 
+	ScriptHost::Init();
+
 	std::string strFW;
 	if (!argLoad.isSet() && !argFW.isSet())
 		strFW = ""; // No firmware and no load directive.
@@ -321,16 +323,19 @@ int main(int argc, char *argv[])
 
 	if (argScriptHelp.isSet())
 	{
-		ScriptHost::Init("",0);
 		ScriptHost::PrintScriptHelp(argMD.isSet());
 		return 0;
 	}
 
 	if (argScript.isSet())
 	{
-		if (!ScriptHost::Init(argScript.getValue(), pBoard->GetAVR()->frequency))
+		if (!ScriptHost::Setup(argScript.getValue(),pBoard->GetAVR()->frequency))
 			return 1; // validate will have printed error info.
 	}
+	else
+		ScriptHost::Setup("",pBoard->GetAVR()->frequency);
+
+	ScriptHost::CreateRootMenu(window);
 
 	// This is a little lazy, I know. Figure it out once we have non-einsy printers.
 	if (argMute.isSet())

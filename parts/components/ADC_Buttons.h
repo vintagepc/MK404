@@ -39,6 +39,9 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable
 		ADC_Buttons(std::string strName):Scriptable(strName)
 		{
 			RegisterAction("Press","Presses the specified button in the array",0,{ArgType::Int});
+			RegisterMenu("Push Left",ActBtnLeft);
+			RegisterMenu("Push Middle",ActBtnMiddle);
+			RegisterMenu("Push Right",ActBtnRight);
 		};
 
 
@@ -64,5 +67,13 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable
 		uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) override;
 
 		std::atomic_uint8_t m_uiCurBtn = {0};
+
+		enum Actions
+		{
+			ActPress,
+			ActBtnLeft, // These conveniently have the same int value as the button they represent.
+			ActBtnMiddle,
+			ActBtnRight
+		};
 
 };

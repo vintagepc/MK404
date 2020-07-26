@@ -28,16 +28,25 @@
 #include <sstream>
 #include <type_traits>  // for __decay_and_strip<>::__type
 #include <utility>      // for make_pair, pair
+#include <GL/freeglut_std.h> // glut menus
+#include <GL/freeglut_ext.h> // glut menus
+#include <assert.h> // assert.
 
 map<string, IScriptable*> ScriptHost::m_clients;
+
 vector<string> ScriptHost::m_script;
 unsigned int ScriptHost::m_iLine, ScriptHost::m_uiAVRFreq;
+map<string, int> ScriptHost::m_mMenuIDs;
+map<uint,IScriptable*> ScriptHost::m_mMenuBase2Client;
+map<string, uint> ScriptHost::m_mClient2MenuBase;
+map<string, vector<pair<string,int>>> ScriptHost::m_mClientEntries;
 ScriptHost::linestate_t ScriptHost::m_lnState = linestate_t();
 shared_ptr<ScriptHost> ScriptHost::g_pHost;
 ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
 bool ScriptHost::m_bQuitOnTimeout = false;
 
+atomic_uint ScriptHost::m_uiQueuedMenu {0};
 
 void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
@@ -173,6 +182,65 @@ bool ScriptHost::ValidateScript()
 	return bClean;
 }
 
+// Called from the execution context to process the menu action.
+void ScriptHost::DispatchMenuCB()
+{
+	if (m_uiQueuedMenu !=0)
+	{
+		uint iID = m_uiQueuedMenu;
+		m_uiQueuedMenu.store(0);
+		IScriptable *pClient = m_mMenuBase2Client[(iID - iID%100)];
+		pClient->ProcessMenu(iID%100);
+
+	}
+}
+
+// Dispatches menu callbacks to the client.
+void ScriptHost::MenuCB(int iID)
+{
+	//printf("Menu CB %d\n",iID);
+	m_uiQueuedMenu.store(iID);
+}
+
+void ScriptHost::CreateRootMenu(int iWinID)
+{
+	if (m_mMenuIDs.count("ScriptHost")!=0)
+	{
+		fprintf(stderr,"Attempted to create a new root menu when one already exists. Ignoring...\n");
+		return;
+	}
+
+	int iRootID = glutCreateMenu(ScriptHost::MenuCB);
+	m_mMenuIDs["ScriptHost"] =  iRootID;
+	glutSetWindow(iWinID);
+	glutAttachMenu(m_mMenuIDs["ScriptHost"]);
+	glutAttachMenu(GLUT_MIDDLE_BUTTON);
+
+	// Run through the list of clients and add ones that registered before GLUT was ready:
+	for (auto it = m_mMenuIDs.begin(); it!=m_mMenuIDs.end(); it++)
+	{
+		if (it->second != 0)
+			continue;
+		auto str = it->first;
+		int iID = glutCreateMenu(ScriptHost::MenuCB);
+		if (m_mClientEntries.count(str)==0)
+			glutAddMenuEntry("No options",m_mClient2MenuBase.at(str));
+		else
+		{
+			while (m_mClientEntries.at(str).size()>0)
+			{
+				auto entry = m_mClientEntries.at(str).back();
+				glutAddMenuEntry(entry.first.c_str(), entry.second);
+				m_mClientEntries.at(str).pop_back();
+			}
+		}
+
+		m_mMenuIDs[str] = iID;
+		glutSetMenu(iRootID);
+		glutAddSubMenu(it->first.c_str(),iID);
+	}
+}
+
 bool ScriptHost::CheckArg(const ArgType &type, const string &val)
 {
 	try
@@ -227,11 +295,37 @@ void ScriptHost::ParseLine(unsigned int iLine)
 	m_lnState.isValid = true;
 }
 
+void ScriptHost::AddSubmenu(IScriptable *src)
+{
+	std::string strName = src->GetName();
+	if (glutGet(GLUT_INIT_STATE))
+		printf("Adding a menu entry after GLUT is up... TODO\n");
+	else if (!m_mMenuIDs.count(strName)) // GLUT isn't up yet, queue it for later.
+	{
+		m_mMenuIDs[strName] = 0;
+		uint uiBase = 100U*m_mMenuIDs.size();
+		m_mMenuBase2Client[uiBase] = src;
+		m_mClient2MenuBase[strName] = uiBase;
+		//printf("Registered %s with menu base %u\n",strName.c_str(),uiBase);
+	}
+}
+
+void ScriptHost::AddMenuEntry(const string &strName, uint uiID, IScriptable* src)
+{
+	assert(uiID<100);
+	auto strClient = src->GetName();
+	uint uiBase = m_mClient2MenuBase.at(strClient);
+	m_mClientEntries[strClient].push_back({strName, uiBase + uiID});
+
+}
+
+
 void ScriptHost::AddScriptable(string strName, IScriptable* src)
 {
 	if (m_clients.count(strName)==0)
 	{
 		m_clients[strName] = src;
+		AddSubmenu(src);
 	}
 	else if (m_clients.at(strName)!=src)
 	{
@@ -246,6 +340,7 @@ void ScriptHost::AddScriptable(string strName, IScriptable* src)
 			{
 				m_clients[strNew] = src;
 				src->SetName(strNew);
+				AddSubmenu(src);
 				return;
 			}
 			else if (m_clients.at(strNew) == src)

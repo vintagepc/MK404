@@ -169,9 +169,9 @@ Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const vec
 
 RotaryEncoder::RotaryEncoder():Scriptable("Encoder")
 {
-	RegisterAction("Press", "Presses the encoder button",ActPress);
-	RegisterAction("Release", "Releases the encoder button",ActRelease);
-	RegisterAction("PressAndRelease", "Presses the encoder button",ActPressAndRelease);
-	RegisterAction("TwistCW", "Twists the encoder one cycle clockwise",ActTwistCW);
-	RegisterAction("TwistCCW", "Twists the encoder once cycle counterclockwise",ActTwistCCW);
+	RegisterActionAndMenu("Press", "Presses the encoder button",ActPress);
+	RegisterActionAndMenu("Release", "Releases the encoder button",ActRelease);
+	RegisterActionAndMenu("PressAndRelease", "Presses the encoder button",ActPressAndRelease);
+	RegisterActionAndMenu("TwistCW", "Twists the encoder one cycle clockwise",ActTwistCW);
+	RegisterActionAndMenu("TwistCCW", "Twists the encoder once cycle counterclockwise",ActTwistCCW);
 }

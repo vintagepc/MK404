@@ -95,7 +95,7 @@ class HD44780:public BasePeripheral, public Scriptable
 			for (int i=0; i<height; i++)
 				m_vLines.push_back(strBlnk);
 
-			RegisterAction("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
+			RegisterActionAndMenu("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
 			RegisterAction("WaitForText","Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
 		};
 

@@ -28,9 +28,9 @@
 
 Thermistor::Thermistor(float fStartTemp):Scriptable("Thermistor"),m_fCurrentTemp(fStartTemp)
 {
-	RegisterAction("Disconnect","Disconnects the thermistor as though it has gone open circuit",Actions::OpenCircuit);
-	RegisterAction("Short","Short the thermistor out",Actions::Shorted);
-	RegisterAction("Reconnct","Restores the normal thermistor state",Actions::Connected);
+	RegisterActionAndMenu("Disconnect","Disconnects the thermistor as though it has gone open circuit",Actions::OpenCircuit);
+	RegisterActionAndMenu("Short","Short the thermistor out",Actions::Shorted);
+	RegisterActionAndMenu("Reconnct","Restores the normal thermistor state",Actions::Connected);
 
 }
 

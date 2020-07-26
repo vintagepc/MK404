@@ -60,6 +60,7 @@ set(H_FILES
 	parts/components/SerialLineMonitor.h
 	parts/components/HC595.h
 	parts/components/Button.h
+	parts/components/MMU2.h
 	parts/components/PAT9125.h
 	parts/components/GCodeSniffer.h
 	parts/components/TMC2130.h
@@ -83,7 +84,6 @@ set(H_FILES
 	include/MK3/Configuration_prusa.h
 	include/MK3/eeprom.h
 	include/Util.h
-	MMU2.h
 	3rdParty/arcball/Camera.hpp
 	3rdParty/arcball/Matrix.hpp
 	3rdParty/arcball/Vectors.hpp
@@ -110,6 +110,7 @@ set(MK404_SOURCES
 	parts/components/HD44780.cpp
 	parts/components/UART_Logger.cpp
 	parts/components/SDCard.cpp
+	parts/components/MMU2.cpp
 	parts/components/PINDA.cpp
 	parts/components/TMC2130.cpp
 	parts/components/SerialLineMonitor.cpp
@@ -122,7 +123,6 @@ set(MK404_SOURCES
 	parts/components/Button.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
-	MMU2.cpp
 	utility/MK3SGL.cpp
 	utility/GLObj.cpp
 	utility/FatImage.cpp

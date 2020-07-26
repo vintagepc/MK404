@@ -6,7 +6,7 @@ A project/repo for simulating Einsy (and eventually, other) Prusa (and eventuall
 *Summary status:* "Mostly" functional, it runs stock firmware very close to the real thing, and should now be able to boot stock Prusa Marlin build for MK3S. "Mostly" because while the overall system is probably usable for the majority of use cases, some aspects of the hardware are simulated only to the extent necessary to get the system working. For example, the TMC "stallguard" register is minimally implemented, and the microstep count is not.
 
 Remaining To-Dos of note:
-- a number of lofty goals...
+- [See open issues...](issues/)
 
 *Current state of affairs and features*:
 - ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg) ![CPPCheck](https://github.com/vintagepc/MK3SIM/workflows/CPPCheck/badge.svg)

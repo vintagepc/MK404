@@ -42,9 +42,9 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
     m_specWant.callback = m_fcnSDL; // function SDL calls periodically to refill the buffer
     m_specWant.userdata = this; // counter, keeping track of current sample number
 
-	RegisterAction("Mute","Mutes the beeper", ActMute);
-	RegisterAction("Unmute","Unmutes the beeper", ActUnmute);
-	RegisterAction("ToggleMute","Toggles the beeper mute", ActToggle);
+	RegisterActionAndMenu("Mute","Mutes the beeper", ActMute);
+	RegisterActionAndMenu("Unmute","Unmutes the beeper", ActUnmute);
+	RegisterActionAndMenu("ToggleMute","Toggles the beeper mute", ActToggle);
 
     if(SDL_OpenAudio(&m_specWant, &m_specHave) != 0)
 	{

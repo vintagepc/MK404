@@ -57,8 +57,8 @@ namespace Boards
 			// Creates a new board with the given pinspec, firmware file, frequency, and (optional) bootloader hex
 			Board(const Wiring &wiring,uint32_t uiFreqHz):Scriptable("Board"),m_wiring(wiring),m_uiFreq(uiFreqHz)
 			{
-				RegisterAction("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
-				RegisterAction("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
+				RegisterActionAndMenu("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
+				RegisterActionAndMenu("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
 				RegisterAction("WaitMs","Waits the specified number of milliseconds (in AVR-clock time)", ScriptAction::Wait,{ArgType::Int});
 			};
 
@@ -140,6 +140,8 @@ namespace Boards
 			// Helper called every cycle - use it to process keys, mouse, etc.
 			// within the context of the AVR run thread.
 			virtual void OnAVRCycle(){};
+
+			virtual void ProcessMenu(uint iID) override;
 
 			virtual LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override
 			{
@@ -307,7 +309,6 @@ namespace Boards
 				Reset,
 				Wait
 			};
-
 
 			EEPROM m_EEPROM;
 	};

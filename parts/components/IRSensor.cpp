@@ -42,7 +42,7 @@ uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 
 IRSensor::IRSensor():VoltageSrc(),Scriptable("IRSensor")
 {
-	RegisterAction("Toggle","Toggles the IR sensor state",ActToggle);
+	RegisterActionAndMenu("Toggle","Toggles the IR sensor state",ActToggle);
 	RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
 }
 

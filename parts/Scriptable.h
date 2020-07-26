@@ -52,6 +52,23 @@ class Scriptable: public IScriptable
 			else
 				return false;
 		}
+
+		// Convenience wrapper that also adds the action as a context menu entry.
+		inline bool RegisterActionAndMenu(const string &strAct, const string& strDesc, unsigned int ID)
+		{
+			if (RegisterAction(strAct, strDesc, ID))
+			{
+				RegisterMenu(strAct, ID);
+				return true;
+			}
+			return false;
+		}
+
+		void RegisterMenu(const string &strLabel, uint uiID)
+		{
+			ScriptHost::AddMenuEntry(strLabel, uiID, this);
+		}
+
 		//Forwarder:
 		inline void RegisterAction(const string &strAct, const string& strDesc, unsigned int ID, const vector<ArgType>& vTypes)
 		{

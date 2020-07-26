@@ -57,7 +57,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 
 		PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125")
 		{
-			RegisterAction("Toggle","Toggles the IR sensor state",ActToggle);
+			RegisterActionAndMenu("Toggle","Toggles the IR sensor state",ActToggle);
 			RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
 		};
 

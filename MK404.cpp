@@ -332,6 +332,8 @@ int main(int argc, char *argv[])
 			return 1; // validate will have printed error info.
 	}
 
+	ScriptHost::CreateRootMenu(window);
+
 	// This is a little lazy, I know. Figure it out once we have non-einsy printers.
 	if (argMute.isSet())
 		printer->OnKeyPress('m',0,0);

@@ -284,9 +284,9 @@ TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
     m_regs.defs.DRV_STATUS.stst = true;
     m_regs.defs.DRV_STATUS.SG_RESULT = 250;
     m_regs.defs.GSTAT.reset = 1; // signal reset
-	RegisterAction("ToggleStall","Toggles the stallguard condition on the next step.",ActToggleStall);
-	RegisterAction("Stall","Sets the diag flag immediately.",ActSetDiag);
-	RegisterAction("Reset","Clears the diag flag immediately",ActResetDiag);
+	RegisterActionAndMenu("ToggleStall","Toggles the stallguard condition on the next step.",ActToggleStall);
+	RegisterActionAndMenu("Stall","Sets the diag flag immediately.",ActSetDiag);
+	RegisterActionAndMenu("Reset","Clears the diag flag immediately",ActResetDiag);
 }
 
 Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const vector<string> &vArgs)

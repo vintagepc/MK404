@@ -58,11 +58,16 @@ class ScriptHost: public IScriptable
 
 		static void AddScriptable(string strName, IScriptable* src);
 
+		static void AddMenuEntry(const string &strName, uint uiID, IScriptable* src);
+
 		static inline bool IsRegistered(string strName)
 		{
 			return m_clients.count(strName)!=0;
 		}
 
+		static void CreateRootMenu(int iWinID);
+
+		static void MenuCB(int iID);
 
 		static void PrintScriptHelp(bool bMarkdown);
 
@@ -86,6 +91,8 @@ class ScriptHost: public IScriptable
 		static bool GetLineParts(const string &strLine, string &strCtxt, string& strAct, vector<string>&vArgs);
 		static bool CheckArg(const ArgType &type, const string &val);
 
+		static void AddSubmenu(IScriptable *src);
+
 		//We can't register ourselves as a scriptable so just fake it with a processing func.
 		LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
 
@@ -100,6 +107,10 @@ class ScriptHost: public IScriptable
 		}
 		static shared_ptr<ScriptHost> g_pHost;
 		static map<string, IScriptable*> m_clients;
+		static map<string, int> m_mMenuIDs;
+		static map<string, uint> m_mClient2MenuBase;
+		static map<uint, IScriptable*> m_mMenuBase2Client;
+		static map<string, vector<pair<string,int>>> m_mClientEntries; // Stores client entries for when GLUT is ready.
 		static vector<string> m_script;
 		static unsigned int m_iLine, m_uiAVRFreq;
 		static ScriptHost::State m_state;

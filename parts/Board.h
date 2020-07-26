@@ -192,6 +192,8 @@ namespace Boards
 					OnAVRCycle();
 					if (ScriptHost::IsInitialized())
 						ScriptHost::OnAVRCycle();
+
+					ScriptHost::DispatchMenuCB();
 					if (m_bReset)
 					{
 						m_bReset = 0;

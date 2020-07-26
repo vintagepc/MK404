@@ -81,7 +81,8 @@ class IScriptable
 		// If this is NOT what you want, overload this in your class.
 		virtual void ProcessMenu(uint iAction)
 		{
-			if (!m_ActionArgs.count(iAction) || m_ActionArgs.at(iAction).size()==0) // If no args needed or it wasn't registered, try the script handler.
+			//printf("m_Act: %u\n", (uint)m_ActionArgs.count(iAction));
+			if (m_ActionArgs.count(iAction)==0 || m_ActionArgs.at(iAction).size()==0) // If no args needed or it wasn't registered, try the script handler.
 			{
 				auto LSResult = ProcessAction(iAction,{});
 				if (LSResult != LineStatus::Error || LSResult != LineStatus::Unhandled)

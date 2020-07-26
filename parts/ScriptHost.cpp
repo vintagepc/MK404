@@ -46,6 +46,7 @@ ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
 bool ScriptHost::m_bQuitOnTimeout = false;
 
+atomic_uint ScriptHost::m_uiQueuedMenu {0};
 
 void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
@@ -181,12 +182,24 @@ bool ScriptHost::ValidateScript()
 	return bClean;
 }
 
+// Called from the execution context to process the menu action.
+void ScriptHost::DispatchMenuCB()
+{
+	if (m_uiQueuedMenu !=0)
+	{
+		uint iID = m_uiQueuedMenu;
+		m_uiQueuedMenu.store(0);
+		IScriptable *pClient = m_mMenuBase2Client[(iID - iID%100)];
+		pClient->ProcessMenu(iID%100);
+
+	}
+}
+
 // Dispatches menu callbacks to the client.
 void ScriptHost::MenuCB(int iID)
 {
-	printf("Menu CB %d\n",iID);
-	IScriptable *pClient = m_mMenuBase2Client[(iID - iID%100)];
-	pClient->ProcessMenu(iID%100);
+	//printf("Menu CB %d\n",iID);
+	m_uiQueuedMenu.store(iID);
 }
 
 void ScriptHost::CreateRootMenu(int iWinID)

@@ -3,12 +3,10 @@
 # MK404 - PRINTER NOT FOUND (formerly MK3SIM)
 A project/repo for simulating Einsy (and eventually, other) Prusa (and eventually, other) hardware.
 
-While this repo is private, it's something separate to share status updates, ideas, and related things for this topic. If I invited you to join, you're welcome to sit back and enjoy the ride, or contribute to hardware implementations and ideas as you desire.
-
 *Summary status:* "Mostly" functional, it runs stock firmware very close to the real thing, and should now be able to boot stock Prusa Marlin build for MK3S. "Mostly" because while the overall system is probably usable for the majority of use cases, some aspects of the hardware are simulated only to the extent necessary to get the system working. For example, the TMC "stallguard" register is minimally implemented, and the microstep count is not.
 
 Remaining To-Dos of note:
-- a number of lofty goals...
+- [See open issues...](issues/)
 
 *Current state of affairs and features*:
 - ![CI Build](https://github.com/vintagepc/MK3SIM/workflows/CI%20Build/badge.svg) ![CPPCheck](https://github.com/vintagepc/MK3SIM/workflows/CPPCheck/badge.svg)
@@ -53,6 +51,12 @@ You will need to use a fairly recent version of GCC/G++ (I use 7.4.0). Older ver
 
 Windows is not officially supported/maintained but current status (as of May 2020) is that you can build and execute the program using Cygwin with the appropriate dependencies. You will need to change some of the SimAVR code as described in http://fabricesalvaire.github.io/simavr/gitorious-get-started.html to get it to compile. MK404 depends on libelf, freeglut, GL, GLEW, bintools, SDL-audio, and pthread. Due to SimAVR's heavy dependency on POSIX features (some of which we also use) and the fact I run linux as my day-to-day OS, it is unlikely there will be a native Windows build in the forseeable future.
 
+##### Tips:
+By default, the flash and EEPROM will be blank on first launch or if you delete the associated .bin files.
+You will need to choose and load a firmware file (.afx, .hex) at least once with `-f` or by flashing it from the bootloader `-b` with serial (`-s`) enabled.
+
+You can make an SD card image and copy files to it using `mcopy`, or by placing them in the SDCard folder and running the appropriate step in the makefile.
+
 ### Command line arguments:
 - Current arguments can be viewed with the -h flag, should this README become outdated.
 
@@ -63,12 +67,12 @@ Windows is not officially supported/maintained but current status (as of May 202
 
 [General scripting info](scripts/Scripting.md)
 
-[Script command reference for default printer](ref/Scripting.md)
+[Script command reference](ref/Scripting.md)
 
 ### Telemetry:
 - The simulator's VCD trace system is categorized so you can enable groups or individual trace items from the command line with the `-t` argument.
 
-[Look here for an example list of trace options](ref/TraceOptions.md)
+[Trace option reference](ref/TraceOptions.md)
 
 ### Mouse Functions:
 #### LCD Window:
@@ -85,7 +89,6 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `q` quits.
 - `p` simulates a power panic
 - `c` inserts/removes the SD card
-- `d` spews program counter output to console.
 - `1` changes the LCD color scheme.
 - `r` resets the printer (X button)
 - `t` does a factory reset (reset & hold encoder)
@@ -94,18 +97,19 @@ Windows is not officially supported/maintained but current status (as of May 202
 - `y` adds/removes the steel sheet from the heatbed for PINDA MBL or XYZ cal
 - `f` toggles filament presence
 - `F` toggles filament presence at FINDA (MMU2 only)
+- `j` toggles a filament jam (presence but no motion) on the PAT9125
 - `z` pauses Einsy execution without stopping GL interactivity (so you can still pan/scroll/zoom the fancy graphics)
-- `l` clears the current print visual from the print bed.
+- `l` clears the current print visual from the print bed (may cause glitches if used mid print)
 - `n` toggles "Nozzle cam" mode
-- `a` restores FINDA (MMU2) to "auto" control
+- `a` restores FINDA (MMU2) and IR sensor to "auto" control
 - `3/4/5` are MMU buttons 1, 2 and 3, respectively.
-
 - `` ` `` (backtick) resets the camera view
 
 # Contribution sticky notes:
 
 If you are interested in submitting a fix or improvement, here are a few tidbits you may find useful to know:
 
-- Reference documentation in ref/ (scripting, telemetry, usage readme) are automatically regenerated. The git-bot will push them after it finishes test building your changes for a PR.
-- Your changes are expected to compile with -Wall and -Werror. In addition, pull requests will be run through CPPCheck to look for additional possible pitfalls.
-- As this is a multithreaded application, it is *strongly* suggested your run your code at least once with -fsanitize=thread enabled to look for and fix thread race conditions. This is especially important for the GL Draw() functions as these are called from a separate GL context, less so if your changes do not cross thread boundaries. If, when doing this, you find any not caused in your own changes, please don't hesitate to create an issue so it can be looked at.
+- Reference documentation in ref/ (scripting, telemetry, usage readme) are automatically regenerated. The git-bot will push them after it finishes test building your changes for a PR. If you are outside the worktree and do not run workflows, run the appropriate makefile step to regenerate.
+- Your changes are expected to compile with -Wall and -Werror on GCC-7.4.0 In addition, pull requests will be run through CPPCheck to look for additional possible pitfalls. These are the default options when building, and CPP check is provided as a convenience target in the makefile.
+- As this is a multithreaded application, it is *strongly* suggested your run your code at least once with -fsanitize=thread enabled to look for and fix thread race conditions. This is especially important for the GL Draw() functions as these are called from a separate GL context, less so if your changes do not cross thread boundaries. If, when doing this, you find any not caused in your own changes, please don't hesitate to create an issue so it can be looked at. Run cmake with `-DENABLE_THREAD_SANITY=1` to enable this.
+- Where possible, please follow established patterns and styles for maintainability. If you have a reason for not doing so, be sure to explain it with code comments. Remember, code is often written once but needs to be read many times, so the clearer you make it, or the more familiar the pattern already is, the better.

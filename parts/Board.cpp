@@ -199,16 +199,3 @@ avr_flashaddr_t Board::LoadFirmware(string strFW)
 	}
 	return 0;
 }
-
-void Board::ProcessMenu(uint uiID)
-{
-	switch (uiID)
-	{
-		case ScriptAction::Quit:
-			SetQuitFlag();
-			break;
-		case ScriptAction::Reset:
-			SetResetFlag();
-			break;
-	}
-}

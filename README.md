@@ -47,11 +47,12 @@ To get stared, clone the MK404 repo. the 3rdParty/simavr folder may be empty, yo
 
 This is now a `cmake` project and independent of simAVR. You can follow normal cmake procedures, using your favourite IDE (or with cmake-gui). The submodules will be built automatically and taken care of for you.
 
-You will need to use a fairly recent version of GCC/G++ (I use 7.4.0). Older versions from the 4.8 era may not support some of the syntax used.
+You will need to use a fairly recent version of GCC/G++ (I use 7.4.0). Older versions from the 4.8 era may not support some of the syntax used. Newer versions (G++ 10) may complain about new warnings that are not present in 7.4. You can set a CMAKE option to disable -Werror in this case.
 
-Windows is not officially supported/maintained but current status (as of May 2020) is that you can build and execute the program using Cygwin with the appropriate dependencies. You will need to change some of the SimAVR code as described in http://fabricesalvaire.github.io/simavr/gitorious-get-started.html to get it to compile. MK404 depends on libelf, freeglut, GL, GLEW, bintools, SDL-audio, and pthread. Due to SimAVR's heavy dependency on POSIX features (some of which we also use) and the fact I run linux as my day-to-day OS, it is unlikely there will be a native Windows build in the forseeable future.
+#### Windows support:
+Windows is not officially supported/maintained but current status (as of May 2020) is that you can build and execute the program using Cygwin with the appropriate dependencies. You will need to change some of the SimAVR code as described in http://fabricesalvaire.github.io/simavr/gitorious-get-started.html to get it to compile. MK404 depends on libelf, freeglut, GL, GLEW, bintools, SDL-audio, and pthread. Due to SimAVR's heavy dependency on POSIX features (some of which we also use) and the fact I run linux as my day-to-day OS, it is unlikely there will be a native Windows build in the forseeable future. If you encounter issues with the Windows build, you are welcome to file a bug report and I'll make a best effort to address it, but I cannot make any guarantees.
 
-##### Tips:
+#### Tips:
 By default, the flash and EEPROM will be blank on first launch or if you delete the associated .bin files.
 You will need to choose and load a firmware file (.afx, .hex) at least once with `-f` or by flashing it from the bootloader `-b` with serial (`-s`) enabled.
 
@@ -78,6 +79,8 @@ You can make an SD card image and copy files to it using `mcopy`, or by placing 
 #### LCD Window:
 - Scroll wheel moves the encoder.
 - Left or right button down/up controls click/release
+- Middle button opens a context menu with actions, which may offer additional functionality beyond keyboard shortcuts. Items typically have similar functionality and labelling to their scripting counterparts.
+
 #### Printer visualization Window (when not in nozzle-cam mode):
 - Left button: Rotate
 - Middle button: Pan

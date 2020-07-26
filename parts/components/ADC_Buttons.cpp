@@ -44,7 +44,7 @@ Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const vect
 {
 	switch (uiAct)
 	{
-		case 0:
+		case ActPress:
 		{
 			uint8_t uiBtn = stoi(vArgs.at(0));
 			if (uiBtn>0 && uiBtn <4)
@@ -55,6 +55,11 @@ Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const vect
 			else
 				return LineStatus::Error;
 		}
+		case ActBtnLeft:
+		case ActBtnMiddle:
+		case ActBtnRight:
+			Push(uiAct);
+			return LineStatus::Finished;
 		default:
 			return Scriptable::LineStatus::Unhandled;
 	}

@@ -59,6 +59,8 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		{
 			RegisterActionAndMenu("Toggle","Toggles the IR sensor state",ActToggle);
 			RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
+			RegisterMenu("Toggle Filament jam",ActToggleJam);
+			RegisterMenu("Resume Auto",ActResumeAuto);
 		};
 
 		void Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)
@@ -240,10 +242,18 @@ class PAT9125: public I2CPeripheral, public Scriptable
 					Toggle();
 					return LineStatus::Finished;
 				case ActSet:
+				{
 					int iVal = stoi(vArgs.at(0));
 					if (iVal<0 || iVal >= FSState::FS_MAX)
 						return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [0,3]" );
 					Set((FSState)iVal);
+					return LineStatus::Finished;
+				}
+				case ActToggleJam:
+					ToggleJam();
+					return LineStatus::Finished;
+				case ActResumeAuto:
+					Set(FS_AUTO);
 					return LineStatus::Finished;
 			}
 			return LineStatus::Unhandled;
@@ -254,7 +264,9 @@ class PAT9125: public I2CPeripheral, public Scriptable
 	enum Actions
 	{
 		ActToggle,
-		ActSet
+		ActSet,
+		ActToggleJam,
+		ActResumeAuto
 	};
 
 	uint8_t m_uiAddr = 0;

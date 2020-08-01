@@ -24,7 +24,7 @@
 #include <GL/glew.h>          // for GLuint
 #include <stddef.h>           // for size_t
 #include <sys/types.h>        // for uint
-#include <tiny_obj_loader.h>  // for material_t
+#include "tiny_obj_loader.h"  // for material_t
 #include <map>                // for map
 #include <string>             // for string
 #include <vector>             // for vector
@@ -36,13 +36,27 @@ class GLObj
 {
     public:
         // Creates a new GLObj for the given .obj file
-        GLObj(std::string strFile);
+		GLObj(const std::string &strFile);
+		GLObj(const std::string &strFile, float fScale);
+        GLObj(const std::string &strFile, float fTX, float fTY, float fTZ,  float fScale = 1.f);
+
+		enum class SwapMode
+		{
+			NONE,
+			YMINUSZ
+		};
 
         // Loads the file. This allows you to have fixed members but delay load them if needed.
         void Load();
 
         // Draws the .obj within the current GL matrix transformation. Does nothing if !loaded.
         void Draw();
+
+		// Swaps axes on load .
+		inline void SetSwapMode(SwapMode mode){m_swapMode = mode;}
+
+		// Sets material type for mtls with fewer parameters.
+		inline void SetMaterialMode(GLenum mode){m_matMode = mode;}
 
         // Lets you show or hide a specific sub-object within the .obj.
         void SetSubobjectVisible(uint iObj, bool bVisible = true);
@@ -57,7 +71,7 @@ class GLObj
         float GetScaleFactor() { return m_fMaxExtent; };
 
         // Gets the transform float you need to center the obj at 0,0,0.
-        void GetCenteringTransform(float fTrans[3]) { for (int i=0; i<3; i++) fTrans[i] = -0.5f * (m_extMin[i] + m_extMax[i]);}
+        void GetCenteringTransform(float fTrans[3]) { for (int i=0; i<3; i++) fTrans[i] = -0.5f * ((m_extMin[i] + m_extMax[i]));}
 
 
     private:
@@ -74,7 +88,14 @@ class GLObj
         vector<tinyobj::material_t> m_materials;
         map<std::string, GLuint> m_textures;
         vector<DrawObject> m_DrawObjects;
+
+		GLenum m_matMode = GL_DIFFUSE;
+
         string m_strFile;
+		float m_fScale = 1.f;
+		float m_fCorr[3] = {0,0,0};
+
+		SwapMode m_swapMode = SwapMode::NONE;
 
 		mutex m_lock;
 

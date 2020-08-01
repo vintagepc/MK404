@@ -78,6 +78,7 @@ set(H_FILES
 	utility/FatImage.h
 	utility/MK3SGL.h
 	utility/GLObj.h
+	utility/OBJCollection.h
 	include/SerialPipe.h
 	include/Macros.h
 	include/thermistortables.h

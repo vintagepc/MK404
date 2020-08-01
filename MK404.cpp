@@ -289,10 +289,22 @@ int main(int argc, char *argv[])
 		int h = winSize.second;
 		int pixsize = 4;
 		glutSetOption(GLUT_MULTISAMPLE,2);
+		//glutInitContextVersion(1,0);
 		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
 		glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
 		window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
-
+		glewInit();
+		cout << "GL_VERSION   : " << glGetString(GL_VERSION) << endl;
+		cout << "GL_VENDOR    : " << glGetString(GL_VENDOR) << endl;
+		cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << endl;
+		cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << endl;
+		cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+		glDebugMessageCallback( GLErrorCB, 0 );
+		// glDebugMessageControl(GL_DONT_CARE,
+        //               GL_DONT_CARE,
+        //               GL_DEBUG_SEVERITY_NOTIFICATION,
+        //               0, nullptr, GL_FALSE);
+		glEnable(GL_DEBUG_OUTPUT);
 		initGL(w * pixsize, h * pixsize);
 
 		if (argGfx.isSet())
@@ -303,17 +315,8 @@ int main(int argc, char *argv[])
 				printer->SetVisualType(Printer::VisualType::ADVANCED);
 
 		}
-		else
-		{
-			glewInit();
-		}
 
-		glDebugMessageCallback( GLErrorCB, 0 );
-		glDebugMessageControl(GL_DONT_CARE,
-                      GL_DONT_CARE,
-                      GL_DEBUG_SEVERITY_NOTIFICATION,
-                      0, nullptr, GL_FALSE);
-		glEnable(GL_DEBUG_OUTPUT);
+
 	}
 	if (argVCD.isSet() && argVCD.getValue().at(0).compare("?")==0)
 	{

@@ -31,8 +31,14 @@
 #include "HD44780.h"         // for _IRQ
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+
+#include "OBJCollection.h"
+#include "MK3S_Full.h"
+#include "MK3S_Bear.h"
+
 class HD44780GL;
 class Printer;
+//class OBJCollection;
 
 class MK3SGL: public BasePeripheral
 {
@@ -95,21 +101,13 @@ class MK3SGL: public BasePeripheral
 
 
     private:
-        GLObj m_Extruder = {"assets/X_AXIS.obj"};
-        GLObj m_Z = {"assets/Z_AXIS.obj"};
-        GLObj m_Y = {"assets/Y_AXIS.obj"};
-        GLObj m_Sheet = {"assets/SSSheet.obj"};
-        GLObj m_Base = {"assets/Stationary.obj"};
-        GLObj m_SDCard = {"assets/SDCard.obj"};
-        GLObj m_Knob = {"assets/LCD-knobR2.obj"};
         GLObj m_EVis = {"assets/Triangles.obj"};
         GLObj m_EMMU = {"assets/E_MMU.obj"};
-        GLObj m_EStd = {"assets/E_STD.obj"};
-        GLObj m_EFan = {"assets/E_Fan.obj"};
-        GLObj m_EPFan = {"assets/Print-fan_rotor.obj"};
         GLObj m_MMUBase = {"assets/MMU_stationary.obj"};
         GLObj m_MMUSel = {"assets/MMU_Selector.obj"};
         GLObj m_MMUIdl = {"assets/Idler_moving.obj"};
+
+		MK3S_Bear m_Objs = MK3S_Bear();
 
 		atomic_int m_iCurTool = {0};
         GLPrint m_Print = {0.8,0,0}, m_T1 = {0,0.8,0}, m_T2 = {0,0,0.8}, m_T3 = {0.8,0.4,0}, m_T4 = {0.8,0,0.8};
@@ -118,8 +116,7 @@ class MK3SGL: public BasePeripheral
 
         Camera m_camera;
 
-        std::vector<GLObj*> m_vObjLite = { &m_Y, &m_SDCard, &m_Sheet, &m_Knob, &m_EVis, &m_EFan, &m_EPFan, &m_Extruder};
-        std::vector<GLObj*> m_vObj = { &m_Z, &m_Base, &m_EStd};
+        std::vector<GLObj*> m_vObjLite = {&m_EVis };
         std::vector<GLObj*> m_vObjMMU = { &m_EMMU, &m_MMUBase, &m_MMUSel, &m_MMUIdl};
 
         HD44780GL *m_pLCD = nullptr;
@@ -175,12 +172,16 @@ class MK3SGL: public BasePeripheral
 			m_bBedOn = {false},
 			m_bPINDAOn = {false},
 			m_bFINDAOn = {false},
-        	m_bPFanOn = {false};
+        	m_bPFanOn = {false},
+			m_bSDCard = {true},
+			m_bPrintSurface = {true};
 
 
         int m_iWindow = 0;
 
 		// Useful for instant positioning.
+
+		inline void DebugTx(){glTranslatef(m_flDbg,m_flDbg2,m_flDbg3);}
 
 		atomic<float> m_flDbg = {0.0f}, m_flDbg2 = {0.0f}, m_flDbg3 = {0.0f};
 

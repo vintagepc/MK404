@@ -40,10 +40,17 @@
 // Also cuts GPU RAM usage in half, and probably has performance gains for not needing to set the vertex properties.
 #define TEX_VCOLOR 0
 
-GLObj::GLObj(std::string strFile):m_strFile(strFile)
+GLObj::GLObj(const std::string &strFile,  float fTX, float fTY, float fTZ, float fScale):m_strFile(strFile),m_fScale(fScale),m_fCorr{fTX,fTY,fTZ}
 {
-
 }
+
+GLObj::GLObj(const std::string &strFile, float fScale):m_strFile(strFile),m_fScale(fScale)
+{
+}
+GLObj::GLObj(const std::string &strFile):m_strFile(strFile)
+{
+}
+
 
 void GLObj::Load()
 {
@@ -99,13 +106,17 @@ void GLObj::Draw() {
 #else
 	GLsizei stride = (3 + 3) * sizeof(float);
 #endif
+	glPushMatrix();
+	glTranslatef(m_fCorr[0],m_fCorr[1],m_fCorr[2]);
+	//glScalef(m_fScale,m_fScale,m_fScale);
+	if (m_swapMode == SwapMode::YMINUSZ)
+		glRotatef(-90,1,0,0);
 	lock_guard<mutex> lock(m_lock);
 	for (size_t i = 0; i < m_DrawObjects.size(); i++) {
-		DrawObject o = m_DrawObjects[i];
+		DrawObject o = m_DrawObjects.at(i);
 		if (o.vb < 1 || !o.bDraw) {
 			continue;
 		}
-
 		glBindBuffer(GL_ARRAY_BUFFER, o.vb);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
@@ -124,7 +135,7 @@ void GLObj::Draw() {
 				memcpy(fCopy,m_materials[o.material_id].ambient,3*(sizeof(float)));
 				glMaterialfv(GL_FRONT, GL_AMBIENT,  fCopy);
 				memcpy(fCopy,m_materials[o.material_id].diffuse,3*(sizeof(float)));
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, fCopy);
+				glMaterialfv(GL_FRONT, m_matMode, fCopy);
 				memcpy(fCopy,m_materials[o.material_id].specular,3*(sizeof(float)));
 				glMaterialfv(GL_FRONT, GL_SPECULAR, fCopy);
 				glMaterialf(GL_FRONT, GL_SHININESS, (m_materials[o.material_id].shininess/1000.f)*128.f);
@@ -143,6 +154,7 @@ void GLObj::Draw() {
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindBuffer(GL_ARRAY_BUFFER,0);
 	}
+	glPopMatrix();
 }
 
 
@@ -187,7 +199,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 	base_dir += "/";
 #endif
 
-	std::string err;
+	std::string err, warn;
 	bool ret =
 			tinyobj::LoadObj(&attrib, &shapes, &m_materials, &err, filename, base_dir.c_str());
 	if (!err.empty()) {
@@ -198,7 +210,10 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 		std::cerr << "Failed to load " << filename << std::endl;
 		return false;
 	}
+	for (size_t i = 0; i<attrib.vertices.size(); i++)
+		attrib.vertices[i] *= m_fScale;
 
+	printf("##### %s #####\n",filename);
 	printf("# of vertices  = %d\n", (int)(attrib.vertices.size()) / 3);
 	printf("# of normals   = %d\n", (int)(attrib.normals.size()) / 3);
 	printf("# of texcoords = %d\n", (int)(attrib.texcoords.size()) / 2);
@@ -326,7 +341,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 				}
 
 				float n[3][3];
-				if (attrib.normals.size() > 0) {
+				if (attrib.normals.size() > 0 && m_fScale ==1.0f) {
 					int f0 = idx0.normal_index;
 					int f1 = idx1.normal_index;
 					int f2 = idx2.normal_index;

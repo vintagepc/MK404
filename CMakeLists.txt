@@ -79,12 +79,12 @@ set(H_FILES
 	utility/MK3SGL.h
 	utility/GLObj.h
 	utility/OBJCollection.h
-	include/SerialPipe.h
-	include/Macros.h
-	include/thermistortables.h
-	include/MK3/Configuration_prusa.h
-	include/MK3/eeprom.h
-	include/Util.h
+	utility/SerialPipe.h
+	utility/Macros.h
+	utility/thermistortables.h
+	utility/MK3/Configuration_prusa.h
+	utility/MK3/eeprom.h
+	utility/Util.h
 	3rdParty/arcball/Camera.hpp
 	3rdParty/arcball/Matrix.hpp
 	3rdParty/arcball/Vectors.hpp
@@ -129,7 +129,7 @@ set(MK404_SOURCES
 	utility/FatImage.cpp
 	utility/GLPrint.cpp
 	utility/Color.cpp
-	include/SerialPipe.cpp
+	utility/SerialPipe.cpp
 	3rdParty/arcball/Camera.cpp
 )
 

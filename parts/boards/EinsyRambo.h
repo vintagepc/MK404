@@ -44,7 +44,7 @@
 
 extern "C"
 {
-	#include "../include/MK3/Configuration_prusa.h"
+	#include "../utility/MK3/Configuration_prusa.h"
 	#undef MMU_HWRESET
 }
 

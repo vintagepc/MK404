@@ -113,7 +113,7 @@ class MK3S_Lite: public OBJCollection
 			float fTransform[3];
 			glTranslatef(-0.044,-0.210,0.f);
 			m_pEVis->GetCenteringTransform(fTransform);
-			fTransform[1] +=1.5f;
+			fTransform[1] +=.0015f;
 			glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
 			glRotatef((-36.f/28.f)*3.f*(fEPos*1000.f),0,0,1);
 			glTranslatef (fTransform[0], fTransform[1], fTransform[2]);

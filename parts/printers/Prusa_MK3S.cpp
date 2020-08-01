@@ -39,7 +39,6 @@
 
 void Prusa_MK3S::Draw()
 {
-	glPushMatrix();
 		glPushMatrix();
 		glLoadIdentity(); // Start with an identity matrix
 			glScalef(4, 4, 1);
@@ -81,10 +80,8 @@ void Prusa_MK3S::Draw()
 			glTranslatef(20,0,0);
 			lIR.Draw();
 		glPopMatrix();
-	glPopMatrix();
-	if (GetVisualType().compare("none") && m_pVis)
+	if ((GetVisualType().compare("none")!=0) && m_pVis)
 		m_pVis->Draw();
-
 }
 
 std::pair<int,int> Prusa_MK3S::GetWindowSize(){

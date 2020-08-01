@@ -90,17 +90,6 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):m_bMMU(bMMU)
 
 	m_Objs->Load();
 
-	//if (m_bLite)
-	{
-
-//			m_Y.SetSubobjectVisible(2); // heatbed, sheet
-//			m_Extruder.SetAllVisible(false);
-//			m_Extruder.SetSubobjectVisible(19); // V6
-			//m_Extruder.SetSubobjectVisible(20);
-//			m_Extruder.SetSubobjectVisible(1); // PINDA
-//			m_Extruder.SetSubobjectVisible(2);
-	}
-
 	if (m_bMMU)
 	{
 		for(size_t i=0; i<m_vObjMMU.size(); i++)
@@ -108,19 +97,18 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):m_bMMU(bMMU)
 		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
 		m_MMUBase.SetSubobjectVisible(1, false);
 
-		// if (m_bLite)
-		// {
-		// 	m_MMUIdl.SetAllVisible(false);
-		// 	m_MMUIdl.SetSubobjectVisible(3);
-		// 	m_MMUSel.SetAllVisible(false);
-		// 	m_MMUSel.SetSubobjectVisible(1);
-		// 	m_MMUSel.SetSubobjectVisible(2);
-		// 	m_EMMU.SetAllVisible(false);
-		// 	m_MMUBase.SetAllVisible(false);
-		// 	m_MMUBase.SetSubobjectVisible(17);
-		// 	for (size_t i=32; i<43; i++)
-		// 		m_MMUBase.SetSubobjectVisible(i); // LEDs
-		// }
+		if (strModel.compare("lite") == 0)
+		{
+			m_MMUIdl.SetAllVisible(false);
+			m_MMUIdl.SetSubobjectVisible(3);
+			m_MMUSel.SetAllVisible(false);
+			m_MMUSel.SetSubobjectVisible(1);
+			m_MMUSel.SetSubobjectVisible(2);
+			m_MMUBase.SetAllVisible(false);
+			m_MMUBase.SetSubobjectVisible(17);
+			for (size_t i=32; i<43; i++)
+				m_MMUBase.SetSubobjectVisible(i); // LEDs
+		}
 	}
 
 }
@@ -341,7 +329,6 @@ void MK3SGL::Draw()
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		float fExtent = m_Objs->GetScaleFactor();
-
 		m_Objs->SetupLighting();
 
 		glEnable(GL_LIGHT0);
@@ -380,11 +367,11 @@ void MK3SGL::Draw()
 		glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 		if (m_bFollowNozzle)
 		{
-			float fLook[3];
-			m_Objs->GetNozzleCamPos(fLook);
-			fLook[0]+=fTransform[0]=m_fXPos;
-			fLook[1]+=m_fZPos;
-			gluLookAt(fLook[0]+.001, fLook[1]+.003 ,fLook[2]+.08, fLook[0],fLook[1],fLook[2] ,0,1,0);
+				float fLook[3];
+				m_Objs->GetNozzleCamPos(fLook);
+				fLook[0]+=fTransform[0]=m_fXPos;
+				fLook[1]+=m_fZPos;
+				gluLookAt(fLook[0]+.001, fLook[1]+.003 ,fLook[2]+.08, fLook[0],fLook[1],fLook[2] ,0,1,0);
 		}
 		m_Objs->SetNozzleCam(m_bFollowNozzle);
 		glPushMatrix();
@@ -400,14 +387,6 @@ void MK3SGL::Draw()
 						DrawRoundLED();
 					glPopMatrix();
 				}
-				glPushMatrix();
-					if (m_bMMU && m_Objs->SupportsMMU())
-					{
-						glScalef(fMM2M,fMM2M,fMM2M);
-						m_EMMU.Draw();
-					}
-				glPopMatrix();
-
 				glPushMatrix();
 					if (m_bPFanOn)
 						m_iPFanPos = (m_iPFanPos + 5)%360;

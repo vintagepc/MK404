@@ -45,7 +45,17 @@ class MK3S_Lite: public OBJCollection
 		};
 
 
-//         GLObj m_EMMU = {"assets/E_MMU.obj"};
+		void OnLoadComplete() override
+		{
+			m_mObjs.at(ObjClass::Y).at(0)->SetAllVisible(false);
+			m_mObjs.at(ObjClass::Y).at(0)->SetSubobjectVisible(2); // heatbed, sheet
+			auto pExtruder = m_mObjs.at(ObjClass::X).at(0);
+			pExtruder->SetAllVisible(false);
+			pExtruder->SetSubobjectVisible(19); // V6
+			//pExtruder->SetSubobjectVisible(20);
+			pExtruder->SetSubobjectVisible(1); // PINDA
+			pExtruder->SetSubobjectVisible(2);
+		}
 
 		void SetupLighting() override
 		{
@@ -65,7 +75,7 @@ class MK3S_Lite: public OBJCollection
 
 		inline void ApplyPLEDTransform() override {glTranslatef(-0.044,-0.210,0.f);};
 
-		inline void ApplyPrintTransform() override { glTranslatef(0.001,0.001,0.013); };
+		inline void ApplyPrintTransform() override { glTranslatef(0.024,0.084,-0.281); };
 
 		virtual void GetBaseCenter(float fTrans[3]) override
 		{
@@ -74,6 +84,8 @@ class MK3S_Lite: public OBJCollection
 			fTrans[1] = -0.204;
 			fTrans[2] = -0.3134;
 		}
+
+		float GetScaleFactor() override { return 0.210874f; }
 
 		virtual void DrawKnob(int iRotation) override
 		{
@@ -91,9 +103,9 @@ class MK3S_Lite: public OBJCollection
 
 		inline void GetNozzleCamPos(float fPos[3]) override
 		{
-			fPos[0] = .025f;
-			fPos[1] = 0.02f;
-			fPos[2] = -0.01f;
+			fPos[0] = -.135f;
+			fPos[1] = -0.13f;
+			fPos[2] = -0.04f;
 		}
 
 		virtual void DrawEVis(float fEPos) override
@@ -133,7 +145,5 @@ class MK3S_Lite: public OBJCollection
 	protected:
 
 		GLObj *m_pKnob = nullptr, *m_pEFan = nullptr, *m_pPFan = nullptr, *m_pEVis = nullptr;
-
-		// PFAN: glTranslatef(0.086,0.328,0.314);
 
 };

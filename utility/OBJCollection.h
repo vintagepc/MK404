@@ -118,11 +118,11 @@ class OBJCollection
 		GLObj* m_pBaseObj = nullptr;
 
 		inline void SetName(string strName) { m_strName = strName; }
+		map<ObjClass,vector<GLObj*>> m_mObjs = {};
 
 	private:
 
 		string m_strName; // Collection name.
 
-		map<ObjClass,vector<GLObj*>> m_mObjs = {};
 
 };

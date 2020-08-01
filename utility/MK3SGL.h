@@ -95,7 +95,6 @@ class MK3SGL: public BasePeripheral
 
     private:
         GLObj m_EVis = {"assets/Triangles.obj"};
-        GLObj m_EMMU = {"assets/E_MMU.obj"};
         GLObj m_MMUBase = {"assets/MMU_stationary.obj"};
         GLObj m_MMUSel = {"assets/MMU_Selector.obj"};
         GLObj m_MMUIdl = {"assets/Idler_moving.obj"};
@@ -109,8 +108,8 @@ class MK3SGL: public BasePeripheral
 
         Camera m_camera;
 
-        std::vector<GLObj*> m_vObjLite = {&m_EVis };
-        std::vector<GLObj*> m_vObjMMU = { &m_EMMU, &m_MMUBase, &m_MMUSel, &m_MMUIdl};
+        std::vector<GLObj*> m_vObjLite = { };
+        std::vector<GLObj*> m_vObjMMU = {&m_EVis,&m_MMUBase, &m_MMUSel, &m_MMUIdl};
 
         HD44780GL *m_pLCD = nullptr;
 

@@ -45,6 +45,8 @@ class MK3S_Full: public MK3S_Lite
 			 m_pBaseObj = AddObject(ObjClass::Fixed, "assets/Stationary.obj");
 		};
 
+		void OnLoadComplete() override {};
+
 		inline float GetScaleFactor() override { return m_pBaseObj->GetScaleFactor();};
 
 		virtual void GetBaseCenter(float fTrans[3]) override {m_pBaseObj->GetCenteringTransform(fTrans);}

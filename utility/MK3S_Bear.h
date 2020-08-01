@@ -84,8 +84,8 @@ class MK3S_Bear: public OBJCollection
 		virtual void GetNozzleCamPos(float fPos[3]) override
 		{
 			fPos[0] = -0.131f;
-			fPos[1] = 0.039f;
-			fPos[2] = -0.057f;
+			fPos[1] = -0.11f;
+			fPos[2] = -0.054f;
 		}
 
 

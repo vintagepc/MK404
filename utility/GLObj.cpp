@@ -341,7 +341,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 				}
 
 				float n[3][3];
-				if (attrib.normals.size() > 0 && m_fScale ==1.0f) {
+				if (m_bNoNewNormals || (attrib.normals.size() > 0 && m_fScale ==1.0f)) {
 					int f0 = idx0.normal_index;
 					int f1 = idx1.normal_index;
 					int f2 = idx2.normal_index;

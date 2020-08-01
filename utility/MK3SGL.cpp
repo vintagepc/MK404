@@ -31,9 +31,13 @@
 #include "HD44780GL.h"        // for HD44780GL
 #include "Printer.h"          // for Printer
 
+#include "MK3S_Lite.h"
+#include "MK3S_Full.h"
+#include "MK3S_Bear.h"
+
 MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
 
-MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bMMU),m_pParent(pParent)
+MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):m_bMMU(bMMU),m_pParent(pParent)
 {
 	if (g_pMK3SGL)
 	{
@@ -41,13 +45,20 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bM
 		exit(1);
 	}
 	g_pMK3SGL = this;
+	if (strModel.compare("lite")==0)
+		m_Objs = new MK3S_Lite(bMMU);
+	else if (strModel.compare("fancy")==0)
+		m_Objs = new MK3S_Full(bMMU);
+	else if (strModel.compare("bear")==0)
+		m_Objs = new MK3S_Bear(bMMU);
 
 	glewInit();
 
 	glutSetOption(GLUT_MULTISAMPLE,4);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE) ;
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
-	m_iWindow = glutCreateWindow("Fancy Graphics");	/* create window */
+	string strTitle = string("Fancy Graphics: ") + m_Objs->GetName();
+	m_iWindow = glutCreateWindow(strTitle.c_str());	/* create window */
 
 
 	glViewport(0, 0, 800, 800);
@@ -77,9 +88,9 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bM
 	for(size_t i=0; i<m_vObjLite.size(); i++)
 		m_vObjLite[i]->Load();
 
-	m_Objs.Load();
+	m_Objs->Load();
 
-	if (m_bLite)
+	//if (m_bLite)
 	{
 
 //			m_Y.SetSubobjectVisible(2); // heatbed, sheet
@@ -97,19 +108,19 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bM
 		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
 		m_MMUBase.SetSubobjectVisible(1, false);
 
-		if (m_bLite)
-		{
-			m_MMUIdl.SetAllVisible(false);
-			m_MMUIdl.SetSubobjectVisible(3);
-			m_MMUSel.SetAllVisible(false);
-			m_MMUSel.SetSubobjectVisible(1);
-			m_MMUSel.SetSubobjectVisible(2);
-			m_EMMU.SetAllVisible(false);
-			m_MMUBase.SetAllVisible(false);
-			m_MMUBase.SetSubobjectVisible(17);
-			for (size_t i=32; i<43; i++)
-				m_MMUBase.SetSubobjectVisible(i); // LEDs
-		}
+		// if (m_bLite)
+		// {
+		// 	m_MMUIdl.SetAllVisible(false);
+		// 	m_MMUIdl.SetSubobjectVisible(3);
+		// 	m_MMUSel.SetAllVisible(false);
+		// 	m_MMUSel.SetSubobjectVisible(1);
+		// 	m_MMUSel.SetSubobjectVisible(2);
+		// 	m_EMMU.SetAllVisible(false);
+		// 	m_MMUBase.SetAllVisible(false);
+		// 	m_MMUBase.SetSubobjectVisible(17);
+		// 	for (size_t i=32; i<43; i++)
+		// 		m_MMUBase.SetSubobjectVisible(i); // LEDs
+		// }
 	}
 
 }
@@ -326,27 +337,13 @@ void MK3SGL::Draw()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glLoadIdentity();
-	//printf("eye: %f %f %f\n",curr_quat[0],curr_quat[1], curr_quat[2]);
-		float fNone[] = {0,0,0,1};
-		//float fAmb[] = {.1,.1,.1,1};
-		float fCol2[] = {1,1,1,1};
-		float fSpec[] = {.4,.4,.4,.5};
-		float fDiff[] = {1.5,1.5,1.5,1};
-		// camera & rotate
 
 		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		float fExtent = m_Objs->GetScaleFactor();
 
-		float fExtent = m_Objs.GetScaleFactor();
+		m_Objs->SetupLighting();
 
-		//float fPos[] = {2,2,2,0};
-		//float fPos[] = {20+(m_flDbg*250.f),20+(m_flDbg2*250.f),20+(m_flDbg3*250.f),0.f};
-		float fPos[] = {2,-2,-2,0};
-		glLightfv(GL_LIGHT0,GL_AMBIENT, fNone);
-		glLightfv(GL_LIGHT0,GL_SPECULAR, fSpec);
-		glLightfv(GL_LIGHT0,GL_SPECULAR, fCol2);
-		glLightfv(GL_LIGHT0,GL_DIFFUSE, fDiff);
-		glLightfv(GL_LIGHT0,GL_DIFFUSE, fCol2);
-		glLightfv(GL_LIGHT0,GL_POSITION, fPos);
 		glEnable(GL_LIGHT0);
 
 		glEnable(GL_LIGHTING);
@@ -378,34 +375,33 @@ void MK3SGL::Draw()
 		glScalef(1.0f / fExtent, 1.0f / fExtent, 1.0f / fExtent);
 
 		float fTransform[3];
-		m_Objs.GetBaseCenter(fTransform);
+		m_Objs->GetBaseCenter(fTransform);
 		// Centerize object.
 		glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 		if (m_bFollowNozzle)
 		{
 			float fLook[3];
-			m_Objs.GetNozzleCamPos(fLook);
+			m_Objs->GetNozzleCamPos(fLook);
 			fLook[0]+=fTransform[0]=m_fXPos;
 			fLook[1]+=m_fZPos;
-			if (!m_bLite)
-				fLook[1]-=0.15f;
 			gluLookAt(fLook[0]+.001, fLook[1]+.003 ,fLook[2]+.08, fLook[0],fLook[1],fLook[2] ,0,1,0);
 		}
+		m_Objs->SetNozzleCam(m_bFollowNozzle);
 		glPushMatrix();
 			glTranslatef(0,m_fZPos,0);
-			m_Objs.Draw(OBJCollection::ObjClass::Z);
+			m_Objs->Draw(OBJCollection::ObjClass::Z);
 			glPushMatrix();
 				glTranslatef(m_fXPos,0,0);
-				m_Objs.Draw(OBJCollection::ObjClass::X);
+				m_Objs->Draw(OBJCollection::ObjClass::X);
 				if (!m_bPINDAOn)
 				{
 					glPushMatrix();
-						m_Objs.ApplyPLEDTransform();
+						m_Objs->ApplyPLEDTransform();
 						DrawRoundLED();
 					glPopMatrix();
 				}
 				glPushMatrix();
-					if (m_bMMU)
+					if (m_bMMU && m_Objs->SupportsMMU())
 					{
 						glScalef(fMM2M,fMM2M,fMM2M);
 						m_EMMU.Draw();
@@ -415,28 +411,28 @@ void MK3SGL::Draw()
 				glPushMatrix();
 					if (m_bPFanOn)
 						m_iPFanPos = (m_iPFanPos + 5)%360;
-					m_Objs.DrawPFan(m_iPFanPos);
+					m_Objs->DrawPFan(m_iPFanPos);
 				glPopMatrix();
 
 				glPushMatrix();
 					if (m_bFanOn)
 						m_iFanPos = (m_iFanPos + 339)%360;
-					m_Objs.DrawEFan(m_iFanPos);
+					m_Objs->DrawEFan(m_iFanPos);
 				glPopMatrix();
 				glPushMatrix();
-					m_Objs.DrawEVis(m_fEPos);
+					m_Objs->DrawEVis(m_fEPos);
 				glPopMatrix();
 			glPopMatrix();
 		glPopMatrix();
 
 		glPushMatrix();
 			glTranslatef(0,0,(m_fYPos));
-			m_Objs.Draw(OBJCollection::ObjClass::Y);
+			m_Objs->Draw(OBJCollection::ObjClass::Y);
 			if (m_bPrintSurface)
-				m_Objs.Draw(OBJCollection::ObjClass::PrintSurface);
+				m_Objs->Draw(OBJCollection::ObjClass::PrintSurface);
 			glPushMatrix();
 				glScalef(1,1,-1);
-				m_Objs.ApplyPrintTransform();
+				m_Objs->ApplyPrintTransform();
 				for (size_t i=0; i<m_vPrints.size(); i++)
 					m_vPrints[i]->Draw();
 			glPopMatrix();
@@ -446,14 +442,14 @@ void MK3SGL::Draw()
 				DrawLED(1,0,0);
 			}
 		glPopMatrix();
-		m_Objs.Draw(OBJCollection::ObjClass::Fixed);
+		m_Objs->Draw(OBJCollection::ObjClass::Fixed);
 		glPushMatrix();
-			m_Objs.DrawKnob(m_iKnobPos);
+			m_Objs->DrawKnob(m_iKnobPos);
 		glPopMatrix();
 		if (m_pLCD)
 		{
 			glPushMatrix();
-				m_Objs.ApplyLCDTransform();
+				m_Objs->ApplyLCDTransform();
 				glRotatef(-45.f,1,0,0);
 				glPushMatrix();
 				float fScale = (4.f*0.076f)/500.f; // Disp is 76mm wide, lcd is drawn 500 wide at 4x scale
@@ -467,8 +463,8 @@ void MK3SGL::Draw()
 			glPopMatrix();
 		}
 		if (m_bSDCard) //if card present
-			m_Objs.Draw(OBJCollection::ObjClass::Media); // Draw removable media (SD, USB, etc)
-		if (m_bMMU)
+			m_Objs->Draw(OBJCollection::ObjClass::Media); // Draw removable media (SD, USB, etc)
+		if (m_Objs->SupportsMMU() && m_bMMU)
 			DrawMMU();
 		glutSwapBuffers();
 		m_bDirty = false;

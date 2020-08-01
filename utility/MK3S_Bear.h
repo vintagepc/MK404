@@ -19,6 +19,8 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "GLObj.h"
 #include "OBJCollection.h"
 
@@ -28,10 +30,11 @@ using namespace std;
 class MK3S_Bear: public OBJCollection
 {
 	public:
-		MK3S_Bear():OBJCollection("Bear")
+		MK3S_Bear(bool bMMU):OBJCollection("Bear")
 		{
 			AddObject(ObjClass::Z, "assets/Bear/bear21_mk3s_simulator_x-axis.obj",0,-.127,0,CM_TO_M)->SetSwapMode(GLObj::SwapMode::YMINUSZ);
-			AddObject(ObjClass::X, "assets/Bear/bear21_mk3s_simulator_e-axis_w-hotend-fan.obj",-0.130-0.182000, 0.318000, -0.186000,CM_TO_M)->SetSwapMode(GLObj::SwapMode::YMINUSZ);
+			m_pE = AddObject(ObjClass::X, "assets/Bear/bear21_mk3s_simulator_e-axis_w-hotend-fan.obj",-0.130-0.182000, 0.318000, -0.186000,CM_TO_M);
+			m_pE->SetSwapMode(GLObj::SwapMode::YMINUSZ);
 			AddObject(ObjClass::Y, "assets/Bear/bear21_mk3s_simulator_y-axis.obj",0,0,-.1175,CM_TO_M)->SetSwapMode(GLObj::SwapMode::YMINUSZ);
 			m_pBaseObj = AddObject(ObjClass::Fixed, "assets/Bear/bear21_mk3s_simulator_frame.obj", CM_TO_M);
 			m_pBaseObj->SetSwapMode(GLObj::SwapMode::YMINUSZ);
@@ -45,6 +48,20 @@ class MK3S_Bear: public OBJCollection
 			// AddObject(ObjClass::E, "assets/X_AXIS.obj");
 		};
 
+		void SetupLighting() override
+		{
+			float fNone[] = {0,0,0,1};
+			float fWhite[] = {1,1,1,1};
+
+			float fPos[] = {2,-2,-2,0};
+			glLightfv(GL_LIGHT0,GL_AMBIENT, fNone);
+			glLightfv(GL_LIGHT0,GL_SPECULAR, fWhite);
+			glLightfv(GL_LIGHT0,GL_DIFFUSE, fWhite);
+			glLightfv(GL_LIGHT0,GL_POSITION, fPos);
+		}
+
+		inline bool SupportsMMU() override { return false; }
+
 		inline void ApplyLCDTransform() { glTranslatef(-0.051000, 0.203000, 0.045); }
 
 		inline void ApplyPLEDTransform() {glTranslatef(-0.201000, -0.062000, -0.45);};
@@ -52,6 +69,8 @@ class MK3S_Bear: public OBJCollection
 		inline void ApplyPrintTransform() { glTranslatef(-0.131000, 0.236000, 0.173000);};
 
 		inline float GetScaleFactor() override { return m_pBaseObj->GetScaleFactor();};
+
+		inline void SetNozzleCam(bool bOn) { m_pE->SetSubobjectVisible(20,!bOn); }
 
 		virtual void GetBaseCenter(float fTrans[3]) override
 		{
@@ -61,16 +80,15 @@ class MK3S_Bear: public OBJCollection
 			fTrans[2] = -fTmp;
 		};
 
-		virtual void GetNozzleCamPos(float fPos[3])
+		virtual void GetNozzleCamPos(float fPos[3]) override
 		{
-			//= {.025f+m_fXPos+fTransform[0]+m_flDbg ,m_fZPos+0.02f+m_flDbg2, -0.01f+m_flDbg3};
 			fPos[0] = -0.131f;
 			fPos[1] = 0.039f;
-			fPos[2] = -0.067f;
+			fPos[2] = -0.057f;
 		}
 
 
-		virtual void DrawKnob(int iRotation)
+		virtual void DrawKnob(int iRotation) override
 		{
 			if (m_pKnob == nullptr)
 				return;
@@ -84,7 +102,7 @@ class MK3S_Bear: public OBJCollection
 			glPopMatrix();
 		}
 
-		virtual void DrawEFan(int iRotation)
+		virtual void DrawEFan(int iRotation) override
 		{
 			glTranslatef(-0.153000, 0.252000, -0.150000);
 			glRotatef(90,0,1,0);
@@ -96,7 +114,7 @@ class MK3S_Bear: public OBJCollection
 			m_pFan->Draw();
 		}
 
-		virtual void DrawPFan(int iRotation)
+		virtual void DrawPFan(int iRotation) override
 		{
 			glTranslatef(-0.135000, 0.2780, -0.138000);
 			glRotatef(90,1,0,0);
@@ -106,7 +124,7 @@ class MK3S_Bear: public OBJCollection
 			glPopMatrix();
 		}
 
-		virtual void DrawEVis(float fEPos)
+		virtual void DrawEVis(float fEPos) override
 		{
 			glTranslatef(-0.201000, -0.053000, -0.451998);
 			float fTransform[3];
@@ -118,6 +136,6 @@ class MK3S_Bear: public OBJCollection
 		 	m_pEVis->Draw();
 		}
 
-		GLObj *m_pBaseObj = nullptr, *m_pKnob = nullptr, *m_pFan = nullptr, *m_pEVis = nullptr, *m_pPFan = nullptr;
+		GLObj *m_pKnob = nullptr, *m_pFan = nullptr, *m_pEVis = nullptr, *m_pPFan = nullptr, *m_pE = nullptr;
 
 };

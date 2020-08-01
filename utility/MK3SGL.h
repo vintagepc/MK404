@@ -33,8 +33,7 @@
 #include "sim_irq.h"         // for avr_irq_t
 
 #include "OBJCollection.h"
-#include "MK3S_Full.h"
-#include "MK3S_Bear.h"
+
 
 class HD44780GL;
 class Printer;
@@ -52,7 +51,7 @@ class MK3SGL: public BasePeripheral
 
 
         // Creates new MK3SGL object, with lite graphics (or full) and an MMU (or not)
-        MK3SGL(bool bLite, bool bMMU, Printer *pParent = nullptr);
+        MK3SGL(const string &strModel, bool bMMU, Printer *pParent = nullptr);
 
 		~MK3SGL()
 		{
@@ -78,12 +77,6 @@ class MK3SGL: public BasePeripheral
         // Resets the camera view to the starting position.
         void ResetCamera();
 
-        // Changes whether an MMU is present.
-        void SetMMU(bool bMMU) { m_bMMU = bMMU;}
-
-        // Changes whether lite mode is on or off.
-        void SetLite(bool bLite) { m_bLite = bLite;}
-
         // Toggles nozzle cam mode.
         void ToggleNozzleCam() {m_bFollowNozzle = !m_bFollowNozzle;}
 
@@ -107,7 +100,7 @@ class MK3SGL: public BasePeripheral
         GLObj m_MMUSel = {"assets/MMU_Selector.obj"};
         GLObj m_MMUIdl = {"assets/Idler_moving.obj"};
 
-		MK3S_Bear m_Objs = MK3S_Bear();
+		OBJCollection *m_Objs = nullptr;
 
 		atomic_int m_iCurTool = {0};
         GLPrint m_Print = {0.8,0,0}, m_T1 = {0,0.8,0}, m_T2 = {0,0,0.8}, m_T3 = {0.8,0.4,0}, m_T4 = {0.8,0,0.8};
@@ -120,8 +113,6 @@ class MK3SGL: public BasePeripheral
         std::vector<GLObj*> m_vObjMMU = { &m_EMMU, &m_MMUBase, &m_MMUSel, &m_MMUIdl};
 
         HD44780GL *m_pLCD = nullptr;
-
-        bool m_bLite = false; // Lite graphics
 
         atomic_bool m_bFollowNozzle = {false}; // Camera follows nozzle.
 

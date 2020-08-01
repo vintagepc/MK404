@@ -82,7 +82,7 @@ void Prusa_MK3S::Draw()
 			lIR.Draw();
 		glPopMatrix();
 	glPopMatrix();
-	if (GetVisualType()>VisualType::MINIMAL && m_pVis)
+	if (GetVisualType().compare("none") && m_pVis)
 		m_pVis->Draw();
 
 }
@@ -92,12 +92,12 @@ std::pair<int,int> Prusa_MK3S::GetWindowSize(){
 	return prSize;
 }
 
-void Prusa_MK3S::OnVisualTypeSet(VisualType type)
+void Prusa_MK3S::OnVisualTypeSet(string type)
 {
-	if (type==VisualType::MINIMAL)
+	if (type.compare("none") == 0)
 		return;
 
-	m_pVis.reset(new MK3SGL(type==VisualType::SIMPLE,GetHasMMU(),this));
+	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this));
 
 	AddHardware(*m_pVis);
 

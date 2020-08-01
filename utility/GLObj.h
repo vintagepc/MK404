@@ -67,6 +67,9 @@ class GLObj
         // Sets all subobjects as visible or invisible.
         void SetAllVisible(bool bVisible = true);
 
+		// Prevents recalculation of normals on scaling.
+		void SetKeepNormalsIfScaling(bool bKeep) { m_bNoNewNormals = bKeep;}
+
         // Returns the biggest dimension's size (for scaling to unit size)
         float GetScaleFactor() { return m_fMaxExtent; };
 
@@ -84,7 +87,7 @@ class GLObj
         } DrawObject;
         float m_fMaxExtent;
         float m_extMin[3], m_extMax[3];
-        bool m_bLoaded = false;
+        bool m_bLoaded = false, m_bNoNewNormals = false;
         vector<tinyobj::material_t> m_materials;
         map<std::string, GLuint> m_textures;
         vector<DrawObject> m_DrawObjects;

@@ -46,9 +46,9 @@ void Prusa_MK3SMMU2::SetupHardware()
 	m_pipe = new SerialPipe(UART2.GetSlaveName(), m_MMU.GetSerialPort());
 }
 
-void Prusa_MK3SMMU2::OnVisualTypeSet(VisualType type)
+void Prusa_MK3SMMU2::OnVisualTypeSet(string type)
 {
-	if (type==VisualType::MINIMAL)
+	if (type.compare("none") == 0)
 		return;
 	Prusa_MK3S::OnVisualTypeSet(type);
 	// Wire up the additional MMU stuff.

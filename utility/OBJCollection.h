@@ -41,7 +41,7 @@ class OBJCollection
 			for (auto it = m_mObjs.begin(); it!=m_mObjs.end(); it++)
 				for (auto it2 = it->second.begin(); it2!=it->second.end(); it2++)
 					(*it2)->Load();
-
+			OnLoadComplete();
 		};
 
 		// Note: class reference is for the motion, e.g.
@@ -58,6 +58,8 @@ class OBJCollection
 			Other
 		};
 
+		virtual void SetupLighting(){};
+
 		inline void Draw(const ObjClass type)
 		{
 			if (m_mObjs.count(type)==0)
@@ -68,9 +70,31 @@ class OBJCollection
 				(*it)->Draw();
 		};
 
+		virtual void GetBaseCenter(float fTrans[3])
+		{
+			m_pBaseObj->GetCenteringTransform(fTrans);
+		};
+
+		virtual void OnLoadComplete(){};
+
+		virtual inline void ApplyPLEDTransform() {};
+		virtual inline void ApplyLCDTransform() {};
+		virtual inline void ApplyPrintTransform(){};
+
 		virtual float GetScaleFactor(){return 1.f;};
 
-		virtual void GetBaseCenter(float fTrans[3]){ };
+		virtual inline void SetNozzleCam(bool bOn) {};
+
+		virtual void GetNozzleCamPos(float fPos[3]) = 0;
+
+		virtual void DrawKnob(int iRotation) = 0;
+		virtual void DrawEFan(int iRotation){};
+		virtual void DrawPFan(int iRotation){};
+		virtual void DrawEVis(float fEPos){};
+
+		virtual bool SupportsMMU() { return false; }
+
+		inline const string GetName() { return m_strName;}
 
 	protected:
 		template<typename... Args>GLObj* AddObject(const ObjClass type, Args... args)
@@ -90,6 +114,10 @@ class OBJCollection
 				for (auto it = key->second.begin(); it!=key->second.end(); it++)
 					(*it)->SetMaterialMode(type);
 		};
+
+		GLObj* m_pBaseObj = nullptr;
+
+		inline void SetName(string strName) { m_strName = strName; }
 
 	private:
 

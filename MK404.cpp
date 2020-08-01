@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
 	cmd.add(argImgSize);
 	SwitchArg argGDB("","gdb","Enable SimAVR's GDB support");
 	cmd.add(argGDB);
-	vector<string> vstrGfx = {"none","lite","fancy"};
+	vector<string> vstrGfx = {"none","lite","fancy", "bear"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
 	cmd.add(argGfx);
@@ -308,13 +308,7 @@ int main(int argc, char *argv[])
 		initGL(w * pixsize, h * pixsize);
 
 		if (argGfx.isSet())
-		{
-			if (vstrGfx[1].compare(argGfx.getValue())==0)
-				printer->SetVisualType(Printer::VisualType::SIMPLE);
-			else
-				printer->SetVisualType(Printer::VisualType::ADVANCED);
-
-		}
+			printer->SetVisualType(argGfx.getValue());
 
 
 	}
@@ -338,7 +332,8 @@ int main(int argc, char *argv[])
 	else
 		ScriptHost::Setup("",pBoard->GetAVR()->frequency);
 
-	ScriptHost::CreateRootMenu(window);
+	if (!bNoGraphics)
+		ScriptHost::CreateRootMenu(window);
 
 	// This is a little lazy, I know. Figure it out once we have non-einsy printers.
 	if (argMute.isSet())

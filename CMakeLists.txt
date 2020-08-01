@@ -212,14 +212,18 @@ add_custom_command(TARGET MK404 POST_BUILD
                     "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
 
 # Copies the models/materials:
+
+file(GLOB_RECURSE MODEL_FILES
+	"assets/*.obj"
+	"assets/*.mtl"
+)
+
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/assets"
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/*.obj"
+                    ${MODEL_FILES}
                     "${PROJECT_BINARY_DIR}/assets/"
-                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/*.mtl"
-                    "${PROJECT_BINARY_DIR}/assets/")
+                     )
 
 
 add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}

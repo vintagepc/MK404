@@ -16,9 +16,9 @@ set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set (FIRMWARE
-    MM-control-01.hex
-    MK3S.afx
-    stk500boot_v2_mega2560.hex
+    assets/Firmware/MM-control-01.hex
+    assets/Firmware/MK3S.afx
+    assets/Firmware/stk500boot_v2_mega2560.hex
     )
 
 set(H_FILES
@@ -200,15 +200,15 @@ target_link_libraries(MK404 pthread util glut GL GLU GLEW m SDL tinyobjloader ${
 
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/MM-control-01.hex"
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/MM-control-01.hex"
                     "${PROJECT_BINARY_DIR}/MM-control-01.hex")
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/MK3S.afx"
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/MK3S.afx"
                     "${PROJECT_BINARY_DIR}/MK3S.afx")
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/stk500boot_v2_mega2560.hex"
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/stk500boot_v2_mega2560.hex"
                     "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
 
 # Copies the models/materials:
@@ -234,8 +234,8 @@ add_dependencies(Build_Run MK404)
 
 add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
                             && ./build-fw.sh
-                            && cp ../Prusa-Firmware-build/Firmware.ino.elf MK3S.afx
-                            && avr-objdump -d MK3S.afx > MK3S.txt)
+                            && cp ../Prusa-Firmware-build/Firmware.ino.elf assets/Firmware/MK3S.afx
+                            && avr-objdump -d assets/Firmware/MK3S.afx > assets/Firmware/MK3S.txt)
 
 
 add_custom_target(FAT32.img COMMAND MK404 --sdimage FAT32.img --image-size 256M)

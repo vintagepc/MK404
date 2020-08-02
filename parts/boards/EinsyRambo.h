@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <Board.h>                               // for Board
+#include "Board.h"                               // for Board
 #include <stdint.h>                              // for uint32_t
 #include "wiring/Einsy_1_1a.h"                   // for Einsy_1_1a
 #include <string>                                // for string
@@ -87,7 +87,7 @@ namespace Boards
 				E = {'E'};
 			VoltageSrc vMain = VoltageSrc(fScale24v, 24.f),
 				vBed = VoltageSrc(fScale24v,23.9);
-			PINDA pinda = PINDA((float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER);
+			PINDA pinda {(float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER};
 			//MMU2 *mmu = nullptr;
 			LED lPINDA = {0xFF0000FF,'P',true},
 				lIR = {0xFFCC00FF,'I',true},

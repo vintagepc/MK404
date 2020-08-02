@@ -18,9 +18,9 @@
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boards/EinsyRambo.h>
+#include "EinsyRambo.h"
 #include <stdio.h>             // for fprintf, printf, stderr
-#include <thermistortables.h>  // for OVERSAMPLENR, temptable_1, temptable_2000
+#include "thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 #include "Einsy_1_1a.h"        // for Einsy_1_1a
 #include "HD44780.h"           // for HD44780
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS

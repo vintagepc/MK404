@@ -280,6 +280,8 @@ int main(int argc, char *argv[])
 	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,
 		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue()); // this line is the CreateBoard() args.
 
+	pBoard->SetPrimary(true); // This is the primary board, responsible for scripting/dispatch. Blocks contention from sub-boards, e.g. MMU.
+
 	if (!bNoGraphics)
 	{
 		glutInit(&argc, argv);		/* initialize GLUT system */

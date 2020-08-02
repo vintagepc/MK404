@@ -123,6 +123,7 @@ class ScriptHost: public IScriptable
 		static unsigned int m_iLine, m_uiAVRFreq;
 		static ScriptHost::State m_state;
 		static bool m_bQuitOnTimeout;
+		static bool m_bMenuCreated;
 
 		static atomic_uint m_uiQueuedMenu;
 

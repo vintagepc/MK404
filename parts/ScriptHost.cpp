@@ -45,6 +45,7 @@ shared_ptr<ScriptHost> ScriptHost::g_pHost;
 ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
 bool ScriptHost::m_bQuitOnTimeout = false;
+bool ScriptHost::m_bMenuCreated = false;
 
 atomic_uint ScriptHost::m_uiQueuedMenu {0};
 
@@ -204,6 +205,7 @@ void ScriptHost::MenuCB(int iID)
 
 void ScriptHost::CreateRootMenu(int iWinID)
 {
+	m_bMenuCreated = true;
 	if (m_mMenuIDs.count("ScriptHost")!=0)
 	{
 		fprintf(stderr,"Attempted to create a new root menu when one already exists. Ignoring...\n");
@@ -298,7 +300,7 @@ void ScriptHost::ParseLine(unsigned int iLine)
 void ScriptHost::AddSubmenu(IScriptable *src)
 {
 	std::string strName = src->GetName();
-	if (glutGet(GLUT_INIT_STATE))
+	if (m_bMenuCreated)
 		printf("Adding a menu entry after GLUT is up... TODO\n");
 	else if (!m_mMenuIDs.count(strName)) // GLUT isn't up yet, queue it for later.
 	{

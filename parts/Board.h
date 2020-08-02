@@ -125,6 +125,8 @@ namespace Boards
 			inline bool IsStopped(){ return m_pAVR->state == cpu_Stopped;}
 			inline bool IsPaused(){ return m_bPaused;}
 
+			inline void SetPrimary(bool bVal) { m_bIsPrimary = bVal;}
+
 		protected:
 			// Define this method and use it to initialize/attach your hardware to the MCU.
 			virtual void SetupHardware() = 0;
@@ -185,7 +187,8 @@ namespace Boards
 				int state = cpu_Running;
 				while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){
 							// Re init the special workarounds we need after a reset.
-					ScriptHost::DispatchMenuCB();
+					if (m_bIsPrimary) // Only one board should be scripting.
+						ScriptHost::DispatchMenuCB();
 					if (m_bPaused)
 					{
 						usleep(100000);
@@ -199,7 +202,8 @@ namespace Boards
 							OnAVRReset();
 					}
 					OnAVRCycle();
-					if (ScriptHost::IsInitialized())
+
+					if (m_bIsPrimary && ScriptHost::IsInitialized())
 						ScriptHost::OnAVRCycle();
 
 
@@ -298,6 +302,7 @@ namespace Boards
 			int m_fdFlash = 0;
 
 			atomic_bool m_bQuit = {false}, m_bReset = {false};
+			bool m_bIsPrimary = false;
 			bool m_bNoHacks = false;
 			pthread_t m_thread = 0;
 			const Wiring &m_wiring;

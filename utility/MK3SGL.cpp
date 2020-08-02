@@ -33,7 +33,7 @@
 
 MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
 
-MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bMMU),m_pParent(pParent)
+MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):Scriptable("3DVisuals"),m_bLite(bLite),m_bMMU(bMMU),m_pParent(pParent)
 {
 	if (g_pMK3SGL)
 	{
@@ -41,6 +41,10 @@ MK3SGL::MK3SGL(bool bLite, bool bMMU, Printer *pParent):m_bLite(bLite),m_bMMU(bM
 		exit(1);
 	}
 	g_pMK3SGL = this;
+
+	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
+	RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);
+	RegisterActionAndMenu("ResetCamera","Resets camera view to default",ActResetView);
 
 	glewInit();
 
@@ -167,6 +171,26 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(MMU_LEDS_IN,MAKE_C_CALLBACK(MK3SGL,OnMMULedsChanged),this);
 
 	m_bDirty = true;
+}
+
+
+Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActResetView:
+			ResetCamera();
+			return LineStatus::Finished;
+		case ActToggleNCam:
+			m_bFollowNozzle = !m_bFollowNozzle;
+			return LineStatus::Finished;
+		case ActClear:
+			ClearPrint();
+			return LineStatus::Finished;
+		default:
+			return LineStatus::Unhandled;
+
+	}
 }
 
 void MK3SGL::TwistKnob(bool bDir)
@@ -317,6 +341,12 @@ void MK3SGL::Draw()
 {
 		//if (!m_bDirty)
 		//    return;
+	if (m_bClearPrints) // Needs to be done in the GL loop for thread safety.
+	{
+		for (int i=0; i<5; i++) m_vPrints[i]->Clear();
+		m_bClearPrints = false;
+	}
+
 	int iOldWin = glutGetWindow();
 	glutSetWindow(m_iWindow);
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);

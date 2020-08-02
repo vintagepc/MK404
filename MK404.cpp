@@ -96,6 +96,7 @@ void displayCB(void)		/* function called whenever redisplay needed */
 	if (bIsQuitting || pBoard->GetQuitFlag()) // Stop drawing if shutting down.
 	{
 		bIsQuitting = true;
+		glutDestroyWindow(window);
 		return;
 	}
 	glLoadIdentity();
@@ -129,7 +130,6 @@ void displayCB(void)		/* function called whenever redisplay needed */
 
 
 	}
-
 	glutSwapBuffers();
 }
 
@@ -315,6 +315,7 @@ int main(int argc, char *argv[])
 		iWinW = winSize.first * pixsize;
 		iWinH = winSize.second * pixsize;
 		glutSetOption(GLUT_MULTISAMPLE,2);
+		glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 		//glutInitContextVersion(1,0);
 		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
 		glutInitWindowSize(iWinW, iWinH);		/* width=400pixels height=500pixels */
@@ -374,19 +375,21 @@ int main(int argc, char *argv[])
 		getchar();
 	}
 
-    pthread_t run;
-	if (!bNoGraphics)
-  	  pthread_create(&run, NULL, glutThread, NULL);
+   // pthread_t run;
+	// if (!bNoGraphics)
+  //	  pthread_create(&run, NULL, glutThread, NULL);
 
 	pBoard->StartAVR();
+
+	glutMainLoop();
 
 	pBoard->WaitForFinish();
 
 	if (!bNoGraphics)
 	{
-		glutLeaveMainLoop();
-		pthread_cancel(run); // Kill the GL thread.
-		pthread_join(run,NULL);
+		//glutLeaveMainLoop();
+		// pthread_cancel(run); // Kill the GL thread.
+		//pthread_join(run,NULL);
 	}
 
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);

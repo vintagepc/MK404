@@ -74,11 +74,9 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 	glutMouseFunc(fwd);
 
 	auto fcnMove = [](int x, int y) { g_pMK3SGL->MotionCB(x,y);};
-
 	glutMotionFunc(fcnMove);
 
 	auto fcnResize = [](int x, int y) { g_pMK3SGL->ResizeCB(x,y);};
-
 	glutReshapeFunc(fcnResize);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -352,7 +350,6 @@ void MK3SGL::Draw()
 		for (int i=0; i<5; i++) m_vPrints[i]->Clear();
 		m_bClearPrints = false;
 	}
-
 	int iOldWin = glutGetWindow();
 	glutSetWindow(m_iWindow);
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);

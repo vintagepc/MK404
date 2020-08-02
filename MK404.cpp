@@ -98,9 +98,8 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		bIsQuitting = true;
 		return;
 	}
-	glutSetWindow(window);
+	glLoadIdentity();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW); // Select modelview matrix
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
 	int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	printer->Draw();
@@ -164,10 +163,11 @@ void MotionCB(int x, int y)
 // gl timer. if the lcd is dirty, refresh display
 void timerCB(int i)
 {
+	glutSetWindow(window);
 	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
 		glutReshapeWindow(iWinW, iWinH);
 	glutTimerFunc(50, timerCB, i^1);
-	displayCB();
+	glutPostRedisplay();
 }
 
 
@@ -190,6 +190,8 @@ void ResizeCB(int w, int h)
     glOrtho(0, w, 0, h, -1, 10);
 	glTranslatef(0, h, 0);
 	glScalef(fScale,-fScale,1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
 }
 
@@ -206,7 +208,7 @@ int initGL(int w, int h)
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
 
-	glClearColor(0.f, 0.f, 0.f, 1.0f);
+	glClearColor(.5f, 0.f, 0.f, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

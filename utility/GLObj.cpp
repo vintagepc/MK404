@@ -275,8 +275,8 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 
 	{
 		for (size_t s = 0; s < shapes.size(); s++) {
-			DrawObject o;
 			std::vector<float> vb;  // pos(3float), normal(3float), color(3float)
+			int iMatlId = 0;
 			for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++) {
 				tinyobj::index_t idx0 = shapes[s].mesh.indices[3 * f + 0];
 				tinyobj::index_t idx1 = shapes[s].mesh.indices[3 * f + 1];
@@ -284,10 +284,21 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 
 				int current_material_id = shapes[s].mesh.material_ids[f];
 
+				if (current_material_id != iMatlId)
+				{
+					//printf("Submaterial in shape %s: %u\n",shapes[s].name.c_str(),current_material_id);
+					AddObject(vb,iMatlId);
+					iMatlId = 0;
+					vb.clear();
+				}
+
 				if ((current_material_id < 0) || (current_material_id >= static_cast<int>(m_materials.size()))) {
 					// Invaid material ID. Use default material.
-					current_material_id = m_materials.size() - 1; // Default material is added to the last item in `m_materials`.
+					iMatlId = m_materials.size() - 1; // Default material is added to the last item in `m_materials`.
 				}
+				else
+					iMatlId = current_material_id;
+
 				//if (current_material_id >= m_materials.size()) {
 				//    std::cerr << "Invalid material index: " << current_material_id << std::endl;
 				//}
@@ -397,38 +408,44 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 #endif
 				}
 			}
+			//printf("Object %s: is # %u\n",shapes[s].name.c_str(),(int)m_DrawObjects.size());
+			AddObject(vb, iMatlId);
+			// // OpenGL viewer does not support texturing with per-face material.
+			// if (shapes[s].mesh.material_ids.size() > 0 && shapes[s].mesh.material_ids.size() > s) {
+			// 		// Base case
+			// 		o.material_id = shapes[s].mesh.material_ids[s];
+			// } else {
+			// 		o.material_id = m_materials.size() - 1; // = ID for default material.
+			// }
 
-			o.vb = 0;
-			o.numTriangles = 0;
 
-			// OpenGL viewer does not support texturing with per-face material.
-			if (shapes[s].mesh.material_ids.size() > 0 && shapes[s].mesh.material_ids.size() > s) {
-					// Base case
-					o.material_id = shapes[s].mesh.material_ids[s];
-			} else {
-					o.material_id = m_materials.size() - 1; // = ID for default material.
-			}
-
-			if (vb.size() > 0) {
-				glGenBuffers(1, &o.vb);
-				glBindBuffer(GL_ARRAY_BUFFER, o.vb);
-				glBufferData(GL_ARRAY_BUFFER, vb.size() * sizeof(float), &vb.at(0),
-										 GL_STATIC_DRAW);
-#if TEX_VCOLOR
-				o.numTriangles = vb.size() / ((3 + 3 + 3 + 2) * 3);
-#else
-				o.numTriangles = vb.size() / ((3 + 3) * 3);
-#endif
-				printf("shape[%d] # of triangles = %d\n", static_cast<int>(s),
-							 o.numTriangles);
-			}
-			o.bDraw = true;
-			m_DrawObjects.push_back(o);
 		}
 	}
 
-	printf("m_extMin = %f, %f, %f\n", m_extMin[0], m_extMin[1], m_extMin[2]);
-	printf("m_extMax = %f, %f, %f\n", m_extMax[0], m_extMax[1], m_extMax[2]);
+	// printf("m_extMin = %f, %f, %f\n", m_extMin[0], m_extMin[1], m_extMin[2]);
+	// printf("m_extMax = %f, %f, %f\n", m_extMax[0], m_extMax[1], m_extMax[2]);
 
 	return true;
+}
+
+void GLObj::AddObject(const vector<float> &vb, int iMatlId)
+{
+	DrawObject obj;
+	obj.vb = 0;
+	obj.numTriangles = 0;
+	if (vb.size() > 0) {
+		glGenBuffers(1, &obj.vb);
+		glBindBuffer(GL_ARRAY_BUFFER, obj.vb);
+		glBufferData(GL_ARRAY_BUFFER, vb.size() * sizeof(float), &vb.at(0),
+									GL_STATIC_DRAW);
+#if TEX_VCOLOR
+		obj.numTriangles = vb.size() / ((3 + 3 + 3 + 2) * 3);
+#else
+		obj.numTriangles = vb.size() / ((3 + 3) * 3);
+#endif
+		// printf("shape[%d] # of triangles = %d\n", static_cast<int>(s), obj.numTriangles);
+	}
+	obj.bDraw = true;
+	obj.material_id = iMatlId;
+	m_DrawObjects.push_back(obj);
 }

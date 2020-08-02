@@ -104,4 +104,6 @@ class GLObj
 
         // Load helper from the tinyobjloader example.
         bool LoadObjAndConvert(const char* filename);
+
+		void AddObject(const vector<float> &vb, int iMatlId);
 };

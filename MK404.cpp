@@ -31,6 +31,7 @@
 #include <tclap/CmdLine.h>            // for CmdLine
 #include <algorithm>                  // for find
 #include <memory>
+#include <atomic>
 #include <scoped_allocator>           // for allocator_traits<>::value_type
 #include <string>                     // for string, basic_string
 #include <utility>                    // for pair
@@ -50,6 +51,8 @@
 #include "Macros.h"
 
 int window;
+
+atomic_int iWinH{0}, iWinW{0};
 
 Printer *printer = nullptr;
 Boards::Board *pBoard = nullptr;
@@ -95,9 +98,8 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		bIsQuitting = true;
 		return;
 	}
-	glutSetWindow(window);
+	glLoadIdentity();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW); // Select modelview matrix
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
 	int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	printer->Draw();
@@ -161,30 +163,52 @@ void MotionCB(int x, int y)
 // gl timer. if the lcd is dirty, refresh display
 void timerCB(int i)
 {
+	glutSetWindow(window);
+	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
+		glutReshapeWindow(iWinW, iWinH);
 	glutTimerFunc(50, timerCB, i^1);
-	displayCB();
+	glutPostRedisplay();
+}
+
+
+void ResizeCB(int w, int h)
+{
+	std::pair<int,int> winSize = printer->GetWindowSize();
+	float fWS = (float)w/(float)(winSize.first*4);
+	float fHS = (float)h/(float)(winSize.second*4);
+	float fScale = max(fWS,fHS);
+	int iW = 4.f*(float)winSize.first*fScale;
+	int iH = 4.f*(float)winSize.second*fScale;
+	if (iW!=w || iH !=h)
+	{
+		iWinH = iH;
+		iWinW = iW;
+	}
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, w, 0, h, -1, 10);
+	glTranslatef(0, h, 0);
+	glScalef(fScale,-fScale,1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
 }
 
 int initGL(int w, int h)
 {
 	// Set up projection matrix
-	glMatrixMode(GL_PROJECTION); // Select projection matrix
-	glLoadIdentity(); // Start with an identity matrix
-	glOrtho(0, w, 0, h, 0, 10);
-	glScalef(1,-1,1);
-	glTranslatef(0, -1 * h, 0);
-
-
 	glutDisplayFunc(displayCB);		/* set window's display callback */
 	glutKeyboardFunc(keyCB);		/* set window's key callback */
 	glutMouseFunc(MouseCB);
 	glutMotionFunc(MotionCB);
 	glutTimerFunc(1000, timerCB, 0);
+	glutReshapeFunc(ResizeCB);
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
 
-	glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+	glClearColor(.5f, 0.f, 0.f, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -287,14 +311,15 @@ int main(int argc, char *argv[])
 		glutInit(&argc, argv);		/* initialize GLUT system */
 
 		std::pair<int,int> winSize = printer->GetWindowSize();
-		int w = winSize.first;
-		int h = winSize.second;
 		int pixsize = 4;
+		iWinW = winSize.first * pixsize;
+		iWinH = winSize.second * pixsize;
 		glutSetOption(GLUT_MULTISAMPLE,2);
 		//glutInitContextVersion(1,0);
 		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
-		glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
+		glutInitWindowSize(iWinW, iWinH);		/* width=400pixels height=500pixels */
 		window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
+
 		glewInit();
 		cout << "GL_VERSION   : " << glGetString(GL_VERSION) << endl;
 		cout << "GL_VENDOR    : " << glGetString(GL_VENDOR) << endl;
@@ -307,7 +332,7 @@ int main(int argc, char *argv[])
         //               GL_DEBUG_SEVERITY_NOTIFICATION,
         //               0, nullptr, GL_FALSE);
 		glEnable(GL_DEBUG_OUTPUT);
-		initGL(w * pixsize, h * pixsize);
+		initGL(iWinW, iWinH);
 
 		if (argGfx.isSet())
 			printer->SetVisualType(argGfx.getValue());

@@ -64,9 +64,6 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 	string strTitle = string("Fancy Graphics: ") + m_Objs->GetName();
 	m_iWindow = glutCreateWindow(strTitle.c_str());	/* create window */
 
-
-	glViewport(0, 0, 800, 800);
-	glMatrixMode(GL_PROJECTION);
 	auto fcnDraw = []() { g_pMK3SGL->Draw();};
 	glutDisplayFunc(fcnDraw);
 
@@ -77,13 +74,11 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 	glutMouseFunc(fwd);
 
 	auto fcnMove = [](int x, int y) { g_pMK3SGL->MotionCB(x,y);};
-
 	glutMotionFunc(fcnMove);
 
-	glLoadIdentity();
-	gluPerspective(45.0, (float)800 / (float)800, 0.01f, 100.0f);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	auto fcnResize = [](int x, int y) { g_pMK3SGL->ResizeCB(x,y);};
+	glutReshapeFunc(fcnResize);
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	glEnable(GL_MULTISAMPLE);
@@ -123,6 +118,16 @@ void MK3SGL::ResetCamera()
 	m_camera.setWindowSize(800,800);
 	m_camera.setEye(0,0.5,3);
 	m_camera.setCenter(0,0,0);
+}
+
+void MK3SGL::ResizeCB(int w, int h)
+{
+	glViewport(0, 0, w, h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45.0, (float)w / (float)h, 0.01f, 100.0f);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
 void MK3SGL::KeyCB(unsigned char c, int x, int y)
@@ -345,7 +350,6 @@ void MK3SGL::Draw()
 		for (int i=0; i<5; i++) m_vPrints[i]->Clear();
 		m_bClearPrints = false;
 	}
-
 	int iOldWin = glutGetWindow();
 	glutSetWindow(m_iWindow);
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);

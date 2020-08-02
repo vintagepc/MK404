@@ -38,7 +38,7 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 		~Prusa_MK3SMMU2();
 
 		void Draw() override;
-		void OnVisualTypeSet(VisualType type) override;
+		void OnVisualTypeSet(string type) override;
 
 		bool GetHasMMU() override {return true;}
 

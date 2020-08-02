@@ -1,0 +1,33 @@
+newmtl 3D_PETG_Prusa_Orange
+Kd 1 0.501961 0.168627
+d 1
+newmtl Aluminum_-_Painted_Black
+Kd 0.235294 0.235294 0.235294
+d 1
+newmtl Aluminum_-_Satin
+Kd 0.960784 0.960784 0.964706
+d 1
+newmtl Plastic_-_Glossy_(Red)
+Kd 0.768627 0.207843 0.152941
+d 1
+newmtl Plastic_-_Glossy_(Black)
+Kd 0.0980392 0.0980392 0.0980392
+d 1
+newmtl Plastic_-_Glossy_(Blue)
+Kd 0.188235 0.231373 0.588235
+d 1
+newmtl Steel_-_Hardened_Polished
+Kd 0.941176 0.941176 0.941176
+d 1
+newmtl Plastic_-_Matte_(White)
+Kd 0.964706 0.964706 0.952941
+d 1
+newmtl Plastic_-_Glossy_(Green)
+Kd 0.266667 0.588235 0.282353
+d 1
+newmtl Plastic_-_Matte_(Black)
+Kd 0.0980392 0.0980392 0.0980392
+d 1
+newmtl Belt__Black
+Kd 0.152941 0.152941 0.152941
+d 1

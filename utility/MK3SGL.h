@@ -31,9 +31,12 @@
 #include "HD44780.h"         // for _IRQ
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include "OBJCollection.h"
 #include "Scriptable.h"
+
 class HD44780GL;
 class Printer;
+//class OBJCollection;
 
 class MK3SGL: public BasePeripheral, public Scriptable
 {
@@ -47,7 +50,7 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
 
         // Creates new MK3SGL object, with lite graphics (or full) and an MMU (or not)
-        MK3SGL(bool bLite, bool bMMU, Printer *pParent = nullptr);
+        MK3SGL(const string &strModel, bool bMMU, Printer *pParent = nullptr);
 
 		~MK3SGL()
 		{
@@ -73,12 +76,6 @@ class MK3SGL: public BasePeripheral, public Scriptable
         // Resets the camera view to the starting position.
         void ResetCamera();
 
-        // Changes whether an MMU is present.
-        void SetMMU(bool bMMU) { m_bMMU = bMMU;}
-
-        // Changes whether lite mode is on or off.
-        void SetLite(bool bLite) { m_bLite = bLite;}
-
         // Toggles nozzle cam mode.
         void ToggleNozzleCam() {m_bFollowNozzle = !m_bFollowNozzle;}
 
@@ -99,21 +96,12 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
 
     private:
-        GLObj m_Extruder = {"assets/X_AXIS.obj"};
-        GLObj m_Z = {"assets/Z_AXIS.obj"};
-        GLObj m_Y = {"assets/Y_AXIS.obj"};
-        GLObj m_Sheet = {"assets/SSSheet.obj"};
-        GLObj m_Base = {"assets/Stationary.obj"};
-        GLObj m_SDCard = {"assets/SDCard.obj"};
-        GLObj m_Knob = {"assets/LCD-knobR2.obj"};
         GLObj m_EVis = {"assets/Triangles.obj"};
-        GLObj m_EMMU = {"assets/E_MMU.obj"};
-        GLObj m_EStd = {"assets/E_STD.obj"};
-        GLObj m_EFan = {"assets/E_Fan.obj"};
-        GLObj m_EPFan = {"assets/Print-fan_rotor.obj"};
         GLObj m_MMUBase = {"assets/MMU_stationary.obj"};
         GLObj m_MMUSel = {"assets/MMU_Selector.obj"};
         GLObj m_MMUIdl = {"assets/Idler_moving.obj"};
+
+		OBJCollection *m_Objs = nullptr;
 
 		atomic_int m_iCurTool = {0};
         GLPrint m_Print = {0.8,0,0}, m_T1 = {0,0.8,0}, m_T2 = {0,0,0.8}, m_T3 = {0.8,0.4,0}, m_T4 = {0.8,0,0.8};
@@ -122,13 +110,10 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
         Camera m_camera;
 
-        std::vector<GLObj*> m_vObjLite = { &m_Y, &m_SDCard, &m_Sheet, &m_Knob, &m_EVis, &m_EFan, &m_EPFan, &m_Extruder};
-        std::vector<GLObj*> m_vObj = { &m_Z, &m_Base, &m_EStd};
-        std::vector<GLObj*> m_vObjMMU = { &m_EMMU, &m_MMUBase, &m_MMUSel, &m_MMUIdl};
+        std::vector<GLObj*> m_vObjLite = { };
+        std::vector<GLObj*> m_vObjMMU = {&m_EVis,&m_MMUBase, &m_MMUSel, &m_MMUIdl};
 
         HD44780GL *m_pLCD = nullptr;
-
-        bool m_bLite = false; // Lite graphics
 
         atomic_bool m_bFollowNozzle = {false}; // Camera follows nozzle.
 		atomic_bool m_bClearPrints = {false};
@@ -180,12 +165,16 @@ class MK3SGL: public BasePeripheral, public Scriptable
 			m_bBedOn = {false},
 			m_bPINDAOn = {false},
 			m_bFINDAOn = {false},
-        	m_bPFanOn = {false};
+        	m_bPFanOn = {false},
+			m_bSDCard = {true},
+			m_bPrintSurface = {true};
 
 
         int m_iWindow = 0;
 
 		// Useful for instant positioning.
+
+		inline void DebugTx(){glTranslatef(m_flDbg,m_flDbg2,m_flDbg3);}
 
 		atomic<float> m_flDbg = {0.0f}, m_flDbg2 = {0.0f}, m_flDbg3 = {0.0f};
 

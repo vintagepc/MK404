@@ -47,12 +47,12 @@ class Printer
 		virtual void OnMouseMove(int x, int y){};
 
 		// Overload this if you need to setup your visuals.
-		virtual void OnVisualTypeSet(VisualType type){};
+		virtual void OnVisualTypeSet(string type){};
 
 		virtual std::pair<int,int> GetWindowSize() = 0;
 
-		VisualType GetVisualType() { return m_visType; }
-		void SetVisualType(VisualType visType) {m_visType = visType; OnVisualTypeSet(visType);}
+		string GetVisualType() { return m_visType; }
+		void SetVisualType(string visType) {m_visType = visType; OnVisualTypeSet(visType);}
 
 		inline void SetConnectSerial(bool bVal){m_bConnectSerial = bVal;}
 
@@ -60,7 +60,7 @@ class Printer
 		bool GetConnectSerial(){return m_bConnectSerial;}
 
 	private:
-		VisualType m_visType = VisualType::MINIMAL;
+		string m_visType = "lite";
 		bool m_bConnectSerial = false;
 
 };

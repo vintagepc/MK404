@@ -16,9 +16,9 @@ set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set (FIRMWARE
-    MM-control-01.hex
-    MK3S.afx
-    stk500boot_v2_mega2560.hex
+    assets/Firmware/MM-control-01.hex
+    assets/Firmware/MK3S.afx
+    assets/Firmware/stk500boot_v2_mega2560.hex
     )
 
 set(H_FILES
@@ -78,12 +78,13 @@ set(H_FILES
 	utility/FatImage.h
 	utility/MK3SGL.h
 	utility/GLObj.h
-	include/SerialPipe.h
-	include/Macros.h
-	include/thermistortables.h
-	include/MK3/Configuration_prusa.h
-	include/MK3/eeprom.h
-	include/Util.h
+	utility/OBJCollection.h
+	utility/SerialPipe.h
+	utility/Macros.h
+	utility/thermistortables.h
+	utility/MK3/Configuration_prusa.h
+	utility/MK3/eeprom.h
+	utility/Util.h
 	3rdParty/arcball/Camera.hpp
 	3rdParty/arcball/Matrix.hpp
 	3rdParty/arcball/Vectors.hpp
@@ -128,7 +129,7 @@ set(MK404_SOURCES
 	utility/FatImage.cpp
 	utility/GLPrint.cpp
 	utility/Color.cpp
-	include/SerialPipe.cpp
+	utility/SerialPipe.cpp
 	3rdParty/arcball/Camera.cpp
 )
 
@@ -199,26 +200,30 @@ target_link_libraries(MK404 pthread util glut GL GLU GLEW m SDL tinyobjloader ${
 
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/MM-control-01.hex"
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/MM-control-01.hex"
                     "${PROJECT_BINARY_DIR}/MM-control-01.hex")
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/MK3S.afx"
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/MK3S.afx"
                     "${PROJECT_BINARY_DIR}/MK3S.afx")
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/stk500boot_v2_mega2560.hex"
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/stk500boot_v2_mega2560.hex"
                     "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
 
 # Copies the models/materials:
+
+file(GLOB_RECURSE MODEL_FILES
+	"assets/*.obj"
+	"assets/*.mtl"
+)
+
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/assets"
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/*.obj"
+                    ${MODEL_FILES}
                     "${PROJECT_BINARY_DIR}/assets/"
-                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/*.mtl"
-                    "${PROJECT_BINARY_DIR}/assets/")
+                     )
 
 
 add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}
@@ -229,8 +234,8 @@ add_dependencies(Build_Run MK404)
 
 add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
                             && ./build-fw.sh
-                            && cp ../Prusa-Firmware-build/Firmware.ino.elf MK3S.afx
-                            && avr-objdump -d MK3S.afx > MK3S.txt)
+                            && cp ../Prusa-Firmware-build/Firmware.ino.elf assets/Firmware/MK3S.afx
+                            && avr-objdump -d assets/Firmware/MK3S.afx > assets/Firmware/MK3S.txt)
 
 
 add_custom_target(FAT32.img COMMAND MK404 --sdimage FAT32.img --image-size 256M)

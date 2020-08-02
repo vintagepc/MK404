@@ -1,0 +1,42 @@
+newmtl 3DP_PETG_Black
+Kd 0.2 0.196078 0.196078
+d 1
+newmtl Steel_-_Hardened_Polished
+Kd 0.941176 0.941176 0.941176
+d 1
+newmtl Plastic_-_Matte_(Black)
+Kd 0.0980392 0.0980392 0.0980392
+d 1
+newmtl Aluminum_-_Satin
+Kd 0.960784 0.960784 0.964706
+d 1
+newmtl Brass_-_Polished
+Kd 0.952941 0.796078 0.486275
+d 1
+newmtl Plastic_-_Glossy_(White)
+Kd 0.964706 0.964706 0.952941
+d 1
+newmtl Aluminum_-_Painted_Black
+Kd 0.235294 0.235294 0.235294
+d 1
+newmtl Plastic_-_Matte_(White)
+Kd 0.964706 0.964706 0.952941
+d 1
+newmtl Plastic_-_Glossy_(Red)
+Kd 0.768627 0.207843 0.152941
+d 1
+newmtl Plastic_-_Glossy_(Blue)
+Kd 0.188235 0.231373 0.588235
+d 1
+newmtl Plastic_-_Glossy_(Black)
+Kd 0.0980392 0.0980392 0.0980392
+d 1
+newmtl Plastic_-_Glossy_(Green)
+Kd 0.266667 0.588235 0.282353
+d 1
+newmtl Steel_-_Satin
+Kd 0.627451 0.627451 0.627451
+d 1
+newmtl Plastic_-_Matte_(Gray)
+Kd 0.701961 0.701961 0.701961
+d 1

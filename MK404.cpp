@@ -165,13 +165,7 @@ void MotionCB(int x, int y)
 void timerCB(int i)
 {
 	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
-	{
-		int w = iWinW, h = iWinH;
-		printf("Resize: %d x %d\n",w, h);
 		glutReshapeWindow(iWinW, iWinH);
-		// iWinH = 0;
-		// iWinW = 0;
-	}
 	glutTimerFunc(50, timerCB, i^1);
 	displayCB();
 }

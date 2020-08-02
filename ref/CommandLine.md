@@ -3,9 +3,9 @@
 USAGE: 
 
    ./MK404  [--markdown] [-b] [-d] ...  [-f <filename>] [-g <none|lite
-            |fancy>] [--gdb] [--image-size <128M|1G|256M|2G|32M|512M|64M>]
-            [-l] [-m] [-n] [--script <filename.txt>] [--scripthelp] [-s]
-            [--sdimage <filename.img>] [-t <string>] ...  [--tracerate
+            |fancy|bear>] [--gdb] [--image-size <128M|1G|256M|2G|32M|512M
+            |64M>] [-l] [-m] [-n] [--script <filename.txt>] [--scripthelp]
+            [-s] [--sdimage <filename.img>] [-t <string>] ...  [--tracerate
             <integer>] [-v] ...  [-w] [--] [--version] [-h] <Prusa_MK3
             |Prusa_MK3MMU2|Prusa_MK3S|Prusa_MK3SMMU2>
 
@@ -25,7 +25,7 @@ Where:
    -f <filename>,  --firmware <filename>
      hex/afx/elf Firmware file to load (default MK3S.afx)
 
-   -g <none|lite|fancy>,  --graphics <none|lite|fancy>
+   -g <none|lite|fancy|bear>,  --graphics <none|lite|fancy|bear>
      Whether to enable fancy (advanced) or lite (minimal advanced) visuals.
      If not specified, only the basic 2D visuals are shown.
 

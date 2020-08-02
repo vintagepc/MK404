@@ -39,51 +39,49 @@
 
 void Prusa_MK3S::Draw()
 {
-	glPushMatrix();
-	glLoadIdentity(); // Start with an identity matrix
-		glScalef(4, 4, 1);
+		glPushMatrix();
+		glLoadIdentity(); // Start with an identity matrix
+			glScalef(4, 4, 1);
 
-		lcd.Draw(m_colors[(4*m_iScheme) + 0], /* background */
-				m_colors[(4*m_iScheme) + 1], /* character background */
-				m_colors[(4*m_iScheme) + 2], /* text */
-				m_colors[(4*m_iScheme) + 3] /* shadow */ );
-	glPopMatrix();
+			lcd.Draw(m_colors[(4*m_iScheme) + 0], /* background */
+					m_colors[(4*m_iScheme) + 1], /* character background */
+					m_colors[(4*m_iScheme) + 2], /* text */
+					m_colors[(4*m_iScheme) + 3] /* shadow */ );
+		glPopMatrix();
 
-	// Do something for the motors...
-	float fX = (5 + lcd.GetWidth()* 6)*4;
-	float fY = (5 + lcd.GetHeight() * 9);
-	glLoadIdentity();
-	glScalef(fX/350,4,1);
-	glPushMatrix();
-		glTranslatef(0, fY,0);
-		X.Draw();
-		glTranslatef(0, 10,0);
-		Y.Draw();
-		glTranslatef(0, 10,0);
-		Z.Draw();
-		glTranslatef(0, 10,0);
-		E.Draw_Simple();
-		glTranslatef(190,0,0);
-		m_buzzer.Draw();
-		glTranslatef(20,0,0);
-		fPrint.Draw();
-		glTranslatef(20,0,0);
-		fExtruder.Draw();
-		glTranslatef(20,0,0);
-		hExtruder.Draw();
-		glTranslatef(20,0,0);
-		hBed.Draw();
-		glTranslatef(20,0,0);
-		lSD.Draw();
-		glTranslatef(20,0,0);
-		lPINDA.Draw();
-		glTranslatef(20,0,0);
-		lIR.Draw();
-	glPopMatrix();
-
-	if (GetVisualType()>VisualType::MINIMAL && m_pVis)
+		// Do something for the motors...
+		float fX = (5 + lcd.GetWidth()* 6)*4;
+		float fY = (5 + lcd.GetHeight() * 9);
+		glLoadIdentity();
+		glScalef(fX/350,4,1);
+		glPushMatrix();
+			glTranslatef(0, fY,0);
+			X.Draw();
+			glTranslatef(0, 10,0);
+			Y.Draw();
+			glTranslatef(0, 10,0);
+			Z.Draw();
+			glTranslatef(0, 10,0);
+			E.Draw_Simple();
+			glTranslatef(190,0,0);
+			m_buzzer.Draw();
+			glTranslatef(20,0,0);
+			fPrint.Draw();
+			glTranslatef(20,0,0);
+			fExtruder.Draw();
+			glTranslatef(20,0,0);
+			hExtruder.Draw();
+			glTranslatef(20,0,0);
+			hBed.Draw();
+			glTranslatef(20,0,0);
+			lSD.Draw();
+			glTranslatef(20,0,0);
+			lPINDA.Draw();
+			glTranslatef(20,0,0);
+			lIR.Draw();
+		glPopMatrix();
+	if ((GetVisualType().compare("none")!=0) && m_pVis)
 		m_pVis->Draw();
-
 }
 
 std::pair<int,int> Prusa_MK3S::GetWindowSize(){
@@ -91,12 +89,12 @@ std::pair<int,int> Prusa_MK3S::GetWindowSize(){
 	return prSize;
 }
 
-void Prusa_MK3S::OnVisualTypeSet(VisualType type)
+void Prusa_MK3S::OnVisualTypeSet(string type)
 {
-	if (type==VisualType::MINIMAL)
+	if (type.compare("none") == 0)
 		return;
 
-	m_pVis.reset(new MK3SGL(type==VisualType::SIMPLE,GetHasMMU(),this));
+	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this));
 
 	AddHardware(*m_pVis);
 

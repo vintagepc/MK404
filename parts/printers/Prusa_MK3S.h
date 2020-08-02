@@ -43,7 +43,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 		virtual void OnKeyPress(unsigned char key, int x, int y) override;
 		void OnMousePress(int button, int action, int x, int y) override;
 		void OnMouseMove(int x,int y) override;
-		void OnVisualTypeSet(VisualType type) override;
+		void OnVisualTypeSet(string type) override;
 
 		std::pair<int,int> GetWindowSize() override;
 

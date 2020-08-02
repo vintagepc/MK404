@@ -93,6 +93,7 @@ class MK3SGL: public BasePeripheral, public Scriptable
 		void MotionCB(int x, int y);
         void KeyCB(unsigned char key, int x, int y);
         void SetWindow(int iWin) { m_iWindow = iWin;};
+		void ResizeCB(int w, int h);
 
 	protected:
 		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs);

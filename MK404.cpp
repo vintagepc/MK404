@@ -50,7 +50,7 @@
 #include "tclap/ValuesConstraint.h"   // for ValuesConstraint
 #include "Macros.h"
 
-int window;
+int window = 0;
 
 atomic_int iWinH{0}, iWinW{0};
 
@@ -89,14 +89,14 @@ GLErrorCB( GLenum source,
             type, severity, message );
 }
 
-bool bIsQuitting = false;
+atomic_bool bIsQuitting {false};
 
 void displayCB(void)		/* function called whenever redisplay needed */
 {
 	if (bIsQuitting || pBoard->GetQuitFlag()) // Stop drawing if shutting down.
 	{
 		bIsQuitting = true;
-		glutDestroyWindow(window);
+		glutLeaveMainLoop();
 		return;
 	}
 	glLoadIdentity();
@@ -163,6 +163,8 @@ void MotionCB(int x, int y)
 // gl timer. if the lcd is dirty, refresh display
 void timerCB(int i)
 {
+	if (bIsQuitting)
+		return;
 	glutSetWindow(window);
 	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
 		glutReshapeWindow(iWinW, iWinH);
@@ -217,11 +219,6 @@ int initGL(int w, int h)
 	return 1;
 }
 
-void * glutThread(void* p)
-{
-    glutMainLoop();
-    return NULL;
-}
 using namespace TCLAP;
 using namespace std;
 int main(int argc, char *argv[])
@@ -375,22 +372,14 @@ int main(int argc, char *argv[])
 		getchar();
 	}
 
-   // pthread_t run;
-	// if (!bNoGraphics)
-  //	  pthread_create(&run, NULL, glutThread, NULL);
-
 	pBoard->StartAVR();
 
-	glutMainLoop();
-
-	pBoard->WaitForFinish();
-
 	if (!bNoGraphics)
-	{
-		//glutLeaveMainLoop();
-		// pthread_cancel(run); // Kill the GL thread.
-		//pthread_join(run,NULL);
-	}
+		glutMainLoop();
+
+	printf("Waiting for board to finish...\n");
+	pBoard->SetQuitFlag();
+	pBoard->WaitForFinish();
 
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);
 

@@ -160,8 +160,29 @@ class TMC2130: public SPIPeripheral, public Scriptable
                     uint8_t drv_err :1;
                     uint8_t uv_cp   :1;
                 } GSTAT;
-                uint32_t _unimplemented[110];   // 0x02 - 0x6E
-                struct                      //0x6F
+                uint32_t _unimplemented[107]; //0x02 - 0x6B
+				struct                        //0x6C
+				{
+					uint32_t toff		:4;
+					uint32_t hstrt		:3;
+					uint32_t hend		:4;
+					uint32_t fd3		:1;
+					uint32_t disfdcc	:1;
+					uint32_t rndtf		:1;
+					uint32_t chm		:1;
+					uint32_t tbl		:2;
+					uint32_t vsense		:1;
+					uint32_t vhighfs	:1;
+					uint32_t vhighchm	:1;
+					uint32_t sync		:4;
+					uint32_t mres		:4;
+					uint32_t intpol		:1;
+					uint32_t dedge		:1;
+					uint32_t diss2g		:1;
+					uint32_t			:1;
+				} CHOPCONF;
+                uint32_t _unimplemented2[2]; //0x6D - 0x6E
+                struct                       //0x6F
                 {
                     uint16_t SG_RESULT   :10;
                     uint8_t             :5;

@@ -48,7 +48,7 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
         // Returns the name of the serial port (for the pipe thread)
         std::string GetSerialPort();
 
-        void Draw();
+        void Draw(float fY);
 
 		inline void PushButton(uint8_t uiBtn) { m_buttons.Push(uiBtn);}
 		inline void SetFINDAAuto(bool bVal) { m_bAutoFINDA = bVal;}

@@ -71,7 +71,7 @@ std::pair<int,int> Prusa_MK3SMMU2::GetWindowSize()
 
 void Prusa_MK3SMMU2::Draw()
 {
-	m_MMU.Draw();
+	m_MMU.Draw(GetWindowSize().second);
 	Prusa_MK3S::Draw();
 }
 

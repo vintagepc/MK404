@@ -54,9 +54,9 @@ std::string MMU2::GetSerialPort()
 	return m_UART.GetSlaveName();
 }
 
-void MMU2::Draw()		/* function called whenever redisplay needed */
+void MMU2::Draw(float fY)		/* function called whenever redisplay needed */
 {
-	float fY = (float)(glutGet(GLUT_WINDOW_HEIGHT)/4);
+	//float fY = (float)(glutGet(GLUT_WINDOW_HEIGHT)/4);
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glTranslatef(0,fY-50,0);

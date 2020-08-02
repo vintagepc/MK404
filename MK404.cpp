@@ -165,26 +165,37 @@ void timerCB(int i)
 	displayCB();
 }
 
+
+void ResizeCB(int w, int h)
+{
+	std::pair<int,int> winSize = printer->GetWindowSize();
+	float fWS = (float)w/(float)(winSize.first*4);
+	float fHS = (float)h/(float)(winSize.second*4);
+	float fScale = min(fWS,fHS);
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, w, 0, h, -1, 10);
+	glTranslatef(0, h, 0);
+	glScalef(fScale,-fScale,1);
+	//glTranslatef(0, (-4*winSize.second), 0);
+
+}
+
 int initGL(int w, int h)
 {
 	// Set up projection matrix
-	glMatrixMode(GL_PROJECTION); // Select projection matrix
-	glLoadIdentity(); // Start with an identity matrix
-	glOrtho(0, w, 0, h, 0, 10);
-	glScalef(1,-1,1);
-	glTranslatef(0, -1 * h, 0);
-
-
 	glutDisplayFunc(displayCB);		/* set window's display callback */
 	glutKeyboardFunc(keyCB);		/* set window's key callback */
 	glutMouseFunc(MouseCB);
 	glutMotionFunc(MotionCB);
 	glutTimerFunc(1000, timerCB, 0);
+	glutReshapeFunc(ResizeCB);
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
 
-	glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+	glClearColor(0.f, 0.f, 0.f, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

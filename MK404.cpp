@@ -31,6 +31,7 @@
 #include <tclap/CmdLine.h>            // for CmdLine
 #include <algorithm>                  // for find
 #include <memory>
+#include <atomic>
 #include <scoped_allocator>           // for allocator_traits<>::value_type
 #include <string>                     // for string, basic_string
 #include <utility>                    // for pair
@@ -50,6 +51,8 @@
 #include "Macros.h"
 
 int window;
+
+atomic_int iWinH{0}, iWinW{0};
 
 Printer *printer = nullptr;
 Boards::Board *pBoard = nullptr;
@@ -161,6 +164,14 @@ void MotionCB(int x, int y)
 // gl timer. if the lcd is dirty, refresh display
 void timerCB(int i)
 {
+	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
+	{
+		int w = iWinW, h = iWinH;
+		printf("Resize: %d x %d\n",w, h);
+		glutReshapeWindow(iWinW, iWinH);
+		// iWinH = 0;
+		// iWinW = 0;
+	}
 	glutTimerFunc(50, timerCB, i^1);
 	displayCB();
 }
@@ -171,14 +182,20 @@ void ResizeCB(int w, int h)
 	std::pair<int,int> winSize = printer->GetWindowSize();
 	float fWS = (float)w/(float)(winSize.first*4);
 	float fHS = (float)h/(float)(winSize.second*4);
-	float fScale = min(fWS,fHS);
+	float fScale = max(fWS,fHS);
+	int iW = 4.f*(float)winSize.first*fScale;
+	int iH = 4.f*(float)winSize.second*fScale;
+	if (iW!=w || iH !=h)
+	{
+		iWinH = iH;
+		iWinW = iW;
+	}
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0, w, 0, h, -1, 10);
 	glTranslatef(0, h, 0);
 	glScalef(fScale,-fScale,1);
-	//glTranslatef(0, (-4*winSize.second), 0);
 
 }
 
@@ -298,15 +315,15 @@ int main(int argc, char *argv[])
 		glutInit(&argc, argv);		/* initialize GLUT system */
 
 		std::pair<int,int> winSize = printer->GetWindowSize();
-		int w = winSize.first;
-		int h = winSize.second;
 		int pixsize = 4;
+		iWinW = winSize.first * pixsize;
+		iWinH = winSize.second * pixsize;
 		glutSetOption(GLUT_MULTISAMPLE,2);
 		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
-		glutInitWindowSize(w * pixsize, h * pixsize);		/* width=400pixels height=500pixels */
+		glutInitWindowSize(iWinW, iWinH);		/* width=400pixels height=500pixels */
 		window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
 
-		initGL(w * pixsize, h * pixsize);
+		initGL(iWinW, iWinH);
 
 		if (argGfx.isSet())
 		{

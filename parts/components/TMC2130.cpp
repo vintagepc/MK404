@@ -225,8 +225,17 @@ avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *avr, avr_cycle_count_t whe
 // Called when STEP is triggered.
 void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 {
-    if (!value || irq->value) return; // Only step on rising pulse
     if (!m_bEnable) return;
+	if (!m_regs.defs.CHOPCONF.dedge)
+	{
+		// In normal mode only step on rising pulse
+		if (!value || irq->value) return;
+	}
+	else
+	{
+		// With DEDGE step on each value change
+		if (value == irq->value) return;
+	}
     CancelTimer(m_fcnStandstill,this);
 	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",m_cAxis,value));
     if (m_bDir)

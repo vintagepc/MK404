@@ -29,6 +29,7 @@
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include <atomic>
 
 class PINDA:public BasePeripheral,public Scriptable{
     public:
@@ -78,7 +79,7 @@ private:
     float m_fOffset[2] = {0,0}; // pinda X Y offset  from nozzle
     float m_fPos[3] = {10,10,10}; // Current position tracking.
     MBLMap_t m_mesh;// MBL map
-    bool m_bIsSheetPresent = true; // Is the steel sheet present? IF yes, PINDA will attempt to simulate the bed sensing point for selfcal instead.
+    atomic_bool m_bIsSheetPresent {true}; // Is the steel sheet present? IF yes, PINDA will attempt to simulate the bed sensing point for selfcal instead.
 
     // pulled from mesh_bed_calibration.cpp
     float _bed_calibration_points[8] = {

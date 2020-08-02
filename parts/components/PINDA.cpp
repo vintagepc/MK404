@@ -157,7 +157,7 @@ void PINDA::SetMBLMap()
 
 void PINDA::ToggleSheet()
 {
-    m_bIsSheetPresent^=1;
+    m_bIsSheetPresent=!m_bIsSheetPresent;
     printf("Steel sheet: %s\n", m_bIsSheetPresent? "INSTALLED" : "REMOVED");
     RaiseIRQ(SHEET_OUT,m_bIsSheetPresent);
 }
@@ -165,14 +165,15 @@ void PINDA::ToggleSheet()
 PINDA::PINDA(float fX, float fY):Scriptable("PINDA"),m_fOffset{fX,fY}
 {
     SetMBLMap();
-	RegisterAction("ToggleSheet","Toggles the presence of the steel sheet",ActToggleSheet);
-	RegisterAction("SetMBLPoint","Sets the given MBL point (0-48) to the given Z value",ActSetMBLPoint,{ArgType::Int,ArgType::Float});
-	RegisterAction("SetXYPoint","Sets the (0-3)rd XY cal point position to x,y. (index, x,y)",ActSetXYCalPont,{ArgType::Int, ArgType::Float,ArgType::Float});
 }
 
 void PINDA::Init(struct avr_t * avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t *irqZ)
 {
     _Init(avr, this);
+
+	RegisterActionAndMenu("ToggleSheet","Toggles the presence of the steel sheet",ActToggleSheet);
+	RegisterAction("SetMBLPoint","Sets the given MBL point (0-48) to the given Z value",ActSetMBLPoint,{ArgType::Int,ArgType::Float});
+	RegisterAction("SetXYPoint","Sets the (0-3)rd XY cal point position to x,y. (index, x,y)",ActSetXYCalPont,{ArgType::Int, ArgType::Float,ArgType::Float});
 
     ConnectFrom(irqX, X_POS_IN);
     ConnectFrom(irqY, Y_POS_IN);

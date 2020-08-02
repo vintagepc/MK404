@@ -31,10 +31,11 @@
 #include "HD44780.h"         // for _IRQ
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include "Scriptable.h"
 class HD44780GL;
 class Printer;
 
-class MK3SGL: public BasePeripheral
+class MK3SGL: public BasePeripheral, public Scriptable
 {
     public:
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
@@ -67,7 +68,7 @@ class MK3SGL: public BasePeripheral
         void SetLCD(HD44780GL* pLCD){m_pLCD = pLCD;}
 
         // Clears the displayed print.
-        void ClearPrint() { for (int i=0; i<5; i++) m_vPrints[i]->Clear(); }
+        void ClearPrint() { m_bClearPrints = true; }
 
         // Resets the camera view to the starting position.
         void ResetCamera();
@@ -92,6 +93,9 @@ class MK3SGL: public BasePeripheral
 		void MotionCB(int x, int y);
         void KeyCB(unsigned char key, int x, int y);
         void SetWindow(int iWin) { m_iWindow = iWin;};
+
+	protected:
+		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs);
 
 
     private:
@@ -127,6 +131,7 @@ class MK3SGL: public BasePeripheral
         bool m_bLite = false; // Lite graphics
 
         atomic_bool m_bFollowNozzle = {false}; // Camera follows nozzle.
+		atomic_bool m_bClearPrints = {false};
 
         // MMU draw subfunction.
         void DrawMMU();
@@ -183,6 +188,13 @@ class MK3SGL: public BasePeripheral
 		// Useful for instant positioning.
 
 		atomic<float> m_flDbg = {0.0f}, m_flDbg2 = {0.0f}, m_flDbg3 = {0.0f};
+
+		enum Actions
+		{
+			ActClear,
+			ActToggleNCam,
+			ActResetView
+		};
 
 		static MK3SGL *g_pMK3SGL;
 		Printer *m_pParent = nullptr;

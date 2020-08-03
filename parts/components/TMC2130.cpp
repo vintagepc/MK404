@@ -163,6 +163,13 @@ void TMC2130::ProcessCommand()
     {
         m_regs.raw[m_cmdProc.bitsIn.address] = m_cmdProc.bitsIn.data;
         //printf("REG %c %02x set to: %010x\n", m_cAxis, m_cmdIn.bitsIn.address, m_cmdIn.bitsIn.data);
+
+		if(m_cmdProc.bitsIn.address == 0x6C) // CHOPCONF
+		{
+			// updating CHOPCONF requires updating the current limits
+			cfg.fStartPos = m_fCurPos;
+			SetConfig(cfg);
+		}
     }
     else
     {
@@ -257,7 +264,7 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
         }
     }
 
-    m_fCurPos = (float)m_iCurStep/(float)cfg.uiStepsPerMM;
+    m_fCurPos = StepToPos(m_iCurStep);
     uint32_t* posOut = (uint32_t*)(&m_fCurPos); // both 32 bits, just mangle it for sending over the wire.
     RaiseIRQ(POSITION_OUT, posOut[0]);
     TRACE(printf("cur pos: %f (%u)\n",m_fCurPos,m_iCurStep));
@@ -318,10 +325,10 @@ Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const vector<s
 void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)
 {
     cfg = cfgIn;
-    m_iCurStep = cfg.fStartPos*cfg.uiStepsPerMM;
-    m_iMaxPos = cfg.iMaxMM*cfg.uiStepsPerMM;
+    m_iCurStep = PosToStep(cfg.fStartPos);
+    m_iMaxPos = PosToStep(cfg.iMaxMM);
     m_fCurPos = cfg.fStartPos;
-	m_fEnd = m_iMaxPos/cfg.uiStepsPerMM;
+	m_fEnd = StepToPos(m_iMaxPos);
 	m_bConfigured = true;
 }
 
@@ -341,4 +348,14 @@ void TMC2130::Init(struct avr_t * avr)
 	pTH->AddTrace(this, DIR_IN,{TC::OutputPin, TC::Stepper});
 	pTH->AddTrace(this, ENABLE_IN,{TC::OutputPin, TC::Stepper});
 	pTH->AddTrace(this, DIAG_OUT,{TC::InputPin, TC::Stepper});
+}
+
+float TMC2130::StepToPos(int32_t step)
+{
+	return (float)step/16*(float)(1u<<m_regs.defs.CHOPCONF.mres)/(float)cfg.uiStepsPerMM;
+}
+
+int32_t TMC2130::PosToStep(float pos)
+{
+	return pos*16/(float)(1u<<m_regs.defs.CHOPCONF.mres)*(float)cfg.uiStepsPerMM;
 }

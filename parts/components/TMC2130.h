@@ -211,4 +211,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
 		atomic_char m_cAxis;
 		bool m_bStall = false;
 
+		// Position helpers
+		float StepToPos(int32_t step);
+		int32_t PosToStep(float step);
 };

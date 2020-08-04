@@ -25,7 +25,7 @@ jobs:
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
-        ref: ${{ github.event.pull_request.head.ref }}
+        ref: ${{ github.event.pull_request.head.sha }}
         submodules: true
 
     - name: Checkout master
@@ -40,7 +40,7 @@ jobs:
       id: cache-pkgs
       with:
           path: "packages"
-          key: ${{secrets.build_pkg_cache}}
+          key: "pkgs-1_0_0"
 
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}

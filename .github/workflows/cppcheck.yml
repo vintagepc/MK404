@@ -20,7 +20,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - name: Checkout ${{ github.event.pull_request.head.sha }}
+    - name: Checkout ${{ github.event.pull_request.head.ref }}
       uses: actions/checkout@v2.2.0
       if: ${{ github.event.pull_request }}
       with:
@@ -40,8 +40,7 @@ jobs:
       id: cache-pkgs
       with:
           path: "packages"
-          key: ${{secrets.build_pkg_cache}}
-
+          key: "pkgs-1_0_0"
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
       run: mkdir -p packages/partial

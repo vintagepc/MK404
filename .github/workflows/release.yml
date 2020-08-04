@@ -30,7 +30,7 @@ jobs:
       id: cache-pkgs
       with:
           path: "packages"
-          key: ${{secrets.build_pkg_cache}}
+          key: "pkgs-1_0_0"
 
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}

@@ -225,8 +225,9 @@ namespace Boards
 		// TIMSK2 hack for stock prusa firmware.
 		if (!GetDisableWorkarounds())
 		{
-			avr_regbit_t rb = AVR_IO_REGBITS(0x70, 0, 0b111);
-			avr_regbit_setto(m_pAVR,rb,0x01);
+			// Sweet, this is no longer necessary, it seems!
+			//avr_regbit_t rb = AVR_IO_REGBITS(0x70, 0, 0b111);
+			//	avr_regbit_setto(m_pAVR,rb,0x01);
 		}
 
 		//Reset all SPI SS lines

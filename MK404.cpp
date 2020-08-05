@@ -323,12 +323,15 @@ int main(int argc, char *argv[])
 		cout << "GL_VENDOR    : " << glGetString(GL_VENDOR) << endl;
 		cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << endl;
 		cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << endl;
-		cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+		//cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
 		glDebugMessageCallback( GLErrorCB, 0 );
-		// glDebugMessageControl(GL_DONT_CARE,
-        //               GL_DONT_CARE,
-        //               GL_DEBUG_SEVERITY_NOTIFICATION,
-        //               0, nullptr, GL_FALSE);
+		if (argSpam.getValue()<1)
+		{
+			glDebugMessageControl(GL_DONT_CARE,
+						GL_DONT_CARE,
+						GL_DEBUG_SEVERITY_NOTIFICATION,
+						0, nullptr, GL_FALSE);
+		}
 		glEnable(GL_DEBUG_OUTPUT);
 		initGL(iWinW, iWinH);
 

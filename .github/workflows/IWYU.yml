@@ -55,6 +55,6 @@ jobs:
       run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=/usr/bin/g++-7 -DENABLE_IWYU=1 ..
 
     - name: Run IWYU
-	  run: |
-		cd ${{ runner.workspace }}/MK404/build && make |& log.txt
-        ! grep -q "include-what-you-use reported diagnostics" log.txt
+      run: |
+          cd ${{ runner.workspace }}/MK404/build && make |& log.txt
+          ! grep -q "include-what-you-use reported diagnostics" log.txt

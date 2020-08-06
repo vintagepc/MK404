@@ -46,7 +46,7 @@ jobs:
       run: mkdir -p packages/partial
 
     - name: Install packages
-      run: sudo apt-get update && sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev g++-7 gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
+      run: sudo apt-get update && sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev libstdc++-6-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages

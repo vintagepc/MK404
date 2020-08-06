@@ -58,12 +58,12 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make CPPCheck
 
   IWYU:
-    needs: cppceck
-	runs-on: ubuntu-latest
-	steps:
-	- name: Run IWYU
-	  run : |
-	  	cd ${{ runner.workspace }}/MK404/build
-		make clean
-		cmake -DENABLE_IWYU=1
-		make
+    needs: cppcheck
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run IWYU
+      run : |
+        cd ${{ runner.workspace }}/MK404/build
+        make clean
+        cmake -DENABLE_IWYU=1
+        make

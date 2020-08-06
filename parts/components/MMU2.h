@@ -22,13 +22,13 @@
 #pragma once
 
 #include <pthread.h>               // for pthread_t
-#include <stdint.h>                // for uint32_t
-#include <uart_pty.h>              // for _IRQ
+#include <stdint.h>                // for uint32_t, uint8_t
+#include <atomic>                  // for atomic_bool
 #include <string>                  // for string
+#include "ADC_Buttons.h"           // for _IRQ, ADC_Buttons
 #include "BasePeripheral.h"        // for BasePeripheral
 #include "boards/MM_Control_01.h"  // for MM_Control_01
 #include "sim_irq.h"               // for avr_irq_t
-#include <atomic>
 
 using namespace std;
 

@@ -20,18 +20,16 @@
 
 #include "Prusa_MK3S.h"
 #include <GL/glew.h>
-//#include <GL/gl.h>          // for glTranslatef, glLoadIdentity, glPopMatrix
 #include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
 #include <stdio.h>            // for printf
 #include "Beeper.h"           // for Beeper
-#include "Button.h"           // for Button
 #include "Fan.h"              // for Fan
 #include "HD44780GL.h"        // for HD44780GL
 #include "Heater.h"           // for Heater
 #include "IRSensor.h"         // for IRSensor
 #include "LED.h"              // for LED
 #include "PINDA.h"            // for PINDA
-#include "RotaryEncoder.h"    // for RotaryEncoder, RotaryEncoder::::CCW_CLICK
+#include "PinNames.h"         // for Pin::IR_SENSOR_PIN, Pin::VOLT_IR_PIN
 #include "SDCard.h"           // for SDCard
 #include "TMC2130.h"          // for TMC2130
 #include "sim_io.h"           // for avr_register_io_write

@@ -29,7 +29,7 @@
 #include "MM_Control_01.h"    // for MM_Control_01
 #include "PinNames.h"         // for Pin::FINDA_PIN
 #include "TMC2130.h"          // for TMC2130
-#include "uart_pty.h"         // for uart_pty
+#include <uart_pty.h>         // for uart_pty
 
 
 // Yes yes, globals are bad. But we don't have any choice because freeglut calls

@@ -43,7 +43,7 @@ class Prusa_MK3: public Prusa_MK3S
 
 		inline virtual void ToggleFSensor() override { LaserSensor.Toggle(); };
 
-		inline virtual void FSensorJam() { LaserSensor.ToggleJam();};
+		inline virtual void FSensorJam() override { LaserSensor.ToggleJam();};
 
 		PAT9125 LaserSensor;
 };

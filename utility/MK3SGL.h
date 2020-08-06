@@ -20,23 +20,23 @@
  */
 #pragma once
 
+#include <GL/glew.h>         // for glTranslatef
 #include <GLPrint.h>         // for GLPrint
 #include <stdint.h>          // for uint32_t
 #include <Camera.hpp>        // for Camera
+#include <atomic>            // for atomic, atomic_bool, atomic_int
 #include <string>            // for string
 #include <vector>            // for vector
-#include <atomic>
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "GLObj.h"           // for GLObj
 #include "HD44780.h"         // for _IRQ
+#include "IScriptable.h"     // for IScriptable::LineStatus
+#include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
-#include "OBJCollection.h"
-#include "Scriptable.h"
-
-class HD44780GL;
-class Printer;
-//class OBJCollection;
+class HD44780GL;  // lines 37-37
+class OBJCollection;
+class Printer;  // lines 38-38
 
 class MK3SGL: public BasePeripheral, public Scriptable
 {
@@ -144,11 +144,6 @@ class MK3SGL: public BasePeripheral, public Scriptable
 		void OnFINDAChanged(avr_irq_t *irq, uint32_t value);
 		void OnToolChanged(avr_irq_t *irq, uint32_t iIdx);
 
-
-        // Correction parameters to get the model at 0,0,0 and aligned with the simulated starting positions.
-        float m_fXCorr = 0.044;
-        float m_fYCorr = 0.141;
-        float m_fZCorr = 0.210;
         atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01}, m_fPPos = {0.f};
 
         float m_fSelCorr = 0.025f;

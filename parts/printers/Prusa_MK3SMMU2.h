@@ -22,9 +22,10 @@
 
 #include <stdint.h>        // for uint32_t
 #include <utility>         // for pair
+#include <string>          // for string
 #include "GCodeSniffer.h"  // for GCodeSniffer
+#include "IRSensor.h"      // for IRSensor, IRSensor::IRState::IR_AUTO
 #include "MMU2.h"          // for MMU2
-#include "Printer.h"       // for Printer::VisualType
 #include "Prusa_MK3S.h"    // for Prusa_MK3S
 #include "sim_irq.h"       // for avr_irq_t
 class SerialPipe;

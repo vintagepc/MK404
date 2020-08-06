@@ -1,5 +1,3 @@
-
-
 /*
 	ScriptHost.cpp - Core handler responsible for handling
 	scripting actions.
@@ -24,12 +22,11 @@
 
 #include <ScriptHost.h>
 #include <exception>    // for exception
-#include <fstream>      // for basic_istream, char_traits, ifstream, istring...
-#include <sstream>
+#include <fstream>      // IWYU pragma: keep
+#include <sstream>		 // IWYU pragma: keep
 #include <type_traits>  // for __decay_and_strip<>::__type
 #include <utility>      // for make_pair, pair
 #include <GL/freeglut_std.h> // glut menus
-#include <GL/freeglut_ext.h> // glut menus
 #include <assert.h> // assert.
 
 map<string, IScriptable*> ScriptHost::m_clients;

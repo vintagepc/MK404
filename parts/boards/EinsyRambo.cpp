@@ -19,13 +19,11 @@
  */
 
 #include "EinsyRambo.h"
-#include <stdio.h>             // for fprintf, printf, stderr
-#include "thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
+#include <stdio.h>             // for printf, fprintf, stderr
 #include "Einsy_1_1a.h"        // for Einsy_1_1a
 #include "HD44780.h"           // for HD44780
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
-#include "sim_avr_types.h"     // for avr_regbit_t
-#include "sim_regbit.h"        // for avr_regbit_setto, AVR_IO_REGBITS
+#include "thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 
 #define TEMP_SENSOR_0 5
 #define TEMP_SENSOR_BED 1

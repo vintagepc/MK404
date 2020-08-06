@@ -20,7 +20,6 @@
  */
 
 #include "ADC_Buttons.h"
-#include "sim_avr.h"
 #include "IScriptable.h"
 
 uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)

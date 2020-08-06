@@ -22,15 +22,13 @@
 
 
 #include <GL/glew.h>                  // for glVertex2f, glEnable, glTranslatef
-#include <GL/freeglut.h>          // for glutLeaveMainLoop, glutSetOption
-#include <pthread.h>                  // for pthread_cancel, pthread_create
+#include <GL/freeglut_std.h>          // for glutGet, glutTimerFunc, glutCre...
+#include <GL/freeglut_ext.h>          // for glutSetOption, glutLeaveMainLoop
 #include <signal.h>                   // for signal, SIGINT
-#include <stdint.h>                   // for uint8_t
 #include <stdio.h>                    // for printf, NULL, fprintf, getchar
 #include <stdlib.h>                   // for exit
 #include <tclap/CmdLine.h>            // for CmdLine
 #include <algorithm>                  // for find
-#include <memory>
 #include <atomic>
 #include <scoped_allocator>           // for allocator_traits<>::value_type
 #include <string>                     // for string, basic_string
@@ -43,12 +41,13 @@
 #include "TelemetryHost.h"
 #include "parts/Board.h"              // for Board
 #include "sim_avr.h"                  // for avr_t
+#include <iostream>                   // for operator<<, basic_ostream, endl
+#include "tclap/MultiArg.h"           // for MultiArg
 #include "tclap/MultiSwitchArg.h"     // for MultiSwitchArg
 #include "tclap/SwitchArg.h"          // for SwitchArg
 #include "tclap/UnlabeledValueArg.h"  // for UnlabeledValueArg
 #include "tclap/ValueArg.h"           // for ValueArg
 #include "tclap/ValuesConstraint.h"   // for ValuesConstraint
-#include "Macros.h"
 
 int window = 0;
 

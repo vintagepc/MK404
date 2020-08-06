@@ -78,7 +78,15 @@ class uart_pty: public BasePeripheral
 
 		unsigned char m_chrLast = '\n';
 
-		DECLARE_FIFO(uint8_t,uart_pty_fifo, 512);
+
+		enum { uart_pty_fifo_overflow_f = (1 << 0) };
+		enum { uart_pty_fifo_fifo_size = (512) };
+		typedef struct uart_pty_fifo_t {
+			uint8_t		buffer[uart_pty_fifo_fifo_size];
+			FIFO_VOLATILE FIFO_CURSOR_TYPE	read;
+			FIFO_VOLATILE FIFO_CURSOR_TYPE	write;
+			FIFO_VOLATILE uint8_t	flags;
+		} uart_pty_fifo_t;
 
 		DEFINE_FIFO(uint8_t,uart_pty_fifo);
 

@@ -20,6 +20,8 @@
 
 
 #include "Prusa_MK3SMMU2.h"
+#include <stdio.h>                // for printf
+#include <memory>                 // for unique_ptr
 #include "BasePeripheral.h"       // for MAKE_C_CALLBACK
 #include "IRSensor.h"             // for IRSensor, IRSensor::IRState::IR_AUTO
 #include "MK3SGL.h"               // for MK3SGL

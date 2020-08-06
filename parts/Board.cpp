@@ -21,15 +21,16 @@
  */
 
 #include <Board.h>
-#include <fcntl.h>    // for open, O_CREAT, O_RDWR, SEEK_SET
-#include <sim_elf.h>  // for avr_load_firmware, elf_firmware_t, elf_read_fir...
-#include <sim_gdb.h>  // for avr_gdb_init
-#include <sim_hex.h>  // for read_ihex_file
-#include <stdlib.h>   // for exit, free
-#include <unistd.h>   // for close, ftruncate, lseek, read, write, ssize_t
-#include <cstring>    // for memcpy, NULL
-#include <avr_uart.h>
-#include "TelemetryHost.h"
+#include <avr_uart.h>       // for AVR_IOCTL_UART_GETIRQ, ::UART_IRQ_INPUT
+#include <fcntl.h>          // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <sim_elf.h>        // for avr_load_firmware, elf_firmware_t, elf_re...
+#include <sim_gdb.h>        // for avr_gdb_init
+#include <sim_hex.h>        // for read_ihex_file
+#include <stdlib.h>         // for exit, free
+#include <unistd.h>         // for close, ftruncate, lseek, read, write, ssi...
+#include <cstring>          // for memcpy
+#include "TelemetryHost.h"  // for TelCategory, TC, TelemetryHost
+#include "sim_io.h"         // for avr_io_getirq
 
 using namespace std;
 using namespace Boards;

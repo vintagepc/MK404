@@ -21,13 +21,21 @@
 
 #pragma once
 
-#include <sim_vcd_file.h>
-#include "BasePeripheral.h"
-#include <string>
-#include <vector>
-#include <map>
-#include <string.h>
-#include "Scriptable.h"
+#include <sim_vcd_file.h>    // for avr_vcd_init, avr_vcd_start, avr_vcd_stop
+#include <stdint.h>          // for uint32_t, uint8_t
+#include <stdio.h>           // for fprintf, printf, stderr
+#include <stdlib.h>          // for exit
+#include <string.h>          // for memset
+#include <map>               // for map
+#include <string>            // for string
+#include <type_traits>       // for __decay_and_strip<>::__type
+#include <utility>           // for make_pair, pair
+#include <vector>            // for vector
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "IScriptable.h"     // for ArgType, ArgType::Int, ArgType::String
+#include "Scriptable.h"      // for Scriptable
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
 
 using namespace std;
 
@@ -69,8 +77,12 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 {
 	public:
 
-	#define IRQPAIRS
-	#include "IRQHelper.h"
+	enum IRQ {
+		COUNT
+	};
+
+	const char *_IRQNAMES[IRQ::COUNT] = {
+	};
 
 	inline static TelemetryHost* GetHost()
 	{

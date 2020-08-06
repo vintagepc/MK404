@@ -21,6 +21,11 @@
 	You should have received a copy of the GNU General Public License
 	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifdef _IRQ
+#undef _IRQ
+#endif
+
 #define _IRQ(x,y) x,
 enum IRQ {
     IRQPAIRS
@@ -33,5 +38,7 @@ const char *_IRQNAMES[IRQ::COUNT] = {
     IRQPAIRS
     };
 #undef _IRQ
+
+#define _IRQ(x,y)
 
 #undef IRQPAIRS // Clear the IRQ pairs for subsequent classes.

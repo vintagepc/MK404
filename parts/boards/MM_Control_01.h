@@ -23,6 +23,7 @@
 #include <Board.h>                 // for Board
 #include <stdint.h>                // for uint32_t
 #include <wiring/MM_Control_01.h>  // for MM_Control_01
+#include <string>                  // for string
 #include "ADC_Buttons.h"           // for ADC_Buttons
 #include "HC595.h"                 // for HC595
 #include "LED.h"                   // for LED

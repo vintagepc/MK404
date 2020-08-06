@@ -40,7 +40,7 @@ jobs:
       id: cache-pkgs
       with:
           path: "packages"
-          key: "pkgs-1_0_5"
+          key: "pkgs-1_0_5-iwyu"
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
       run: mkdir -p packages/partial
@@ -54,5 +54,5 @@ jobs:
     - name: Prepare CMake build
       run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=DEBUG -DENABLE_IWYU=1 ..
 
-    - name: Run CPPCheck
+    - name: Run IWYU
       run: cd ${{ runner.workspace }}/MK404/build && make

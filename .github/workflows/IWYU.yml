@@ -40,13 +40,13 @@ jobs:
       id: cache-pkgs
       with:
           path: "packages"
-          key: "pkgs-1_0_0"
+          key: "pkgs-1_0_5"
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
       run: mkdir -p packages/partial
 
     - name: Install packages
-      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
+      run: sudo apt-get update && sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages

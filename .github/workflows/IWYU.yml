@@ -46,13 +46,15 @@ jobs:
       run: mkdir -p packages/partial
 
     - name: Install packages
-      run: sudo apt-get update && sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
+      run: sudo apt-get update && sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev g++-7 gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
 
     - name: Prepare CMake build
-      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DENABLE_IWYU=1 ..
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=/usr/bin/g++-7 -DENABLE_IWYU=1 ..
 
     - name: Run IWYU
-      run: cd ${{ runner.workspace }}/MK404/build && make
+	  run: |
+		cd ${{ runner.workspace }}/MK404/build && make |& log.txt
+        ! grep -q "include-what-you-use reported diagnostics" log.txt

@@ -148,9 +148,10 @@ void Prusa_MK3S::SetupHardware()
 
 void Prusa_MK3S::OnAVRCycle()
 {
-	if (m_mouseBtn)
+	int mouseBtn = m_mouseBtn;                  // copy atomic to local
+	if (mouseBtn)
 	{
-		switch (m_mouseBtn){
+		switch (mouseBtn){
 			case 1:
 				encoder.MousePush();
 				break;
@@ -168,8 +169,10 @@ void Prusa_MK3S::OnAVRCycle()
 		}
 		m_mouseBtn = 0;
 	}
-	if (m_key) {
-		switch (m_key) {
+	int key = m_key;                            // copy atomic to local
+	if (key)
+	{
+		switch (key) {
 			case 'w':
 				printf("<");
 				encoder.Twist(RotaryEncoder::CCW_CLICK);

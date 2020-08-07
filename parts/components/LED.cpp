@@ -21,8 +21,12 @@
 
 
 #include "LED.h"
-#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#include <GL/gl.h>            // for glVertex2f, glBegin, glColor3f, glEnd
+#include <GL/glut.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#if defined(__APPLE__)
+# include <OpenGL/gl.h>       // for glVertex2f, glBegin, glColor3f, glEnd
+#else
+# include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glEnd
+#endif
 
 LED::LED(uint32_t uiHexColor, char chrLabel, bool bInvert):m_chrLabel(chrLabel),m_bInvert(bInvert)
 {

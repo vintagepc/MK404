@@ -37,6 +37,10 @@
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
 
+extern "C" {
+    DECLARE_FIFO(uint8_t,uart_pty_fifo, 512);
+}
+
 class uart_pty: public BasePeripheral
 {
 
@@ -77,10 +81,6 @@ class uart_pty: public BasePeripheral
 		std::atomic_bool m_bQuit = {false};
 
 		unsigned char m_chrLast = '\n';
-
-		DECLARE_FIFO(uint8_t,uart_pty_fifo, 512);
-
-		DEFINE_FIFO(uint8_t,uart_pty_fifo);
 
 		std::mutex m_lock;
 

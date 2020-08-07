@@ -22,8 +22,6 @@
 
 #pragma once
 
-using namespace std;
-
 #include <stdlib.h>
 #include <string>
 #include <map>
@@ -64,7 +62,7 @@ class Scriptable: public IScriptable
 			return false;
 		}
 
-		void RegisterMenu(const string &strLabel, uint uiID)
+		void RegisterMenu(const string &strLabel, unsigned uiID)
 		{
 			ScriptHost::AddMenuEntry(strLabel, uiID, this);
 		}

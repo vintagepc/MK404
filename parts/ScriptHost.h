@@ -57,7 +57,7 @@ class ScriptHost: public IScriptable
 			return true;
 		}
 
-		static bool Setup(const string &strScript,uint uiFreq)
+		static bool Setup(const string &strScript,unsigned uiFreq)
 		{
 			m_uiAVRFreq = uiFreq;
 			if (!strScript.empty())
@@ -67,7 +67,7 @@ class ScriptHost: public IScriptable
 
 		static void AddScriptable(string strName, IScriptable* src);
 
-		static void AddMenuEntry(const string &strName, uint uiID, IScriptable* src);
+		static void AddMenuEntry(const string &strName, unsigned uiID, IScriptable* src);
 
 		static inline bool IsRegistered(string strName)
 		{
@@ -116,8 +116,8 @@ class ScriptHost: public IScriptable
 		static shared_ptr<ScriptHost> g_pHost;
 		static map<string, IScriptable*> m_clients;
 		static map<string, int> m_mMenuIDs;
-		static map<string, uint> m_mClient2MenuBase;
-		static map<uint, IScriptable*> m_mMenuBase2Client;
+		static map<string, unsigned> m_mClient2MenuBase;
+		static map<unsigned, IScriptable*> m_mMenuBase2Client;
 		static map<string, vector<pair<string,int>>> m_mClientEntries; // Stores client entries for when GLUT is ready.
 		static vector<string> m_script;
 		static unsigned int m_iLine, m_uiAVRFreq;

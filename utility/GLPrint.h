@@ -72,8 +72,11 @@ class GLPrint
 		vector<float> m_fvDraw, m_fvNorms;
 		vector<float> m_fvTri;
 		// Layer vertex tracking.
-		vector<float*> m_vpfLayer1, m_vpfLayer2, *m_pCurLayer = &m_vpfLayer1, *m_pPrevLayer = &m_vpfLayer2;
-		float m_fCurZ = -1, m_fLastZ = -1;
+		vector<float*> m_vpfLayer1, m_vpfLayer2;
+		// vector<float*> *m_pCurLayer = &m_vpfLayer1;   // not used
+		// vector<float*> *m_pPrevLayer = &m_vpfLayer2;  // not used
+		float m_fCurZ = -1;
+		// float m_fLastZ = -1;                          // not used
 		float m_fEMax = 0;
 		const float m_fColR, m_fColG, m_fColB;
 		atomic_bool m_bExtruding = {false};

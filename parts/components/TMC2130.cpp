@@ -20,8 +20,12 @@
  */
 
 #include "TMC2130.h"
-#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#include <GL/gl.h>            // for glVertex3f, glColor3f, glBegin, glEnd
+#include <GL/glut.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#if defined(__APPLE__)
+# include <OpenGL/gl.h>       // for glVertex3f, glColor3f, glBegin, glEnd
+#else
+# include <GL/gl.h>           // for glVertex3f, glColor3f, glBegin, glEnd
+#endif
 #include <stdio.h>            // for printf
 #include <string.h>           // for memset
 #include <algorithm>          // for min

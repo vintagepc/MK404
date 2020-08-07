@@ -20,8 +20,12 @@
  */
 
 #include "Beeper.h"
-#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#include <GL/gl.h>            // for glVertex2f, glPopMatrix, glPushMatrix
+#include <GL/glut.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#if defined(__APPLE__)
+# include <OpenGL/gl.h>       // for glVertex2f, glPopMatrix, glPushMatrix
+#else
+# include <GL/gl.h>           // for glVertex2f, glPopMatrix, glPushMatrix
+#endif
 #include <SDL.h>              // for SDL_Init, SDL_INIT_AUDIO
 #include <SDL_audio.h>        // for SDL_PauseAudio, SDL_AudioSpec, SDL_Clos...
 #include <SDL_error.h>        // for SDL_GetError

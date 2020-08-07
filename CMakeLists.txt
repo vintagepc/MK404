@@ -7,11 +7,14 @@ project(MK404 VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(OpenGL_GL_PREFERENCE GLVND)
 
 option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
 
 # Yells at you if you have extra link args.
+if (NOT APPLE)
 set(CMAKE_LINK_WHAT_YOU_USE TRUE)
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -137,6 +140,9 @@ add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
 
 target_compile_features(MK404 PRIVATE cxx_range_for)
 target_compile_options(MK404 PRIVATE -Wall)
+if (APPLE)
+target_compile_options(MK404 PRIVATE -DGL_SILENCE_DEPRECATION=1)
+endif()
 
 option(BUILD_WERROR "Build with Warnings as Errors" 1)
 
@@ -193,12 +199,18 @@ find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
 include(FindSDL)
 include_directories(${SDL_INCLUDE_DIR})
+include(FindOpenGL)
+include_directories(${OPENGL_INCLUDE_DIR})
+include(FindFreeGLUT)
+include_directories(${GLUT_INCLUDE_DIR})
+include(FindGLEW)
+include_directories(${GLEW_INCLUDE_DIR})
 
 if (ENABLE_THREAD_SANITY)
 	target_link_libraries(MK404 -fsanitize=thread)
 endif()
 
-target_link_libraries(MK404 pthread util glut GL GLU GLEW m SDL tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
+target_link_libraries(MK404 pthread util m GLUT::GLUT OpenGL::GL OpenGL::GLU GLEW::GLEW ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different

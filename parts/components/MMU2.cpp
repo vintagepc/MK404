@@ -20,8 +20,12 @@
  */
 
 #include "MMU2.h"
-#include <GL/freeglut_std.h>  // for glutGet, glutStrokeCharacter, GLUT_STRO...
-#include <GL/gl.h>            // for glTranslatef, glVertex3f, glColor3f
+#include <GL/glut.h>          // for glutGet, glutStrokeCharacter, GLUT_STRO...
+#if defined(__APPLE__)
+# include <OpenGL/gl.h>       // for glTranslatef, glVertex3f, glColor3f
+#else
+# include <GL/gl.h>           // for glTranslatef, glVertex3f, glColor3f
+#endif
 #include <stdio.h>            // for fprintf, size_t, stderr
 #include <stdlib.h>           // for exit
 #include "HC595.h"            // for HC595, TMC2130::IRQ::POSITION_OUT, MMU2...

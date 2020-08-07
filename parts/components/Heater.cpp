@@ -22,8 +22,12 @@
  */
 
 #include "Heater.h"
-#include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#include <GL/gl.h>            // for glVertex2f, glBegin, glColor3f, glColor3fv
+#include <GL/glut.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#if defined(__APPLE__)
+# include <OpenGL/gl.h>       // for glVertex2f, glBegin, glColor3f, glColor3fv
+#else
+# include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glColor3fv
+#endif
 #include <math.h>             // for pow
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
 #include "TelemetryHost.h"

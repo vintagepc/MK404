@@ -66,7 +66,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);
 
-		std::atomic<int> m_key = {0}, m_mouseBtn = {0};
+		std::atomic_int m_key = {0}, m_mouseBtn = {0};
 
 		unsigned int m_iScheme = 0;
 		uint32_t m_colors[8] = {

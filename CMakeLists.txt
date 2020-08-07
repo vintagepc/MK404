@@ -36,6 +36,7 @@ set(H_FILES
 	parts/wiring/Einsy_1_0a.h
 	parts/ScriptHost.h
 	parts/pinspecs/PinSpec_2560.h
+	parts/I2CPeripheral.h
 	parts/pinspecs/PinSpec_32u4.h
 	parts/PinSpec.h
 	parts/SoftPWMable.h

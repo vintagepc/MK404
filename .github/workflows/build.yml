@@ -104,8 +104,6 @@ jobs:
           files: |
             ${{ runner.workspace }}/MK404/build/MK404-development-build.tar.bz2
 
-
-  # This workflow contains a single job called "build"
   build_osx:
     # The type of runner that the job will run on
     runs-on: macos-latest
@@ -139,6 +137,55 @@ jobs:
 
     - name: Build Einsy
       run: cd ${{ runner.workspace }}/MK404/build && make
+      
+  build_cygwin:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+    steps:
+      - uses: actions/cache@v1
+        with:
+          path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+          key: ${{ runner.os }}-cygwin-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-cygwin-
+      - name: Install cygwin
+        run: |
+          choco config get cacheLocation
+          choco install --no-progress cygwin
+      - name: Install cygwin dependencies
+        run: |
+          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,libelf-devel,gcc-7,git,libfreeglut-devel,libglew-devel,libSDL_sound-devel
+        shell: cmd
+      - name: Set ENV
+        run: |
+          echo '::set-env name=PATH::C:\tools\cygwin\bin;C:\tools\cygwin\usr\bin'
+      - name: Checkout ${{ github.event.pull_request.head.ref }}
+        uses: actions/checkout@v2.2.0
+        if: ${{ github.event.pull_request }}
+        with:
+          repository: vintagepc/MK404.git
+          ref: ${{ github.event.pull_request.head.sha }}
+          submodules: true
 
+      - name: Checkout master
+        uses: actions/checkout@v2.2.0
+        if: ${{ !github.event.pull_request }}
+        with:
+          repository: vintagepc/MK404.git
+          submodules: true
+          
+      - name: Configure build
+        run: |
+          md MK404/build
+          cd MK404/build
+          bash.exe -c "cmake .."
+        shell: cmd
+        
+      - name: Build
+        run: |
+          cd MK404/build
+          bash.exe -c "make -j2"
+        shell: cmd
+        
 
 

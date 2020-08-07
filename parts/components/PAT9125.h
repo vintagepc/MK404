@@ -269,7 +269,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		ActResumeAuto
 	};
 
-	uint8_t m_uiAddr = 0;
+		// uint8_t m_uiAddr = 0;                            // not used?
 		float m_fYPos = 0.f, m_fPPos = 0.f, m_fEPos = 0.f;
 		float m_fCurY = 0.f;
 		union m_regs

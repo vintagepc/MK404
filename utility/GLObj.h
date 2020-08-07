@@ -23,7 +23,6 @@
 
 #include <GL/glew.h>          // for GLuint
 #include <stddef.h>           // for size_t
-#include <sys/types.h>        // for uint
 #include "tiny_obj_loader.h"  // for material_t
 #include <map>                // for map
 #include <string>             // for string
@@ -59,10 +58,10 @@ class GLObj
 		inline void SetMaterialMode(GLenum mode){m_matMode = mode;}
 
         // Lets you show or hide a specific sub-object within the .obj.
-        void SetSubobjectVisible(uint iObj, bool bVisible = true);
+        void SetSubobjectVisible(unsigned iObj, bool bVisible = true);
 
         // Lets you tweak the material for a subobject. An example is a modelled LED turning on/off.
-        void SetSubobjectMaterial(uint iObj, uint iMat);
+        void SetSubobjectMaterial(unsigned iObj, unsigned iMat);
 
         // Sets all subobjects as visible or invisible.
         void SetAllVisible(bool bVisible = true);

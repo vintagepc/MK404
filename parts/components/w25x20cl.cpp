@@ -26,7 +26,6 @@
 #include <stdio.h>      // for printf, perror, fprintf, stderr, size_t
 #include <stdlib.h>     // for exit, free, malloc
 #include <string.h>     // for memset, memcpy, strncpy
-#include <sys/types.h>  // for uint
 #include <unistd.h>     // for close, ftruncate, lseek, read, write, ssize_t
 #include "TelemetryHost.h"
 
@@ -104,7 +103,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 					if (m_rxCnt == 4)
 					{
 						m_address = 0;
-						for (uint  i = 0; i < 3; i++)
+						for (unsigned  i = 0; i < 3; i++)
 						{
 							m_address *= W25X20CL_PAGE_SIZE;
 							m_address |= m_cmdIn[i + 1];
@@ -119,7 +118,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 					if (m_rxCnt == 4)
 					{
 						m_address = 0;
-						for (uint  i = 0; i < 3; i++)
+						for (unsigned  i = 0; i < 3; i++)
 						{
 							m_address *= W25X20CL_PAGE_SIZE;
 							m_address |= m_cmdIn[i + 1];

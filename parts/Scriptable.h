@@ -64,7 +64,7 @@ class Scriptable: public IScriptable
 			return false;
 		}
 
-		void RegisterMenu(const string &strLabel, uint uiID)
+		void RegisterMenu(const string &strLabel, unsigned uiID)
 		{
 			ScriptHost::AddMenuEntry(strLabel, uiID, this);
 		}

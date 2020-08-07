@@ -74,7 +74,7 @@ void GLObj::SetAllVisible(bool bVisible)
 		m_DrawObjects[i].bDraw = bVisible;
 }
 
-void GLObj::SetSubobjectVisible(uint iObj, bool bVisible)
+void GLObj::SetSubobjectVisible(unsigned iObj, bool bVisible)
 {
 	lock_guard<mutex> lock(m_lock);
 	if (iObj<m_DrawObjects.size())
@@ -82,7 +82,7 @@ void GLObj::SetSubobjectVisible(uint iObj, bool bVisible)
 }
 
 
-void GLObj::SetSubobjectMaterial(uint iObj, uint iMat)
+void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 {
 	if (iObj<m_DrawObjects.size() && iMat < m_materials.size())
 	{

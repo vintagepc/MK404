@@ -146,9 +146,6 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
 
         // Correction parameters to get the model at 0,0,0 and aligned with the simulated starting positions.
-        // float m_fXCorr = 0.044;          // not used
-        // float m_fYCorr = 0.141;          // not used
-        // float m_fZCorr = 0.210;          // not used
         atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01}, m_fPPos = {0.f};
 
         float m_fSelCorr = 0.025f;

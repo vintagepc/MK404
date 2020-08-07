@@ -248,6 +248,4 @@ class I2CPeripheral: public BasePeripheral
 		State m_state = State::Idle;
 
 		uint8_t m_uiBitCt = 0;
-		// uint8_t m_uiByteCt = 0; // not used ??
-
 };

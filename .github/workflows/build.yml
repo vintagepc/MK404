@@ -130,7 +130,7 @@ jobs:
 
     - name: Install packages
       run: |
-          brew install libelf
+          brew install libelf freeglut glew
 
     - name: Prepare CMake build
       run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..

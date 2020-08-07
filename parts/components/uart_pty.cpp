@@ -26,7 +26,17 @@
 #include <sys/time.h>                   // for timeval
 #include <errno.h>                      // for errno
 #include <pthread.h>                    // for pthread_create, pthread_join
-#include <pty.h>                        // for openpty
+#if defined(__APPLE__)
+// utils/Util.h clashes with this system file.
+//#  include <util.h>                     // for openpty
+// hack, prototype from `man openpty`
+extern "C" {
+int
+    openpty(int *amaster, int *aslave, char *name, struct termios *termp, struct winsize *winp);
+}
+#else
+# include <pty.h>                       // for openpty
+#endif
 #include <stdio.h>                      // for printf, NULL, fprintf, sprintf
 #include <stdlib.h>                     // for getenv, atoi, system
 #include <string.h>                     // for memset, strerror

@@ -176,7 +176,7 @@ jobs:
           
       - name: Configure build
         run: |
-          md MK404/build
+          mkdir MK404/build
           cd MK404/build
           bash.exe -c "cmake .."
         shell: cmd

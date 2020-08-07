@@ -257,7 +257,7 @@ SDCard::State SDCard::ProcessCommand()
 		default:
 			/* Illegal command. */
 			COMMAND_RESPONSE_R1 (R1_ILLEGAL_COMMAND);
-			fprintf (stderr, "%lu: sdcard: Unknown SD card command ‘%u’.\n", m_pAVR->cycle, m_CmdIn.bits.cmd);
+			fprintf (stderr, "%lu: sdcard: Unknown SD card command ‘%u’.\n", static_cast<unsigned long>(m_pAVR->cycle), m_CmdIn.bits.cmd);
 			break;
 	}
 
@@ -522,7 +522,7 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 			printf("No SD image found. Aborting mount.\n");
 			return OnError(-1);
 		}
-		printf("Autodetected SD image size as %lu Mb\n",image_size>>20); // >>20 = div by 1024*1024
+		printf("Autodetected SD image size as %lu Mb\n", static_cast<unsigned long>(image_size>>20)); // >>20 = div by 1024*1024
 	}
 	else if (stat_buf.st_size < image_size)
 	{

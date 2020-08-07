@@ -34,8 +34,8 @@ map<string, IScriptable*> ScriptHost::m_clients;
 vector<string> ScriptHost::m_script;
 unsigned int ScriptHost::m_iLine, ScriptHost::m_uiAVRFreq;
 map<string, int> ScriptHost::m_mMenuIDs;
-map<uint,IScriptable*> ScriptHost::m_mMenuBase2Client;
-map<string, uint> ScriptHost::m_mClient2MenuBase;
+map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
+map<string, unsigned> ScriptHost::m_mClient2MenuBase;
 map<string, vector<pair<string,int>>> ScriptHost::m_mClientEntries;
 ScriptHost::linestate_t ScriptHost::m_lnState = linestate_t();
 shared_ptr<ScriptHost> ScriptHost::g_pHost;
@@ -185,7 +185,7 @@ void ScriptHost::DispatchMenuCB()
 {
 	if (m_uiQueuedMenu !=0)
 	{
-		uint iID = m_uiQueuedMenu;
+		unsigned iID = m_uiQueuedMenu;
 		m_uiQueuedMenu.store(0);
 		IScriptable *pClient = m_mMenuBase2Client[(iID - iID%100)];
 		pClient->ProcessMenu(iID%100);
@@ -302,18 +302,18 @@ void ScriptHost::AddSubmenu(IScriptable *src)
 	else if (!m_mMenuIDs.count(strName)) // GLUT isn't up yet, queue it for later.
 	{
 		m_mMenuIDs[strName] = 0;
-		uint uiBase = 100U*m_mMenuIDs.size();
+		unsigned uiBase = 100U*m_mMenuIDs.size();
 		m_mMenuBase2Client[uiBase] = src;
 		m_mClient2MenuBase[strName] = uiBase;
 		//printf("Registered %s with menu base %u\n",strName.c_str(),uiBase);
 	}
 }
 
-void ScriptHost::AddMenuEntry(const string &strName, uint uiID, IScriptable* src)
+void ScriptHost::AddMenuEntry(const string &strName, unsigned uiID, IScriptable* src)
 {
 	assert(uiID<100);
 	auto strClient = src->GetName();
-	uint uiBase = m_mClient2MenuBase.at(strClient);
+	unsigned uiBase = m_mClient2MenuBase.at(strClient);
 	m_mClientEntries[strClient].push_back({strName, uiBase + uiID});
 
 }

@@ -34,10 +34,11 @@
 #include "hd44780_charROM.h"  // for (anonymous), hd44780_ROM_AOO
 #include "sim_avr_types.h"    // for avr_regbit_t
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
-#if __APPLE__
-#include <GLUT/gl.h>
+#include <GL/glut.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#if defined(__APPLE__)
+# include <OpenGL/gl.h>       // for glVertex3f, glBegin, glEnd, glMaterialfv
 #else
-#include <GL/gl.h>            // for glVertex3f, glBegin, glEnd, glMaterialfv
+# include <GL/gl.h>           // for glVertex3f, glBegin, glEnd, glMaterialfv
 #endif
 
 

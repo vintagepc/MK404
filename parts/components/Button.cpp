@@ -64,7 +64,7 @@ void Button::Init(avr_t* avr)
 avr_cycle_count_t Button::AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen)
 {
 	RaiseIRQ(BUTTON_OUT,1);
-	printf("Button released after %lu usec\n",uiWhen);
+	printf("Button released after %lu usec\n",static_cast<unsigned long>(uiWhen));
 	return 0;
 }
 

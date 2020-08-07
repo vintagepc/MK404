@@ -130,6 +130,7 @@ jobs:
 
     - name: Install packages
       run: |
+          brew cask install xquartz
           brew install libelf freeglut glew
 
     - name: Prepare CMake build

@@ -75,6 +75,7 @@ void OnSigINT(int iSig) {
 	}
 }
 
+extern "C" {
 void GLAPIENTRY
 GLErrorCB( GLenum source,
                  GLenum type,
@@ -87,6 +88,7 @@ GLErrorCB( GLenum source,
   fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
            ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
             type, severity, message );
+}
 }
 
 atomic_bool bIsQuitting {false};
@@ -324,6 +326,7 @@ int main(int argc, char *argv[])
 		cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << endl;
 		cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << endl;
 		//cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+#if !defined(__APPLE__)
 		glDebugMessageCallback( GLErrorCB, 0 );
 		if (argSpam.getValue()<1)
 		{
@@ -333,6 +336,7 @@ int main(int argc, char *argv[])
 						0, nullptr, GL_FALSE);
 		}
 		glEnable(GL_DEBUG_OUTPUT);
+#endif
 		initGL(iWinW, iWinH);
 
 		if (argGfx.isSet())

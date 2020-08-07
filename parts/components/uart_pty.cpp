@@ -52,6 +52,10 @@ int
 #define TRACE(_w)
 #endif
 
+extern "C" {
+DEFINE_FIFO(uint8_t,uart_pty_fifo);
+}
+
 /*
  * called when a byte is send via the uart on the AVR
  */

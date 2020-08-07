@@ -191,6 +191,8 @@ include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
+include(FindSDL)
+include_directories(${SDL_INCLUDE_DIR})
 
 if (ENABLE_THREAD_SANITY)
 	target_link_libraries(MK404 -fsanitize=thread)

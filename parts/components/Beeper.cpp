@@ -22,10 +22,10 @@
 #include "Beeper.h"
 #include <GL/freeglut_std.h>  // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #include <GL/gl.h>            // for glVertex2f, glPopMatrix, glPushMatrix
-#include <SDL/SDL.h>          // for SDL_Init, SDL_INIT_AUDIO
-#include <SDL/SDL_audio.h>    // for SDL_PauseAudio, SDL_AudioSpec, SDL_Clos...
-#include <SDL/SDL_error.h>    // for SDL_GetError
-#include <SDL/SDL_stdinc.h>   // for Sint16
+#include <SDL.h>              // for SDL_Init, SDL_INIT_AUDIO
+#include <SDL_audio.h>        // for SDL_PauseAudio, SDL_AudioSpec, SDL_Clos...
+#include <SDL_error.h>        // for SDL_GetError
+#include <SDL_stdinc.h>       // for Sint16
 #include <stdio.h>            // for fprintf, printf, stderr
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
 #include "TelemetryHost.h"

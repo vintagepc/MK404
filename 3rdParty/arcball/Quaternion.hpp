@@ -109,7 +109,7 @@ class quaternion
 		inline bool operator == (const quaternion & q)
 			{ return (w == q.w) && (x == q.x) && (y == q.y) && (z == q.z); }
 		inline quaternion & operator *= (const quaternion & q)
-			{ return *this = quaternion(*this) *= q; }
+			{ return *this = quaternion(*this) * q; }
 		inline quaternion & operator *= (float s)
 			{ w *= s; x *= s; y *= s; z *= s; return *this; }
 		inline quaternion & operator += (const quaternion & q)

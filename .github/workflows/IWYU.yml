@@ -47,9 +47,7 @@ jobs:
 
     - name: Install packages
       run: |
-        sudo apt-get update && sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev libstdc++-6-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
-        sudo apt-get remove libstdc++-9*
-        sudo apt-get purge libstdc++-9*
+        sudo apt-get update && sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
         sudo updatedb
 
     - name: Cache permissions

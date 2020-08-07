@@ -53,8 +53,8 @@ class IScriptable
 	friend ScriptHost;
 	friend TelemetryHost;
     public:
-		IScriptable(const string &strName):m_strName(strName){};
-
+		IScriptable(const string &strName):m_strName(strName){}
+        virtual ~IScriptable() {}
 	enum class LineStatus
 	{
 		Error,

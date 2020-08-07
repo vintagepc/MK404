@@ -194,6 +194,7 @@ target_include_directories (MK404 PUBLIC
 
 include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 
+if (NOT CPPCHECK_ONLY)
 
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
@@ -211,6 +212,7 @@ if (ENABLE_THREAD_SANITY)
 endif()
 
 target_link_libraries(MK404 pthread util m GLUT::GLUT OpenGL::GL OpenGL::GLU GLEW::GLEW ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
+endif()
 
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different

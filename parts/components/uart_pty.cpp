@@ -23,7 +23,7 @@
 
 
 #include "uart_pty.h"
-#include <bits/types/struct_timeval.h>  // for timeval
+#include <sys/time.h>                   // for timeval
 #include <errno.h>                      // for errno
 #include <pthread.h>                    // for pthread_create, pthread_join
 #include <pty.h>                        // for openpty

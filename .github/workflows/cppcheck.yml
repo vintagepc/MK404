@@ -84,5 +84,6 @@ jobs:
         
     - name : Final status
       id: tidy_status
-      run: ! grep -q "warning:" ${{ runner.workspace }}/MK404/build/tidy.txt
+      run: |
+        ! grep -q "warning:" ${{ runner.workspace }}/MK404/build/tidy.txt
         

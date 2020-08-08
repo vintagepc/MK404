@@ -2,24 +2,24 @@
 	PinSpec_Helper.h - Pin specification helper class. Include this when defining
 	a PinSpec.
 
- 	This file is part of MK3SIM.
+ 	This file is part of MK404.
 
-	MK3SIM is free software: you can redistribute it and/or modify
+	MK404 is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
 
-	MK3SIM is distributed in the hope that it will be useful,
+	MK404 is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
+	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
-// Shortcuts to make it easy to copy-paste tables rather than 
+// Shortcuts to make it easy to copy-paste tables rather than
 // having to alter every entry:
 #define PA 'A'
 #define PB 'B'

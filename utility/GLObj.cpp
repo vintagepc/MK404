@@ -288,7 +288,6 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 				{
 					//printf("Submaterial in shape %s: %u\n",shapes[s].name.c_str(),current_material_id);
 					AddObject(vb,iMatlId);
-					iMatlId = 0;
 					vb.clear();
 				}
 

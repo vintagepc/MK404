@@ -54,7 +54,7 @@ class ScriptHost: public IScriptable
 				fprintf(stderr,"ERROR: Duplicate initialization attempt for scripthost!\n");
 				return false;
 			}
-			new ScriptHost();
+			g_pHost.reset(new ScriptHost());
 			return true;
 		}
 
@@ -109,7 +109,6 @@ class ScriptHost: public IScriptable
 		LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
 
 		ScriptHost():IScriptable("ScriptHost"){
-			g_pHost.reset(this);
 			RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{ArgType::Int});
 			RegisterAction("SetQuitOnTimeout","If 1, quits when a timeout occurs. Exit code will be non-zero.",ActSetQuitOnTimeout,{ArgType::Bool});
 			m_clients[m_strName] = this;

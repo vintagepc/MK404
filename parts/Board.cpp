@@ -182,9 +182,12 @@ avr_flashaddr_t Board::LoadFirmware(string strFW)
 			puiBytes = read_ihex_file(strFW.c_str(),&uiFWSize, &uiFWStart);
 			if (!puiBytes)
 				printf("WARN: Could not load %s. MCU will execute existing flash.\n", strFW.c_str());
-			printf("Loaded %u bytes from HEX file: %s\n",uiFWSize, strFW.c_str());
-			memcpy(m_pAVR->flash + uiFWStart, puiBytes, uiFWSize);
-			free(puiBytes);
+			else
+			{
+				printf("Loaded %u bytes from HEX file: %s\n",uiFWSize, strFW.c_str());
+				memcpy(m_pAVR->flash + uiFWStart, puiBytes, uiFWSize);
+				free(puiBytes);
+			}
 			m_pAVR->codeend = m_pAVR->flashend;
 			return uiFWStart;
 		}

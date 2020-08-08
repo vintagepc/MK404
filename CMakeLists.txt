@@ -11,6 +11,7 @@ set(OpenGL_GL_PREFERENCE GLVND)
 
 option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
 option(ENABLE_IWYU "Enables Include-what-you-use")
+option(ENABLE_TIDY "Enables Clang-tidy")
 
 # Yells at you if you have extra link args.
 if (NOT APPLE)
@@ -23,6 +24,12 @@ if (ENABLE_IWYU)
 	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/include-what-you-use")
 else()
 	unset(CMAKE_CXX_INCLUDE_WHAT_YOU_USE)
+endif()
+
+if (ENABLE_TIDY)
+	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy;-warnings-as-errors=*")
+else()
+	unset(CMAKE_CXX_CLANG_TIDY)
 endif()
 
 

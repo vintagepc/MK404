@@ -154,7 +154,11 @@ set(MK404_SOURCES
 	3rdParty/arcball/Camera.cpp
 )
 
-add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
+if (ENABLE_TIDY)
+	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${FIRMWARE})
+else()
+	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
+endif()
 
 target_compile_features(MK404 PRIVATE cxx_range_for)
 target_compile_options(MK404 PRIVATE -Wall)

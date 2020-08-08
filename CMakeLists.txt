@@ -266,9 +266,9 @@ add_custom_target(UpdateDocs
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3SMMU2 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/autogen/Scripting_MK3SMMU2.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3MMU2 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/autogen/Scripting_MK3MMU2.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/autogen/Scripting_MK3.md
-	COMMAND echo '```' > ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
+	COMMAND echo '```' > ${PROJECT_SOURCE_DIR}/ref/autogen/CommandLine.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 --help >> ${PROJECT_SOURCE_DIR}/ref/autogen/CommandLine.md
-	COMMAND echo '```' >> ${PROJECT_SOURCE_DIR}/ref/CommandLine.md
+	COMMAND echo '```' >> ${PROJECT_SOURCE_DIR}/ref/autogen/CommandLine.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? | grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/autogen/TraceOptions_MK3S.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3SMMU2| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/autogen/TraceOptions_MK3SMMU2.md
 	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3MMU2| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/autogen/TraceOptions_MK3MMU2.md

@@ -184,7 +184,7 @@ jobs:
         
       - name: Build
         run: |
-          cd MK404/build
+          cd MK404\build
           bash.exe -c "make -j2"
         shell: cmd
         

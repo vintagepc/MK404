@@ -88,7 +88,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Assemble artifacts
-      if: ${{ !github.event.pull_request }}
       run: |
           cd ${{ runner.workspace }}/MK404/build
           make Release_Package

@@ -75,32 +75,14 @@ jobs:
         cd ${{ runner.workspace }}/MK404/build 
         make UpdateDocs
 
-    - name: Check for changed docs
+    - name: Publish documentation changes
       if: ${{ github.event.pull_request }}
-      run: |
-          cd ${{ runner.workspace }}/MK404/ref
-          if output=$(git status --porcelain --untracked=no) && [ -n "$output" ]; then
-          git status
-          echo "::set-env name=needs_commit::1"
-          fi
-
-    - name: Push prep
-      if: ${{env.needs_commit}}
       run: |
           cd ${{ runner.workspace }}/MK404/ref
           git add autogen/*
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git commit -m "Regen reference docs"
-
-    - name: Push changes
-      if:  ${{env.needs_commit}}
-      uses: ad-m/github-push-action@master
-      with:
-        repository: vintagepc/MK404.wiki.git
-        directory: cd ${{ runner.workspace }}/MK404/ref
-        branch: master
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+          git diff-index --quiet HEAD || git commit -m "Regen reference docs" && git push
 
     - name: Assemble artifacts
       if: ${{ !github.event.pull_request }}

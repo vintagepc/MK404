@@ -88,11 +88,13 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Assemble artifacts
+      if: ${{ !github.event.pull_request }}
       run: |
           cd ${{ runner.workspace }}/MK404/build
           make Release_Package
           
     - name: Upload artifact
+      if: ${{ !github.event.pull_request }}
       uses: actions/upload-artifact@v2
       with:
         name: Binaries
@@ -135,6 +137,7 @@ jobs:
         cp MK404 MK404_OSX
       
     - name: Upload OSX artifact
+      if: ${{ !github.event.pull_request }}
       uses: actions/upload-artifact@v2
       with:
         name: Binaries
@@ -199,6 +202,7 @@ jobs:
         shell: cmd
         
       - name: Upload Cygwin artifact
+        if: ${{ !github.event.pull_request }}
         uses: actions/upload-artifact@v2
         with:
           name: Binaries
@@ -206,6 +210,7 @@ jobs:
       
   Publish:
     runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request }}
     needs: [build, build_osx, build_cygwin]
     steps:       
       - name: Retrieve platform binaries
@@ -223,7 +228,6 @@ jobs:
         run: tar -jcvf MK404-dev-multiplatform.tar.bz2 MK404-dev
         
       - name: Publish prerelease
-        if: ${{ !github.event.pull_request }}
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"

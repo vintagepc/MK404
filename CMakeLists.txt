@@ -7,7 +7,7 @@ project(MK404 VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(OpenGL_GL_PREFERENCE GLVND)
+set(OpenGL_GL_PREFERENCE LEGACY) # We really don't need GLX here. (Prevents linking unused libs)
 
 option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
 option(ENABLE_IWYU "Enables Include-what-you-use")

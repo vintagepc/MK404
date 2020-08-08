@@ -96,18 +96,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Linux
-        path: MK404-dev
-    
-    - name: Publish prerelease
-      if: ${{ !github.event.pull_request }}
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "dev"
-          prerelease: true
-          title: "Latest (Development) Build"
-          files: |
-            ${{ runner.workspace }}/MK404/build/MK404-development-build.tar.bz2
+        path: ${{ runner.workspace }}/MK404/build/MK404-dev
 
   build_osx:
     # The type of runner that the job will run on
@@ -149,7 +138,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Binaries
-        path: MK404_OSX
+        path: ${{ runner.workspace }}/MK404/build/MK404_OSX
       
   build_cygwin:
     # The type of runner that the job will run on
@@ -158,6 +147,13 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+          key: ${{ runner.os }}-cygwin-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-cygwin-
+      - name: Cygwin package cache
+      - uses: actions/cache@v1
+        with:
+          path: C:\tools\cygwin
           key: ${{ runner.os }}-cygwin-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-cygwin-
@@ -206,6 +202,33 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Binaries
-          path: MK404.exe
-
-
+          path: ${{ runner.workspace }}/MK404/build/MK404.exe
+      
+  Publish:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request }}
+    needs: [build, build_osx, build_cygwin]
+    steps:
+      - name: Retrieve main package
+        uses: actions/download-artifact@v2
+        with:
+          name: Linux
+        
+      - name: Retrieve platform binaries
+        uses: actions/download-artifact@v2
+        with:
+          name: Binaries
+          path: MK404-dev/
+        
+      - name: Build tarball
+        run:  tar -jcvf "MK404-dev-multiplatform.tar.bz2" "MK404-dev"
+        
+      - name: Publish prerelease
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "dev"
+          prerelease: true
+          title: "Latest (Development) Build"
+          files: |
+            ${{ runner.workspace }}/MK404-dev-multplatform.tar.bz2

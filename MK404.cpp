@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 {
 	signal(SIGINT, OnSigINT);
 
-	CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',"0.1");
+	CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',"0.1"); // NOLINT
 	SwitchArg argWait("w","wait","Wait after the printer (and any PTYs) are set up but before starting execution.");
 	cmd.add(argWait);
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");

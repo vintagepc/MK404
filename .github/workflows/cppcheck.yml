@@ -40,13 +40,13 @@ jobs:
       id: cache-pkgs
       with:
           path: "packages"
-          key: "pkgs-1_0_0"
+          key: "pkgs-cppcheck"
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
       run: mkdir -p packages/partial
 
     - name: Install packages
-      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev cppcheck
+      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install cppcheck
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages

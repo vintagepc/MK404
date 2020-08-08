@@ -7,6 +7,8 @@ name: CI Build
 on:
   push:
     branches: [ master ]
+    tags:
+      - "v*"
   pull_request:
     branches: [ master ]
 
@@ -28,11 +30,12 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
         submodules: true
 
-    - name: Checkout master
+    - name: Checkout ${{ github.event.ref }}
       uses: actions/checkout@v2.2.0
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
+        ref: ${{ github.event.ref }}
         submodules: true
 
     - name: Cache packages
@@ -40,7 +43,7 @@ jobs:
       id: cache-pkgs
       with:
           path: "packages"
-          key: "pkgs-1_0_5-build"
+          key: "pkgs-1_0_0-linux"
 
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
@@ -60,32 +63,23 @@ jobs:
     - name: Build Einsy
       run: cd ${{ runner.workspace }}/MK404/build && make
 
-    - name: Regen docs
-      if: ${{ github.event.pull_request }}
-      run: cd ${{ runner.workspace }}/MK404/build && make UpdateDocs
-
-    - name: Check for changed docs
-      if: ${{ github.event.pull_request }}
-      run: |
-          if output=$(git status --porcelain --untracked=no) && [ -n "$output" ]; then
-          echo "::set-env name=needs_commit::1"
-          fi
-
-    - name: Push prep
-      if: ${{env.needs_commit}}
-      run: |
-          cd ${{ runner.workspace }}/MK404/
-          git add ref/*
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -m "Regen reference docs"
-
-    - name: Push changes
-      if:  ${{env.needs_commit}}
-      uses: ad-m/github-push-action@master
+    - name: Checkout Wiki
+      uses: actions/checkout@v2.2.0
+      if: ${{ !github.event.pull_request }}
       with:
-        branch: ${{ github.event.pull_request.head.ref }}
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        repository: vintagepc/MK404.wiki.git
+        path: ref
+
+    - name: Regen docs
+      if: ${{ !github.event.pull_request }}
+      run: |
+        cd ${{ runner.workspace }}/MK404/build 
+        make UpdateDocs
+        cd ${{ runner.workspace }}/MK404/ref
+        git add autogen/*
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git diff-index --quiet HEAD || git commit -m "Regen reference docs" && git push
 
     - name: Assemble artifacts
       if: ${{ !github.event.pull_request }}
@@ -93,13 +87,170 @@ jobs:
           cd ${{ runner.workspace }}/MK404/build
           make Release_Package
 
-    - name: Publish prerelease
+    - name: Upload artifact
       if: ${{ !github.event.pull_request }}
-      uses: "marvinpinto/action-automatic-releases@latest"
+      uses: actions/upload-artifact@v2
       with:
+        name: Binaries
+        path: ${{ runner.workspace }}/MK404/build/MK404-development-build.tar.bz2
+
+  build_osx:
+    # The type of runner that the job will run on
+    runs-on: macos-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: Checkout ${{ github.event.pull_request.head.ref }}
+      uses: actions/checkout@v2.2.0
+      if: ${{ github.event.pull_request }}
+      with:
+        repository: vintagepc/MK404.git
+        ref: ${{ github.event.pull_request.head.sha }}
+        submodules: true
+
+    - name: Checkout ${{ github.event.ref }}
+      uses: actions/checkout@v2.2.0
+      if: ${{ !github.event.pull_request }}
+      with:
+        repository: vintagepc/MK404.git
+        ref: ${{ github.event.ref }}
+        submodules: true
+
+    - name: Install packages
+      run: |
+          brew cask install xquartz
+          brew tap osx-cross/avr
+          brew install libelf freeglut glew SDL avr-gcc
+
+    - name: Prepare CMake build
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
+
+    - name: Build Einsy
+      run: |
+        cd ${{ runner.workspace }}/MK404/build && make
+        cp MK404 MK404_OSX
+
+    - name: Upload OSX artifact
+      if: ${{ !github.event.pull_request }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: Binaries
+        path: ${{ runner.workspace }}/MK404/build/MK404_OSX
+
+  build_cygwin:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+    steps:
+      - uses: actions/cache@v1
+        with:
+          path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+          key: ${{ runner.os }}-cygwin-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-cygwin-
+#      - name: Cygwin package cache
+#        uses: actions/cache@v1
+#        with:
+#          path: C:\tools\cygwin
+#          key: ${{ runner.os }}-cygwinpkgs-1_0
+#          restore-keys: |
+#            ${{ runner.os }}-cygwinkgs-
+      - name: Install cygwin
+        run: |
+          choco config get cacheLocation
+          choco install --no-progress cygwin
+      - name: Install cygwin dependencies
+        run: |
+          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL-devel,avr-gcc
+        shell: cmd
+      - name: Set ENV
+        run: |
+          echo '::set-env name=PATH::C:\tools\cygwin\bin;C:\tools\cygwin\usr\bin'
+      - name: Checkout ${{ github.event.pull_request.head.ref }}
+        uses: actions/checkout@v2.2.0
+        if: ${{ github.event.pull_request }}
+        with:
+          repository: vintagepc/MK404.git
+          ref: ${{ github.event.pull_request.head.sha }}
+          submodules: true
+
+      - name: Checkout ${{ github.event.ref }}
+        uses: actions/checkout@v2.2.0
+        if: ${{ !github.event.pull_request }}
+        with:
+          repository: vintagepc/MK404.git
+          ref: ${{ github.event.ref }}
+          submodules: true
+
+      - name: Configure build
+        run: |
+          cd MK404
+          mkdir build
+          cd build
+          bash.exe -c "cmake -DCMAKE_BUILD_TYPE=RELEASE .."
+        shell: cmd
+
+      - name: Build
+        run: |
+          cd ${{runner.workspace}}\MK404\build
+          pwd
+          bash.exe -c "make -j2"
+        shell: cmd
+
+      - name: Upload Cygwin artifact
+        if: ${{ !github.event.pull_request }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: Binaries
+          path: ${{ runner.workspace }}/MK404/build/MK404.exe
+
+  Publish:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request }}
+    needs: [build, build_osx, build_cygwin]
+    steps:
+      - name: Retrieve platform binaries
+        uses: actions/download-artifact@v2
+        with:
+          name: Binaries
+
+      - name: Extract assets
+        run: |
+          tar -jxvf MK404-development-build.tar.bz2
+          mv MK404_OSX MK404-dev/
+          mv MK404.exe MK404-dev/MK404-cygwin.exe
+
+      - name: Check tag version
+        id: get_version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Build ${{ steps.get_version.outputs.VERSION }} tarball
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          mv MK404-dev MK404-${{ steps.get_version.outputs.VERSION }}
+          tar -jcvf MK404-${{ steps.get_version.outputs.VERSION }}-multiplatform.tar.bz2 MK404-${{ steps.get_version.outputs.VERSION }}
+
+      - name: RELEASE THE KRAKEN
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            MK404-${{ steps.get_version.outputs.VERSION }}-multiplatform.tar.bz2
+
+      - name: Rebuild dev tarball
+        if: steps.get_version.outcome == 'Skipped'
+        run: tar -jcvf MK404-dev-multiplatform.tar.bz2 MK404-dev
+
+      - name: Publish prerelease
+        if: steps.get_version.outcome == 'Skipped'
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "dev"
           prerelease: true
           title: "Latest (Development) Build"
           files: |
-            ${{ runner.workspace }}/MK404/build/MK404-development-build.tar.bz2
+            MK404-dev-multiplatform.tar.bz2

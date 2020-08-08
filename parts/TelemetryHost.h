@@ -3,20 +3,20 @@
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
- 	This file is part of MK3SIM.
+ 	This file is part of MK404.
 
-	MK3SIM is free software: you can redistribute it and/or modify
+	MK404 is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
 
-	MK3SIM is distributed in the hope that it will be useful,
+	MK404 is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with MK3SIM.  If not, see <http://www.gnu.org/licenses/>.
+	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -139,9 +139,14 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 				exit(1);
 			}
 			memset(&m_trace, 0, sizeof(m_trace));
+#ifdef __CYGWIN__
+            printf("Cygwin detected - skipping TelHost action registration...\n");
+#else
+            // Sorry, this segfaults on win32 for some reason...
 			RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::Int});
 			RegisterActionAndMenu("StartTrace", "Starts the telemetry trace. You must have set a category or set of items with the -t option",ActStartTrace);
 			RegisterActionAndMenu("StopTrace", "Stops a running telemetry trace.",ActStopTrace);
+#endif
 		}
 
 		enum Actions

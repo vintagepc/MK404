@@ -67,12 +67,14 @@ jobs:
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.wiki.git
-        submodules: true
-        path: MK404/
+        path: MK404/ref
 
     - name: Regen docs
       if: ${{ github.event.pull_request }}
-      run: cd ${{ runner.workspace }}/MK404/build && make UpdateDocs
+      run: |
+        cd $${{ runner.workspace }}/MK404/ref && find .
+        cd ${{ runner.workspace }}/MK404/build 
+        make UpdateDocs
 
     - name: Check for changed docs
       if: ${{ github.event.pull_request }}

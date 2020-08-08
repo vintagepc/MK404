@@ -69,6 +69,7 @@ jobs:
     - name: Check for changed docs
       if: ${{ github.event.pull_request }}
       run: |
+          cd ${{ runner.workspace }}/MK404/ref
           if output=$(git status --porcelain --untracked=no) && [ -n "$output" ]; then
           echo "::set-env name=needs_commit::1"
           fi
@@ -76,8 +77,8 @@ jobs:
     - name: Push prep
       if: ${{env.needs_commit}}
       run: |
-          cd ${{ runner.workspace }}/MK404/
-          git add ref/*
+          cd ${{ runner.workspace }}/MK404/ref
+          git add autogen/*
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git commit -m "Regen reference docs"
@@ -86,7 +87,9 @@ jobs:
       if:  ${{env.needs_commit}}
       uses: ad-m/github-push-action@master
       with:
-        branch: ${{ github.event.pull_request.head.ref }}
+        repository: vintagepc/MK404.wiki.git
+        directory: cd ${{ runner.workspace }}/MK404/ref
+        branch: master
         github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Assemble artifacts
@@ -94,7 +97,7 @@ jobs:
       run: |
           cd ${{ runner.workspace }}/MK404/build
           make Release_Package
-          
+
     - name: Upload artifact
       if: ${{ !github.event.pull_request }}
       uses: actions/upload-artifact@v2
@@ -137,14 +140,14 @@ jobs:
       run: |
         cd ${{ runner.workspace }}/MK404/build && make
         cp MK404 MK404_OSX
-      
+
     - name: Upload OSX artifact
       if: ${{ !github.event.pull_request }}
       uses: actions/upload-artifact@v2
       with:
         name: Binaries
         path: ${{ runner.workspace }}/MK404/build/MK404_OSX
-      
+
   build_cygwin:
     # The type of runner that the job will run on
     runs-on: windows-latest
@@ -187,7 +190,7 @@ jobs:
         with:
           repository: vintagepc/MK404.git
           submodules: true
-          
+
       - name: Configure build
         run: |
           cd MK404
@@ -195,48 +198,48 @@ jobs:
           cd build
           bash.exe -c "cmake -DCMAKE_BUILD_TYPE=RELEASE .."
         shell: cmd
-        
+
       - name: Build
         run: |
           cd ${{runner.workspace}}\MK404\build
           pwd
           bash.exe -c "make -j2"
         shell: cmd
-        
+
       - name: Upload Cygwin artifact
         if: ${{ !github.event.pull_request }}
         uses: actions/upload-artifact@v2
         with:
           name: Binaries
           path: ${{ runner.workspace }}/MK404/build/MK404.exe
-      
+
   Publish:
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request }}
     needs: [build, build_osx, build_cygwin]
-    steps:       
+    steps:
       - name: Retrieve platform binaries
         uses: actions/download-artifact@v2
         with:
           name: Binaries
-        
+
       - name: Extract assets
         run: |
           tar -jxvf MK404-development-build.tar.bz2
           mv MK404_OSX MK404-dev/
           mv MK404.exe MK404-dev/MK404-cygwin.exe
-          
+
       - name: Check tag version
         id: get_version
         if: startsWith(github.ref, 'refs/tags/v')
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
-        
+
       - name: Build ${{ steps.get_version.outputs.VERSION }} tarball
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mv MK404-dev MK404-${{ steps.get_version.outputs.VERSION }}
           tar -jcvf MK404-${{ steps.get_version.outputs.VERSION }}-multiplatform.tar.bz2 MK404-${{ steps.get_version.outputs.VERSION }}
-          
+
       - name: RELEASE THE KRAKEN
         if: startsWith(github.ref, 'refs/tags/v')
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -245,11 +248,11 @@ jobs:
           prerelease: false
           files: |
             ${{ runner.workspace }}/MK404-${{ steps.get_version.outputs.VERSION }}.tar.bz2
-        
+
       - name: Rebuild dev tarball
         if: steps.get_version.outcome == 'Skipped'
         run: tar -jcvf MK404-dev-multiplatform.tar.bz2 MK404-dev
-        
+
       - name: Publish prerelease
         if: steps.get_version.outcome == 'Skipped'
         uses: "marvinpinto/action-automatic-releases@latest"

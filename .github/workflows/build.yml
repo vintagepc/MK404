@@ -192,7 +192,7 @@ jobs:
           cd MK404
           mkdir build
           cd build
-          bash.exe -c "cmake .."
+          bash.exe -c "cmake -DCMAKE_BUILD_TYPE=RELEASE .."
         shell: cmd
         
       - name: Build

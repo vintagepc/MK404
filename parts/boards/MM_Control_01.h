@@ -57,6 +57,6 @@ namespace Boards
 			ADC_Buttons m_buttons = {"MMUButtons"};
 
 		private:
-			const Wirings::MM_Control_01 m_wiring;
+			const Wirings::MM_Control_01 m_wiring = Wirings::MM_Control_01();
 	};
 };

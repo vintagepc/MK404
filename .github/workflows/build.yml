@@ -67,7 +67,7 @@ jobs:
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.wiki.git
-        path: MK404/ref
+        path: ref
 
     - name: Regen docs
       if: ${{ github.event.pull_request }}

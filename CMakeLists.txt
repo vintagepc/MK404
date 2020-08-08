@@ -219,7 +219,7 @@ if (ENABLE_THREAD_SANITY)
 	target_link_libraries(MK404 -fsanitize=thread)
 endif()
 
-target_link_libraries(MK404 pthread util m GLUT::GLUT OpenGL::GL OpenGL::GLU GLEW::GLEW ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
+target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU GLEW::GLEW ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 endif()
 
 add_custom_command(TARGET MK404 POST_BUILD

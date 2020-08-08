@@ -21,14 +21,15 @@
 #pragma once
 
 #include <stdint.h>         // for uint32_t, uint8_t
-#include <atomic>
+#include <atomic>           // for atomic_int
 #include <memory>           // for unique_ptr
+#include <string>           // for string
+#include <utility>          // for pair
 #include "EinsyRambo.h"     // for EinsyRambo
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "sim_avr.h"        // for avr_t
 #include "sim_avr_types.h"  // for avr_io_addr_t
 #include "IRSensor.h"
-#include <utility>
 #include "MK3SGL.h"
 
 class Prusa_MK3S : public Boards::EinsyRambo, public Printer

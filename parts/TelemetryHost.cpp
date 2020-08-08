@@ -20,7 +20,8 @@
  */
 
 #include "TelemetryHost.h"
-#include <algorithm>
+#include <algorithm>       // for find
+#include "sim_vcd_file.h"  // for avr_vcd_add_signal
 
 
 TelemetryHost* TelemetryHost::m_pHost = new TelemetryHost();

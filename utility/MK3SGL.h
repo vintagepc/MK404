@@ -20,23 +20,24 @@
  */
 #pragma once
 
+#include <GL/glew.h>         // for glTranslatef
 #include <GLPrint.h>         // for GLPrint
 #include <stdint.h>          // for uint32_t
 #include <Camera.hpp>        // for Camera
+#include <atomic>            // for atomic, atomic_bool, atomic_int
 #include <string>            // for string
 #include <vector>            // for vector
-#include <atomic>
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "GLObj.h"           // for GLObj
 #include "HD44780.h"         // for _IRQ
+#include "IScriptable.h"     // for IScriptable::LineStatus
+#include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
-#include "OBJCollection.h"
-#include "Scriptable.h"
 
 class HD44780GL;
+class OBJCollection;
 class Printer;
-//class OBJCollection;
 
 class MK3SGL: public BasePeripheral, public Scriptable
 {

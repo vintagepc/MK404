@@ -1,7 +1,11 @@
 # see FindGLUT for API details
 
 if (NOT APPLE)
-  include(FindGLUT)
+  	include(FindGLUT)
+	# Xi and Xmu are most definitely not needed here.
+	set( GLUT_LIBRARIES
+		${GLUT_glut_LIBRARY}
+	)
 else()
   find_path(GLUT_INCLUDE_DIR NAMES GL/glut.h
     PATHS

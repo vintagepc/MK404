@@ -23,7 +23,7 @@
 
 
 #include "uart_pty.h"
-#include <sys/time.h>                   // for timeval
+#include <sys/time.h>                   // IWYU pragma: keep
 #include <errno.h>                      // for errno
 #include <pthread.h>                    // for pthread_create, pthread_join
 #if defined(__APPLE__)

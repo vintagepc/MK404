@@ -21,6 +21,10 @@
 	You should have received a copy of the GNU General Public License
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef _IRQ
+#undef _IRQ
+#endif
+
 #define _IRQ(x,y) x,
 enum IRQ {
     IRQPAIRS
@@ -35,3 +39,5 @@ const char *_IRQNAMES[IRQ::COUNT] = {
 #undef _IRQ
 
 #undef IRQPAIRS // Clear the IRQ pairs for subsequent classes.
+// Leave this here for IWYU:
+#define _IRQ(x,y)

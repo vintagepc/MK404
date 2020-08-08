@@ -19,21 +19,21 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "MK3SGL.h"
-#include <GL/freeglut.h>
+#include <GL/freeglut_std.h>  // for glutSetWindow, GLUT_DOWN, GLUT_UP, glut...
+#include <GL/freeglut_ext.h>  // for glutSetOption
 #include <GL/glew.h>          // for glTranslatef, glPopMatrix, glPushMatrix
 #include <stdlib.h>           // for exit
-#include <cstdio>             // for size_t, fprintf, stderr
+#include <cstdio>             // for size_t, fprintf, printf, stderr
 #include <vector>             // for vector
 #include "Camera.hpp"         // for Camera
 #include "GLPrint.h"          // for GLPrint
 #include "HD44780GL.h"        // for HD44780GL
+#include "MK3S_Bear.h"        // for MK3S_Bear
+#include "MK3S_Full.h"        // for MK3S_Full
+#include "MK3S_Lite.h"        // for MK3S_Lite
+#include "OBJCollection.h"    // for OBJCollection, OBJCollection::ObjClass
 #include "Printer.h"          // for Printer
-
-#include "MK3S_Lite.h"
-#include "MK3S_Full.h"
-#include "MK3S_Bear.h"
 
 MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
 

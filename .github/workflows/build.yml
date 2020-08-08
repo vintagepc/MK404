@@ -88,11 +88,16 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Assemble artifacts
-      if: ${{ !github.event.pull_request }}
-      run: |
-          cd ${{ runner.workspace }}/MK404/build
-          make Release_Package
-
+#      if: ${{ !github.event.pull_request }}
+#      run: |
+#          cd ${{ runner.workspace }}/MK404/build
+#          make Release_Package
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Linux
+        path: MK404-dev
+    
     - name: Publish prerelease
       if: ${{ !github.event.pull_request }}
       uses: "marvinpinto/action-automatic-releases@latest"
@@ -136,7 +141,15 @@ jobs:
       run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
 
     - name: Build Einsy
-      run: cd ${{ runner.workspace }}/MK404/build && make
+      run: |
+        cd ${{ runner.workspace }}/MK404/build && make
+        cp MK404 MK404_OSX
+      
+    - name: Upload OSX artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Binaries
+        path: MK404_OSX
       
   build_cygwin:
     # The type of runner that the job will run on
@@ -184,9 +197,15 @@ jobs:
         
       - name: Build
         run: |
-          cd MK404\build
+          cd ${{runner.workspace}}\MK404\build
+          pwd
           bash.exe -c "make -j2"
         shell: cmd
         
+      - name: Upload Cygwin artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Binaries
+          path: MK404.exe
 
 

@@ -154,9 +154,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: C:\tools\cygwin
-          key: ${{ runner.os }}-cygwin-${{ github.sha }}
+          key: ${{ runner.os }}-cygwinpkgs-1_0
           restore-keys: |
-            ${{ runner.os }}-cygwin-
+            ${{ runner.os }}-cygwinkgs-
       - name: Install cygwin
         run: |
           choco config get cacheLocation
@@ -212,7 +212,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: Binaries
-          path: MK404-dev/
         
       - name: Extract tarball
         run: |

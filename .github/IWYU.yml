@@ -60,5 +60,11 @@ jobs:
 
     - name: Run IWYU
       run: |
-          cd ${{ runner.workspace }}/MK404/build && make |& tee log.txt
-          ! grep -q "include-what-you-use reported diagnostics" log.txt
+          cd ${{ runner.workspace }}/MK404/build && make |& tee IWYU.txt
+          ! grep -q "include-what-you-use reported diagnostics" IWYU.txt
+          
+    -  name: Upload IWYU log
+       uses: actions/upload-artifact@v2
+       with:
+          name: IWYU
+          path: ${{ runner.workspace }}/MK404/build/IWYU.txt

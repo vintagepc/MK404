@@ -22,7 +22,7 @@
  */
 
 #include "Heater.h"
-#include <GL/glut.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex2f, glBegin, glColor3f, glColor3fv
 #else

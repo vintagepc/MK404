@@ -34,8 +34,8 @@ GLPrint::GLPrint(float fR, float fG, float fB):m_fColR(fR),m_fColG(fG),m_fColB(f
 
 void GLPrint::Clear()
 {
-	m_iExtrStart = m_iExtrEnd = {0,0,0,0};
-	m_fExtrStart = m_fExtrEnd = {0,0,0,0};
+	m_iExtrStart = m_iExtrEnd = {{0,0,0,0}};
+	m_fExtrStart = m_fExtrEnd = {{0,0,0,0}};
 	m_ivCount.clear();
 	m_ivStart.clear();
 	m_fvDraw.clear();
@@ -50,10 +50,10 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 	{
 		std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 		m_fEMax = fE;
-		m_fExtrEnd = m_fExtrStart = {fX,fZ,fY,fE};
+		m_fExtrEnd = m_fExtrStart = {{fX,fZ,fY,fE}};
 	}
 	int iX = fX*iPrintRes,iY = fY*iPrintRes,iZ = fZ*iPrintRes;
-	std::array<float,3> vfPos = {fX,fZ,fY};
+	std::array<float,3> vfPos = {{fX,fZ,fY}};
 	// Test if the new coordinate is still collinear with the existing segment.
 	// Triangle area method. Slopes have risks of zero/inf/nan for very small deltas.
  	//Ax(By - Cy) + Bx(Cy - Ay) + Cx(Ay - By)

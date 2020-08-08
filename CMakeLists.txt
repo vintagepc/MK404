@@ -7,14 +7,31 @@ project(MK404 VERSION 0.1)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(OpenGL_GL_PREFERENCE GLVND)
+set(OpenGL_GL_PREFERENCE LEGACY) # We really don't need GLX here. (Prevents linking unused libs)
 
 option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
+option(ENABLE_IWYU "Enables Include-what-you-use")
+option(ENABLE_TIDY "Enables Clang-tidy")
 
 # Yells at you if you have extra link args.
 if (NOT APPLE)
 set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 endif()
+
+add_subdirectory(3rdParty/tinyobjloader)
+
+if (ENABLE_IWYU)
+	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/include-what-you-use")
+else()
+	unset(CMAKE_CXX_INCLUDE_WHAT_YOU_USE)
+endif()
+
+if (ENABLE_TIDY)
+	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy")
+else()
+	unset(CMAKE_CXX_CLANG_TIDY)
+endif()
+
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -137,7 +154,11 @@ set(MK404_SOURCES
 	3rdParty/arcball/Camera.cpp
 )
 
-add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
+if (ENABLE_TIDY)
+	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${FIRMWARE})
+else()
+	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
+endif()
 
 target_compile_features(MK404 PRIVATE cxx_range_for)
 target_compile_options(MK404 PRIVATE -Wall)
@@ -157,9 +178,6 @@ endif()
 
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")
-
-add_subdirectory(3rdParty/tinyobjloader)
-
 
 ExternalProject_Add(simavr
     SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rdParty/simavr
@@ -212,7 +230,7 @@ if (ENABLE_THREAD_SANITY)
 	target_link_libraries(MK404 -fsanitize=thread)
 endif()
 
-target_link_libraries(MK404 pthread util m GLUT::GLUT OpenGL::GL OpenGL::GLU GLEW::GLEW ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
+target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU GLEW::GLEW ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 endif()
 
 add_custom_command(TARGET MK404 POST_BUILD

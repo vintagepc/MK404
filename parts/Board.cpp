@@ -22,13 +22,14 @@
 
 #include <Board.h>
 #include <fcntl.h>    // for open, O_CREAT, O_RDWR, SEEK_SET
-#include <sim_elf.h>  // for avr_load_firmware, elf_firmware_t, elf_read_fir...
-#include <sim_gdb.h>  // for avr_gdb_init
-#include <sim_hex.h>  // for read_ihex_file
+#include "sim_elf.h"  // for avr_load_firmware, elf_firmware_t, elf_read_fir...
+#include "sim_gdb.h"  // for avr_gdb_init
+#include "sim_hex.h"  // for read_ihex_file
 #include <stdlib.h>   // for exit, free
 #include <unistd.h>   // for close, ftruncate, lseek, read, write, ssize_t
 #include <cstring>    // for memcpy, NULL
-#include <avr_uart.h>
+#include "sim_io.h"         // for avr_io_getirq
+#include "avr_uart.h"
 #include "TelemetryHost.h"
 
 using namespace std;
@@ -181,9 +182,12 @@ avr_flashaddr_t Board::LoadFirmware(string strFW)
 			puiBytes = read_ihex_file(strFW.c_str(),&uiFWSize, &uiFWStart);
 			if (!puiBytes)
 				printf("WARN: Could not load %s. MCU will execute existing flash.\n", strFW.c_str());
-			printf("Loaded %u bytes from HEX file: %s\n",uiFWSize, strFW.c_str());
-			memcpy(m_pAVR->flash + uiFWStart, puiBytes, uiFWSize);
-			free(puiBytes);
+			else
+			{
+				printf("Loaded %u bytes from HEX file: %s\n",uiFWSize, strFW.c_str());
+				memcpy(m_pAVR->flash + uiFWStart, puiBytes, uiFWSize);
+				free(puiBytes);
+			}
 			m_pAVR->codeend = m_pAVR->flashend;
 			return uiFWStart;
 		}

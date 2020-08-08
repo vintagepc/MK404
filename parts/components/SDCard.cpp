@@ -482,9 +482,8 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 {
 	int fd = 0;
 	void *mapped;
-	bool bLocked = false; /* boolean */
 
-	auto OnError  = [fd, bLocked](int err)
+	auto OnError  = [fd](int err, bool bLocked = false)
 	{
 		/* Clean up after an error. */
 		if (bLocked) {
@@ -508,11 +507,9 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 	if (flock (fd, LOCK_EX) == -1)
 		return OnError(errno);
 
-	bLocked = true;
-
 	/* Check its size. If it's smaller than the requested size, expand it. Otherwise, ignore any excess size. */
 	if (fstat (fd, &stat_buf) == -1)
-		return OnError(errno);
+		return OnError(errno,true);
 
 	if (image_size == 0)
 	{
@@ -520,21 +517,21 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 		if (image_size==0)
 		{
 			printf("No SD image found. Aborting mount.\n");
-			return OnError(-1);
+			return OnError(-1,true);
 		}
 		printf("Autodetected SD image size as %lu Mb\n", static_cast<unsigned long>(image_size>>20)); // >>20 = div by 1024*1024
 	}
 	else if (stat_buf.st_size < image_size)
 	{
 		if (ftruncate (fd, image_size) == -1)
-			return OnError(errno);
+			return OnError(errno, true);
 	}
 
 	/* Map it into memory. */
 	mapped = mmap (NULL, image_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
 	if (mapped == MAP_FAILED)
-		return OnError(errno);
+		return OnError(errno,true);
 
 	/* Success. */
 	m_data = (uint8_t*)mapped;

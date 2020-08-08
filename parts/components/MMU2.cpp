@@ -20,7 +20,7 @@
  */
 
 #include "MMU2.h"
-#include <GL/glut.h>          // for glutGet, glutStrokeCharacter, GLUT_STRO...
+#include <GL/freeglut_std.h>          // for glutGet, glutStrokeCharacter, GLUT_STRO...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glTranslatef, glVertex3f, glColor3f
 #else

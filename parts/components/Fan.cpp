@@ -19,13 +19,13 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Fan.h"
-#include <GL/glut.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex2f, glTranslatef, glBegin, glCo..
 #else
 # include <GL/gl.h>           // for glVertex2f, glTranslatef, glBegin, glCo..
 #endif
-#include "TelemetryHost.h"
+#include "TelemetryHost.h"    // for TC, TelCategory, TelemetryHost
 //#define TRACE(_w)_w
 #ifndef TRACE
 #define TRACE(_w)

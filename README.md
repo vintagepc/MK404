@@ -9,7 +9,7 @@ Remaining To-Dos of note:
 - [See open issues...](https://github.com/vintagepc/MK404/issues/)
 
 *Current state of affairs and features*:
-- ![CI Build](https://github.com/vintagepc/MK404/workflows/CI%20Build/badge.svg) ![CPPCheck](https://github.com/vintagepc/MK404/workflows/CPPCheck/badge.svg)
+- ![CI Build](https://github.com/vintagepc/MK404/workflows/CI%20Build/badge.svg) ![Code Lint](https://github.com/vintagepc/MK404/workflows/Code%20Lint/badge.svg)
 - **The simulator can complete a self test!**
 
 

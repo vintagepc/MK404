@@ -20,18 +20,15 @@
 
 #pragma once
 
-#include "Board.h"                               // for Board
 #include <stdint.h>                              // for uint32_t
-#include "wiring/Einsy_1_1a.h"                   // for Einsy_1_1a
 #include <string>                                // for string
 #include "Beeper.h"                              // for Beeper
+#include "Board.h"                               // for Board
 #include "Button.h"                              // for Button
 #include "Fan.h"                                 // for Fan
 #include "HD44780GL.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
-#include "IRSensor.h"                            // for IRSensor
 #include "LED.h"                                 // for LED
-#include "PAT9125.h"							 // PAT9125
 #include "PINDA.h"                               // for PINDA
 #include "RotaryEncoder.h"                       // for RotaryEncoder
 #include "SDCard.h"                              // for SDCard
@@ -39,8 +36,10 @@
 #include "TMC2130.h"                             // for TMC2130
 #include "Thermistor.h"                          // for Thermistor
 #include "VoltageSrc.h"                          // for VoltageSrc
+#include "sim_irq.h"                             // for avr_irq_t
 #include "uart_pty.h"                            // for uart_pty
 #include "w25x20cl.h"                            // for w25x20cl
+#include "wiring/Einsy_1_1a.h"                   // for Einsy_1_1a
 
 extern "C"
 {

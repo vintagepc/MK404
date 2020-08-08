@@ -21,13 +21,21 @@
 
 #pragma once
 
-#include <sim_vcd_file.h>
-#include "BasePeripheral.h"
-#include <string>
-#include <vector>
-#include <map>
-#include <string.h>
-#include "Scriptable.h"
+#include <stdint.h>          // for uint32_t, uint8_t
+#include <stdio.h>           // for fprintf, printf, stderr
+#include <stdlib.h>          // for exit
+#include <string.h>          // for memset
+#include <map>               // for map
+#include <string>            // for string
+#include <type_traits>       // for __decay_and_strip<>::__type
+#include <utility>           // for make_pair, pair
+#include <vector>            // for vector
+#include "BasePeripheral.h"  // for BasePeripheral
+#include "IScriptable.h"     // for ArgType, ArgType::Int, ArgType::String
+#include "Scriptable.h"      // for Scriptable
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
+#include "sim_vcd_file.h"    // for avr_vcd_init, avr_vcd_start, avr_vcd_stop
 
 using namespace std;
 
@@ -69,54 +77,58 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 {
 	public:
 
-	#define IRQPAIRS
-	#include "IRQHelper.h"
+		enum IRQ {
+			COUNT
+		};
 
-	inline static TelemetryHost* GetHost()
-	{
-		if (m_pHost == nullptr)
+		const char *_IRQNAMES[IRQ::COUNT] = {
+		};
+
+		inline static TelemetryHost* GetHost()
 		{
-			printf("TelemetryHost::Init\n");
+			if (m_pHost == nullptr)
+			{
+				printf("TelemetryHost::Init\n");
+			}
+			return m_pHost;
 		}
-		return m_pHost;
-	}
 
-	// Inits the VCD file at the specified rate (in us)
-	void Init(avr_t *pAVR, const string &strVCDFile, uint32_t uiRateUs = 100)
-	{
-		_Init(pAVR, this);
-		avr_vcd_init(m_pAVR,strVCDFile.c_str(),&m_trace,uiRateUs);
-	}
+		// Inits the VCD file at the specified rate (in us)
+		void Init(avr_t *pAVR, const string &strVCDFile, uint32_t uiRateUs = 100)
+		{
+			_Init(pAVR, this);
+			avr_vcd_init(m_pAVR,strVCDFile.c_str(),&m_trace,uiRateUs);
+		}
 
-	inline void StartTrace()
-	{
-		avr_vcd_start(&m_trace);
-	}
+		inline void StartTrace()
+		{
+			avr_vcd_start(&m_trace);
+		}
 
-	inline void StopTrace()
-	{
-		avr_vcd_stop(&m_trace);
-	}
+		inline void StopTrace()
+		{
+			avr_vcd_stop(&m_trace);
+		}
 
-	void PrintTelemetry(bool bMarkdown = false);
+		void PrintTelemetry(bool bMarkdown = false);
 
-	void SetCategories(const vector<string> &vsCats);
+		void SetCategories(const vector<string> &vsCats);
 
-	// Convenience wrapper for scriptable BasePeripherals
-	template<class C>
-	inline void AddTrace(C* p, unsigned int eIRQ, TelCats vCats, uint8_t uiBits = 1)
-	{
-		AddTrace(p->GetIRQ(eIRQ),p->GetName(), vCats, uiBits);
-	}
+		// Convenience wrapper for scriptable BasePeripherals
+		template<class C>
+		inline void AddTrace(C* p, unsigned int eIRQ, TelCats vCats, uint8_t uiBits = 1)
+		{
+			AddTrace(p->GetIRQ(eIRQ),p->GetName(), vCats, uiBits);
+		}
 
-	LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
 
-	void AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits = 1);
+		void AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits = 1);
 
-	void Shutdown()
-	{
-		StopTrace();
-	}
+		void Shutdown()
+		{
+			StopTrace();
+		}
 
 	private:
 		TelemetryHost():Scriptable("TelHost")

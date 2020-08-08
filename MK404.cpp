@@ -22,16 +22,15 @@
 
 
 #include <GL/glew.h>                  // for glVertex2f, glEnable, glTranslatef
-#include <GL/freeglut.h>          // for glutLeaveMainLoop, glutSetOption
-#include <pthread.h>                  // for pthread_cancel, pthread_create
+#include <GL/freeglut_std.h>          // for glutGet, glutTimerFunc, glutCre...
+#include <GL/freeglut_ext.h>          // for glutSetOption, glutLeaveMainLoop
 #include <signal.h>                   // for signal, SIGINT
-#include <stdint.h>                   // for uint8_t
 #include <stdio.h>                    // for printf, NULL, fprintf, getchar
 #include <stdlib.h>                   // for exit
 #include <tclap/CmdLine.h>            // for CmdLine
 #include <algorithm>                  // for find
-#include <memory>
 #include <atomic>
+#include <iostream>                   // for operator<<, basic_ostream, endl
 #include <scoped_allocator>           // for allocator_traits<>::value_type
 #include <string>                     // for string, basic_string
 #include <utility>                    // for pair
@@ -43,12 +42,12 @@
 #include "TelemetryHost.h"
 #include "parts/Board.h"              // for Board
 #include "sim_avr.h"                  // for avr_t
+#include "tclap/MultiArg.h"           // for MultiArg
 #include "tclap/MultiSwitchArg.h"     // for MultiSwitchArg
 #include "tclap/SwitchArg.h"          // for SwitchArg
 #include "tclap/UnlabeledValueArg.h"  // for UnlabeledValueArg
 #include "tclap/ValueArg.h"           // for ValueArg
 #include "tclap/ValuesConstraint.h"   // for ValuesConstraint
-#include "Macros.h"
 
 int window = 0;
 
@@ -227,7 +226,7 @@ int main(int argc, char *argv[])
 {
 	signal(SIGINT, OnSigINT);
 
-	CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',"0.1");
+	CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',"0.1"); // NOLINT
 	SwitchArg argWait("w","wait","Wait after the printer (and any PTYs) are set up but before starting execution.");
 	cmd.add(argWait);
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");

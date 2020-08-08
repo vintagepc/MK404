@@ -20,7 +20,7 @@
  */
 
 #include "TMC2130.h"
-#include <GL/glut.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
+#include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex3f, glColor3f, glBegin, glEnd
 #else

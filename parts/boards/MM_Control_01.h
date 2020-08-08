@@ -20,9 +20,10 @@
 
 #pragma once
 
-#include <Board.h>                 // for Board
 #include <stdint.h>                // for uint32_t
-#include <wiring/MM_Control_01.h>  // for MM_Control_01
+#include <string>                  // for string
+#include "Board.h"                 // for Board
+#include "wiring/MM_Control_01.h"  // for MM_Control_01
 #include "ADC_Buttons.h"           // for ADC_Buttons
 #include "HC595.h"                 // for HC595
 #include "LED.h"                   // for LED
@@ -56,6 +57,6 @@ namespace Boards
 			ADC_Buttons m_buttons = {"MMUButtons"};
 
 		private:
-			const Wirings::MM_Control_01 m_wiring;
+			const Wirings::MM_Control_01 m_wiring = Wirings::MM_Control_01();
 	};
 };

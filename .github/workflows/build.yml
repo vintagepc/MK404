@@ -151,7 +151,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cygwin-
       - name: Cygwin package cache
-      - uses: actions/cache@v1
+        uses: actions/cache@v1
         with:
           path: C:\tools\cygwin
           key: ${{ runner.os }}-cygwin-${{ github.sha }}

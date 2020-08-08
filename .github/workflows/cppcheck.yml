@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CPPCheck
+name: Code Lint
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -28,11 +28,12 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
         submodules: true
 
-    - name: Checkout master
+    - name: Checkout ${{ github.event.ref }}
       uses: actions/checkout@v2.2.0
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
+        ref: ${{ github.event.ref }}
         submodules: true
 
     - name: Cache packages
@@ -40,13 +41,18 @@ jobs:
       id: cache-pkgs
       with:
           path: "packages"
-          key: "pkgs-cppcheck"
+          key: "pkgs-linting_1_0"
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
       run: mkdir -p packages/partial
 
     - name: Install packages
-      run: sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install cppcheck
+    - name: Install packages
+      run: |
+        sudo apt-get update 
+        sudo apt-get purge clang-*
+        sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install clang-5.0
+        sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu cppcheck
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
@@ -56,3 +62,9 @@ jobs:
 
     - name: Run CPPCheck
       run: cd ${{ runner.workspace }}/MK404/build && make CPPCheck
+      
+    - name: Run Clang-tidy
+      run: |
+        cd ${{ runner.workspace }}/MK404/build
+        cmake -DCMAKE_BUILD_TYPE=DEBUG -DCPPCHECK_ONLY=0 -DENABLE_TIDY=1
+        make

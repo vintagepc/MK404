@@ -7,6 +7,8 @@ name: CI Build
 on:
   push:
     branches: [ master ]
+    tags:
+      - "v*"
   pull_request:
     branches: [ master ]
 
@@ -218,16 +220,38 @@ jobs:
         with:
           name: Binaries
         
-      - name: Extract tarball
+      - name: Extract assets
         run: |
           tar -jxvf MK404-development-build.tar.bz2
           mv MK404_OSX MK404-dev/
-          mv MK404.exe MK404-dev/
+          mv MK404.exe MK404-dev/MK404-cygwin.exe
           
-      - name: rebuild tarball
+      - name: Check tag version
+        id: get_version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        
+      - name: Build ${{ steps.get_version.outputs.VERSION }} tarball
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          mv MK404-dev MK404-${{ steps.get_version.outputs.VERSION }}
+          tar -jcvf MK404-${{ steps.get_version.outputs.VERSION }}-multiplatform.tar.bz2 MK404-${{ steps.get_version.outputs.VERSION }}
+          
+      - name: RELEASE THE KRAKEN
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            ${{ runner.workspace }}/MK404-${{ steps.get_version.outputs.VERSION }}.tar.bz2
+        
+      - name: Rebuild dev tarball
+        if: steps.get_version.outcome == 'Skipped'
         run: tar -jcvf MK404-dev-multiplatform.tar.bz2 MK404-dev
         
       - name: Publish prerelease
+        if: steps.get_version.outcome == 'Skipped'
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"

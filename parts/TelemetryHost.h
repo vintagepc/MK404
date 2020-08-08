@@ -127,9 +127,14 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 				exit(1);
 			}
 			memset(&m_trace, 0, sizeof(m_trace));
+#ifdef __CYGWIN__          
+            printf("Cygwin detected - skipping TelHost action registration...\n");
+#else
+            // Sorry, this segfaults on win32 for some reason...
 			RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::Int});
 			RegisterActionAndMenu("StartTrace", "Starts the telemetry trace. You must have set a category or set of items with the -t option",ActStartTrace);
 			RegisterActionAndMenu("StopTrace", "Stops a running telemetry trace.",ActStopTrace);
+#endif
 		}
 
 		enum Actions

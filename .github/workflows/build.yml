@@ -61,14 +61,14 @@ jobs:
 
     - name: Build Einsy
       run: cd ${{ runner.workspace }}/MK404/build && make
-      
+
     - name: Checkout Wiki
       uses: actions/checkout@v2.2.0
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.wiki.git
         submodules: true
-        path: MK404/ref
+        path: MK404/
 
     - name: Regen docs
       if: ${{ github.event.pull_request }}
@@ -77,7 +77,7 @@ jobs:
     - name: Check for changed docs
       if: ${{ github.event.pull_request }}
       run: |
-          cd ${{ runner.workspace }}/MK404/ref
+          cd ${{ runner.workspace }}/MK404/MK404.wiki
           if output=$(git status --porcelain --untracked=no) && [ -n "$output" ]; then
           echo "::set-env name=needs_commit::1"
           fi
@@ -85,7 +85,7 @@ jobs:
     - name: Push prep
       if: ${{env.needs_commit}}
       run: |
-          cd ${{ runner.workspace }}/MK404/ref
+          cd ${{ runner.workspace }}/MK404/MK404.wiki
           git add autogen/*
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -96,7 +96,7 @@ jobs:
       uses: ad-m/github-push-action@master
       with:
         repository: vintagepc/MK404.wiki.git
-        directory: cd ${{ runner.workspace }}/MK404/ref
+        directory: cd ${{ runner.workspace }}/MK404/MK404.wiki
         branch: master
         github_token: ${{ secrets.GITHUB_TOKEN }}
 

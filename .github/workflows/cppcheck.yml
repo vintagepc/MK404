@@ -65,5 +65,5 @@ jobs:
     - name: Run Clang-tidy
       run: |
         cd ${{ runner.workspace }}/MK404/build
-        cmake -DCMAKE_BUILD_TYPE=DEBUG -DCPPCHECK_ONLY=0 -DENABLE_TIDY=1
+        cmake -DCMAKE_BUILD_TYPE=DEBUG -DCPPCHECK_ONLY=0 -DENABLE_TIDY=1 ..
         make

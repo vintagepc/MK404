@@ -66,4 +66,23 @@ jobs:
       run: |
         cd ${{ runner.workspace }}/MK404/build
         cmake -DCMAKE_BUILD_TYPE=DEBUG -DCPPCHECK_ONLY=0 -DENABLE_TIDY=1 ..
-        make
+        make simavr
+        make |& tee tidy.txt
+        
+    - name: Upload clang-tidy log
+      uses: actions/upload-artifact@v2
+      with:
+        name: warnings
+        path: ${{ runner.workspace }}/MK404/build/tidy.txt
+        
+    - name: comment PR
+      uses: machine-learning-apps/pr-comment@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        path: ${{ runner.workspace }}/MK404/build/tidy.txt
+        
+    - name : Final status
+      id: tidy_status
+      run: ! grep -q "warning:" ${{ runner.workspace }}/MK404/build/tidy.txt
+        

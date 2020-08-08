@@ -27,7 +27,7 @@ else()
 endif()
 
 if (ENABLE_TIDY)
-	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy;-warnings-as-errors=*")
+	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy")
 else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()

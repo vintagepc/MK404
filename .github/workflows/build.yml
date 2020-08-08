@@ -235,4 +235,4 @@ jobs:
           prerelease: true
           title: "Latest (Development) Build"
           files: |
-            ${{ runner.workspace }}/MK404-dev-multplatform.tar.bz2
+            ${{ runner.workspace }}/MK404-dev-multiplatform.tar.bz2

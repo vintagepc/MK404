@@ -10,11 +10,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(OpenGL_GL_PREFERENCE GLVND)
 
 option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
+option(ENABLE_IWYU "Enables Include-what-you-use")
 
 # Yells at you if you have extra link args.
 if (NOT APPLE)
 set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 endif()
+
+add_subdirectory(3rdParty/tinyobjloader)
+
+if (ENABLE_IWYU)
+	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/include-what-you-use")
+else()
+	unset(CMAKE_CXX_INCLUDE_WHAT_YOU_USE)
+endif()
+
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -157,9 +167,6 @@ endif()
 
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")
-
-add_subdirectory(3rdParty/tinyobjloader)
-
 
 ExternalProject_Add(simavr
     SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rdParty/simavr

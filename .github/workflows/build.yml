@@ -30,11 +30,12 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
         submodules: true
 
-    - name: Checkout master
+    - name: Checkout ${{ github.event.ref }}
       uses: actions/checkout@v2.2.0
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
+        ref: ${{ github.event.ref }}
         submodules: true
 
     - name: Cache packages
@@ -108,11 +109,12 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
         submodules: true
 
-    - name: Checkout master
+    - name: Checkout ${{ github.event.ref }}
       uses: actions/checkout@v2.2.0
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
+        ref: ${{ github.event.ref }}
         submodules: true
 
     - name: Install packages
@@ -172,11 +174,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           submodules: true
 
-      - name: Checkout master
+      - name: Checkout ${{ github.event.ref }}
         uses: actions/checkout@v2.2.0
         if: ${{ !github.event.pull_request }}
         with:
           repository: vintagepc/MK404.git
+          ref: ${{ github.event.ref }}
           submodules: true
 
       - name: Configure build

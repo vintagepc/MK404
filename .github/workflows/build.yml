@@ -235,7 +235,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
-            MK404-${{ steps.get_version.outputs.VERSION }}.tar.bz2
+            MK404-${{ steps.get_version.outputs.VERSION }}-multiplatform.tar.bz2
 
       - name: Rebuild dev tarball
         if: steps.get_version.outcome == 'Skipped'

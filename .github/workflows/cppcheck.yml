@@ -47,7 +47,6 @@ jobs:
       run: mkdir -p packages/partial
 
     - name: Install packages
-    - name: Install packages
       run: |
         sudo apt-get update 
         sudo apt-get purge clang-*

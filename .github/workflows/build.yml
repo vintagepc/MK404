@@ -87,16 +87,17 @@ jobs:
         branch: ${{ github.event.pull_request.head.ref }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
 
-#    - name: Assemble artifacts
-#      if: ${{ !github.event.pull_request }}
-#      run: |
-#          cd ${{ runner.workspace }}/MK404/build
-#          make Release_Package
+    - name: Assemble artifacts
+      if: ${{ !github.event.pull_request }}
+      run: |
+          cd ${{ runner.workspace }}/MK404/build
+          make Release_Package
+          
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: Linux
-        path: ${{ runner.workspace }}/MK404/build/MK404-dev
+        name: Binaries
+        path: ${{ runner.workspace }}/MK404/build/MK404-development-build.tar.bz2
 
   build_osx:
     # The type of runner that the job will run on
@@ -206,24 +207,25 @@ jobs:
       
   Publish:
     runs-on: ubuntu-latest
-    if: ${{ !github.event.pull_request }}
     needs: [build, build_osx, build_cygwin]
-    steps:
-      - name: Retrieve main package
-        uses: actions/download-artifact@v2
-        with:
-          name: Linux
-        
+    steps:       
       - name: Retrieve platform binaries
         uses: actions/download-artifact@v2
         with:
           name: Binaries
           path: MK404-dev/
         
-      - name: Build tarball
-        run:  tar -jcvf "MK404-dev-multiplatform.tar.bz2" "MK404-dev"
+      - name: Extract tarball
+        run: |
+          tar -jxvf MK404-development-build.tar.bz2
+          mv MK404_OSX MK404-dev/
+          mv MK404.exe MK404-dev/
+          
+      - name: rebuild tarball
+        run: tar -jcvf MK404-dev-multiplatform.tar.bz2 MK404-dev
         
       - name: Publish prerelease
+        if: ${{ !github.event.pull_request }}
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"

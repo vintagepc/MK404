@@ -50,7 +50,7 @@ This is now a `cmake` project and independent of simAVR. You can follow normal c
 You will need to use a fairly recent version of GCC/G++ (I use 7.4.0). Older versions from the 4.8 era may not support some of the syntax used. Newer versions (G++ 10) may complain about new warnings that are not present in 7.4. You can set a CMAKE option to disable -Werror in this case.
 
 ## Non-Linux platforms and prebuilt binaries:
-OSX and Cygwin binaries are built but not actively supported. See [Platforms supported](/vintagepc/MK404/wiki/Supported-Operating-Systems) for more information on building or running on these operating systems, as well as required packages.
+OSX and Cygwin binaries are built but not actively supported. See [Platforms supported](https://github.com/vintagepc/MK404/wiki/Supported-Operating-Systems) for more information on building or running on these operating systems, as well as required packages.
 
 #### Tips:
 By default, the flash and EEPROM will be blank on first launch or if you delete the associated .bin files.
@@ -59,12 +59,12 @@ You will need to choose and load a firmware file (.afx, .hex) at least once with
 You can make an SD card image and copy files to it using `mcopy`, or by placing them in the SDCard folder and running the appropriate step in the makefile.
 
 ### Reference documentation:
-Advanced documentation has moved to the [Wiki](/vintagepc/MK404/wiki):
-* [Argument reference](/vintagepc/MK404/wiki/CommandLine)
+Advanced documentation has moved to the [Wiki](https://github.com/vintagepc/MK404/wiki):
+* [Argument reference](https://github.com/vintagepc/MK404/wiki/CommandLine)
 * [General scripting info (not in wiki)](scripts/Scripting.md)
 
-* [Script command reference](/vintagepc/MK404/wiki/Scripting)
-* [Trace option reference](/vintagepc/MK404/wiki/TraceOptions)
+* [Script command reference](https://github.com/vintagepc/MK404/wiki/Scripting)
+* [Trace option reference](https://github.com/vintagepc/MK404/wiki/TraceOptions)
 
 ### Mouse Functions:
 #### LCD Window:

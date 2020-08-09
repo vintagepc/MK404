@@ -161,7 +161,7 @@ jobs:
           choco install --no-progress cygwin
       - name: Install cygwin dependencies
         run: |
-          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL-devel,avr-gcc
+          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL-devel,avr-gcc,python2
         shell: cmd
       - name: Set ENV
         run: |

@@ -19,9 +19,9 @@
  */
 
 #include "Prusa_MK3S.h"
-#include <GL/glew.h>
+#include <GL/glew.h>		// NOLINT must come before freeglut
 #include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
-#include <stdio.h>            // for printf
+#include <cstdio>            // for printf
 #include "Beeper.h"           // for Beeper
 #include "Button.h"           // for Button
 #include "Fan.h"              // for Fan
@@ -43,10 +43,10 @@ void Prusa_MK3S::Draw()
 		glLoadIdentity(); // Start with an identity matrix
 			glScalef(4, 4, 1);
 
-			lcd.Draw(m_colors[(4*m_iScheme) + 0], /* background */
-					m_colors[(4*m_iScheme) + 1], /* character background */
-					m_colors[(4*m_iScheme) + 2], /* text */
-					m_colors[(4*m_iScheme) + 3] /* shadow */ );
+			lcd.Draw(m_colors.at((4*m_iScheme) + 0), /* background */
+					m_colors.at((4*m_iScheme) + 1), /* character background */
+					m_colors.at((4*m_iScheme) + 2), /* text */
+					m_colors.at((4*m_iScheme) + 3) /* shadow */ );
 		glPopMatrix();
 
 		// Do something for the motors...
@@ -80,7 +80,7 @@ void Prusa_MK3S::Draw()
 			glTranslatef(20,0,0);
 			lIR.Draw();
 		glPopMatrix();
-	if ((GetVisualType().compare("none")!=0) && m_pVis)
+	if ((GetVisualType()!="none") && m_pVis)
 		m_pVis->Draw();
 }
 
@@ -91,10 +91,10 @@ std::pair<int,int> Prusa_MK3S::GetWindowSize(){
 
 void Prusa_MK3S::OnVisualTypeSet(string type)
 {
-	if (type.compare("none") == 0)
+	if (type=="none")
 		return;
 
-	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this));
+	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
 
 	AddHardware(*m_pVis);
 
@@ -140,7 +140,7 @@ void Prusa_MK3S::SetupHardware()
 		UART0.Connect('0');
 
 	auto fcnSerial = [](avr_t *avr, avr_io_addr_t addr, uint8_t v, void * param)
-	{Prusa_MK3S *p = (Prusa_MK3S*)param; p->FixSerial(avr, addr,v);};
+	{auto *p = static_cast<Prusa_MK3S*>(param); p->FixSerial(avr, addr,v);};
 
 	avr_register_io_write(m_pAVR, 0xC0, fcnSerial, this);
 
@@ -241,12 +241,12 @@ void Prusa_MK3S::OnAVRCycle()
 	}
 }
 
-void Prusa_MK3S::OnMouseMove(int x,int y)
+void Prusa_MK3S::OnMouseMove(int,int)
 {
 	// TODO - passthrough for vis.
 }
 
-void Prusa_MK3S::OnKeyPress(unsigned char key, int x, int y)
+void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
 {
 	switch (key) {
 		case 'q':
@@ -285,7 +285,7 @@ void Prusa_MK3S::OnKeyPress(unsigned char key, int x, int y)
 	}
 }
 
-void Prusa_MK3S::OnMousePress(int button, int action, int x, int y)
+void Prusa_MK3S::OnMousePress(int button, int action, int, int)
 {
 	if (button == GLUT_LEFT_BUTTON || button == GLUT_RIGHT_BUTTON) {
 		if (action == GLUT_DOWN) {

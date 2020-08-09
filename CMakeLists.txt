@@ -216,6 +216,14 @@ include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 INCLUDE(3rdParty/gitversion/cmake.cmake)
 TARGET_GIT_VERSION_INIT(MK404)
 
+project( use-gsl-lite LANGUAGES CXX )
+
+# Provide #include access to gsl-lite as 'gsl/gsl-lite.hpp':
+
+add_library( gsl-lite INTERFACE )
+target_include_directories( gsl-lite INTERFACE 3rdParty/gsl )  # adapt as necessary
+
+
 if (NOT CPPCHECK_ONLY)
 
 find_package(LibElf REQUIRED)
@@ -235,6 +243,8 @@ endif()
 
 target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU GLEW::GLEW ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 endif()
+
+target_link_libraries(MK404 gsl-lite)
 
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different

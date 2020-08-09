@@ -20,8 +20,6 @@
 
 
 #include "Prusa_MK3SMMU2.h"
-#include <stdio.h>                // for printf
-#include <memory>                 // for unique_ptr
 #include "BasePeripheral.h"       // for MAKE_C_CALLBACK
 #include "IRSensor.h"             // for IRSensor, IRSensor::IRState::IR_AUTO
 #include "MK3SGL.h"               // for MK3SGL
@@ -29,6 +27,8 @@
 #include "SerialPipe.h"           // for SerialPipe
 #include "printers/Prusa_MK3S.h"  // for Prusa_MK3S
 #include "uart_pty.h"             // for uart_pty
+#include <cstdio>                // for printf
+#include <memory>                 // for unique_ptr
 
 Prusa_MK3SMMU2::~Prusa_MK3SMMU2()
 {
@@ -50,7 +50,7 @@ void Prusa_MK3SMMU2::SetupHardware()
 
 void Prusa_MK3SMMU2::OnVisualTypeSet(string type)
 {
-	if (type.compare("none") == 0)
+	if (type=="none")
 		return;
 	Prusa_MK3S::OnVisualTypeSet(type);
 	// Wire up the additional MMU stuff.
@@ -80,10 +80,11 @@ void Prusa_MK3SMMU2::Draw()
 }
 
 // Helper for MMU IR sensor triggering.
-void Prusa_MK3SMMU2::OnMMUFeed(struct avr_irq_t * irq, uint32_t value)
+void Prusa_MK3SMMU2::OnMMUFeed(struct avr_irq_t *, uint32_t value)
 {
-	float *fVal = (float*)&value;
-	IR.Auto_Input(fVal[0]>400); // Trigger IR if MMU P pos > 400mm
+	float fVal;
+	std::memcpy(&fVal,&value,4);
+	IR.Auto_Input(fVal>400.f); // Trigger IR if MMU P pos > 400mm
 }
 
 

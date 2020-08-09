@@ -70,7 +70,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 		std::atomic_int m_key = {0}, m_mouseBtn = {0};
 
 		unsigned int m_iScheme = 0;
-		uint32_t m_colors[8] = {
+		std::vector<uint32_t> m_colors = {
 		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
 		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055};
 

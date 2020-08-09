@@ -18,8 +18,9 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boards/MM_Control_01.h>
+#include "MM_Control_01.h"
 #include "PinNames.h"  // for Pin::FINDA_PIN, Pin::I_TMC2130_DIAG, Pin::P_TM...
+#include "gsl-lite.hpp"
 
 namespace Boards
 {
@@ -79,9 +80,9 @@ namespace Boards
 		for (int i=0; i<5; i++)
 		{
 //			m_lGreen[i] = {0x00FF00FF};
-			AddHardware(m_lGreen[i]);
+			AddHardware(gsl::at(m_lGreen,i));
 //			m_lRed[i] = {0xFF0000FF};
-			AddHardware(m_lRed[i]);
+			AddHardware(gsl::at(m_lRed,i));
 		}
 //		m_lFINDA = LED(0xFFCC00FF,'F');
 		AddHardware(m_lFINDA);
@@ -103,6 +104,4 @@ namespace Boards
 
 	}
 
-
-
-};
+}; // namespace Boards

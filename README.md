@@ -9,6 +9,9 @@ Remaining To-Dos of note:
 - [See open issues...](https://github.com/vintagepc/MK404/issues/)
 
 *Current state of affairs and features*:
+
+Be sure to check out the [Historical timeline](https://github.com/vintagepc/MK404/wiki/Historical-Timeline) to get a peek at the growth of MK404.
+
 - ![CI Build](https://github.com/vintagepc/MK404/workflows/CI%20Build/badge.svg) ![Code Lint](https://github.com/vintagepc/MK404/workflows/Code%20Lint/badge.svg)
 - **The simulator can complete a self test!**
 
@@ -17,7 +20,7 @@ Remaining To-Dos of note:
 
 - Fancy graphics:
 
-![](images/Advanced_gfx.png)
+![](https://github.com/vintagepc/MK404/wiki/images/Advanced_gfx.png)
 
 - Bootloader works
 - LCD works. Brightness support has been fixed.
@@ -36,7 +39,7 @@ Remaining To-Dos of note:
 - Flash/eeprom is persisted between reboots.
 - Virtual MMU support:
 
-![](images/MMU2.png)
+![](https://github.com/vintagepc/MK404/wiki/images/MMU2.png)
 
 - The MMU supports multicolour printing:
 ![](https://user-images.githubusercontent.com/53943260/84335826-c432d880-ab63-11ea-9534-6cc61ae1a745.png)
@@ -58,6 +61,11 @@ You will need to choose and load a firmware file (.afx, .hex) at least once with
 
 You can make an SD card image and copy files to it using `mcopy`, or by placing them in the SDCard folder and running the appropriate step in the makefile.
 
+### Controls:
+
+* [Mouse](https://github.com/vintagepc/MK404/wiki/Mouse-Functions)
+* [Keyboard](https://github.com/vintagepc/MK404/wiki/Key-Functions)
+
 ### Reference documentation:
 Advanced documentation has moved to the [Wiki](https://github.com/vintagepc/MK404/wiki):
 * [Argument reference](https://github.com/vintagepc/MK404/wiki/CommandLine)
@@ -65,36 +73,3 @@ Advanced documentation has moved to the [Wiki](https://github.com/vintagepc/MK40
 
 * [Script command reference](https://github.com/vintagepc/MK404/wiki/Scripting)
 * [Trace option reference](https://github.com/vintagepc/MK404/wiki/TraceOptions)
-
-### Mouse Functions:
-#### LCD Window:
-- Scroll wheel moves the encoder.
-- Left or right button down/up controls click/release
-- Middle button opens a context menu with actions, which may offer additional functionality beyond keyboard shortcuts. Items typically have similar functionality and labelling to their scripting counterparts.
-
-#### Printer visualization Window (when not in nozzle-cam mode):
-- Left button: Rotate
-- Middle button: Pan
-- Right button + move (or scroll wheel): Zoom/Z travel
-
-### Key functions:
-- `w` and `s` move the encoder.
-- `enter` is the encoder button
-- `q` quits.
-- `p` simulates a power panic
-- `c` inserts/removes the SD card
-- `1` changes the LCD color scheme.
-- `r` resets the printer (X button)
-- `t` does a factory reset (reset & hold encoder)
-- `h` just holds the encoder.
-- `m` toggles audio muting (beeps)
-- `y` adds/removes the steel sheet from the heatbed for PINDA MBL or XYZ cal
-- `f` toggles filament presence
-- `F` toggles filament presence at FINDA (MMU2 only)
-- `j` toggles a filament jam (presence but no motion) on the PAT9125
-- `z` pauses Einsy execution without stopping GL interactivity (so you can still pan/scroll/zoom the fancy graphics)
-- `l` clears the current print visual from the print bed (may cause glitches if used mid print)
-- `n` toggles "Nozzle cam" mode
-- `a` restores FINDA (MMU2) and IR sensor to "auto" control
-- `3/4/5` are MMU buttons 1, 2 and 3, respectively.
-- `` ` `` (backtick) resets the camera view

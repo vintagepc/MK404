@@ -213,6 +213,9 @@ target_include_directories (MK404 PUBLIC
 
 include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 
+INCLUDE(3rdParty/gitversion/cmake.cmake)
+TARGET_GIT_VERSION_INIT(MK404)
+
 if (NOT CPPCHECK_ONLY)
 
 find_package(LibElf REQUIRED)

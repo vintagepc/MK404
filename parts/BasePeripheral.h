@@ -30,7 +30,7 @@
 
 // Generates a lambda function inline that can be called from SimAVR's C IRQ code.
 #define MAKE_C_CALLBACK(class, function) \
-   [](struct avr_irq_t *irq, uint32_t value, void* param) {class *p = (class*) param; p->function(irq,value); }
+   [](struct avr_irq_t *irq, uint32_t value, void* param) {class *p = static_cast<class*>(param); p->function(irq,value); }
 
 // Generates an inline lambda for use with aver_cycle_timer
 #define MAKE_C_TIMER_CALLBACK(class, function) \

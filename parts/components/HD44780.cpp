@@ -21,12 +21,13 @@
  */
 
 #include "HD44780.h"
-#include <sim_time.h>        // for avr_usec_to_cycles
-#include <stdio.h>           // for printf
-#include <string.h>          // for memset
-#include <scoped_allocator>  // for allocator_traits<>::value_type
 #include "Scriptable.h"      // for Scriptable
 #include "TelemetryHost.h"
+#include "sim_time.h"        // for avr_usec_to_cycles
+#include <cstdio>           // for printf
+#include <cstring>          // for memset
+#include <iostream>
+#include <scoped_allocator>  // for allocator_traits<>::value_type
 
 //#define TRACE(_w) _w
 #ifndef TRACE
@@ -46,7 +47,7 @@ void HD44780::ClearScreen()
 {
 	{
 		std::lock_guard<std::mutex> lock(m_lock);
-    	memset(m_vRam, ' ', sizeof(m_vRam));
+    	memset(&m_vRam, ' ', sizeof(m_vRam));
 	}
 	SetFlag(HD44780_FLAG_DIRTY, 1);
 	RaiseIRQ(ADDR, m_uiCursor);
@@ -59,7 +60,7 @@ void HD44780::ClearScreen()
  * without the AVR firmware 'reading' the status byte. It
  * automatically clears the BUSY flag for the next command
  */
-avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t * avr,avr_cycle_count_t when)
+avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t *,avr_cycle_count_t)
 {
 	SetFlag(HD44780_FLAG_BUSY, 0);
 	RaiseIRQ(BUSY, 0);
@@ -197,12 +198,12 @@ uint32_t HD44780::OnCmdReady()
 		// Set	DDRAM address
 		case 7:		// 1 ADD ADD ADD ADD ADD ADD ADD
 			m_uiCursor = m_uiDataPins & 0x7f;
-			m_bInCGRAM = 0;
+			m_bInCGRAM = false;
 			break;
 		// Set	CGRAM address
 		case 6:		// 0 1 ADD ADD ADD ADD ADD ADD ADD
 			TRACE(printf("cgram enter\n"));
-			m_bInCGRAM = 1;
+			m_bInCGRAM = true;
 			m_uiCGCursor = (m_uiDataPins & 0x3f);
 			break;
 		// Function	set
@@ -213,7 +214,7 @@ uint32_t HD44780::OnCmdReady()
 			SetFlag(HD44780_FLAG_N, m_uiDataPins & 8);
 			SetFlag(HD44780_FLAG_F, m_uiDataPins & 4);
 			if (!four && !GetFlag(HD44780_FLAG_D_L)) {
-				printf("%s activating 4 bits mode\n", __FUNCTION__);
+				cout << __FUNCTION__ << "activating 4-bit mode" << endl;
 				SetFlag(HD44780_FLAG_LOWNIBBLE, 0);
 			}
 		}
@@ -276,7 +277,7 @@ uint32_t HD44780::ProcessWrite()
 	// write has 8 bits to process
 	if (write) {
 		if (GetFlag(HD44780_FLAG_BUSY)) {
-			printf("%s command %02x write when still BUSY\n", __FUNCTION__, m_uiDataPins);
+			cout << __FUNCTION__ << " command " << m_uiDataPins << "write when still BUSY" << endl;
 		}
 		if (m_uiPinState & (1 << RS))	// write data
 			delay = OnDataReady();
@@ -340,7 +341,7 @@ uint32_t HD44780::ProcessRead()
 	return delay;
 }
 
-avr_cycle_count_t HD44780::OnEPinChanged(struct avr_t * avr, avr_cycle_count_t when)
+avr_cycle_count_t HD44780::OnEPinChanged(struct avr_t *, avr_cycle_count_t)
 {
     SetFlag(HD44780_FLAG_REENTRANT, 1);
 

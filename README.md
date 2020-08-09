@@ -10,7 +10,7 @@ Remaining To-Dos of note:
 
 *Current state of affairs and features*:
 
-Be sure to check out the ![Historical timeline](https://github.com/vintagepc/MK404/wiki/Historical-Timeline) to get a peek into the growth of MK404.
+Be sure to check out the [Historical timeline](https://github.com/vintagepc/MK404/wiki/Historical-Timeline) to get a peek at the growth of MK404.
 
 - ![CI Build](https://github.com/vintagepc/MK404/workflows/CI%20Build/badge.svg) ![Code Lint](https://github.com/vintagepc/MK404/workflows/Code%20Lint/badge.svg)
 - **The simulator can complete a self test!**

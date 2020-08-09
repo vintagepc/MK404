@@ -73,8 +73,10 @@ std::pair<int,int> Prusa_MK3SMMU2::GetWindowSize()
 
 void Prusa_MK3SMMU2::Draw()
 {
-	m_MMU.Draw(GetWindowSize().second);
-	Prusa_MK3S::Draw();
+	glPushMatrix();
+		Prusa_MK3S::Draw();
+		m_MMU.Draw((float)GetWindowSize().second);
+	glPopMatrix();
 }
 
 // Helper for MMU IR sensor triggering.

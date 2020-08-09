@@ -48,6 +48,7 @@
 #include "tclap/UnlabeledValueArg.h"  // for UnlabeledValueArg
 #include "tclap/ValueArg.h"           // for ValueArg
 #include "tclap/ValuesConstraint.h"   // for ValuesConstraint
+#include <gitversion/version.h>
 
 int window = 0;
 
@@ -226,7 +227,7 @@ int main(int argc, char *argv[])
 {
 	signal(SIGINT, OnSigINT);
 
-	CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',"0.1"); // NOLINT
+	CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',version::VERSION_STRING); // NOLINT
 	SwitchArg argWait("w","wait","Wait after the printer (and any PTYs) are set up but before starting execution.");
 	cmd.add(argWait);
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");
@@ -273,6 +274,15 @@ int main(int argc, char *argv[])
 	UnlabeledValueArg<string> argModel("printer","Model name of the printer to run",false,"Prusa_MK3S",&vcAllowed);
 	cmd.add(argModel);
 
+	if (version::IS_DEV_VERSION)
+	{
+		printf("***************************************\n");
+		printf("* %-35s *\n",version::VERSION_STRING);
+		printf("* This is a DEV version. Features may *\n");
+		printf("* behave unexpectedly, or not at all. *\n");
+		printf("***************************************\n");
+	}
+
 	cmd.parse(argc,argv);
 
 	// Make new image.
@@ -317,7 +327,11 @@ int main(int argc, char *argv[])
 		//glutInitContextVersion(1,0);
 		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
 		glutInitWindowSize(iWinW, iWinH);		/* width=400pixels height=500pixels */
-		window = glutCreateWindow("Prusa i3 MK404 (PRINTER NOT FOUND) ('q' quits)");	/* create window */
+		std::string strTitle = "Prusa i3 MK404 (PRINTER NOT FOUND) ";
+		strTitle += version::GIT_TAG_NAME;
+		strTitle.push_back('+');
+		strTitle+= std::to_string(version::GIT_COMMITS_SINCE_TAG);
+		window = glutCreateWindow(strTitle.c_str());	/* create window */
 
 		glewInit();
 		cout << "GL_VERSION   : " << glGetString(GL_VERSION) << endl;

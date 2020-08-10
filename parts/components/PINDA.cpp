@@ -20,9 +20,11 @@
  */
 
 #include "PINDA.h"
-#include <stdio.h>  // for printf
-#include <cmath>    // for pow, floor, round, sqrt
 #include "TelemetryHost.h"
+#include "gsl-lite.hpp"
+#include <cmath>    // for pow, floor, round, sqrt
+#include <cstdio>  // for printf
+#include <cstring>
 
 //#define TRACE(_w)_w
 #ifndef TRACE
@@ -37,8 +39,8 @@ void PINDA::CheckTriggerNoSheet()
     //printf("PINDA: X: %f Y: %f\n", this->fPos[0], this->fPos[1]);
     for (int i=0; i<4; i++)
     {
-        fEdist = sqrt( pow(m_fPos[0] - PINDA::_bed_calibration_points[2*i],2)  +
-            pow(m_fPos[1] - PINDA::_bed_calibration_points[(2*i)+1],2));
+        fEdist = sqrt( pow(m_fPos[0] - gsl::at(PINDA::_bed_calibration_points,2*i),2)  +
+            pow(m_fPos[1] - gsl::at(PINDA::_bed_calibration_points,(2*i)+1),2));
         if (fEdist<10)
         {
             bFound = true;
@@ -70,7 +72,7 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<str
 			if (iVal<0 || iVal > 48)
 				return IssueLineError(string("Index ") + to_string(iVal) + " is out of range [0,48]");
 			float fVal = stof(vArgs.at(1));
-			m_mesh.points[iVal] = fVal;
+			gsl::at(m_mesh.points,iVal) = fVal;
 			return LineStatus::Finished;
 		}
 		case ActSetXYCalPont:
@@ -79,8 +81,8 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<str
 			if ((iVal<0) | (iVal>3))
 				return IssueLineError(string("Index ") + to_string(iVal) + " is out of range [0,3]");
 			float fX = stof(vArgs.at(1)), fY = stof(vArgs.at(2));
-			_bed_calibration_points[2*iVal] = fX;
-			_bed_calibration_points[(2*iVal)+1] = fY;
+			gsl::at(_bed_calibration_points,2*iVal) = fX;
+			gsl::at(_bed_calibration_points,(2*iVal)+1) = fY;
 			return LineStatus::Finished;
 		}
 	}
@@ -98,7 +100,7 @@ void PINDA::CheckTrigger()
     uint8_t iX = round(((m_fPos[0] - m_fOffset[0])/255.0)*7);
     uint8_t iY = floor(((m_fPos[1] - m_fOffset[1])/210.0)*7);
 
-    float fZTrig = m_mesh.points[iX+(7*iY)];
+    float fZTrig = gsl::at(m_mesh.points,iX+(7*iY));
 
     if (m_fPos[2]<=fZTrig)
     {
@@ -109,32 +111,35 @@ void PINDA::CheckTrigger()
         RaiseIRQ(TRIGGER_OUT,0);
 }
 
-void PINDA::OnXChanged(struct avr_irq_t * irq,uint32_t value)
+void PINDA::OnXChanged(struct avr_irq_t*,uint32_t value)
 {
-    float *fVal = (float*) &value; // demangle the pos cast.
-     m_fPos[0] = fVal[0] + m_fOffset[0];
+    float fVal;
+	std::memcpy(&fVal,&value,4);
+     m_fPos[0] = fVal + m_fOffset[0];
     // We only need to check triggering on XY motion for selfcal
     if (!m_bIsSheetPresent)
         CheckTriggerNoSheet();
 
 }
 
-void PINDA::OnYChanged(struct avr_irq_t * irq,uint32_t value)
+void PINDA::OnYChanged(struct avr_irq_t*,uint32_t value)
 {
-    float *fVal = (float*) &value; // demangle the pos cast.
-     m_fPos[1] = fVal[0] + m_fOffset[1];
+    float fVal;
+	std::memcpy(&fVal,&value,4);
+     m_fPos[1] = fVal + m_fOffset[1];
     // We only need to check triggering on XY motion for selfcal
     if (!m_bIsSheetPresent)
         CheckTriggerNoSheet();
 
 }
 
-void PINDA::OnZChanged(avr_irq_t *irq, uint32_t value)
+void PINDA::OnZChanged(avr_irq_t*, uint32_t value)
 {
     // Z is translated so that the bed level heights don't need to account for it, e.g. they are just
     // zero-referenced against this internal "z" value.
-    float *fVal = (float*) &value; // demangle the pos cast.
-    m_fPos[2] = fVal[0] - m_fZTrigHeight;
+    float fVal;
+	std::memcpy(&fVal,&value,4);
+    m_fPos[2] = fVal - m_fZTrigHeight;
     if (!m_bIsSheetPresent)
         CheckTriggerNoSheet();
     else

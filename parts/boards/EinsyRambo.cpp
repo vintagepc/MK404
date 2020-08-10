@@ -69,26 +69,26 @@ namespace Boards
 		AddHardware(tExtruder,GetPinNumber(TEMP_0_PIN));
 		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
 		tExtruder.SetTable({(int16_t*)TERMISTOR_TABLE(TEMP_SENSOR_0),
-								sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(int16_t) / 2},
+								sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(int16_t)},
 								OVERSAMPLENR);
 
 		AddHardware(tBed,GetPinNumber(TEMP_BED_PIN));
 		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
 		tBed.SetTable({(int16_t*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
-							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(int16_t) / 2},
+							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(int16_t)},
 							OVERSAMPLENR);
 
 		// same table as bed.
 		AddHardware(tPinda, GetPinNumber(TEMP_PINDA_PIN));
 		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
 		tPinda.SetTable({(int16_t*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
-							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(int16_t) / 2},
+							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(int16_t)},
 							OVERSAMPLENR);
 
 		AddHardware(tAmbient,  GetPinNumber(TEMP_AMBIENT_PIN));
 		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
 		tAmbient.SetTable({(int16_t*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
-		 						sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(int16_t) / 2},
+		 						sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(int16_t)},
 		 						OVERSAMPLENR);
 
 		AddHardware(fExtruder, GetDIRQ(TACH_0), GetDIRQ(E0_FAN), GetPWMIRQ(E0_FAN));

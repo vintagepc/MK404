@@ -54,8 +54,8 @@ uint32_t Thermistor::OnADCRead(struct avr_irq_t*, uint32_t)
 			int16_t tt = it->first;
 			/* small linear regression between table samples */
 			if (it!=m_vTable.begin() && it->second < m_fCurrentTemp) {
-				int16_t d_adc = it->first - (it--)->first;
-				float d_temp = it->second - (it--)->second;
+				int16_t d_adc = it->first - std::prev(it)->first;
+				float d_temp = it->second - std::prev(it)->second;
 				float delta = m_fCurrentTemp - it->second;
 				tt = it->first + (d_adc * (delta / d_temp));
 			}
@@ -65,7 +65,7 @@ uint32_t Thermistor::OnADCRead(struct avr_irq_t*, uint32_t)
 			return uiVal;
 		}
 	}
-	cout << &__FUNCTION__ << '(' << GetMuxNumber() << ") temperature out of range: " << m_fCurrentTemp << endl;
+	cout << __FUNCTION__ << '(' << GetMuxNumber() << ") temperature out of range: " << m_fCurrentTemp << endl;
 	return UINT32_MAX;
 }
 
@@ -82,7 +82,7 @@ void Thermistor::Init(struct avr_t * avr, uint8_t uiMux)
 
 	_Init(avr, uiMux,this);
 	RegisterNotify(TEMP_IN,MAKE_C_CALLBACK(Thermistor,OnTempIn),this);
-	cout << &__FUNCTION__ << " on ADC " << GetMuxNumber() << " start temp: " <<m_fCurrentTemp <<endl;
+	cout << __FUNCTION__ << " on ADC " << GetMuxNumber() << " start temp: " <<m_fCurrentTemp << endl;
 
 	auto pTH = TelemetryHost::GetHost();
 	pTH->AddTrace(this, ADC_VALUE_OUT, {TC::ADC,TC::Thermistor}, 16);
@@ -93,9 +93,9 @@ void Thermistor::SetTable(const gsl::span<const int16_t> table, int iOversamp)
 {
 	m_iOversampling = iOversamp;
 	m_vTable.clear();
-	for (auto i=table.begin(); i!=table.end(); i+=2)
+	for (auto it = table.begin(); it!= table.end(); it+=2)
 	{
-		m_vTable.emplace_back(std::make_pair(*i,*i+1));
+		m_vTable.emplace_back(std::make_pair(*it, *std::next(it)));
 	}
 }
 

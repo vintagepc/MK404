@@ -20,6 +20,9 @@
  */
 
 #include "Beeper.h"
+#include "BasePeripheral.h"   // for MAKE_C_CALLBACK
+#include "TelemetryHost.h"
+#include "gsl-lite.hpp"
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex2f, glPopMatrix, glPushMatrix
@@ -30,14 +33,13 @@
 #include <SDL_audio.h>        // for SDL_PauseAudio, SDL_AudioSpec, SDL_Clos...
 #include <SDL_error.h>        // for SDL_GetError
 #include <SDL_stdinc.h>       // for Sint16
-#include <stdio.h>            // for fprintf, printf, stderr
-#include "BasePeripheral.h"   // for MAKE_C_CALLBACK
-#include "TelemetryHost.h"
+#include <cstring>
+#include <iostream>
 
 Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 {
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
-		fprintf(stderr,"Failed to init SDL_Audio\n");
+		cerr << "Failed to init SDL_Audio" << endl;
 
     m_specWant.freq = m_uiSampleRate; // number of samples per second
     m_specWant.format = AUDIO_S16SYS; // sample type (here: signed short i.e. 16 bit)
@@ -52,19 +54,19 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 
     if(SDL_OpenAudio(&m_specWant, &m_specHave) != 0)
 	{
-		fprintf(stderr, "Failed to open audio: %s\n", SDL_GetError());
+		cerr << "Failed to open audio: " << SDL_GetError() << endl;
 		return;
 	}
     if(m_specWant.format != m_specHave.format)
 	{
-		printf("Failed to get the desired AudioSpec\n");
+		cerr << "Failed to get the desired AudioSpec" << endl;
 		return;
 	}
 	m_bAudioAvail = true;
 
 }
 
-Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const vector<string>&)
 {
 	switch (iAct)
 	{
@@ -86,15 +88,23 @@ Beeper::~Beeper()
 
 void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)
 {
-    Sint16 *buffer = (Sint16*)raw_buffer;
-    for(int i = 0; i < bytes/2; i++, m_uiCounter--)
+
+	Sint16 in = m_bState? 12000 : -12000;
+	uint8_t data[2];
+	std::memcpy(&data,&in,2);
+
+	gsl::span<uint8_t> buffer(raw_buffer,bytes);
+    for(auto it = buffer.begin(); it != buffer.end(); it+=2, m_uiCounter--)
     {
 		if (m_uiCounter==0)
 		{
 			m_bState ^=1;
+			in = m_bState? 12000 : -12000;
+			std::memcpy(&data,&in,2);
 			m_uiCounter = m_uiSampleRate/ (m_bState? m_uiCtOn : m_uiCtOff );
 		}
-        buffer[i] = m_bState? 12000 : -12000;
+        *it = data[0];
+		*(std::next(it)) = data[1];
     }
 }
 

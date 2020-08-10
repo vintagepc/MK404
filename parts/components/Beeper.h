@@ -67,7 +67,7 @@ class Beeper:public SoftPWMable, public Scriptable
 
 		atomic_bool m_bPlaying = {false}, m_bMuted = {false};
 
-		SDL_AudioSpec m_specWant, m_specHave;
+		SDL_AudioSpec m_specWant {}, m_specHave {};
 
 		atomic_uint16_t m_uiCtOn = {0}, m_uiCtOff = {0};
 		atomic_uint16_t m_uiCounter {0};

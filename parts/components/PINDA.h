@@ -78,7 +78,7 @@ private:
 	float m_fZTrigHeight = 1.0; // Trigger height above Z=0, i.e. the "zip tie" adjustment
     float m_fOffset[2] = {0,0}; // pinda X Y offset  from nozzle
     float m_fPos[3] = {10,10,10}; // Current position tracking.
-    MBLMap_t m_mesh;// MBL map
+    MBLMap_t m_mesh = MBLMap_t();// MBL map
     atomic_bool m_bIsSheetPresent {true}; // Is the steel sheet present? IF yes, PINDA will attempt to simulate the bed sensing point for selfcal instead.
 
     // pulled from mesh_bed_calibration.cpp

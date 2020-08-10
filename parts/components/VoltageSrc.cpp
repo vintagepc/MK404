@@ -23,13 +23,13 @@
 #include "BasePeripheral.h"  // for MAKE_C_CALLBACK
 #include "TelemetryHost.h"
 
-uint32_t VoltageSrc::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+uint32_t VoltageSrc::OnADCRead(struct avr_irq_t*, uint32_t)
 {
     uint32_t iVOut =  (m_fCurrentV*m_fVScale)*1000*5;
 	return iVOut;
 }
 
-void VoltageSrc::OnInput(struct avr_irq_t *irq, uint32_t value)
+void VoltageSrc::OnInput(struct avr_irq_t*, uint32_t value)
 {
     m_fCurrentV = (float)value / 256.0f;
 }

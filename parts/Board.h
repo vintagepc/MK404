@@ -22,17 +22,9 @@
 
 #pragma once
 
-#include <ScriptHost.h>     // for ScriptHost
-#include <Scriptable.h>     // for Scriptable
-#include <avr_extint.h>     // for avr_extint_set_strict_lvl_trig
-#include <pthread.h>        // for pthread_join, pthread_t
-#include <stdint.h>         // for uint32_t, uint8_t, int8_t
-#include <stdio.h>          // for printf, fprintf, NULL, stderr
-#include <uart_pty.h>       // for uart_pty
-#include <unistd.h>         // for usleep
-#include <string>           // for string, basic_string, stoi
-#include <vector>           // for vector
-#include <atomic>
+#include "ScriptHost.h"     // for ScriptHost
+#include "Scriptable.h"     // for Scriptable
+#include "avr_extint.h"     // for avr_extint_set_strict_lvl_trig
 #include "EEPROM.h"         // for EEPROM
 #include "IScriptable.h"    // for ArgType, IScriptable::LineStatus, IScript...
 #include "PinNames.h"       // for Pin
@@ -41,6 +33,14 @@
 #include "sim_avr_types.h"  // for avr_regbit_t
 #include "sim_irq.h"        // for avr_connect_irq, avr_irq_t, avr_raise_irq
 #include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_set
+#include <atomic>
+#include <pthread.h>        // for pthread_join, pthread_t
+#include <string>           // for string, basic_string, stoi
+#include <stdint.h>         // for uint32_t, uint8_t, int8_t
+#include <stdio.h>          // for printf, fprintf, NULL, stderr
+#include <vector>           // for vector
+#include <uart_pty.h>       // for uart_pty
+#include <unistd.h>         // for usleep
 
 using namespace PinNames;
 using namespace Wirings;
@@ -66,7 +66,7 @@ namespace Boards
 
 			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};
 
-			void CreateBoard(string strFW, uint8_t uiVerbose, bool bGDB, uint32_t uiVCDRate, string strBoot = "stk500boot_v2_mega2560.hex");
+			void CreateBoard(const string &strFW, uint8_t uiVerbose, bool bGDB, uint32_t uiVCDRate, const string &strBoot = "stk500boot_v2_mega2560.hex");
 			void StartAVR();
 			void StopAVR();
 
@@ -297,7 +297,7 @@ namespace Boards
 				return false;
 			}
 
-			avr_flashaddr_t LoadFirmware(std::string strFW);
+			avr_flashaddr_t LoadFirmware(const std::string &strFW);
 
 			int m_fdFlash = 0;
 

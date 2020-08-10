@@ -63,32 +63,35 @@ bool m_bStopping = false;
 void OnSigINT(int) {
 	if (!m_bStopping)
 	{
-		printf("Caught SIGINT... stopping...\n");
+		cout << "Caught SIGINT... stopping..." << endl;
 		m_bStopping = true;
 		if (printer)
 			printer->OnKeyPress('q',0,0);
 	}
 	else
 	{
-		printf("OK, OK! I get the message!\n");
+		cout << "OK, OK! I get the message!" << endl;
 		exit(2);
 	}
 }
 
 extern "C" {
-void GLAPIENTRY
-GLErrorCB( GLenum, //source,
-                 GLenum type,
-                 GLuint id,
-                 GLenum severity,
-                 GLsizei, // length
-                 const GLchar* message,
-                 const void*) // userparam )
-{
-  fprintf( stderr, "GL:%s ID: %u type = 0x%x, severity = 0x%x, message = %s\n",
-           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
-            id, type, severity, message );
-}
+	void GLAPIENTRY
+	GLErrorCB( GLenum, //source,
+				GLenum type,
+				GLuint id,
+				GLenum severity,
+				GLsizei, // length
+				const GLchar* message,
+				const void*) // userparam )
+	{
+		cerr <<  "GL:";
+		if (type == GL_DEBUG_TYPE_ERROR)
+		{
+			cerr << "** GL ERROR **";
+		}
+		cerr << "ID:" << id << " type = " << type << " sev = " << severity << " message = " << message << endl;
+	}
 }
 
 atomic_bool bIsQuitting {false};
@@ -141,11 +144,11 @@ void keyCB(unsigned char key, int x, int y)	/* called on key press */
 	{
 		case '+':
 			TelemetryHost::GetHost()->StartTrace();
-			printf("Enabled VCD trace.\n");
+			cout << "Enabled VCD trace." << endl;
 			break;
 		case '-':
 			TelemetryHost::GetHost()->StopTrace();
-			printf("Stopped VCD trace\n");
+			cout << "Stopped VCD trace" << endl;
 			break;
 		default:
 			printer->OnKeyPress(key,x,y);
@@ -282,11 +285,11 @@ int main(int argc, char *argv[])
 
 	if (version::IS_DEV_VERSION)
 	{
-		printf("***************************************\n");
-		printf("* %-35s *\n",version::VERSION_STRING);
-		printf("* This is a DEV version. Features may *\n");
-		printf("* behave unexpectedly, or not at all. *\n");
-		printf("***************************************\n");
+		cout << "***************************************" << endl;
+		cout << "* " << setw(35) << version::VERSION_STRING << " *" << endl;
+		cout << "* This is a DEV version. Features may *" << endl;
+		cout << "* behave unexpectedly, or not at all. *" << endl;
+		cout << "***************************************" << endl;
 	}
 
 	cmd.parse(argc,argv);
@@ -296,11 +299,11 @@ int main(int argc, char *argv[])
 	{
 		if(!argSD.isSet())
 		{
-			fprintf(stderr,"Cannot create an SD image without a filename.\n");
+			cerr << "Cannot create an SD image without a filename." << endl;
 			exit(1);
 		}
 		FatImage::MakeFatImage(argSD.getValue(), argImgSize.getValue());
-		printf("Wrote %s. You can now use mcopy to copy gcode files into the image.\n",argSD.getValue().c_str());
+		cout << "Wrote " << argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << endl;
 		return 0;
 	}
 	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue()=="none");
@@ -394,7 +397,7 @@ int main(int argc, char *argv[])
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot
 	if (argWait.isSet())
 	{
-		printf("Paused - press any key to resume execution\n");
+		cout << "Paused - press any key to resume execution" << endl;
 		getchar();
 	}
 
@@ -403,13 +406,13 @@ int main(int argc, char *argv[])
 	if (!bNoGraphics)
 		glutMainLoop();
 
-	printf("Waiting for board to finish...\n");
+	cout << "Waiting for board to finish..." << endl;
 	pBoard->SetQuitFlag();
 	pBoard->WaitForFinish();
 
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);
 
-	printf("Done\n");
+	cout << "Done" << endl;
 	if (argScript.isSet())
 		return static_cast<int>(ScriptHost::GetState());
 

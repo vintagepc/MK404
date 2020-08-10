@@ -20,10 +20,10 @@
  */
 
 #include "IRSensor.h"
-#include <stdio.h>  // for printf
+#include <iostream>  // for printf
 
 // ADC read trigger.
-uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+uint32_t IRSensor::OnADCRead(struct avr_irq_t *, uint32_t)
 {
     float fVal;
     if (m_eCurrent != IR_AUTO)
@@ -92,16 +92,16 @@ Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<s
 void IRSensor::Toggle()
 {
 	if (m_eCurrent == IR_AUTO)
-		printf("NOTE: Overriding IR Auto setting!\n");
+		cout << "NOTE: Overriding IR Auto setting!" << endl;
 
 	if (m_eCurrent == IR_v4_NO_FILAMENT)
 	{
-		printf("IRSensor: Filament present!\n");
+		cout << "IRSensor: Filament present!" << endl;
 		m_eCurrent = IR_v4_FILAMENT_PRESENT;
 	}
 	else
 	{
-		printf("IRSensor: No filament present!\n");
+		cout << "IRSensor: No filament present!" << endl;
 		m_eCurrent = IR_v4_NO_FILAMENT;
 	}
 }

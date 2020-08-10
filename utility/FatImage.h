@@ -46,7 +46,7 @@ class FatImage
 			G2 = 2048
 		};
 
-		static bool MakeFatImage(string strFile, string strSize);
+		static bool MakeFatImage(const string &strFile, const string &strSize);
 
 		static vector<string> GetSizes()
 		{
@@ -57,13 +57,6 @@ class FatImage
 		}
 
 	private:
-
-		typedef union
-		{
-			uint32_t all;
-			uint8_t bytes[4];
-		} ui32_cvt_ui8;
-
 		static inline constexpr uint32_t Sector2Bytes(uint32_t val) { return val<<9; } // <<9 = 512 bytes/sector.
 		static inline constexpr uint32_t Byte2Sector(uint32_t val) { return val>>9; } // <<9 = 512 bytes/sector.
 
@@ -101,12 +94,12 @@ class FatImage
 
 		static const map<string, Size> NameToSize;
 
-		static const uint8_t FAT32[];
-		static const uint8_t FATHeader[];
-		static const uint8_t FSInfo_1[];
-		static const uint8_t FSInfo_2[];
-		static const uint8_t FSInfo_3[];
-		static const uint8_t DataRegion[];
+		static const vector<uint8_t> FAT32;
+		static const vector<uint8_t> FATHeader;
+		static const vector<uint8_t> FSInfo_1;
+		static const vector<uint8_t> FSInfo_2;
+		static const vector<uint8_t> FSInfo_3;
+		static const vector<uint8_t> DataRegion;
 
 
 };

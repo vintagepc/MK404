@@ -20,12 +20,12 @@
  */
 
 #include "UART_Logger.h"
-#include <fcntl.h>     // for open, O_CREAT, O_RDWR
-#include <stdio.h>     // for printf, perror
-#include <stdlib.h>    // for exit
-#include <unistd.h>    // for close, ftruncate, write
 #include "avr_uart.h"  // for ::AVR_UART_FLAG_STDIO, ::UART_IRQ_OUTPUT, AVR_...
 #include "sim_io.h"    // for avr_ioctl, avr_io_getirq
+#include <cstdio>     // for printf, perror
+#include <cstdlib>    // for exit
+#include <fcntl.h>     // for open, O_CREAT, O_RDWR
+#include <unistd.h>    // for close, ftruncate, write
 
 
 //#define TRACE(_w) _w
@@ -34,7 +34,7 @@
 #endif
 
 
-void UART_Logger::OnByteIn(struct avr_irq_t * irq, uint32_t value)
+void UART_Logger::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
     uint8_t c = value;
     if (write(m_fdOut,&c,1))
@@ -61,7 +61,7 @@ void UART_Logger::Init(struct avr_t * avr, char chrUART)
     m_strFile[8] = chrUART;
 
     // open the file
-	m_fdOut = open(m_strFile.c_str(), O_RDWR|O_CREAT, 0644);
+	m_fdOut = open(m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, 0644);
 	if (m_fdOut < 0) {
 		perror(m_strFile.c_str());
 	}

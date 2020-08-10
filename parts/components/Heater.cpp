@@ -22,15 +22,15 @@
  */
 
 #include "Heater.h"
+#include "TelemetryHost.h"
+#include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex2f, glBegin, glColor3f, glColor3fv
 #else
 # include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glColor3fv
 #endif
-#include <math.h>             // for pow
-#include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
-#include "TelemetryHost.h"
+#include <cmath>             // for pow
 
 #define TRACE(_w)
 #ifndef TRACE
@@ -39,7 +39,7 @@
 #endif
 
 
-avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
+avr_cycle_count_t Heater::OnTempTick(avr_t *, avr_cycle_count_t)
 {
 	if (m_bStopTicking)
 		return 0;
@@ -70,14 +70,14 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
 }
 
 
-void Heater::OnPWMChanged(struct avr_irq_t * irq,uint32_t value)
+void Heater::OnPWMChanged(struct avr_irq_t *,uint32_t value)
 {
     if (m_bAuto) // Only update if auto (pwm-controlled). Else user supplied RPM.
         m_uiPWM = value;
 
     if (m_uiPWM > 0)
         RegisterTimerUsec(m_fcnTempTick, 100000, this);
-    if ((m_pIrq + ON_OUT)->value != (m_uiPWM>0))
+    if (GetIRQ(ON_OUT)->value != (m_uiPWM>0))
         RaiseIRQ(ON_OUT,m_uiPWM>0);
 }
 
@@ -176,10 +176,10 @@ void Heater::Draw()
 
 	Color3fv colFill;
 	float v = (float(m_iDrawTemp) - m_fColdTemp) / (m_fHotTemp - m_fColdTemp);
-	colorLerp(m_colColdTemp, m_colHotTemp, v, colFill);
+	colorLerp(static_cast<const float*>(m_colColdTemp), static_cast<const float*>(m_colHotTemp), v, static_cast<float*>(colFill));
 
     glPushMatrix();
-	    glColor3fv(colFill);
+	    glColor3fv(static_cast<float*>(colFill));
         glBegin(GL_QUADS);
             glVertex2f(0,10);
             glVertex2f(20,10);

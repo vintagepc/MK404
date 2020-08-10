@@ -112,7 +112,6 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
         Camera m_camera;
 
-        std::vector<GLObj*> m_vObjLite = { };
         std::vector<GLObj*> m_vObjMMU = {&m_EVis,&m_MMUBase, &m_MMUSel, &m_MMUIdl};
 
         HD44780GL *m_pLCD = nullptr;
@@ -128,21 +127,10 @@ class MK3SGL: public BasePeripheral, public Scriptable
 		void DrawRoundLED();
 
         // IRQ receivers.
-        void OnXChanged(avr_irq_t *irq, uint32_t value);
-        void OnYChanged(avr_irq_t *irq, uint32_t value);
-        void OnZChanged(avr_irq_t *irq, uint32_t value);
-        void OnEChanged(avr_irq_t *irq, uint32_t value);
-		void OnPChanged(avr_irq_t *irq, uint32_t value);
-        void OnSelChanged(avr_irq_t *irq, uint32_t value);
-        void OnIdlChanged(avr_irq_t *irq, uint32_t value);
+		void OnPosChanged(avr_irq_t *irq, uint32_t value);
+		void OnBoolChanged(avr_irq_t *irq, uint32_t value);
+
         void OnMMULedsChanged(avr_irq_t *irq, uint32_t value);
-        void OnSheetChanged(avr_irq_t *irq, uint32_t value);
-        void OnSDChanged(avr_irq_t *irq, uint32_t value);
-        void OnEFanChanged(avr_irq_t *irq, uint32_t value);
-        void OnPFanChanged(avr_irq_t *irq, uint32_t value);
-        void OnBedChanged(avr_irq_t *irq, uint32_t value);
-        void OnPINDAChanged(avr_irq_t *irq, uint32_t value);
-		void OnFINDAChanged(avr_irq_t *irq, uint32_t value);
 		void OnToolChanged(avr_irq_t *irq, uint32_t iIdx);
 
 

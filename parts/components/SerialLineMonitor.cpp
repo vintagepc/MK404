@@ -26,7 +26,7 @@
 #include "sim_io.h"    // for avr_io_getirq
 
 
-void SerialLineMonitor::OnByteIn(struct avr_irq_t * irq, uint32_t value)
+void SerialLineMonitor::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
     unsigned char c = value&0xFF;
 	bool bNewLine = (c == 0x0a);
@@ -37,22 +37,20 @@ void SerialLineMonitor::OnByteIn(struct avr_irq_t * irq, uint32_t value)
 		OnNewLine();
 }
 
-void SerialLineMonitor::OnXOnIn(struct avr_irq_t * irq, uint32_t value)
+void SerialLineMonitor::OnXOnIn(struct avr_irq_t *, uint32_t)
 {
 	m_bXOn = true;
 }
 
-void SerialLineMonitor::OnXOffIn(struct avr_irq_t * irq, uint32_t value)
+void SerialLineMonitor::OnXOffIn(struct avr_irq_t *, uint32_t)
 {
 	m_bXOn = false;
 }
 
 
-
-
 Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const vector<string> &args)
 {
-	if (m_type != None && m_strMatch.compare(args.at(0))==0) // already in wait state for same find
+	if (m_type != None && m_strMatch == args.at(0)) // already in wait state for same find
 	{
 		if (!m_bMatched)
 			return LineStatus::Waiting;
@@ -103,7 +101,7 @@ void SerialLineMonitor::OnNewLine()
 	switch (m_type)
 	{
 		case Full:
-			m_bMatched = m_strLine.compare(m_strMatch)==0;
+			m_bMatched = m_strLine == m_strMatch;
 			break;
 		case Contains:
 			m_bMatched = m_strLine.find(m_strMatch) != string::npos;

@@ -23,7 +23,7 @@
 #include "HD44780.h"           // for HD44780
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
 #include "thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
-#include <cstdio>             // for fprintf, printf, stderr
+#include <iostream>             // for fprintf, printf, stderr
 
 #define TEMP_SENSOR_0 5
 #define TEMP_SENSOR_BED 1
@@ -62,7 +62,7 @@ namespace Boards
 		int mount_error = sd_card.Mount();
 
 		if (mount_error != 0) {
-			fprintf (stderr, "SD card image ‘%s’ could not be mounted (error %i).\n", strSD.c_str(), mount_error);
+			cerr << "SD card image (" << strSD << ") could not be mounted (error " << mount_error << " ).\n";
 		}
 
 		// Heaters
@@ -191,7 +191,7 @@ namespace Boards
 	// Convenience function for debug printing a particular pin.
 	void EinsyRambo::DebugPin(avr_irq_t *, uint32_t value)
 	{
-		printf("Pin DBG: change to %8x\n",value);
+		cout << "Pin DBG: change to " << value << endl;
 	}
 
 	void EinsyRambo::OnAVRInit()
@@ -208,7 +208,7 @@ namespace Boards
 
 	void EinsyRambo::OnAVRReset()
 	{
-		printf("RESET\n");
+		cout << "RESET\n";
 		DisableInterruptLevelPoll(8);
 
 		// Restore powerpanic to high

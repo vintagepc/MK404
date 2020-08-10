@@ -22,14 +22,15 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ScriptHost.h>
+#include "ScriptHost.h"
+#include <GL/freeglut_std.h> // glut menus
+#include <cassert> // assert.
 #include <exception>    // for exception
 #include <fstream>      // IWYU pragma: keep for basic_istream, char_traits, ifstream, istring...
+#include <iostream>
 #include <sstream>		// IWYU pragma: keep
 #include <type_traits>  // for __decay_and_strip<>::__type
 #include <utility>      // for make_pair, pair
-#include <GL/freeglut_std.h> // glut menus
-#include <assert.h> // assert.
 
 map<string, IScriptable*> ScriptHost::m_clients;
 
@@ -52,18 +53,16 @@ void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
 	if (bMarkdown)
 	{
-		printf("# Scripting options for the selected printer:\n");
-		// for (auto it=m_clients.begin();it!=m_clients.end();it++)
-		// {
-		// 	string strRef = it->second->GetName();
-		// 	strRef[0] = tolower(strRef[0]); // Yes, kludgy, I know...
-		// 	printf("- [%s](#%s)\n",it->second->GetName().c_str(),strRef.c_str());
-		// }
+		cout << "# Scripting options for the selected printer:\n";
 	}
 	else
-		printf("Scripting options for the current context:\n");
+	{
+		cout << "Scripting options for the current context:\n";
+	}
 	for (auto it=m_clients.begin();it!=m_clients.end();it++)
+	{
 		it->second->PrintRegisteredActions(bMarkdown);
+	}
 }
 
 void ScriptHost::LoadScript(const string &strFile)
@@ -142,19 +141,19 @@ bool ScriptHost::ValidateScript()
 			bClean = false;
 			fcnErr("Unknown context " + strCtxt, i);
 			string strCtxts = "Available contexts:";
-			for (auto it=m_clients.begin(); it!=m_clients.end(); it++)
+			for (auto &it: m_clients)
 			{
-				strCtxts += " " + it->first + ",";
+				strCtxts += " " + it.first + ",";
 			}
 			strCtxts.pop_back();
-			printf("%s\n",strCtxts.c_str());
+			cout << strCtxts << '\n';
 			continue;
 		}
 		if (m_clients.at(strCtxt)->m_ActionIDs.count(strAct)==0)
 		{
 			bClean = false;
 			fcnErr("Unknown action " + strCtxt + "::" + strAct,i);
-			printf("Available actions:\n");
+			cout << "Available actions:\n";
 			m_clients.at(strCtxt)->PrintRegisteredActions();
 			continue;
 		}
@@ -178,7 +177,7 @@ bool ScriptHost::ValidateScript()
 		}
 
 	}
-	printf("Script validation finished.\n");
+	cout << "Script validation finished.\n";
 	return bClean;
 }
 
@@ -207,7 +206,7 @@ void ScriptHost::CreateRootMenu(int iWinID)
 	m_bMenuCreated = true;
 	if (m_mMenuIDs.count("ScriptHost")!=0)
 	{
-		fprintf(stderr,"Attempted to create a new root menu when one already exists. Ignoring...\n");
+		cerr << "Attempted to create a new root menu when one already exists. Ignoring...\n";
 		return;
 	}
 
@@ -300,7 +299,7 @@ void ScriptHost::AddSubmenu(IScriptable *src)
 {
 	std::string strName = src->GetName();
 	if (m_bMenuCreated)
-		printf("Adding a menu entry after GLUT is up... TODO\n");
+		cout << "Adding a menu entry after GLUT is up... TODO\n";
 	else if (!m_mMenuIDs.count(strName)) // GLUT isn't up yet, queue it for later.
 	{
 		m_mMenuIDs[strName] = 0;
@@ -313,7 +312,7 @@ void ScriptHost::AddSubmenu(IScriptable *src)
 
 void ScriptHost::AddMenuEntry(const string &strName, unsigned uiID, IScriptable* src)
 {
-	assert(uiID<100);
+	assert(uiID<100); //NOLINT - complaint is in system include file
 	auto strClient = src->GetName();
 	unsigned uiBase = m_mClient2MenuBase.at(strClient);
 	m_mClientEntries[strClient].push_back({strName, uiBase + uiID});
@@ -332,7 +331,7 @@ void ScriptHost::AddScriptable(string strName, IScriptable* src)
 	{
 		int i=0;
 		string strNew;
-		printf("ScriptHost: NOTE: Duplicate context name (%s) with different pointer. Incrementing ID...\n", strName.c_str());
+		cout << "ScriptHost: NOTE: Duplicate context name (" << strName << ") with different pointer. Incrementing ID...\n";
 		while (i<10)
 		{
 			i++;
@@ -347,7 +346,7 @@ void ScriptHost::AddScriptable(string strName, IScriptable* src)
 			else if (m_clients.at(strNew) == src)
 				return;
 		};
-		printf("ScriptHost: More than 10 duplicate identifiers. You should do something about that.\n");
+		cerr << "ScriptHost: More than 10 duplicate identifiers. You should do something about that.\n";
 
 	}
 }
@@ -361,7 +360,7 @@ void ScriptHost::OnAVRCycle()
 	if (m_lnState.iLine != m_iLine || m_state == State::Idle)
 	{
 		m_state = State::Running;
-		printf("ScriptHost: Executing line %s\n",m_script.at(m_iLine).c_str());
+		cout << "ScriptHost: Executing line " << m_script.at(m_iLine) << "\n";
 		ParseLine(m_iLine);
 	}
 
@@ -375,10 +374,10 @@ void ScriptHost::OnAVRCycle()
 				m_iTimeoutCount = 0;
 				break;
 			case LS::Unhandled:
-				printf("ScriptHost: Unhandled action, considering this an error.\n");
+				cout << "ScriptHost: Unhandled action, considering this an error.\n";
 				/* FALLTHRU */
 			case LS::Error:
-				printf("ScriptHost: Script FAILED on line %d\n",m_iLine);
+				cout << "ScriptHost: Script FAILED on line " << m_iLine << '\n';
 				m_iLine = m_script.size(); // Error, end scripting.
 				m_state = State::Error;
 				return;
@@ -388,13 +387,13 @@ void ScriptHost::OnAVRCycle()
 					m_state = State::Timeout;
 					if (m_bQuitOnTimeout)
 					{
-						printf("ScriptHost: Script TIMED OUT on %s. Quitting...\n",m_script.at(m_iLine).c_str());
+						cout << "ScriptHost: Script TIMED OUT on " << m_script.at(m_iLine) <<". Quitting...\n";
 						int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
 						m_clients.at("Board")->ProcessAction(ID,{});
 						m_iLine = m_script.size();
 						return;
 					}
-					printf("ScriptHost: Script TIMED OUT on %s\n",m_script.at(m_iLine).c_str());
+					cout << "ScriptHost: Script TIMED OUT on " << m_script.at(m_iLine) << '\n';
 					m_iLine++;
 					m_iTimeoutCount = 0;
 				}
@@ -405,13 +404,13 @@ void ScriptHost::OnAVRCycle()
 		}
 		if (m_iLine==m_script.size())
 		{
-			printf("ScriptHost: Script FINISHED\n");
+			cout << "ScriptHost: Script FINISHED\n";
 			m_state = State::Finished;
 		}
 	}
 	else
 	{
-		printf("ScriptHost: ERROR: Invalid line/unrecognized command:%d %s\n",m_iLine,m_script.at(m_iLine).c_str());
+		cout << "ScriptHost: ERROR: Invalid line/unrecognized command: " << m_iLine << ":" << m_script.at(m_iLine) << '\n';
 		m_state = State::Error;
 		m_iLine = m_script.size();
 	}

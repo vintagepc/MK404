@@ -22,11 +22,12 @@
  */
 
 #include "FatImage.h"
+#include <cstdint>      // for perror
+#include <cstdlib>     // for exit
+#include <cstring>
 #include <fcntl.h>      // for open, O_CREAT, O_WRONLY, SEEK_SET
-#include <stdio.h>      // for perror
-#include <stdlib.h>     // for exit
-#include <unistd.h>     // for close, ftruncate, lseek, write
 #include <type_traits>  // for __decay_and_strip<>::__type
+#include <unistd.h>     // for close, ftruncate, lseek, write
 #include <vector>       // for vector
 
 // const map<FatImage::Size, uint32_t>FatImage::SectorsPerFat =
@@ -52,7 +53,7 @@ const map<string, FatImage::Size>FatImage::NameToSize =
 };
 
 
-const uint8_t FatImage::FAT32[] = {
+const vector<uint8_t> FatImage::FAT32 = {
 	0xEB,0x58,0x90,0x6D,0x6B,0x66,0x73,0x2E,0x66,0x61,0x74,0x00,0x02,0x01,0x20,0x00,
 	0x02,0x00,0x00,0x00,0x00,0xF8,0x00,0x00,0x20,0x00,0x40,0x00,0x00,0x00,0x00,0x00,
 	0x00,0x00,0x02,0x00,0xF1,0x03,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x00,0x00,
@@ -63,17 +64,17 @@ const uint8_t FatImage::FAT32[] = {
 	0xE4,0xCD,0x16,0xCD,0x19,0xEB,0xFE
 };
 
-const uint8_t FatImage::FATHeader[] = {0xF8,0xFF,0xFF,0x0F,0xFF,0xFF,0xFF,0x0F,0xF8,0xFF,0xFF,0x0F};
-const uint8_t FatImage::FSInfo_1[] = { 0x55, 0xAA, 0x52, 0x52, 0x61, 0x41 };
-const uint8_t FatImage::FSInfo_2[] = { 0x72, 0x72, 0x41, 0x61, 0xFF, 0xFF, 0xFF, 0xFF, 0x02};
-const uint8_t FatImage::FSInfo_3[] = {0x55, 0xAA};
-const uint8_t FatImage::DataRegion[] = { 0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x08,0x00,0x00,0x57,0x49,
+const vector<uint8_t> FatImage::FATHeader = {0xF8,0xFF,0xFF,0x0F,0xFF,0xFF,0xFF,0x0F,0xF8,0xFF,0xFF,0x0F};
+const vector<uint8_t> FatImage::FSInfo_1 = { 0x55, 0xAA, 0x52, 0x52, 0x61, 0x41 };
+const vector<uint8_t> FatImage::FSInfo_2 = { 0x72, 0x72, 0x41, 0x61, 0xFF, 0xFF, 0xFF, 0xFF, 0x02};
+const vector<uint8_t> FatImage::FSInfo_3 = {0x55, 0xAA};
+const vector<uint8_t> FatImage::DataRegion = { 0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x08,0x00,0x00,0x57,0x49,
 											0xCD,0x50,0xCD,0x50,0x00,0x00,0x57,0x49,0xCD,0x50};
 
-bool FatImage::MakeFatImage(string strFile, string strSize)
+bool FatImage::MakeFatImage(const string &strFile, const string &strSize)
 {
 	FatImage::Size size = NameToSize.at(strSize);
-	int fd = open(strFile.c_str(), O_WRONLY | O_CREAT, 0644);
+	int fd = open(strFile.c_str(), O_WRONLY | O_CREAT | O_CLOEXEC, 0644);
 	if (fd < 0) {
 		perror(strFile.c_str());
 		exit(1);
@@ -90,33 +91,36 @@ bool FatImage::MakeFatImage(string strFile, string strSize)
 	vector<uint8_t> data;
 
 	// Write main FAT block.
-	data.insert(data.end(), FAT32, FAT32+119);
+	data.insert(data.end(), FAT32.begin(), FAT32.end());
 
 	// Set setors per cluster.
 	data[0x0D] = GetSectorsPerCluster(size);
 
 	// set sectors and sectors per fat.
-	ui32_cvt_ui8 cvt;
+	uint32_t uiSector = Byte2Sector(uiSize);
+	std::vector<uint8_t> uiSectBytes = {0,0,0,0};
 
-	cvt.all = Byte2Sector(uiSize);
+	std::memcpy(uiSectBytes.data(), &uiSector, 4);
 
 	for (int i=0; i<4; i++)
-		data[0x20+i] = cvt.bytes[i];
+		data[0x20+i] = uiSectBytes.at(i);
 
-	cvt.all = SectorsPerFat(size);
+	uiSector = SectorsPerFat(size);
+	std::memcpy(uiSectBytes.data(), &uiSector, 4);
+
 	for (int i=0; i<4; i++)
-		data[0x24+i] = cvt.bytes[i];
+		data[0x24+i] = uiSectBytes.at(i);
 
 
 	// Copy the FS info signature
 	data.resize(0x1FE);
-	data.insert(data.end(),FSInfo_1,FSInfo_1+6);
+	data.insert(data.end(),FSInfo_1.begin(), FSInfo_1.end());
 
 	data.resize(0x3E4);
-	data.insert(data.end(),FSInfo_2,FSInfo_2+9);
+	data.insert(data.end(),FSInfo_2.begin(),FSInfo_2.end());
 
 	data.resize(0x3FE);
-	data.insert(data.end(), FSInfo_3, FSInfo_3+2);
+	data.insert(data.end(), FSInfo_3.begin(), FSInfo_3.end());
 
 
 	// Second copy of boot record @ 0xC00
@@ -125,14 +129,14 @@ bool FatImage::MakeFatImage(string strFile, string strSize)
 
 	// Copy fat header(s)
 	data.resize(FirstFATAddr);
-	data.insert(data.end(), FATHeader, FATHeader+12);
+	data.insert(data.end(), FATHeader.begin(), FATHeader.end());
 
 	data.resize(GetSecondFatAddr(size));
-	data.insert(data.end(), FATHeader, FATHeader+12);
+	data.insert(data.end(), FATHeader.begin(), FATHeader.end());
 
 	// Data start.
 	data.resize(GetDataStartAddr(size));
-	data.insert(data.end(), DataRegion, DataRegion+26);
+	data.insert(data.end(), DataRegion.begin(), DataRegion.end());
 
 	lseek(fd,SEEK_SET, 0);
 	size_t s = write(fd,data.data(),data.size());

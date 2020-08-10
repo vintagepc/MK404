@@ -22,17 +22,17 @@
  */
 
 #include "Button.h"
-#include <stdio.h>  // for printf
 #include "TelemetryHost.h"
+#include <iostream>  // for printf
 
-Button::Button(std::string strName):Scriptable(strName),m_strName(strName)
+Button::Button(const std::string &strName):Scriptable(strName),m_strName(strName)
 {
 	RegisterActionAndMenu("Press", "Simulate pressing the button", Actions::ActPress);
 	RegisterActionAndMenu("Release", "Simulate releasing the button", Actions::ActRelease);
 	RegisterActionAndMenu("PressAndRelease", "Simulate pressing and then releasing  the button", Actions::ActPressAndRelease);
 }
 
-Scriptable::LineStatus Button::ProcessAction(unsigned int iAction, const vector<string> &vArgs)
+Scriptable::LineStatus Button::ProcessAction(unsigned int iAction, const vector<string>&)
 {
 	switch (iAction)
 	{
@@ -61,10 +61,10 @@ void Button::Init(avr_t* avr)
 }
 
 
-avr_cycle_count_t Button::AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen)
+avr_cycle_count_t Button::AutoRelease(avr_t *, avr_cycle_count_t uiWhen)
 {
 	RaiseIRQ(BUTTON_OUT,1);
-	printf("Button released after %lu usec\n",static_cast<unsigned long>(uiWhen));
+	cout << "Button released after " << uiWhen << " uSec" << endl;
 	return 0;
 }
 

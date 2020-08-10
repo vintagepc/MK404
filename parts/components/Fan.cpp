@@ -19,13 +19,13 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Fan.h"
+#include "TelemetryHost.h"    // for TC, TelCategory, TelemetryHost
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex2f, glTranslatef, glBegin, glCo..
 #else
 # include <GL/gl.h>           // for glVertex2f, glTranslatef, glBegin, glCo..
 #endif
-#include "TelemetryHost.h"    // for TC, TelCategory, TelemetryHost
 //#define TRACE(_w)_w
 #ifndef TRACE
 #define TRACE(_w)
@@ -37,7 +37,7 @@ Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,
 	RegisterActionAndMenu("Resume","Resumes fan from a stall condition",Actions::Resume);
 }
 
-avr_cycle_count_t Fan::OnTachChange(avr_t * avr, avr_cycle_count_t when)
+avr_cycle_count_t Fan::OnTachChange(avr_t *, avr_cycle_count_t)
 {
     RaiseIRQ(TACH_OUT, m_bPulseState^=1);
     RegisterTimerUsec(m_fcnTachChange,m_uiUsecPulse,this);
@@ -71,7 +71,7 @@ void Fan::Draw()
 }
 
 
-Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const vector<string> &vArgs)
+Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const vector<string>&)
 {
 	switch (ID)
 	{
@@ -85,7 +85,7 @@ Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const vector<string> 
 	return LineStatus::Unhandled;
 }
 
-void Fan::OnPWMChange(struct avr_irq_t * irq, uint32_t value)
+void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 {
     m_uiPWM = value;
     if (m_bAuto) // Only update RPM if auto (pwm-controlled). Else user supplied RPM.

@@ -40,7 +40,7 @@ class Button:public BasePeripheral, public Scriptable
 	#include "IRQHelper.h"
 
 	// Creates a new button with name strName
-	Button(std::string strName = "Button");
+	Button(const std::string &strName = "Button");
 
 	// Initializes the button on "avr"
 	void Init(struct avr_t * avr);

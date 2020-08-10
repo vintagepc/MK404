@@ -65,7 +65,7 @@ uint32_t Thermistor::OnADCRead(struct avr_irq_t*, uint32_t)
 			return uiVal;
 		}
 	}
-	cout << __FUNCTION__ << '(' << GetMuxNumber() << ") temperature out of range: " << m_fCurrentTemp << endl;
+	cout << static_cast<const char*>(__FUNCTION__) << '(' << GetMuxNumber() << ") temperature out of range: " << m_fCurrentTemp << endl;
 	return UINT32_MAX;
 }
 
@@ -82,7 +82,7 @@ void Thermistor::Init(struct avr_t * avr, uint8_t uiMux)
 
 	_Init(avr, uiMux,this);
 	RegisterNotify(TEMP_IN,MAKE_C_CALLBACK(Thermistor,OnTempIn),this);
-	cout << __FUNCTION__ << " on ADC " << GetMuxNumber() << " start temp: " <<m_fCurrentTemp << endl;
+	cout << static_cast<const char*>(__FUNCTION__) << " on ADC " << GetMuxNumber() << " start temp: " <<m_fCurrentTemp << endl;
 
 	auto pTH = TelemetryHost::GetHost();
 	pTH->AddTrace(this, ADC_VALUE_OUT, {TC::ADC,TC::Thermistor}, 16);

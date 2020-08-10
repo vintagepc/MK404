@@ -47,7 +47,10 @@ void HD44780::ClearScreen()
 {
 	{
 		std::lock_guard<std::mutex> lock(m_lock);
-    	memset(&m_vRam, ' ', sizeof(m_vRam));
+    	for (auto &c : m_vRam)
+		{
+			c = ' ';
+		}
 	}
 	SetFlag(HD44780_FLAG_DIRTY, 1);
 	RaiseIRQ(ADDR, m_uiCursor);
@@ -162,9 +165,9 @@ uint32_t HD44780::OnDataReady()
 		}
 
 		for (int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
-			if (m_uiCursor>= m_lineOffsets[i] && m_uiCursor< (m_lineOffsets[i] + m_uiWidth))
+			if (m_uiCursor>= m_lineOffsets.at(i) && m_uiCursor< (m_lineOffsets.at(i) + m_uiWidth))
 			{
-				int iPos =m_uiCursor - m_lineOffsets[i];
+				int iPos =m_uiCursor - m_lineOffsets.at(i);
 				string &line = m_vLines[i];
 				line[iPos] = m_uiDataPins;
 				m_uiLineChg |= 1<<i;
@@ -214,7 +217,7 @@ uint32_t HD44780::OnCmdReady()
 			SetFlag(HD44780_FLAG_N, m_uiDataPins & 8);
 			SetFlag(HD44780_FLAG_F, m_uiDataPins & 4);
 			if (!four && !GetFlag(HD44780_FLAG_D_L)) {
-				cout << __FUNCTION__ << "activating 4-bit mode" << endl;
+				cout << static_cast<const char*>(__FUNCTION__) << "activating 4-bit mode" << endl;
 				SetFlag(HD44780_FLAG_LOWNIBBLE, 0);
 			}
 		}
@@ -277,7 +280,7 @@ uint32_t HD44780::ProcessWrite()
 	// write has 8 bits to process
 	if (write) {
 		if (GetFlag(HD44780_FLAG_BUSY)) {
-			cout << __FUNCTION__ << " command " << m_uiDataPins << "write when still BUSY" << endl;
+			cout << static_cast<const char*>(__FUNCTION__) << " command " << m_uiDataPins << "write when still BUSY" << endl;
 		}
 		if (m_uiPinState & (1 << RS))	// write data
 			delay = OnDataReady();
@@ -372,7 +375,7 @@ void HD44780::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
 		 */
 		case ALL:
 			for (int i = 0; i < 4; i++)
-				OnPinChanged(GetIRQ(D4) + i,
+				OnPinChanged(GetIRQ(D4+i),
 						((value >> i) & 1));
 			OnPinChanged(GetIRQ(RS), (value >> 4));
 			OnPinChanged(GetIRQ(E), (value >> 5));
@@ -395,11 +398,6 @@ void HD44780::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
 void HD44780::Init(avr_t *avr)
 {
     _Init(avr,this);
-	{
-		std::lock_guard<std::mutex> lock(m_lock);
-		memset(m_cgRam, 0, sizeof(m_cgRam));
-		memset(m_vRam, 0, sizeof(m_vRam));
-	}
 	/*
 	 * Register callbacks on all our IRQs
 	 */

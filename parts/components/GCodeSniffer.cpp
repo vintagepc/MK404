@@ -21,11 +21,11 @@
  */
 
 #include "GCodeSniffer.h"
-#include <stdio.h>     // for printf
 #include "avr_uart.h"  // for ::UART_IRQ_OUTPUT, AVR_IOCTL_UART_GETIRQ
 #include "sim_io.h"    // for avr_io_getirq
+#include <iostream>     // for printf
 
-void GCodeSniffer::OnByteIn(struct avr_irq_t * irq, uint32_t value)
+void GCodeSniffer::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
     unsigned char c = value&0xFF;
 	if (m_bNewLine && c==m_chrCode)
@@ -41,7 +41,7 @@ void GCodeSniffer::OnByteIn(struct avr_irq_t * irq, uint32_t value)
 		if (c == ' ' || m_bNewLine)
 		{
 			m_bCapture = false;
-			printf("Captured code %s\n", m_strLine.c_str());
+			cout << "Captured code " << m_strLine << endl;
 			uint32_t uiOut = stoi(m_strLine);
 			RaiseIRQ(CODEVAL_OUT,uiOut);
 			m_strLine.clear();
@@ -62,6 +62,6 @@ void GCodeSniffer::Init(struct avr_t * avr, char chrUART)
 	if (src)
 		ConnectFrom(src, BYTE_IN);
 
-    printf("UART %c is now being monitored for %c codes\n",m_chrUART,m_chrCode);
+    cout << "UART " << m_chrUART << " is now being monitored for '" << m_chrCode << "'" << endl;
 
 }

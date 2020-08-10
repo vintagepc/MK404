@@ -20,15 +20,15 @@
  */
 
 #include "EEPROM.h"
-#include <avr_eeprom.h>  // for avr_eeprom_desc_t, AVR_IOCTL_EEPROM_GET, AVR...
-#include <fcntl.h>       // for open, O_CREAT, O_RDWR, SEEK_SET
-#include <stdlib.h>      // for malloc, exit, free, size_t
-#include <sys/types.h>   // for ssize_t
-#include "assert.h"      // for assert
+#include "avr_eeprom.h"  // for avr_eeprom_desc_t, AVR_IOCTL_EEPROM_GET, AVR...
 #include "sim_avr.h"     // for avr_t
 #include "sim_io.h"      // for avr_ioctl
-#include "stdio.h"       // for perror, printf, fprintf, stderr
 #include "unistd.h"      // for close, ftruncate, lseek, read, write
+#include <cassert>      // for assert
+#include <cstdio>       // for perror, printf, fprintf, stderr
+#include <cstdlib>      // for malloc, exit, free, size_t
+#include <fcntl.h>       // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <sys/types.h>   // for ssize_t
 
 
 void EEPROM::Load(struct avr_t *avr, const string &strFile)
@@ -37,13 +37,15 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 	m_uiSize = m_pAVR->e2end + 1;
 	m_strFile = strFile;
 
-	m_fdEEPROM = open(m_strFile.c_str(), O_RDWR | O_CREAT, 0644);
+	m_fdEEPROM = open(m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, 0644);
 	if (m_fdEEPROM < 0) {
 		perror(m_strFile.c_str());
 		exit(1);
 	}
 	printf("Loading %u bytes of EEPROM\n", m_uiSize);
-	avr_eeprom_desc_t io {.ee= (uint8_t*)malloc(m_uiSize), .offset = 0, .size = m_uiSize};
+	vector<uint8_t> vEE;
+	vEE.resize(m_uiSize,0);
+	avr_eeprom_desc_t io {.ee= vEE.data(), .offset = 0, .size = m_uiSize};
 
 	if (ftruncate(m_fdEEPROM, m_uiSize) < 0) {
 		perror(m_strFile.c_str());
@@ -56,23 +58,22 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 		perror(m_strFile.c_str());
 		exit(1);
 	}
-	uint8_t bEmpty = 1;
-	for (size_t i=0; i<io.size; i++)
+	bool bEmpty = true;
+	for (auto &b : vEE)
 	{
-		bEmpty &= io.ee[i]==0;
+		bEmpty &= b==0;
 	}
 	if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
 		avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io);
-
-    free(io.ee);
 }
 
 void EEPROM::Save()
 {
 	// Write out the EEPROM contents:
 	lseek(m_fdEEPROM, SEEK_SET, 0);
-
-	avr_eeprom_desc_t io {.ee= (uint8_t*)malloc(m_uiSize), .offset = 0, .size = m_uiSize};
+	vector<uint8_t> vEE;
+	vEE.resize(m_uiSize,0);
+	avr_eeprom_desc_t io {.ee= vEE.data(), .offset = 0, .size = m_uiSize};
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); // Should net a pointer to eeprom[0]
 
 	ssize_t r = write(m_fdEEPROM, io.ee, m_uiSize);
@@ -82,7 +83,6 @@ void EEPROM::Save()
 		perror(m_strFile.c_str());
 	}
 	close(m_fdEEPROM);
-	free(io.ee);
 }
 
 Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<string> &vArgs)
@@ -107,7 +107,7 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 void EEPROM::Poke(uint16_t address, uint8_t value)
 {
 	avr_eeprom_desc_t io {.ee = &value, .offset = address, .size = 1};
-	assert(address<m_uiSize);
+	assert(address<m_uiSize); //NOLINT clang complains about the macro generated from the system file
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_SET,&io);
 }
 
@@ -115,7 +115,7 @@ uint8_t EEPROM::Peek(uint16_t address)
 {
 	uint8_t uiRet = 0;
 	avr_eeprom_desc_t io {.ee = &uiRet, .offset = address, .size = 1};
-	assert(address<m_uiSize);
+	assert(address<m_uiSize); //NOLINT clang complains about the macro generated
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io);
 	return uiRet;
 }

@@ -22,19 +22,20 @@
  */
 
 #include "HC595.h"
+
 #include "TelemetryHost.h"
 
 /*
  * called when a SPI byte is sent
  */
-void HC595::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
+void HC595::OnSPIIn(struct avr_irq_t*, uint32_t value)
 {
 	// send "old value" to any chained one..
 	RaiseIRQ(SPI_BYTE_OUT,m_uiValue);
 	m_uiValue = m_uiValue<<8 | (value & 0xFF);
 }
 
-void HC595::OnDataIn(struct avr_irq_t * irq, uint32_t value)
+void HC595::OnDataIn(struct avr_irq_t*, uint32_t value)
 {
 	m_uiCurBit = value&1;
 }

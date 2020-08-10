@@ -22,14 +22,20 @@
 
 #pragma once
 
-typedef union hexColor_t{
-	hexColor_t(const uint32_t &val){hex = val;} // Helper constructor
-	uint32_t hex;
-	struct{
-		uint8_t alpha;
-		uint8_t blue;
-		uint8_t green;
-		uint8_t red;
-	};
-	uint8_t bytes[4];
+#include <cstring>
+
+typedef struct hexColor_t{
+	hexColor_t(const uint32_t &val){ memcpy(this, &val, 4);} // Helper constructor
+	hexColor_t(const uint32_t &val, const float &fScale)
+	{
+		memcpy(this, &val, 4);
+		alpha = (float)alpha/fScale;
+		red = (float)red/fScale;
+		green = (float)green/fScale;
+		blue = (float)blue/fScale;
+	} // Helper constructor
+	uint8_t alpha;
+	uint8_t blue;
+	uint8_t green;
+	uint8_t red;
 } hexColor_t;

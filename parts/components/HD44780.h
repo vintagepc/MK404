@@ -57,6 +57,7 @@
 #include <mutex>
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
 #include "IScriptable.h"       // for ArgType, ArgType::Int, ArgType::String
+#include "gsl-lite.hpp"
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
@@ -88,6 +89,8 @@ class HD44780:public BasePeripheral, public Scriptable
 		// Makes a display with the given dimensions.
 		HD44780(uint8_t width = 20, uint8_t height = 4):Scriptable("LCD"),m_uiHeight(height),m_uiWidth(width)
 		{
+			m_cgRam.resize(64,' ');
+			m_vRam.resize(104,' ');
 			m_lineOffsets[2] += width;
 			m_lineOffsets[3] += width;
 			string strBlnk;
@@ -110,8 +113,8 @@ class HD44780:public BasePeripheral, public Scriptable
     // The GL draw accesses these:
 		atomic_uint8_t m_uiHeight = {4};				// width and height of the LCD
         atomic_uint8_t	m_uiWidth = {20};
-        uint8_t  m_vRam[104];
-        uint8_t  m_cgRam[64];
+		std::vector<uint8_t>  m_vRam;
+        std::vector<uint8_t>  m_cgRam;
 
 		virtual LineStatus ProcessAction(unsigned int iAction, const vector<string> &args) override;
 
@@ -155,7 +158,7 @@ class HD44780:public BasePeripheral, public Scriptable
 			HD44780_FLAG_DIRTY,			// 1: needs redisplay...
 		};
 
-		uint8_t m_lineOffsets[4] = {0, 0x40, 0, 0x40};
+		std::vector<uint8_t> m_lineOffsets = {0, 0x40, 0, 0x40};
 
 		mutex m_lock; // Needed for GL thread access to v/cgRAM
 

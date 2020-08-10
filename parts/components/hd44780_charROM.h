@@ -26,7 +26,7 @@ static const struct {
   unsigned int w;
   unsigned int h;
   unsigned int data_size;
-  unsigned char data[1792];
+  std::vector<uint8_t> data;
 } hd44780_ROM_AOO = {5,7,1792,
   {
     0x00,

@@ -28,17 +28,18 @@
  */
 
 #include "HD44780GL.h"
-#include <mutex>
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
 #include "Util.h"             // for hexColor_t, hexColor_t::(anonymous)
 #include "hd44780_charROM.h"  // for (anonymous), hd44780_ROM_AOO
 #include "sim_avr_types.h"    // for avr_regbit_t
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
+
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex3f, glBegin, glEnd, glMaterialfv
 #else
 # include <GL/gl.h>           // for glVertex3f, glBegin, glEnd, glMaterialfv
 #endif
+#include <mutex>
 
 
 //#define TRACE(_w) _w
@@ -48,7 +49,7 @@
 
 
 static inline void
-glColorHelper(hexColor_t color, bool bMaterial = false)
+glColorHelper(const hexColor_t &color, bool bMaterial = false)
 {
 
 	if (bMaterial)
@@ -58,8 +59,8 @@ glColorHelper(hexColor_t color, bool bMaterial = false)
 					(float)(color.blue) / 255.0f,
 					(float)(color.alpha) / 255.0f };
 		float fNone[4] = {0,0,0,1};
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, fNone);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,  fCol);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, static_cast<float*>(fNone));
+		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,  static_cast<float*>(fCol));
 	}
 	else
 		glColor4ub(color.red, color.green, color.blue, color.alpha);
@@ -74,14 +75,14 @@ void HD44780GL::Init(avr_t *avr)
 	RegisterNotify(BRIGHTNESS_PWM_IN, MAKE_C_CALLBACK(HD44780GL, OnBrightnessPWM),this);
 }
 
-void HD44780GL::OnBrightnessPWM(struct avr_irq_t * irq, uint32_t value)
+void HD44780GL::OnBrightnessPWM(struct avr_irq_t *, uint32_t value)
 {
 	//printf("Brightness pin changed value: %u\n",value);
 	m_uiPWM = m_uiBrightness = value;
 	SetFlag(HD44780_FLAG_DIRTY,1);
 }
 
-void HD44780GL::OnBrightnessDigital(struct avr_irq_t * irq,	uint32_t value)
+void HD44780GL::OnBrightnessDigital(struct avr_irq_t *,	uint32_t value)
 {
 	avr_regbit_t rb = AVR_IO_REGBIT(0x90,7); // COM3A1
 	if (avr_regbit_get(m_pAVR,rb)) // Restore PWM value if being PWM-driven again after a digitalwrite
@@ -109,13 +110,13 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 		glVertex3i(0, 0, -1);
 		glVertex3i(0, 8, -1);
 	glEnd();
-	uint8_t *uiData;
+	auto uiData = hd44780_ROM_AOO.data.begin();
 	uint8_t iCols=8;
 	if (c<16)
-		uiData = &m_cgRam[(c & 7) <<3];
+		uiData = m_cgRam.begin() + ((c & 7) <<3);
 	else
 	{
-		uiData = (uint8_t*)&hd44780_ROM_AOO.data[c*hd44780_ROM_AOO.h];
+		uiData += c*hd44780_ROM_AOO.h;
 		iCols = 7;
 	}
 
@@ -130,10 +131,10 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 		for (int j=0; j<5; j++)
 		{
 
-			if (uiData[i] & (16>>j))
+			if (*uiData & (16>>j))
 			{
-				float x = (float)j;
-				float y = (float)i;
+				auto x = (float)j;
+				auto y = (float)i;
 				float inset = 0.85;
 				if (shadow)
 				{
@@ -156,6 +157,7 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 				glEnd();
 			}
 		}
+		uiData++;
 	}
 }
 
@@ -169,21 +171,10 @@ void HD44780GL::Draw(
 	uint8_t iCols = m_uiWidth;
 	uint8_t iRows = m_uiHeight;
 	int border = 3;
-	hexColor_t bg(background);
-	// uint8_t* iBG = (uint8_t*)&background;
 	float fScale = (float)m_uiBrightness/255.f;
-	for (int i=1; i<4; i++)
-		bg.bytes[i] = ((float)bg.bytes[i])*fScale;
+	hexColor_t bg(background,fScale);
 
-	float fNone[4] = {0,0,0,1};
-	if (bMaterial)
-	{
-		float fCopy[4] = { float(bg.red)/255.f,float(bg.green)/255.f,float(bg.blue)/255.f,0.0f};
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, fNone);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION , fCopy);
-	}
-	else
-		glColor4ub(bg.red,bg.green,bg.blue,bg.alpha);
+	glColorHelper(bg, bMaterial);
 
 	glTranslatef(border, border, 0);
 	glBegin(GL_QUADS);
@@ -197,7 +188,7 @@ void HD44780GL::Draw(
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {
 			std::lock_guard<std::mutex> lock(m_lock);
-			GLPutChar(m_vRam[m_lineOffsets[v] + i], character, text, shadow, bMaterial);
+			GLPutChar(m_vRam[m_lineOffsets.at(v) + i], character, text, shadow, bMaterial);
 			glTranslatef(6, 0, 0);
 		}
 		glPopMatrix();

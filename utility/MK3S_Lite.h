@@ -33,7 +33,7 @@ class MK3S_Lite: public OBJCollection
 		MK3S_Lite(bool bMMU):OBJCollection("Lite")
 		{
 			AddObject(ObjClass::Y, "assets/Y_AXIS.obj", 0, 0, -0.141);
-			AddObject(ObjClass::Y, "assets/SSSheet.obj", 0.025,0.083,0.431 + -0.141);
+			AddObject(ObjClass::PrintSurface, "assets/SSSheet.obj", 0.025,0.083,0.431 + -0.141);
 			AddObject(ObjClass::Media, "assets/SDCard.obj",0,0,0,MM_TO_M)->SetKeepNormalsIfScaling(true);
 			AddObject(ObjClass::X, "assets/X_AXIS.obj",-0.044,-0.210,0);
 			m_pKnob = AddObject(ObjClass::Other, "assets/LCD-knobR2.obj");

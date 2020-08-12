@@ -26,8 +26,6 @@
 
 #pragma once
 
-using namespace std;
-
 #include <stdlib.h>
 #include <string>
 #include <map>

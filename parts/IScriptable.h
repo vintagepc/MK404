@@ -26,9 +26,10 @@
 
 #pragma once
 
-#include <stdlib.h>
-#include <string>
+#include <cstdlib>
+#include <iostream>
 #include <map>
+#include <string>
 #include <vector>
 class Scriptable;
 class ScriptHost;
@@ -41,9 +42,13 @@ enum class ArgType
 	String,
 	Bool,
 	Float
-
-
 };
+
+using std::string;
+using std::vector;
+using std::map;
+using std::cerr;
+using std::cout;
 
 class IScriptable
 {
@@ -66,7 +71,7 @@ class IScriptable
     protected:
 		inline IScriptable::LineStatus IssueLineError(const string &msg)
 		{
-			fprintf(stderr,"%s ERROR: %s\n",m_strName.c_str(), msg.c_str());
+			cerr << m_strName << "ERROR: " << msg << '\n';
 			return LineStatus::Error;
 		}
 
@@ -86,13 +91,13 @@ class IScriptable
 				if (LSResult != LineStatus::Error || LSResult != LineStatus::Unhandled)
 					return;
 			}
-			fprintf(stderr, "Programmer error: %s has registered menu items but no valid handler!\n",m_strName.c_str());
+			cerr << "Programmer error: " << m_strName << " has registered menu items but no valid handler!\n";
 		}
 
 		void SetName(const string &strName)
 		{
 			if (m_bRegistered)
-				printf("ERROR: Tried to change a Scriptable object's name after it has already registered.\n");
+				cerr << "ERROR: Tried to change a Scriptable object's name after it has already registered.\n";
 			else
 				m_strName = strName;
 		}
@@ -130,7 +135,7 @@ class IScriptable
 		{
 			if (m_ActionIDs.count(strAct)>0)
 			{
-				fprintf(stderr,"ERROR: Attempted to register duplicate action handler %s::%s\n",m_strName.c_str(),strAct.c_str());
+				cerr << "ERROR: Attempted to register duplicate action handler " << m_strName << "::" << strAct;
 				return false;
 			}
 			m_ActionIDs[strAct] = ID;

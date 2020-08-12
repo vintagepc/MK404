@@ -21,13 +21,13 @@
 
 #include "EEPROM.h"
 #include "avr_eeprom.h"  // for avr_eeprom_desc_t, AVR_IOCTL_EEPROM_GET, AVR...
+#include "gsl-lite.hpp"
 #include "sim_avr.h"     // for avr_t
 #include "sim_io.h"      // for avr_ioctl
 #include "unistd.h"      // for close, ftruncate, lseek, read, write
-#include <cassert>      // for assert
-#include <cstdio>       // for perror, printf, fprintf, stderr
 #include <cstdlib>      // for malloc, exit, free, size_t
 #include <fcntl.h>       // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <iostream>       // for perror, printf, fprintf, stderr
 #include <sys/types.h>   // for ssize_t
 
 
@@ -42,7 +42,7 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 		perror(m_strFile.c_str());
 		exit(1);
 	}
-	printf("Loading %u bytes of EEPROM\n", m_uiSize);
+	cout << "Loading " << m_uiSize  <<" bytes of EEPROM\n";
 	vector<uint8_t> vEE;
 	vEE.resize(m_uiSize,0);
 	avr_eeprom_desc_t io {.ee= vEE.data(), .offset = 0, .size = m_uiSize};
@@ -52,9 +52,9 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 		exit(1);
 	}
 	ssize_t r = read(m_fdEEPROM, io.ee, m_uiSize);
-	printf("Read %d bytes\n",(int)r);
+	cout << "Read " << r << " bytes\n";
 	if (r !=  io.size) {
-		fprintf(stderr, "unable to load EEPROM\n");
+		cerr << "Unable to load EEPROM\n";
 		perror(m_strFile.c_str());
 		exit(1);
 	}
@@ -77,9 +77,9 @@ void EEPROM::Save()
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); // Should net a pointer to eeprom[0]
 
 	ssize_t r = write(m_fdEEPROM, io.ee, m_uiSize);
-	printf("Wrote %zd bytes of EEPROM to %s\n",r, m_strFile.c_str());
+	cout << "Wrote "<< r <<" bytes of EEPROM to " <<m_strFile <<'\n';
 	if (r != m_uiSize) {
-		fprintf(stderr, "unable to write EEPROM memory\n");
+		cerr << "Unable to write EEPROM memory\n";
 		perror(m_strFile.c_str());
 	}
 	close(m_fdEEPROM);
@@ -107,7 +107,7 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 void EEPROM::Poke(uint16_t address, uint8_t value)
 {
 	avr_eeprom_desc_t io {.ee = &value, .offset = address, .size = 1};
-	assert(address<m_uiSize); //NOLINT clang complains about the macro generated from the system file
+	Expects(address<m_uiSize);
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_SET,&io);
 }
 
@@ -115,7 +115,7 @@ uint8_t EEPROM::Peek(uint16_t address)
 {
 	uint8_t uiRet = 0;
 	avr_eeprom_desc_t io {.ee = &uiRet, .offset = address, .size = 1};
-	assert(address<m_uiSize); //NOLINT clang complains about the macro generated
+	Expects(address<m_uiSize);
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io);
 	return uiRet;
 }

@@ -21,8 +21,9 @@
 
 #include "ADC_Buttons.h"
 #include "IScriptable.h"
+#include <iostream>
 
-uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t *, uint32_t)
 {
     //if (raw < 50) return Btn::right;
 	//if (raw > 80 && raw < 100) return Btn::middle;
@@ -72,7 +73,7 @@ void ADC_Buttons::Init(struct avr_t * avr, uint8_t adc_mux_number)
 
 void ADC_Buttons::Push(uint8_t uiBtn)
 {
-	printf("Pressing button %u\n",uiBtn);
+	cout << "Pressing button " << uiBtn << '\n';
 	m_uiCurBtn = uiBtn;
 	RegisterTimerUsec(m_fcnRelease,2500000, this);
 }

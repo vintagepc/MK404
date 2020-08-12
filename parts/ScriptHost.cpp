@@ -40,7 +40,7 @@ map<string, int> ScriptHost::m_mMenuIDs;
 map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
 map<string, unsigned> ScriptHost::m_mClient2MenuBase;
 map<string, vector<pair<string,int>>> ScriptHost::m_mClientEntries;
-ScriptHost::linestate_t ScriptHost::m_lnState = linestate_t();
+ScriptHost::linestate_t ScriptHost::m_lnState;
 shared_ptr<ScriptHost> ScriptHost::g_pHost;
 ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
@@ -59,9 +59,9 @@ void ScriptHost::PrintScriptHelp(bool bMarkdown)
 	{
 		cout << "Scripting options for the current context:\n";
 	}
-	for (auto it=m_clients.begin();it!=m_clients.end();it++)
+	for (auto &client : m_clients)
 	{
-		it->second->PrintRegisteredActions(bMarkdown);
+		client.second->PrintRegisteredActions(bMarkdown);
 	}
 }
 
@@ -77,7 +77,7 @@ void ScriptHost::LoadScript(const string &strFile)
 		m_script.push_back(strLn);
 	}
 	m_iLine = 0;
-	printf("ScriptHost: Loaded %zu lines from %s\n", m_script.size(), strFile.c_str());
+	cout << "ScriptHost: Loaded " << m_script.size() << " lines from " << strFile << '\n';
 }
 
 // Parse line in the format Context::Action(arg1, arg2,...)
@@ -107,7 +107,7 @@ IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const vector<
 		{
 			int iTime = stoi(vArgs.at(0));
 			m_iTimeoutCycles = iTime *(m_uiAVRFreq/1000);
-			printf("ScriptHost::SetTimeoutMs changed to %d (%d cycles)\n",iTime,m_iTimeoutCycles);
+			cout << "ScriptHost::SetTimeoutMs changed to " << iTime << " Ms (" << m_iTimeoutCycles << " cycles)\n";
 			m_iTimeoutCount = 0;
 			break;
 		}
@@ -124,9 +124,9 @@ bool ScriptHost::ValidateScript()
 {
 	vector<string> vArgs;
 	string strCtxt, strAct;
-	printf("Validating script...\n");
+	cout << "Validating script...\n";
 	bool bClean = true;
-	auto fcnErr = [](const string &sMsg, const int iLine) { printf("ScriptHost: Validation failed: %s on line %d : %s\n",sMsg.c_str(), iLine, m_script.at(iLine).c_str());};
+	auto fcnErr = [](const string &sMsg, const int iLine) { cout << "ScriptHost: Validation failed: "<< sMsg <<" on line " << iLine <<":" << m_script.at(iLine) << '\n';};
 	for (size_t i=0; i<m_script.size(); i++)
 	{
 		vArgs.clear();
@@ -152,7 +152,7 @@ bool ScriptHost::ValidateScript()
 		if (m_clients.at(strCtxt)->m_ActionIDs.count(strAct)==0)
 		{
 			bClean = false;
-			fcnErr("Unknown action " + strCtxt + "::" + strAct,i);
+			fcnErr(string("Unknown action ").append(strCtxt).append("::").append(strAct),i);
 			cout << "Available actions:\n";
 			m_clients.at(strCtxt)->PrintRegisteredActions();
 			continue;
@@ -320,7 +320,7 @@ void ScriptHost::AddMenuEntry(const string &strName, unsigned uiID, IScriptable*
 }
 
 
-void ScriptHost::AddScriptable(string strName, IScriptable* src)
+void ScriptHost::AddScriptable(const string &strName, IScriptable* src)
 {
 	if (m_clients.count(strName)==0)
 	{
@@ -417,8 +417,8 @@ void ScriptHost::OnAVRCycle()
 }
 
 const map<ArgType,string> IScriptable::m_ArgToString = {
-	make_pair(ArgType::Bool,"bool"),
-	make_pair(ArgType::Float,"float"),
-	make_pair(ArgType::Int,"int"),
-	make_pair(ArgType::String,"string"),
+	{ArgType::Bool,"bool"},
+	{ArgType::Float,"float"},
+	{ArgType::Int,"int"},
+	{ArgType::String,"string"},
 };

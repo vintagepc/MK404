@@ -27,7 +27,7 @@
 #include "SerialPipe.h"           // for SerialPipe
 #include "printers/Prusa_MK3S.h"  // for Prusa_MK3S
 #include "uart_pty.h"             // for uart_pty
-#include <cstdio>                // for printf
+#include <iostream>                // for printf
 #include <memory>                 // for unique_ptr
 
 Prusa_MK3SMMU2::~Prusa_MK3SMMU2()
@@ -93,14 +93,14 @@ void Prusa_MK3SMMU2::OnKeyPress(unsigned char key, int x, int y)
 	switch (key) {
 		case 'F':
 		{
-			printf("FINDA toggled (in manual control)\n");
+			cout << "FINDA toggled (in manual control)\n";
 			m_MMU.SetFINDAAuto(false);
 			m_MMU.ToggleFINDA();
 		}
 		break;
 		case 'a':
 		{
-			printf("FINDA in Auto control\n");
+			cout << "FINDA in Auto control\n";
 			m_MMU.SetFINDAAuto(true);
 			FSensorResumeAuto(); // Also restore IR auto handling.
 			break;

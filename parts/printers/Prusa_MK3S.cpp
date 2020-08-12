@@ -19,9 +19,6 @@
  */
 
 #include "Prusa_MK3S.h"
-#include <GL/glew.h>		// NOLINT must come before freeglut
-#include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
-#include <cstdio>            // for printf
 #include "Beeper.h"           // for Beeper
 #include "Button.h"           // for Button
 #include "Fan.h"              // for Fan
@@ -36,6 +33,9 @@
 #include "TMC2130.h"          // for TMC2130
 #include "sim_io.h"           // for avr_register_io_write
 #include "uart_pty.h"         // for uart_pty
+#include <GL/glew.h>		// NOLINT must come before freeglut
+#include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
+#include <iostream>            // for printf
 
 void Prusa_MK3S::Draw()
 {
@@ -116,7 +116,7 @@ void Prusa_MK3S::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
 	if (v==0x02)// Marlin is done setting up UCSRA0...
 	{
 		v|=(1<<5); // leave the UDRE0 alone
-		printf("Reset UDRE0 after serial config changed\n");
+		cout << "Reset UDRE0 after serial config changed\n";
 	}
 	avr_core_watch_write(avr,addr,v);
 }
@@ -124,7 +124,7 @@ void Prusa_MK3S::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
 void Prusa_MK3S::SetupIR()
 {
 	// Setup the 3S IR sensor.
-	printf("MK3S - adding IR sensor.\n");
+	cout << "MK3S - adding IR sensor.\n";
 	AddHardware(IR, GetPinNumber(VOLT_IR_PIN));
 	TryConnect(IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
 	TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
@@ -174,21 +174,21 @@ void Prusa_MK3S::OnAVRCycle()
 	{
 		switch (key) {
 			case 'w':
-				printf("<");
+				cout << '<';
 				encoder.Twist(RotaryEncoder::CCW_CLICK);
 				if (m_pVis) m_pVis->TwistKnob(true);
 				break;
 			case 's':
-				printf(">");
+				cout << '>';
 				encoder.Twist(RotaryEncoder::CW_CLICK);
 				if (m_pVis) m_pVis->TwistKnob(false);
 				break;
 			case 0xd:
-				printf("ENTER pushed\n");
+				cout << "ENTER pushed\n";
 				encoder.Push();
 				break;
 			case 'r':
-				printf("RESET/KILL\n");
+				cout << "RESET/KILL\n";
 				// RESET BUTTON
 				SetResetFlag();
 				encoder.Push(); // I dont' know why this is required to not get stuck in factory reset mode.
@@ -196,7 +196,7 @@ void Prusa_MK3S::OnAVRCycle()
 				// any avr_run cycles between them. :-/
 				break;
 			case 't':
-				printf("FACTORY_RESET\n");
+				cout << "FACTORY_RESET\n";
 				m_bFactoryReset =true;
 				// Hold the button during boot to get factory reset menu
 				SetResetFlag();
@@ -205,14 +205,14 @@ void Prusa_MK3S::OnAVRCycle()
 				encoder.PushAndHold();
 				break;
 			case 'm':
-				printf("Toggled Mute\n");
+				cout << "Toggled Mute\n";
 				m_buzzer.ToggleMute();
 				break;
 			case 'y':
 				pinda.ToggleSheet();
 				break;
 			case 'p':
-				printf("SIMULATING POWER PANIC\n");
+				cout << "SIMULATING POWER PANIC\n";
 				PowerPanic.Press(500);
 				break;
 			case 'f':
@@ -224,12 +224,12 @@ void Prusa_MK3S::OnAVRCycle()
 			case 'c':
 				if (!sd_card.IsMounted())
 				{
-					printf("Mounting SD image...\n");
+					cout << "Mounting SD image...\n";
 					sd_card.Mount(); // Remounts last image.
 				}
 				else
 				{
-					printf("SD card removed...\n");
+					cout << "SD card removed...\n";
 					sd_card.Unmount();
 				}
 				break;
@@ -261,7 +261,7 @@ void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
 			break;
 		case 'z':
 			m_bPaused ^= true;
-			printf("Pause: %u\n",m_bPaused.load());
+			cout <<  "Pause: " << m_bPaused << '\n';
 			break;
 		case 'l':
 			if (m_pVis)m_pVis->ClearPrint();

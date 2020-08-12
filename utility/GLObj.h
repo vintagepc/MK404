@@ -35,9 +35,9 @@ class GLObj
 {
     public:
         // Creates a new GLObj for the given .obj file
-		GLObj(const std::string &strFile);
-		GLObj(const std::string &strFile, float fScale);
-        GLObj(const std::string &strFile, float fTX, float fTY, float fTZ,  float fScale = 1.f);
+		GLObj(std::string strFile);
+		GLObj(std::string strFile, float fScale);
+        GLObj(std::string strFile, float fTX, float fTY, float fTZ,  float fScale = 1.f);
 
 		enum class SwapMode
 		{
@@ -84,8 +84,8 @@ class GLObj
             size_t material_id; // Atomic to allow for cross thread
             bool bDraw;
         } DrawObject;
-        float m_fMaxExtent;
-        float m_extMin[3], m_extMax[3];
+        float m_fMaxExtent = 1.f;
+        float m_extMin[3] = {0,0,0}, m_extMax[3] = {0,0,0};
         bool m_bLoaded = false, m_bNoNewNormals = false;
         vector<tinyobj::material_t> m_materials;
         map<std::string, GLuint> m_textures;

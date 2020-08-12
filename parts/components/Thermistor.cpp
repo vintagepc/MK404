@@ -95,7 +95,7 @@ void Thermistor::SetTable(const gsl::span<const int16_t> table, int iOversamp)
 	m_vTable.clear();
 	for (auto it = table.begin(); it!= table.end(); it+=2)
 	{
-		m_vTable.emplace_back(std::make_pair(*it, *std::next(it)));
+		m_vTable.push_back(std::make_pair(*it, *std::next(it)));
 	}
 }
 

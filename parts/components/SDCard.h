@@ -25,14 +25,15 @@
 
 #pragma once
 
+#include "IScriptable.h"    // for ArgType, ArgType::String, IScriptable::Li...
+#include "SPIPeripheral.h"  // for SPIPeripheral
+#include "Scriptable.h"     // for Scriptable
+#include "gsl-lite.hpp"
+#include "sim_avr.h"        // for avr_t
 #include <stdint.h>         // for uint8_t, uint32_t, uint16_t, uint64_t
 #include <sys/types.h>      // for off_t
 #include <string>           // for string
 #include <vector>           // for vector
-#include "IScriptable.h"    // for ArgType, ArgType::String, IScriptable::Li...
-#include "SPIPeripheral.h"  // for SPIPeripheral
-#include "Scriptable.h"     // for Scriptable
-#include "sim_avr.h"        // for avr_t
 
 class SDCard:public SPIPeripheral, public Scriptable
 {
@@ -161,6 +162,14 @@ class SDCard:public SPIPeripheral, public Scriptable
 
 		bool m_bSelected = false, m_bMounted = false;
 
+		struct m_currOp
+		{
+			inline void SetData(const gsl::span<uint8_t> &in){data = in; pos = in.begin();};
+			inline bool IsFinsihed(){ return pos==data.end(); }
+			gsl::span<uint8_t> data;
+			gsl::span<uint8_t>::iterator pos;
+		}m_currOp;
+
 		union {
 			/* Ongoing read operations. */
 			struct {
@@ -177,12 +186,14 @@ class SDCard:public SPIPeripheral, public Scriptable
 
 		/* Internal registers. */
 		uint32_t m_ocr = 0; /* operation conditions register (OCR) */
-		uint8_t m_csd[16]; /* card-specific data (CSD) register */
+		uint8_t _m_csd[16]; /* card-specific data (CSD) register */
+		gsl::span<uint8_t> m_csd;
 
 		uint16_t m_CRC;
+		uint8_t _m_ByteCRC[2];
+		gsl::span<uint8_t> m_byteCRC {_m_ByteCRC,2};
 
 		/* Card data. */
-		uint8_t *m_data = nullptr; /* mmap()ed data */
-		off_t m_data_length = 0;
+		gsl::span<uint8_t> m_data; /* mmap()ed data */
 		int m_data_fd = -1;
 };

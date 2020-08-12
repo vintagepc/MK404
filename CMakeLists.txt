@@ -27,7 +27,7 @@ else()
 endif()
 
 if (ENABLE_TIDY)
-	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy;-checks=*,-google-readability*,-readability*,-cppcoreguidelines-pro-type-vararg")
+	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy;-config=")
 else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()

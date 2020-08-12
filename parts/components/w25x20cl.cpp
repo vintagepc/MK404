@@ -22,10 +22,11 @@
 */
 
 #include "w25x20cl.h"
+
+#include <cstdlib>     // for exit, free, malloc
+#include <cstring>     // for memset, memcpy, strncpy
 #include <fcntl.h>      // for open, O_CREAT, O_RDWR, SEEK_SET
-#include <stdio.h>      // for printf, perror, fprintf, stderr, size_t
-#include <stdlib.h>     // for exit, free, malloc
-#include <string.h>     // for memset, memcpy, strncpy
+#include <iostream>
 #include <unistd.h>     // for close, ftruncate, lseek, read, write, ssize_t
 #include "TelemetryHost.h"
 
@@ -78,7 +79,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 		{
 			if (m_rxCnt >= sizeof(m_cmdIn))
 			{
-				printf("w25x20cl_t: error: command too long: ");
+				cout << "w25x20cl_t: error: command too long: ";
 				for (size_t i = 0; i < sizeof(m_cmdIn); i++)
 				{
 					printf("%02x, ", m_cmdIn[i]);
@@ -149,12 +150,12 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 
 				default:
 				{
-				printf("w25x20cl_t: error: unknown command: ");
+				cout  << "w25x20cl_t: error: unknown command: ";
 				for (int i = 0; i < m_rxCnt; i++)
 				{
 					printf("%02x, ", m_cmdIn[i]);
 				}
-				printf("\n");
+				cout << '\n';
 				} break;
 			}
 
@@ -316,11 +317,11 @@ void w25x20cl::Load(const char* path)
 	ssize_t r = read(m_fdFlash, buffer, W25X20CL_TOTAL_SIZE + 1);
 	printf("Read %d bytes\n", (int)r);
 	if (r !=  W25X20CL_TOTAL_SIZE + 1) {
-		fprintf(stderr, "unable to load XFLASH\n");
+		cerr << "Unable to load XFLASH\n";
 		perror(path);
 		exit(1);
 	}
-	uint8_t bEmpty = 1;
+	bool bEmpty = true;
 	for (int i = 0; i < W25X20CL_TOTAL_SIZE + 1; i++)
 	{
 		bEmpty &= buffer[i] == 0;
@@ -337,7 +338,7 @@ void w25x20cl::Save()
 	lseek(m_fdFlash, SEEK_SET, 0);
 	ssize_t r = write(m_fdFlash, m_flash, W25X20CL_TOTAL_SIZE + 1);
 	if (r != W25X20CL_TOTAL_SIZE + 1) {
-		fprintf(stderr, "unable to write xflash memory\n");
+		cerr << "Unable to write xflash memory\n";
 		perror(m_filepath.c_str());
 	}
 }

@@ -66,11 +66,11 @@ class ScriptHost: public IScriptable
 			return ValidateScript();
 		}
 
-		static void AddScriptable(string strName, IScriptable* src);
+		static void AddScriptable(const string &strName, IScriptable* src);
 
 		static void AddMenuEntry(const string &strName, unsigned uiID, IScriptable* src);
 
-		static inline bool IsRegistered(string strName)
+		static inline bool IsRegistered(const string &strName)
 		{
 			return m_clients.count(strName)!=0;
 		}
@@ -130,7 +130,7 @@ class ScriptHost: public IScriptable
 
 
 		typedef struct linestate_t{
-			linestate_t(){strCtxt = "", iActID = 0, vArgs = {""}, iLine = 0, pClient = nullptr, isValid = false;};
+			linestate_t() noexcept {iActID = 0, iLine = 0, pClient = nullptr, isValid = false;};
 			string strCtxt;
 			unsigned int iActID;
 			vector<string> vArgs;

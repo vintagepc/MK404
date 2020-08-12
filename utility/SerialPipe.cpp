@@ -20,17 +20,22 @@
  */
 
 #include "SerialPipe.h"
-#include <errno.h>       // for EAGAIN, errno
+#include <cerrno>       // for EAGAIN, errno
 #include <fcntl.h>       // for open, O_NONBLOCK, O_RDWR
-#include <stdio.h>       // for fprintf, printf, perror, NULL, stderr
+#include <iostream>       // for fprintf, printf, perror, NULL, stderr
 #include <sys/select.h>  // for FD_ISSET, FD_SET, select, FD_ZERO, fd_set
 #include <unistd.h>      // for read, write, close
+#include <vector>
 
-SerialPipe::SerialPipe(std::string strUART0, std::string strUART1):m_strPty0(strUART0),m_strPty1(strUART1)
+using std::cout;
+using std::cerr;
+using std::string;
+
+SerialPipe::SerialPipe(string strUART0, string strUART1):m_strPty0(std::move(strUART0)),m_strPty1(std::move(strUART1))
 {
-	auto fcnThread = [](void *param){ SerialPipe *p = (SerialPipe*)param; return p->Run(); };
+	auto fcnThread = [](void *param){ auto *p = static_cast<SerialPipe*>(param); return p->Run(); };
 
-	pthread_create(&m_thread, NULL, fcnThread, this);
+	pthread_create(&m_thread, nullptr, fcnThread, this);
 	m_bStarted = true;
 }
 
@@ -40,56 +45,56 @@ SerialPipe::~SerialPipe()
 		return;
 	m_bQuit = true;
 	pthread_cancel(m_thread);
-	pthread_join(m_thread,NULL);
-	printf("Serial pipe finished\n");
+	pthread_join(m_thread,nullptr);
+	cout << "Serial pipe finished\n";
 }
 
 void* SerialPipe::Run()
 {
 	// Not much to see here, we just open the ports and shuttle characters back and forth across them.
 	//printf("Starting serial transfer thread...\n");
-	int fdPort[2];
-	fd_set fdsIn, fdsErr;
+	std::vector<int> fdPort;
+	fd_set fdsIn {}, fdsErr {};
 	unsigned char chrIn;
 	int iLastFd = 0, iReadyRead, iChrRd;
-	if ((fdPort[0]=open(m_strPty0.c_str(), O_RDWR | O_NONBLOCK)) == -1)
+	if ((fdPort[0]=open(m_strPty0.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC)) == -1)
 	{
-		fprintf(stderr, "Could not open %s.\n",m_strPty0.c_str());
+		cerr << "Could not open "  << m_strPty0 << '\n';
 		perror(m_strPty0.c_str());
 		m_bQuit = true;
 	}
-	if ((fdPort[1]=open(m_strPty1.c_str(), O_RDWR | O_NONBLOCK)) == -1)
+	if ((fdPort[1]=open(m_strPty1.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC)) == -1)
 	{
-		fprintf(stderr, "Could not open %s.\n",m_strPty1.c_str());
+		cerr << "Could not open "  << m_strPty1 << '\n';
 		perror(m_strPty1.c_str());
 		m_bQuit = true;
 	}
-	if (fdPort[0]>fdPort[1])
-		iLastFd = fdPort[0];
+	if (fdPort.at(0)>fdPort.at(1))
+		iLastFd = fdPort.at(0);
 	else
-		iLastFd = fdPort[1];
+		iLastFd = fdPort.at(1);
 
 	while (!m_bQuit)
 	{
-		FD_ZERO(&fdsIn);
-		FD_ZERO(&fdsErr);
-		FD_SET(fdPort[0], &fdsIn);
-		FD_SET(fdPort[1], &fdsIn);
-		FD_SET(fdPort[0], &fdsErr);
-		FD_SET(fdPort[1], &fdsErr);
-		if ((iReadyRead = select(iLastFd+1,&fdsIn, NULL, &fdsErr,NULL))<0)
+		FD_ZERO(&fdsIn); //NOLINT // complaints in system file.
+		FD_ZERO(&fdsErr); //NOLINT
+		FD_SET(fdPort.at(0), &fdsIn); //NOLINT
+		FD_SET(fdPort.at(1), &fdsIn); //NOLINT
+		FD_SET(fdPort.at(0), &fdsErr); //NOLINT
+		FD_SET(fdPort.at(1), &fdsErr); //NOLINT
+		if ((iReadyRead = select(iLastFd+1,&fdsIn, nullptr, &fdsErr,nullptr))<0)
 		{
-			printf("Select ERR.\n");
+			cout << "Select ERR.\n";
 			m_bQuit = true;
 			break;
 		}
 
-		if (FD_ISSET(fdPort[0],&fdsIn))
+		if (FD_ISSET(fdPort.at(0),&fdsIn)) //NOLINT
 		{
-			while ((iChrRd = read(fdPort[0], &chrIn,1))>0)
+			while ((iChrRd = read(fdPort.at(0), &chrIn,1))>0)
 			{
 				if(write(fdPort[1],&chrIn,1)!=1)
-					fprintf(stderr, "Failed to write byte across serial pipe 0.\n");
+					cerr << "Failed to write byte across serial pipe 0.\n";
 
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
@@ -98,12 +103,12 @@ void* SerialPipe::Run()
 				break;
 			}
 		}
-		if (FD_ISSET(fdPort[1],&fdsIn))
+		if (FD_ISSET(fdPort[1],&fdsIn)) //NOLINT
 		{
 			while ((iChrRd = read(fdPort[1], &chrIn,1))>0)
 			{
 				if(write(fdPort[0],&chrIn,1) !=1)
-					fprintf(stderr, "Failed to write byte across serial pipe 0.\n");
+					cerr << "Failed to write byte across serial pipe 0.\n";
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
 			{
@@ -111,9 +116,9 @@ void* SerialPipe::Run()
 				break;
 			}
 		}
-		if (FD_ISSET(fdPort[0], &fdsErr) || FD_ISSET(fdPort[1], &fdsErr))
+		if (FD_ISSET(fdPort[0], &fdsErr) || FD_ISSET(fdPort[1], &fdsErr)) //NOLINT
 		{
-			fprintf(stderr,"Exception reading PTY. Quit.\n");
+			cerr << "Exception reading PTY. Quit.\n";
 			m_bQuit = true;
 			break;
 		}
@@ -121,7 +126,9 @@ void* SerialPipe::Run()
 	}
 
 	// cleanup.
-	for (int i=0; i<2; i++)
-		close(fdPort[i]);
+	for (auto &p: fdPort)
+	{
+		close(p);
+	}
 	return nullptr;
 }

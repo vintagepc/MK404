@@ -94,12 +94,12 @@ class FatImage
 
 		static const map<string, Size> NameToSize;
 
-		static const vector<uint8_t> FAT32;
-		static const vector<uint8_t> FATHeader;
-		static const vector<uint8_t> FSInfo_1;
-		static const vector<uint8_t> FSInfo_2;
-		static const vector<uint8_t> FSInfo_3;
-		static const vector<uint8_t> DataRegion;
+		static const uint8_t _FAT32[];
+		static const uint8_t _FATHeader[];
+		static const uint8_t _FSInfo_1[];
+		static const uint8_t _FSInfo_2[];
+		static const uint8_t _FSInfo_3[];
+		static const uint8_t _DataRegion[];
 
 
 };

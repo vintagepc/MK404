@@ -451,7 +451,8 @@ void MK3SGL::Draw()
 			glPopMatrix();
 			if (m_bBedOn)
 			{
-				glTranslatef(0.016,0,-0.244);
+				glTranslatef(m_flDbg,m_flDbg2,m_flDbg3);
+				m_Objs->ApplyBedLEDTransform();
 				DrawLED(1,0,0);
 			}
 		glPopMatrix();

@@ -75,6 +75,8 @@ class MK3S_Lite: public OBJCollection
 
 		inline void ApplyPLEDTransform() override {glTranslatef(-0.044,-0.210,0.f);};
 
+		inline void ApplyBedLEDTransform() override {glTranslatef(0.042000, 0.084000, 0.048000);};
+
 		inline void ApplyPrintTransform() override { glTranslatef(0.024,0.084,-0.281); };
 
 		virtual void GetBaseCenter(float fTrans[3]) override

@@ -67,6 +67,12 @@ class MK3S_Bear: public OBJCollection
 
 		inline void ApplyPLEDTransform() override {glTranslatef(-0.201000, -0.062000, -0.45);};
 
+		inline void ApplyBedLEDTransform() override
+		{
+			glTranslatef(-0.109000, 0.238000, -0.412998);
+			glRotatef(-90,1,0,0);
+		};
+
 		inline void ApplyPrintTransform() override { glTranslatef(-0.131000, 0.236000, 0.173000);};
 
 		inline float GetScaleFactor() override { return m_pBaseObj->GetScaleFactor();};

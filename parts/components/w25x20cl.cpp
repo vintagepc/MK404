@@ -71,7 +71,7 @@ w25x20cl::~w25x20cl()
 /*
  * called when a SPI byte is sent
  */
-uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
+uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 {
 	switch (m_state)
 	{

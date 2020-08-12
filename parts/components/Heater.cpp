@@ -176,7 +176,7 @@ void Heater::Draw()
 
 	Color3fv colFill;
 	float v = (float(m_iDrawTemp) - m_fColdTemp) / (m_fHotTemp - m_fColdTemp);
-	colorLerp(static_cast<const float*>(m_colColdTemp), static_cast<const float*>(m_colHotTemp), v, static_cast<float*>(colFill));
+	colorLerp(m_colColdTemp, m_colHotTemp, v, colFill);
 
     glPushMatrix();
 	    glColor3fv(static_cast<float*>(colFill));

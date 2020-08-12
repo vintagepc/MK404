@@ -19,7 +19,9 @@
 
 #pragma once
 
+#include "gsl-lite.hpp"
+
 typedef float Color3fv[3];
 
 // Interpolate between 2 RGB colors
-void colorLerp(const Color3fv a, const Color3fv b, float v, Color3fv c);
+void colorLerp(gsl::span<const float> a, gsl::span<const float> b, float v, gsl::span<float> c);

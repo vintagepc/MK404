@@ -143,7 +143,7 @@ class MK3S_Bear: public OBJCollection
 		 	m_pEVis->GetCenteringTransform(fTransform);
 		 	fTransform[1] +=.0015f;
 		 	glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
-		 	glRotatef((-36.f/28.f)*3.f*(fEPos*1000.f),0,0,1);
+		 	glRotatef((-36.f/28.f)*6.f*(fEPos*1000.f),0,0,1);
 		 	glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 		 	m_pEVis->Draw();
 		}

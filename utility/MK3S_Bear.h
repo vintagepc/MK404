@@ -77,7 +77,7 @@ class MK3S_Bear: public OBJCollection
 
 		inline float GetScaleFactor() override { return m_pBaseObj->GetScaleFactor();};
 
-		inline void SetNozzleCam(bool bOn) override { m_pE->SetSubobjectVisible(100,!bOn); }
+		inline void SetNozzleCam(bool bOn) override { m_pE->SetSubobjectVisible(89,!bOn); }
 
 		virtual void GetBaseCenter(float fTrans[3]) override
 		{

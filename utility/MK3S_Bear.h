@@ -67,11 +67,17 @@ class MK3S_Bear: public OBJCollection
 
 		inline void ApplyPLEDTransform() override {glTranslatef(-0.201000, -0.062000, -0.45);};
 
+		inline void ApplyBedLEDTransform() override
+		{
+			glTranslatef(-0.109000, 0.238000, -0.412998);
+			glRotatef(-90,1,0,0);
+		};
+
 		inline void ApplyPrintTransform() override { glTranslatef(-0.131000, 0.236000, 0.173000);};
 
 		inline float GetScaleFactor() override { return m_pBaseObj->GetScaleFactor();};
 
-		inline void SetNozzleCam(bool bOn) override { m_pE->SetSubobjectVisible(100,!bOn); }
+		inline void SetNozzleCam(bool bOn) override { m_pE->SetSubobjectVisible(89,!bOn); }
 
 		virtual void GetBaseCenter(float fTrans[3]) override
 		{
@@ -137,7 +143,7 @@ class MK3S_Bear: public OBJCollection
 		 	m_pEVis->GetCenteringTransform(fTransform);
 		 	fTransform[1] +=.0015f;
 		 	glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
-		 	glRotatef((-36.f/28.f)*3.f*(fEPos*1000.f),0,0,1);
+		 	glRotatef((-36.f/28.f)*6.f*(fEPos*1000.f),0,0,1);
 		 	glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 		 	m_pEVis->Draw();
 		}

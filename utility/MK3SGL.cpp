@@ -148,7 +148,17 @@ void MK3SGL::KeyCB(unsigned char c, int x, int y)
 		m_flDbg3 = m_flDbg3+0.001f;
 	else if (c == '9')
 		m_flDbg3 = m_flDbg3-0.001f;
-
+	else if (c == '7')
+	{
+		m_iDbg ++;
+		m_MMUBase.SetSubobjectVisible(m_iDbg,false);
+	}
+	else if (c == '8')
+	{
+		m_iDbg --;
+		m_MMUBase.SetSubobjectVisible(m_iDbg,true);
+	}
+	printf("Int: %d\n",m_iDbg.load());
 	printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
 	if (m_pParent)
 		m_pParent->OnKeyPress(c,x,y);
@@ -451,7 +461,8 @@ void MK3SGL::Draw()
 			glPopMatrix();
 			if (m_bBedOn)
 			{
-				glTranslatef(0.016,0,-0.244);
+				glTranslatef(m_flDbg,m_flDbg2,m_flDbg3);
+				m_Objs->ApplyBedLEDTransform();
 				DrawLED(1,0,0);
 			}
 		glPopMatrix();

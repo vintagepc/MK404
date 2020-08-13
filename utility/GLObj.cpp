@@ -276,7 +276,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 	{
 		for (size_t s = 0; s < shapes.size(); s++) {
 			std::vector<float> vb;  // pos(3float), normal(3float), color(3float)
-			int iMatlId = 0;
+			int iMatlId = shapes[s].mesh.material_ids[0];
 			for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++) {
 				tinyobj::index_t idx0 = shapes[s].mesh.indices[3 * f + 0];
 				tinyobj::index_t idx1 = shapes[s].mesh.indices[3 * f + 1];
@@ -286,7 +286,8 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 
 				if (current_material_id != iMatlId)
 				{
-					//printf("Submaterial in shape %s: %u\n",shapes[s].name.c_str(),current_material_id);
+					printf("Submaterial in shape %s: %u\n",shapes[s].name.c_str(),current_material_id);
+					printf("sub-Object %s: is # %u\n",shapes[s].name.c_str(),(int)m_DrawObjects.size());
 					AddObject(vb,iMatlId);
 					vb.clear();
 				}
@@ -407,7 +408,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 #endif
 				}
 			}
-			//printf("Object %s: is # %u\n",shapes[s].name.c_str(),(int)m_DrawObjects.size());
+			printf("Object %s: is # %u\n",shapes[s].name.c_str(),(int)m_DrawObjects.size());
 			AddObject(vb, iMatlId);
 			// // OpenGL viewer does not support texturing with per-face material.
 			// if (shapes[s].mesh.material_ids.size() > 0 && shapes[s].mesh.material_ids.size() > s) {

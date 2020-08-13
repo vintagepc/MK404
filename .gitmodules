@@ -9,4 +9,4 @@
 	url = https://git.code.sf.net/p/tclap/code
 [submodule "3rdParty/gitversion"]
 	path = 3rdParty/gitversion
-	url = https://github.com/smessmer/gitversion.git
+	url = https://github.com/vintagepc/gitversion.git

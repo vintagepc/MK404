@@ -33,7 +33,7 @@ class MK3S_Lite: public OBJCollection
 		MK3S_Lite(bool bMMU):OBJCollection("Lite")
 		{
 			AddObject(ObjClass::Y, "assets/Y_AXIS.obj", 0, 0, -0.141);
-			AddObject(ObjClass::Y, "assets/SSSheet.obj", 0.025,0.083,0.431 + -0.141);
+			AddObject(ObjClass::PrintSurface, "assets/SSSheet.obj", 0.025,0.083,0.431 + -0.141);
 			AddObject(ObjClass::Media, "assets/SDCard.obj",0,0,0,MM_TO_M)->SetKeepNormalsIfScaling(true);
 			AddObject(ObjClass::X, "assets/X_AXIS.obj",-0.044,-0.210,0);
 			m_pKnob = AddObject(ObjClass::Other, "assets/LCD-knobR2.obj");
@@ -75,6 +75,8 @@ class MK3S_Lite: public OBJCollection
 
 		inline void ApplyPLEDTransform() override {glTranslatef(-0.044,-0.210,0.f);};
 
+		inline void ApplyBedLEDTransform() override {glTranslatef(0.042000, 0.084000, 0.048000);};
+
 		inline void ApplyPrintTransform() override { glTranslatef(0.024,0.084,-0.281); };
 
 		virtual void GetBaseCenter(float fTrans[3]) override
@@ -115,7 +117,7 @@ class MK3S_Lite: public OBJCollection
 			m_pEVis->GetCenteringTransform(fTransform);
 			fTransform[1] +=.0015f;
 			glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
-			glRotatef((-36.f/28.f)*3.f*(fEPos*1000.f),0,0,1);
+			glRotatef((-36.f/28.f)*6.f*(fEPos*1000.f),0,0,1);
 			glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 			m_pEVis->Draw();
 		}

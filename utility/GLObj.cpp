@@ -273,7 +273,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 	{
 		for (auto &s : shapes) {
 			std::vector<float> vb;  // pos(3float), normal(3float), color(3float)
-			int iMatlId = 0;
+			int iMatlId = shapes[s].mesh.material_ids[0];
 			for (size_t f = 0; f < s.mesh.indices.size() / 3; f++) {
 				tinyobj::index_t idx0 = s.mesh.indices[3 * f + 0];
 				tinyobj::index_t idx1 = s.mesh.indices[3 * f + 1];

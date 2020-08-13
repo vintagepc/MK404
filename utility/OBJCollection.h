@@ -78,6 +78,7 @@ class OBJCollection
 		virtual void OnLoadComplete(){};
 
 		virtual inline void ApplyPLEDTransform() {};
+		virtual inline void ApplyBedLEDTransform() {};
 		virtual inline void ApplyLCDTransform() {};
 		virtual inline void ApplyPrintTransform(){};
 

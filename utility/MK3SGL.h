@@ -164,6 +164,7 @@ class MK3SGL: public BasePeripheral, public Scriptable
 		inline void DebugTx(){glTranslatef(m_flDbg,m_flDbg2,m_flDbg3);}
 
 		atomic<float> m_flDbg = {0.0f}, m_flDbg2 = {0.0f}, m_flDbg3 = {0.0f};
+		atomic_int m_iDbg = {0};
 
 		enum Actions
 		{

@@ -20,16 +20,16 @@
  */
 
 #include "TMC2130.h"
+#include "TelemetryHost.h"
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex3f, glColor3f, glBegin, glEnd
 #else
 # include <GL/gl.h>           // for glVertex3f, glColor3f, glBegin, glEnd
 #endif
-#include <stdio.h>            // for printf
-#include <string.h>           // for memset
 #include <algorithm>          // for min
-#include "TelemetryHost.h"
+#include <cstdio>            // for printf
+#include <cstring>           // for memset
 
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (m_cAxis=='S' || m_cAxis=='I') _w
@@ -142,7 +142,7 @@ void TMC2130::CreateReply()
     m_cmdOut.all = 0x00; // Copy over.
     if (m_cmdProc.bitsIn.RW == 0) // Last in was a read.
     {
-        m_cmdOut.bitsOut.data = m_regs.raw[m_cmdProc.bitsIn.address];
+        m_cmdOut.bitsOut.data = gsl::at(m_regs.raw,m_cmdProc.bitsIn.address);
         if (m_cmdProc.bitsIn.address == 0x01)
             m_regs.raw[0x01] = 0; // GSTAT is cleared after read.
         TRACE(printf("Reading out %x (%10lx)", m_cmdProc.bitsIn.address, m_cmdOut.bitsOut.data));
@@ -165,7 +165,7 @@ void TMC2130::ProcessCommand()
     TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08x\n",m_cAxis, m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
     if (m_cmdProc.bitsIn.RW)
     {
-        m_regs.raw[m_cmdProc.bitsIn.address] = m_cmdProc.bitsIn.data;
+        gsl::at(m_regs.raw,m_cmdProc.bitsIn.address) = m_cmdProc.bitsIn.data;
         //printf("REG %c %02x set to: %010x\n", m_cAxis, m_cmdIn.bitsIn.address, m_cmdIn.bitsIn.data);
 
 		if(m_cmdProc.bitsIn.address == 0x6C) // CHOPCONF
@@ -186,7 +186,7 @@ void TMC2130::ProcessCommand()
 /*
  * called when a SPI byte is received. It's guarded by the SPIPeripheral CSEL check.
  */
-uint8_t TMC2130::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
+uint8_t TMC2130::OnSPIIn(struct avr_irq_t *, uint32_t value)
 {
     m_cmdIn.all<<=8; // Shift bits up
     m_cmdIn.bytes[0] = value;
@@ -208,7 +208,7 @@ void TMC2130::CheckDiagOut()
 }
 
 // Called when CSEL changes.
-void TMC2130::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
+void TMC2130::OnCSELIn(struct avr_irq_t *, uint32_t value)
 {
 	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",m_cAxis,value));
     if (value == 1) // Just finished a CSEL
@@ -227,7 +227,7 @@ void TMC2130::OnDirIn(struct avr_irq_t * irq, uint32_t value)
     m_bDir = value^cfg.bInverted; // XOR
 }
 
-avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *avr, avr_cycle_count_t when)
+avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *, avr_cycle_count_t)
 {
     m_regs.defs.DRV_STATUS.stst = true;
     return 0;
@@ -269,8 +269,9 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     }
 
     m_fCurPos = StepToPos(m_iCurStep);
-    uint32_t* posOut = (uint32_t*)(&m_fCurPos); // both 32 bits, just mangle it for sending over the wire.
-    RaiseIRQ(POSITION_OUT, posOut[0]);
+    uint32_t posOut;
+	std::memcpy (&posOut, &m_fCurPos, 4);
+    RaiseIRQ(POSITION_OUT, posOut);
     TRACE(printf("cur pos: %f (%u)\n",m_fCurPos,m_iCurStep));
 	bStall |= m_bStall;
     if (bStall)
@@ -309,7 +310,7 @@ TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
 	RegisterActionAndMenu("Reset","Clears the diag flag immediately",ActResetDiag);
 }
 
-Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const vector<string> &)
 {
 	switch (iAct)
 	{

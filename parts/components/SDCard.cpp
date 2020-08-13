@@ -314,7 +314,7 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *, uint32_t value)
 			/* Output the response stored in m_command_response. */
 			if (m_CmdCount < m_command_response.length) {
 				/* Outputting response bytes. */
-				uiReply = m_command_response.data[m_CmdCount];
+				uiReply = gsl::at(m_command_response.data,m_CmdCount);
 			}  // Else sends 0xFF
 			SetSendReplyFlag();
 
@@ -410,7 +410,7 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *, uint32_t value)
 
 void SDCard::InitCSD()
 {
-	memset(&m_csd, 0, sizeof(_m_csd));
+	memset(&_m_csd, 0, sizeof(_m_csd));
 
 	const uint16_t CCC = 0x5B5;
 	const uint8_t SECTOR_SIZE = 0x7F;
@@ -493,7 +493,7 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 		return err;
 	};
 
-	struct stat stat_buf;
+	struct stat stat_buf {};
 	if (!filename.empty())
 		m_strFile = filename; // New file given.
 
@@ -530,7 +530,7 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 	/* Map it into memory. */
 	mapped = mmap (nullptr, image_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-	if (mapped == MAP_FAILED)
+	if (mapped == MAP_FAILED) //NOLINT - complaint in system library
 		return OnError(errno,true);
 
 	/* Success. */

@@ -42,18 +42,6 @@
 // 	make_pair(Size::G2, 4088),
 // };
 
-const map<string, FatImage::Size>FatImage::NameToSize =
-{
-	make_pair("32M",Size::M32),
-	make_pair("64M",Size::M64),
-	make_pair("128M",Size::M128),
-	make_pair("256M",Size::M256),
-	make_pair("512M",Size::M512),
-	make_pair("1G",Size::G1),
-	make_pair("2G",Size::G2)
-};
-
-
 const uint8_t FatImage::_FAT32[] = {
 	0xEB,0x58,0x90,0x6D,0x6B,0x66,0x73,0x2E,0x66,0x61,0x74,0x00,0x02,0x01,0x20,0x00,
 	0x02,0x00,0x00,0x00,0x00,0xF8,0x00,0x00,0x20,0x00,0x40,0x00,0x00,0x00,0x00,0x00,
@@ -72,9 +60,25 @@ const uint8_t FatImage::_FSInfo_3[] = {0x55, 0xAA};
 const uint8_t FatImage::_DataRegion[] = { 0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x08,0x00,0x00,0x57,0x49,
 											0xCD,0x50,0xCD,0x50,0x00,0x00,0x57,0x49,0xCD,0x50};
 
+
+const map<string, FatImage::Size>& FatImage::GetNameToSize()
+{
+	static const map<string, FatImage::Size> m {
+		make_pair("32M",FatImage::Size::M32),
+		make_pair("64M",FatImage::Size::M64),
+		make_pair("128M",FatImage::Size::M128),
+		make_pair("256M",FatImage::Size::M256),
+		make_pair("512M",FatImage::Size::M512),
+		make_pair("1G",FatImage::Size::G1),
+		make_pair("2G",FatImage::Size::G2)
+	};
+	return m;
+};
+
+
 bool FatImage::MakeFatImage(const string &strFile, const string &strSize)
 {
-	FatImage::Size size = NameToSize.at(strSize);
+	FatImage::Size size = GetNameToSize().at(strSize);
 	int fd = open(strFile.c_str(), O_WRONLY | O_CREAT | O_CLOEXEC, 0644);
 	if (fd < 0) {
 		perror(strFile.c_str());

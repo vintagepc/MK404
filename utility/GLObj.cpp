@@ -131,20 +131,22 @@ void GLObj::Draw() {
 			{
 				glBindTexture(GL_TEXTURE_2D, m_textures[diffuse_texname]);
 			} else {
-				float fCopy[4] = {0,0,0,m_materials[o.material_id].dissolve};
-				memcpy(fCopy,m_materials[o.material_id].ambient,3*(sizeof(float)));
-				glMaterialfv(GL_FRONT, GL_AMBIENT,  fCopy);
-				memcpy(fCopy,m_materials[o.material_id].diffuse,3*(sizeof(float)));
-				glMaterialfv(GL_FRONT, m_matMode, fCopy);
-				memcpy(fCopy,m_materials[o.material_id].specular,3*(sizeof(float)));
-				glMaterialfv(GL_FRONT, GL_SPECULAR, fCopy);
-				glMaterialf(GL_FRONT, GL_SHININESS, (m_materials[o.material_id].shininess/1000.f)*128.f);
-				glMaterialfv(GL_FRONT, GL_EMISSION, static_cast<float*>(m_materials[o.material_id].emission));
+				const tinyobj::material_t pMat = gsl::at(m_materials,o.material_id);
+				float _fCopy[4] = {0,0,0,pMat.dissolve};
+				gsl::span<float> fCopy {_fCopy};
+				memcpy(fCopy.data(),static_cast<const float*>(pMat.ambient),3*(sizeof(float)));
+				glMaterialfv(GL_FRONT, GL_AMBIENT,  fCopy.begin());
+				memcpy(fCopy.data(),static_cast<const float*>(pMat.diffuse),3*(sizeof(float)));
+				glMaterialfv(GL_FRONT, m_matMode, fCopy.begin());
+				memcpy(fCopy.data(),static_cast<const float*>(pMat.specular),3*(sizeof(float)));
+				glMaterialfv(GL_FRONT, GL_SPECULAR, fCopy.begin());
+				glMaterialf(GL_FRONT, GL_SHININESS, (pMat.shininess/1000.f)*128.f);
+				glMaterialfv(GL_FRONT, GL_EMISSION, static_cast<const float*>(pMat.emission));
 			}
 
 		}
 		glVertexPointer(3, GL_FLOAT, stride, nullptr);
-		glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
+		glNormalPointer(GL_FLOAT, stride, (const void*)((sizeof(float) * 3))); //NOLINT it is what it is.
 #if TEX_VCOLOR
 		glColorPointer(3, GL_FLOAT, stride, (const void*)(sizeof(float) * 6));
 		glTexCoordPointer(2, GL_FLOAT, stride, (const void*)(sizeof(float) * 9));
@@ -336,15 +338,15 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 					Expects(f1 >= 0);
 					Expects(f2 >= 0);
 
-					v[0][k] = attrib.vertices[3 * f0 + k];
-					v[1][k] = attrib.vertices[3 * f1 + k];
-					v[2][k] = attrib.vertices[3 * f2 + k];
-					m_extMin[k] = std::min(v[0][k], m_extMin[k]);
-					m_extMin[k] = std::min(v[1][k], m_extMin[k]);
-					m_extMin[k] = std::min(v[2][k], m_extMin[k]);
-					m_extMax[k] = std::max(v[0][k], m_extMax[k]);
-					m_extMax[k] = std::max(v[1][k], m_extMax[k]);
-					m_extMax[k] = std::max(v[2][k], m_extMax[k]);
+					gsl::at(v[0],k) = attrib.vertices[3 * f0 + k];
+					gsl::at(v[1],k) = attrib.vertices[3 * f1 + k];
+					gsl::at(v[2],k) = attrib.vertices[3 * f2 + k];
+					m_extMin[k] = std::min(gsl::at(v[0],k), m_extMin[k]);
+					m_extMin[k] = std::min(gsl::at(v[1],k), m_extMin[k]);
+					m_extMin[k] = std::min(gsl::at(v[2],k), m_extMin[k]);
+					m_extMax[k] = std::max(gsl::at(v[0],k), m_extMax[k]);
+					m_extMax[k] = std::max(gsl::at(v[1],k), m_extMax[k]);
+					m_extMax[k] = std::max(gsl::at(v[2],k), m_extMax[k]);
 				}
 
 				float n[3][3];
@@ -356,9 +358,9 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 					Expects(f1 >= 0);
 					Expects(f2 >= 0);
 					for (int k = 0; k < 3; k++) {
-						n[0][k] = attrib.normals[3 * f0 + k];
-						n[1][k] = attrib.normals[3 * f1 + k];
-						n[2][k] = attrib.normals[3 * f2 + k];
+						gsl::at(n[0],k) = attrib.normals[3 * f0 + k];
+						gsl::at(n[1],k) = attrib.normals[3 * f1 + k];
+						gsl::at(n[2],k) = attrib.normals[3 * f2 + k];
 					}
 				} else {
 					// compute geometric normal
@@ -372,12 +374,12 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 				}
 
 				for (int k = 0; k < 3; k++) {
-					vb.push_back(v[k][0]);
-					vb.push_back(v[k][1]);
-					vb.push_back(v[k][2]);
-					vb.push_back(n[k][0]);
-					vb.push_back(n[k][1]);
-					vb.push_back(n[k][2]);
+					vb.push_back(gsl::at(v,k)[0]);
+					vb.push_back(gsl::at(v,k)[1]);
+					vb.push_back(gsl::at(v,k)[2]);
+					vb.push_back(gsl::at(n,k)[0]);
+					vb.push_back(gsl::at(n,k)[1]);
+					vb.push_back(gsl::at(n,k)[2]);
 #if TEX_VCOLOR
 					// Combine normal and diffuse to get color.
 					float normal_factor = 0.2;

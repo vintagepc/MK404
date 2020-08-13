@@ -130,7 +130,7 @@ class ScriptHost: public IScriptable
 
 
 		typedef struct linestate_t{
-			linestate_t() noexcept {iActID = 0, iLine = 0, pClient = nullptr, isValid = false;};
+			linestate_t() {iActID = 0, iLine = 0, pClient = nullptr, isValid = false;};
 			string strCtxt;
 			unsigned int iActID;
 			vector<string> vArgs;

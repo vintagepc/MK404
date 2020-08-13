@@ -51,8 +51,8 @@ class FatImage
 		static vector<string> GetSizes()
 		{
 			vector<string> strSize;
-			for(auto it = NameToSize.begin(); it != NameToSize.end(); ++it)
-				strSize.push_back(it->first);
+			for(auto &c : GetNameToSize())
+				strSize.push_back(c.first);
 			return strSize;
 		}
 
@@ -92,7 +92,7 @@ class FatImage
 			return 0;
 		};
 
-		static const map<string, Size> NameToSize;
+		static const map<string, Size>& GetNameToSize();
 
 		static const uint8_t _FAT32[];
 		static const uint8_t _FATHeader[];

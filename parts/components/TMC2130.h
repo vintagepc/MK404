@@ -22,18 +22,19 @@
 
 #pragma once
 
-#include <stdint.h>            // for uint8_t, uint32_t, int32_t, uint16_t
-#include <string>              // for string
-#include <vector>              // for vector
-#include <atomic>
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "SPIPeripheral.h"     // for SPIPeripheral
 #include "Scriptable.h"        // for Scriptable
+#include "gsl-lite.hpp"
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <stdint.h>            // for uint8_t, uint32_t, int32_t, uint16_t
+#include <string>              // for string
+#include <vector>              // for vector
+#include <atomic>
 
 class TMC2130: public SPIPeripheral, public Scriptable
 {
@@ -207,7 +208,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
         tmc2130_cmd_t m_cmdIn;
         tmc2130_cmd_t m_cmdProc;
         tmc2130_cmd_t m_cmdOut; // the previous data for output.
-        tmc2130_registers_t m_regs;
+        tmc2130_registers_t m_regs{};
 		atomic_char m_cAxis;
 		bool m_bStall = false;
 

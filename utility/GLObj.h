@@ -21,10 +21,11 @@
 
 #pragma once
 
-#include <GL/glew.h>          // for GLuint
-#include <stddef.h>           // for size_t
 #include "tiny_obj_loader.h"  // for material_t
+#include "gsl-lite.hpp"
+#include <GL/glew.h>          // for GLuint
 #include <map>                // for map
+#include <stddef.h>           // for size_t
 #include <string>             // for string
 #include <vector>             // for vector
 #include <mutex>
@@ -85,7 +86,8 @@ class GLObj
             bool bDraw;
         } DrawObject;
         float m_fMaxExtent = 1.f;
-        float m_extMin[3] = {0,0,0}, m_extMax[3] = {0,0,0};
+        float _m_extMin[3] = {0,0,0}, _m_extMax[3] = {0,0,0};
+		gsl::span<float> m_extMin {_m_extMin}, m_extMax {_m_extMax};
         bool m_bLoaded = false, m_bNoNewNormals = false;
         vector<tinyobj::material_t> m_materials;
         map<std::string, GLuint> m_textures;

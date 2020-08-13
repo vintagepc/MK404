@@ -200,11 +200,11 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 	bool ret =
 			tinyobj::LoadObj(&attrib, &shapes, &m_materials, &err, filename, base_dir.c_str());
 	if (!err.empty()) {
-		std::cerr << err << std::endl;
+		std::cerr << err << '\n';
 	}
 
 	if (!ret) {
-		std::cerr << "Failed to load " << filename << std::endl;
+		std::cerr << "Failed to load " << filename << '\n';
 		return false;
 	}
 	for (auto &vert : attrib.vertices)
@@ -238,14 +238,14 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 										// Append base dir.
 										texture_filename = base_dir + mp->diffuse_texname;
 										if (!FileExists(texture_filename)) {
-											std::cerr << "Unable to find file: " << mp->diffuse_texname << std::endl;
+											std::cerr << "Unable to find file: " << mp->diffuse_texname << '\n';
 											exit(1);
 										}
 									}
 
 									unsigned char* image = nullptr; //stbi_load(texture_filename.c_str(), &w, &h, &comp, STBI_default);
 									if (!image) {
-											std::cerr << "Unable to load texture: " << texture_filename << std::endl;
+											std::cerr << "Unable to load texture: " << texture_filename << '\n';
 											exit(1);
 									}
 									glGenTextures(1, &texture_id);
@@ -296,7 +296,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 					iMatlId = current_material_id;
 
 				//if (current_material_id >= m_materials.size()) {
-				//    std::cerr << "Invalid material index: " << current_material_id << std::endl;
+				//    std::cerr << "Invalid material index: " << current_material_id << '\n';
 				//}
 				//
 #if TEX_VCOLOR

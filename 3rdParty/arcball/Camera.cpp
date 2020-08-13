@@ -20,7 +20,7 @@
 //    see <http://www.gnu.org/licenses/>.
 
 #include "Camera.hpp"
-#include <math.h>
+#include <cmath>
 
 // ========================= CAMERA SETUP ================================
 

@@ -84,11 +84,12 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 		const char *_IRQNAMES[IRQ::COUNT] = {
 		};
 
-		inline static TelemetryHost* GetHost()
+		inline static shared_ptr<TelemetryHost> GetHost()
 		{
 			if (m_pHost == nullptr)
 			{
 				printf("TelemetryHost::Init\n");
+				m_pHost.reset(new TelemetryHost());
 			}
 			return m_pHost;
 		}
@@ -161,7 +162,7 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 		vector<TelCategory> m_VLoglst;
 		vector<string> m_vsNames;
 
-		static TelemetryHost *m_pHost;
+		static shared_ptr<TelemetryHost> m_pHost;
 
 		map<string, avr_irq_t*>m_mIRQs;
 		map<string, vector<TC>>m_mCatsByName;

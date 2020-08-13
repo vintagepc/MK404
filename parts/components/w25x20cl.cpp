@@ -22,13 +22,13 @@
 */
 
 #include "w25x20cl.h"
+#include "TelemetryHost.h"
 
 #include <cstdlib>     // for exit, free, malloc
 #include <cstring>     // for memset, memcpy, strncpy
 #include <fcntl.h>      // for open, O_CREAT, O_RDWR, SEEK_SET
 #include <iostream>
 #include <unistd.h>     // for close, ftruncate, lseek, read, write, ssize_t
-#include "TelemetryHost.h"
 
 //#define TRACE(_w) _w
 #ifndef TRACE
@@ -80,11 +80,11 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 			if (m_rxCnt >= sizeof(m_cmdIn))
 			{
 				cout << "w25x20cl_t: error: command too long: ";
-				for (size_t i = 0; i < sizeof(m_cmdIn); i++)
+				for (auto i : m_cmdIn)
 				{
-					printf("%02x, ", m_cmdIn[i]);
+					cout << std::hex << i << " ";
 				}
-				printf("\n");
+				cout << '\n';
 				break;
 			}
 			m_cmdIn[m_rxCnt] = value;
@@ -125,7 +125,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 							m_address |= m_cmdIn[i + 1];
 						}
 						m_address %= W25X20CL_TOTAL_SIZE;
-						memcpy(m_pageBuffer, m_flash + (m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE, W25X20CL_PAGE_SIZE);
+						memcpy(m_pageBuffer.begin(), m_flash.begin() + (m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE, W25X20CL_PAGE_SIZE);
 						m_state = STATE_RUNNING;
 					}
 				} break;
@@ -151,9 +151,9 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 				default:
 				{
 				cout  << "w25x20cl_t: error: unknown command: ";
-				for (int i = 0; i < m_rxCnt; i++)
+				for (auto i = 0; i < m_rxCnt; i++)
 				{
-					printf("%02x, ", m_cmdIn[i]);
+					cout << hex << m_cmdIn[i];
 				}
 				cout << '\n';
 				} break;
@@ -213,13 +213,13 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 }
 
 // Called when CSEL changes.
-void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
+void w25x20cl::OnCSELIn(struct avr_irq_t *, uint32_t value)
 {
 	TRACE(printf("w25x20cl_t: CSEL changed to %02x\n",value));
 	if (value == 0)
 	{
 		m_state = STATE_LOADING;
-		memset(m_cmdIn, 0, sizeof(m_cmdIn));
+		memset(m_cmdIn.begin(), 0, sizeof(m_cmdIn));
 		m_rxCnt = 0;
 		m_cmdOut = 0;
 		m_command = 0;
@@ -252,7 +252,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 				case _CMD_CHIP_ERASE2:
 				{
 					if(!m_status_register.bits.WEL) break;
-					memset(m_flash, 0xFF, sizeof(m_flash));
+					memset(m_flash.data(), 0xFF, sizeof(m_flash));
 					m_status_register.bits.WEL = 0;
 				} break;
 				case _CMD_SECTOR_ERASE:
@@ -260,7 +260,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 					if(!m_status_register.bits.WEL) break;
 					m_address /= W25X20CL_SECTOR_SIZE;
 					m_address *= W25X20CL_SECTOR_SIZE;
-					memset(m_flash + m_address, 0xFF, W25X20CL_SECTOR_SIZE);
+					memset(m_flash.begin() + m_address, 0xFF, W25X20CL_SECTOR_SIZE);
 					m_status_register.bits.WEL = 0;
 				} break;
 				case _CMD_BLOCK32_ERASE:
@@ -268,7 +268,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 					if(!m_status_register.bits.WEL) break;
 					m_address /= W25X20CL_BLOCK32_SIZE;
 					m_address *= W25X20CL_BLOCK32_SIZE;
-					memset(m_flash + m_address, 0xFF, W25X20CL_BLOCK32_SIZE);
+					memset(m_flash.begin() + m_address, 0xFF, W25X20CL_BLOCK32_SIZE);
 					m_status_register.bits.WEL = 0;
 				} break;
 				case _CMD_BLOCK64_ERASE:
@@ -276,7 +276,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 					if(!m_status_register.bits.WEL) break;
 					m_address /= W25X20CL_BLOCK64_SIZE;
 					m_address *= W25X20CL_BLOCK64_SIZE;
-					memset(m_flash + m_address, 0xFF, W25X20CL_BLOCK64_SIZE);
+					memset(m_flash.begin() + m_address, 0xFF, W25X20CL_BLOCK64_SIZE);
 					m_status_register.bits.WEL = 0;
 				} break;
 			}
@@ -301,7 +301,7 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 void w25x20cl::Load(const char* path)
 {
 	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
-	m_fdFlash = open(path, O_RDWR | O_CREAT, 0644);
+	m_fdFlash = open(path, O_RDWR | O_CREAT | O_CLOEXEC, 0644);
 	if (m_fdFlash < 0) {
 		perror(path);
 		exit(1);
@@ -313,8 +313,9 @@ void w25x20cl::Load(const char* path)
 		perror(path);
 		exit(1);
 	}
-	uint8_t *buffer = (uint8_t*)malloc(W25X20CL_TOTAL_SIZE + 1);
-	ssize_t r = read(m_fdFlash, buffer, W25X20CL_TOTAL_SIZE + 1);
+	vector<uint8_t> buffer;
+	buffer.resize(W25X20CL_TOTAL_SIZE+1);
+	ssize_t r = read(m_fdFlash, buffer.data(), W25X20CL_TOTAL_SIZE + 1);
 	printf("Read %d bytes\n", (int)r);
 	if (r !=  W25X20CL_TOTAL_SIZE + 1) {
 		cerr << "Unable to load XFLASH\n";
@@ -322,21 +323,19 @@ void w25x20cl::Load(const char* path)
 		exit(1);
 	}
 	bool bEmpty = true;
-	for (int i = 0; i < W25X20CL_TOTAL_SIZE + 1; i++)
+	for (auto &b : buffer)
 	{
-		bEmpty &= buffer[i] == 0;
+		bEmpty &= (b == 0);
 	}
 	if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
-		memcpy(m_flash, buffer, W25X20CL_TOTAL_SIZE + 1);
-
-	free(buffer);
+		memcpy(m_flash.begin(), buffer.data(), W25X20CL_TOTAL_SIZE + 1);
 }
 
 void w25x20cl::Save()
 {
 	// Also write out the xflash contents. Note we don't close it so you can save snapshots anytime you like.
 	lseek(m_fdFlash, SEEK_SET, 0);
-	ssize_t r = write(m_fdFlash, m_flash, W25X20CL_TOTAL_SIZE + 1);
+	ssize_t r = write(m_fdFlash, m_flash.data(), W25X20CL_TOTAL_SIZE + 1);
 	if (r != W25X20CL_TOTAL_SIZE + 1) {
 		cerr << "Unable to write xflash memory\n";
 		perror(m_filepath.c_str());

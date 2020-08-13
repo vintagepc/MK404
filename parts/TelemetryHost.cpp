@@ -25,8 +25,7 @@
 #include <iomanip>
 #include <iostream>
 
-
-TelemetryHost* TelemetryHost::m_pHost = new TelemetryHost();
+shared_ptr<TelemetryHost> TelemetryHost::m_pHost;
 
 void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits)
 {

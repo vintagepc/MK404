@@ -171,7 +171,7 @@ bool ScriptHost::ValidateScript()
 			if (!CheckArg(vArgTypes.at(j),vArgs.at(j)))
 			{
 				bClean = false;
-				fcnErr("Conversion error, expected \"" + m_ArgToString.at(vArgTypes.at(j)) + "\" but could not convert \"" + vArgs.at(j) + "\"",i);
+				fcnErr("Conversion error, expected \"" + GetArgTypeNames().at(vArgTypes.at(j)) + "\" but could not convert \"" + vArgs.at(j) + "\"",i);
 				continue;
 			}
 		}
@@ -415,10 +415,3 @@ void ScriptHost::OnAVRCycle()
 		m_iLine = m_script.size();
 	}
 }
-
-const map<ArgType,string> IScriptable::m_ArgToString = {
-	{ArgType::Bool,"bool"},
-	{ArgType::Float,"float"},
-	{ArgType::Int,"int"},
-	{ArgType::String,"string"},
-};

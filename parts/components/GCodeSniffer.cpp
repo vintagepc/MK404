@@ -41,7 +41,7 @@ void GCodeSniffer::OnByteIn(struct avr_irq_t *, uint32_t value)
 		if (c == ' ' || m_bNewLine)
 		{
 			m_bCapture = false;
-			cout << "Captured code " << m_strLine << endl;
+			cout << "Captured code " << m_strLine << '\n';
 			uint32_t uiOut = stoi(m_strLine);
 			RaiseIRQ(CODEVAL_OUT,uiOut);
 			m_strLine.clear();
@@ -62,6 +62,6 @@ void GCodeSniffer::Init(struct avr_t * avr, char chrUART)
 	if (src)
 		ConnectFrom(src, BYTE_IN);
 
-    cout << "UART " << m_chrUART << " is now being monitored for '" << m_chrCode << "'" << endl;
+    cout << "UART " << m_chrUART << " is now being monitored for '" << m_chrCode << "'" << '\n';
 
 }

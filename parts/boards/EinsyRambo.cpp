@@ -191,7 +191,7 @@ namespace Boards
 	// Convenience function for debug printing a particular pin.
 	void EinsyRambo::DebugPin(avr_irq_t *, uint32_t value)
 	{
-		cout << "Pin DBG: change to " << value << endl;
+		cout << "Pin DBG: change to " << value << '\n';
 	}
 
 	void EinsyRambo::OnAVRInit()

@@ -49,7 +49,7 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
 
 			if (m_bVerbose)
 			{
-				cout << "RotaryEncoder: CW Twist" << endl;
+				cout << "RotaryEncoder: CW Twist" << '\n';
 			}
 			break;
 		case CCW_CLICK:
@@ -57,7 +57,7 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
 			 m_iPhase = (m_iPhase+3)%STATE_COUNT;
 			if (m_bVerbose)
 			{
-				cout << "RotaryEncoder: CCW twist" << endl;
+				cout << "RotaryEncoder: CCW twist" << '\n';
 			}
 			break;
 

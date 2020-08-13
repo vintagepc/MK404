@@ -117,7 +117,7 @@ class IScriptable
 				if (m_ActionArgs[ID].size()>0)
 				{
 					for (size_t i=0; i<m_ActionArgs[ID].size(); i++)
-						strArgFmt += m_ArgToString.at(m_ActionArgs.at(ID).at(i)) + ", ";
+						strArgFmt += GetArgTypeNames().at(m_ActionArgs.at(ID).at(i)) + ", ";
 					strArgFmt[strArgFmt.size()-2] = ')';
 				}
 				else
@@ -153,12 +153,21 @@ class IScriptable
 			m_ActionArgs[ID] = vTypes;
 		}
 
+		static const map<ArgType,string>& GetArgTypeNames()
+		{
+			static const map<ArgType,string> m {
+				{ArgType::Bool,"bool"},
+				{ArgType::Float,"float"},
+				{ArgType::Int,"int"},
+				{ArgType::String,"string"},
+			};
+			return m;
+		}
+
     private:
 		string m_strName;
 		bool m_bRegistered = false;
 		map<unsigned int, vector<ArgType>> m_ActionArgs;
 		map<string, unsigned int> m_ActionIDs;
 		map<unsigned int,string> m_mHelp;
-		static const map<ArgType,string> m_ArgToString;
-
 };

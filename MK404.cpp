@@ -30,7 +30,7 @@
 #include <tclap/CmdLine.h>            // for CmdLine
 #include <algorithm>                  // for find
 #include <atomic>
-#include <iostream>                   // for operator<<, basic_ostream, endl
+#include <iostream>                   // for operator<<, basic_ostream, '\n'
 #include <scoped_allocator>           // for allocator_traits<>::value_type
 #include <string>                     // for string, basic_string
 #include <utility>                    // for pair
@@ -63,14 +63,14 @@ bool m_bStopping = false;
 void OnSigINT(int) {
 	if (!m_bStopping)
 	{
-		cout << "Caught SIGINT... stopping..." << endl;
+		cout << "Caught SIGINT... stopping..." << '\n';
 		m_bStopping = true;
 		if (printer)
 			printer->OnKeyPress('q',0,0);
 	}
 	else
 	{
-		cout << "OK, OK! I get the message!" << endl;
+		cout << "OK, OK! I get the message!" << '\n';
 		exit(2);
 	}
 }
@@ -90,7 +90,7 @@ extern "C" {
 		{
 			cerr << "** GL ERROR **";
 		}
-		cerr << "ID:" << id << " type = " << type << " sev = " << severity << " message = " << message << endl;
+		cerr << "ID:" << id << " type = " << type << " sev = " << severity << " message = " << message << '\n';
 	}
 }
 
@@ -144,11 +144,11 @@ void keyCB(unsigned char key, int x, int y)	/* called on key press */
 	{
 		case '+':
 			TelemetryHost::GetHost()->StartTrace();
-			cout << "Enabled VCD trace." << endl;
+			cout << "Enabled VCD trace." << '\n';
 			break;
 		case '-':
 			TelemetryHost::GetHost()->StopTrace();
-			cout << "Stopped VCD trace" << endl;
+			cout << "Stopped VCD trace" << '\n';
 			break;
 		default:
 			printer->OnKeyPress(key,x,y);
@@ -173,7 +173,7 @@ void timerCB(int i)
 	glutSetWindow(window);
 	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
 		glutReshapeWindow(iWinW, iWinH);
-	glutTimerFunc(50, timerCB, i^1);
+	glutTimerFunc(50, timerCB, i);
 	glutPostRedisplay();
 }
 
@@ -215,7 +215,7 @@ int initGL()
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
 
-	glClearColor(.5f, 0.f, 0.f, 1.0f);
+	glClearColor(.0f, 0.f, 0.f, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -285,11 +285,11 @@ int main(int argc, char *argv[])
 
 	if (version::IS_DEV_VERSION)
 	{
-		cout << "***************************************" << endl;
-		cout << "* " << setw(35) << version::VERSION_STRING << " *" << endl;
-		cout << "* This is a DEV version. Features may *" << endl;
-		cout << "* behave unexpectedly, or not at all. *" << endl;
-		cout << "***************************************" << endl;
+		cout << "***************************************" << '\n';
+		cout << "* " << setw(35) << version::VERSION_STRING << " *" << '\n';
+		cout << "* This is a DEV version. Features may *" << '\n';
+		cout << "* behave unexpectedly, or not at all. *" << '\n';
+		cout << "***************************************" << '\n';
 	}
 
 	cmd.parse(argc,argv);
@@ -299,11 +299,11 @@ int main(int argc, char *argv[])
 	{
 		if(!argSD.isSet())
 		{
-			cerr << "Cannot create an SD image without a filename." << endl;
+			cerr << "Cannot create an SD image without a filename." << '\n';
 			exit(1);
 		}
 		FatImage::MakeFatImage(argSD.getValue(), argImgSize.getValue());
-		cout << "Wrote " << argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << endl;
+		cout << "Wrote " << argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << '\n';
 		return 0;
 	}
 	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue()=="none");
@@ -343,11 +343,11 @@ int main(int argc, char *argv[])
 		window = glutCreateWindow(strTitle.c_str());	/* create window */
 
 		glewInit();
-		cout << "GL_VERSION   : " << glGetString(GL_VERSION) << endl;
-		cout << "GL_VENDOR    : " << glGetString(GL_VENDOR) << endl;
-		cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << endl;
-		cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << endl;
-		//cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+		cout << "GL_VERSION   : " << glGetString(GL_VERSION) << '\n';
+		cout << "GL_VENDOR    : " << glGetString(GL_VENDOR) << '\n';
+		cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << '\n';
+		cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << '\n';
+		//cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
 #if !defined(__APPLE__)
 		glDebugMessageCallback( GLErrorCB, nullptr );
 		if (argSpam.getValue()<1)
@@ -397,7 +397,7 @@ int main(int argc, char *argv[])
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot
 	if (argWait.isSet())
 	{
-		cout << "Paused - press any key to resume execution" << endl;
+		cout << "Paused - press any key to resume execution" << '\n';
 		getchar();
 	}
 
@@ -406,13 +406,13 @@ int main(int argc, char *argv[])
 	if (!bNoGraphics)
 		glutMainLoop();
 
-	cout << "Waiting for board to finish..." << endl;
+	cout << "Waiting for board to finish..." << '\n';
 	pBoard->SetQuitFlag();
 	pBoard->WaitForFinish();
 
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);
 
-	cout << "Done" << endl;
+	cout << "Done" << '\n';
 	if (argScript.isSet())
 		return static_cast<int>(ScriptHost::GetState());
 

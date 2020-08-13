@@ -39,7 +39,7 @@
 Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 {
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
-		cerr << "Failed to init SDL_Audio" << endl;
+		cerr << "Failed to init SDL_Audio" << '\n';
 
     m_specWant.freq = m_uiSampleRate; // number of samples per second
     m_specWant.format = AUDIO_S16SYS; // sample type (here: signed short i.e. 16 bit)
@@ -54,12 +54,12 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 
     if(SDL_OpenAudio(&m_specWant, &m_specHave) != 0)
 	{
-		cerr << "Failed to open audio: " << SDL_GetError() << endl;
+		cerr << "Failed to open audio: " << SDL_GetError() << '\n';
 		return;
 	}
     if(m_specWant.format != m_specHave.format)
 	{
-		cerr << "Failed to get the desired AudioSpec" << endl;
+		cerr << "Failed to get the desired AudioSpec" << '\n';
 		return;
 	}
 	m_bAudioAvail = true;

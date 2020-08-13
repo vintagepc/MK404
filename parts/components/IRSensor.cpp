@@ -92,16 +92,16 @@ Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<s
 void IRSensor::Toggle()
 {
 	if (m_eCurrent == IR_AUTO)
-		cout << "NOTE: Overriding IR Auto setting!" << endl;
+		cout << "NOTE: Overriding IR Auto setting!" << '\n';
 
 	if (m_eCurrent == IR_v4_NO_FILAMENT)
 	{
-		cout << "IRSensor: Filament present!" << endl;
+		cout << "IRSensor: Filament present!" << '\n';
 		m_eCurrent = IR_v4_FILAMENT_PRESENT;
 	}
 	else
 	{
-		cout << "IRSensor: No filament present!" << endl;
+		cout << "IRSensor: No filament present!" << '\n';
 		m_eCurrent = IR_v4_NO_FILAMENT;
 	}
 }

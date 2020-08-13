@@ -23,9 +23,10 @@
 
 #pragma once
 
-#include <stdint.h>         // for uint8_t, uint32_t, uint64_t
+#include "gsl-lite.hpp"
 #include "SPIPeripheral.h"  // for SPIPeripheral
 #include "sim_irq.h"        // for avr_irq_t
+#include <stdint.h>         // for uint8_t, uint32_t, uint64_t
 #include <string>
 
 #define W25X20CL_TOTAL_SIZE 262144
@@ -69,9 +70,12 @@ class w25x20cl:public SPIPeripheral
         void OnCSELIn(avr_irq_t *irq, uint32_t value) override;
 
 		int m_fdFlash = 0;
-		uint8_t m_flash[W25X20CL_TOTAL_SIZE+1];
-		uint8_t m_pageBuffer[W25X20CL_PAGE_SIZE];
-		uint8_t m_cmdIn[5];
+		uint8_t _m_flash[W25X20CL_TOTAL_SIZE+1];
+		uint8_t _m_pageBuffer[W25X20CL_PAGE_SIZE];
+		uint8_t _m_cmdIn[5];
+		gsl::span<uint8_t> m_flash {_m_flash};
+		gsl::span<uint8_t> m_pageBuffer {_m_pageBuffer};
+		gsl::span<uint8_t> m_cmdIn {_m_cmdIn};
 		uint8_t m_rxCnt;
 		uint8_t m_cmdOut;
 		uint8_t m_command;

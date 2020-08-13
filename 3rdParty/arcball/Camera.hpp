@@ -48,12 +48,12 @@ private:
 
     // A factor multiplied with zoom deltas to compensate for different
     // scroll wheel speeds.
-    float zoomSpeed_;
+    float zoomSpeed_ = 10.f;
 
     // The current width and height of the window. Needed for accurate behaivour
     // according to the mouse movements
-    float windowWidth_;
-    float windowHeight_;
+    float windowWidth_ = 200.f;
+    float windowHeight_ = 200.f;
 
     // The last and current mouse position (x,y) in window space. Needed for
     // getting the relative mouse movement for panning and rotation
@@ -62,7 +62,7 @@ private:
 
     // If true the user currently is in panning or zooming mode
     enum Mode {IDLE, PANNING, ZOOMING};
-    Mode currentMode_;
+    Mode currentMode_ = Mode::IDLE;
 
 
 public:

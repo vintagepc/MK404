@@ -217,7 +217,7 @@ uint32_t HD44780::OnCmdReady()
 			SetFlag(HD44780_FLAG_N, m_uiDataPins & 8);
 			SetFlag(HD44780_FLAG_F, m_uiDataPins & 4);
 			if (!four && !GetFlag(HD44780_FLAG_D_L)) {
-				cout << static_cast<const char*>(__FUNCTION__) << "activating 4-bit mode" << endl;
+				cout << static_cast<const char*>(__FUNCTION__) << "activating 4-bit mode" << '\n';
 				SetFlag(HD44780_FLAG_LOWNIBBLE, 0);
 			}
 		}
@@ -280,7 +280,7 @@ uint32_t HD44780::ProcessWrite()
 	// write has 8 bits to process
 	if (write) {
 		if (GetFlag(HD44780_FLAG_BUSY)) {
-			cout << static_cast<const char*>(__FUNCTION__) << " command " << m_uiDataPins << "write when still BUSY" << endl;
+			cout << static_cast<const char*>(__FUNCTION__) << " command " << m_uiDataPins << "write when still BUSY" << '\n';
 		}
 		if (m_uiPinState & (1 << RS))	// write data
 			delay = OnDataReady();

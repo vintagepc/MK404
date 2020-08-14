@@ -49,7 +49,7 @@ void Fan::Draw()
 	bool bOn = m_uiPWM>0;
 
     glPushMatrix();
-	    glColor3ub(0,m_uiPWM>>1,0);
+	    glColor3ub(0,m_uiPWM>>1U,0);
         glBegin(GL_QUADS);
             glVertex2f(0,10);
             glVertex2f(20,10);

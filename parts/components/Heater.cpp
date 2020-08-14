@@ -91,7 +91,7 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
     {
         avr_regbit_t inv = AVR_IO_REGBIT(0x24 + 32,4);
         uint8_t COM0B0 = avr_regbit_get(m_pAVR, inv);
-        value = COM0B0^1;
+        value = COM0B0^1U;
     }
 
     if (value==1)

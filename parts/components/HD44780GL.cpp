@@ -29,6 +29,7 @@
 
 #include "HD44780GL.h"
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
+#include "Macros.h"
 #include "Util.h"             // for hexColor_t, hexColor_t::(anonymous)
 #include "hd44780_charROM.h"  // for (anonymous), hd44780_ROM_AOO
 #include "sim_avr_types.h"    // for avr_regbit_t
@@ -59,7 +60,7 @@ glColorHelper(const hexColor_t &color, bool bMaterial = false)
 					(float)(color.blue) / 255.0f,
 					(float)(color.alpha) / 255.0f };
 		float fNone[4] = {0,0,0,1};
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, static_cast<float*>(fNone));
+		glMaterialfv(GL_FRONT_AND_BACK, US(GL_AMBIENT_AND_DIFFUSE) | US(GL_SPECULAR), static_cast<float*>(fNone));
 		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,  static_cast<float*>(fCol));
 	}
 	else
@@ -99,7 +100,7 @@ void HD44780GL::OnBrightnessDigital(struct avr_irq_t *,	uint32_t value)
 
 }
 
-void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)
+void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -113,7 +114,7 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 	auto uiData = hd44780_ROM_AOO.data.begin();
 	uint8_t iCols=8;
 	if (c<16)
-		uiData = m_cgRam.begin() + ((c & 7) <<3);
+		uiData = m_cgRam.begin() + ((c & 7U) <<3U);
 	else
 	{
 		uiData += c*hd44780_ROM_AOO.h;
@@ -128,10 +129,10 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 		 	(uiData[i] & 4)>1,
 		 	(uiData[i] & 8)>1,
 			(uiData[i] & 16)>1));
-		for (int j=0; j<5; j++)
+		for (uint8_t j=0; j<5; j++)
 		{
 
-			if (*uiData & (16>>j))
+			if (*uiData & (16U>>j))
 			{
 				auto x = (float)j;
 				auto y = (float)i;

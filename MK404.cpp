@@ -36,6 +36,7 @@
 #include <utility>                    // for pair
 #include <vector>                     // for vector
 #include "FatImage.h"                 // for FatImage
+#include "Macros.h"
 #include "Printer.h"                  // for Printer, Printer::VisualType
 #include "PrinterFactory.h"           // for PrinterFactory
 #include "ScriptHost.h"               // for ScriptHost
@@ -107,7 +108,7 @@ void displayCB()		/* function called whenever redisplay needed */
 		return;
 	}
 	glLoadIdentity();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(US(GL_COLOR_BUFFER_BIT) | US(GL_DEPTH_BUFFER_BIT));
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
 	int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	printer->Draw();
@@ -346,7 +347,7 @@ int main(int argc, char *argv[])
 		glutSetOption(GLUT_MULTISAMPLE,2);
 		glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 		//glutInitContextVersion(1,0);
-		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
+		glutInitDisplayMode(US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_MULTISAMPLE));
 		glutInitWindowSize(iWinW, iWinH);		/* width=400pixels height=500pixels */
 		std::string strTitle = "Prusa i3 MK404 (PRINTER NOT FOUND) ";
 		strTitle += version::GIT_TAG_NAME;

@@ -27,7 +27,7 @@
 
 void GCodeSniffer::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
-    unsigned char c = value&0xFF;
+    unsigned char c = value & 0xFFU;
 	if (m_bNewLine && c==m_chrCode)
 	{
 		m_bCapture = true;
@@ -51,7 +51,7 @@ void GCodeSniffer::OnByteIn(struct avr_irq_t *, uint32_t value)
 	}
 }
 
-void GCodeSniffer::Init(struct avr_t * avr, char chrUART)
+void GCodeSniffer::Init(struct avr_t * avr, unsigned char chrUART)
 {
 	_Init(avr, this);
 	m_chrUART = chrUART;

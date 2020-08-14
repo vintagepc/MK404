@@ -25,3 +25,9 @@
 // There's nothing here. Avoid macros if possible, they may not be typesafe.
 // Prefer things like (static) inlines, constexprs, and whatnot. Sometimes you have no choice.
 // If that's the case, add it here.
+
+// Quick and dirty token-paste macro for turning external #defines into *unsigned* values for bitwise
+// operations, e.g. FLAG1 | FLAG2. Clang-tidy complains about them.
+#define US(x) _UNSIG(x,U)
+
+#define _UNSIG(x,y) x##y

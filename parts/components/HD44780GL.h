@@ -50,7 +50,7 @@ class HD44780GL:public HD44780
 
 	private:
 		// Char draw helper.
-		void GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial = false);
+		void GLPutChar(unsigned char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial = false);
 
 		void OnBrightnessPWM(avr_irq_t *irq, uint32_t value);
 		void OnBrightnessDigital(avr_irq_t *irq, uint32_t value);

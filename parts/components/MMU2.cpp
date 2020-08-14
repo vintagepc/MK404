@@ -33,9 +33,9 @@
 #include "TMC2130.h"          // for TMC2130
 #include "gsl-lite.hpp"
 #include "uart_pty.h"         // for uart_pty
-#include <iostream>            // for fprintf, size_t, stderr
 #include <cstdlib>           // for exit
 #include <cstring>
+#include <iostream>            // for fprintf, size_t, stderr
 
 
 // Yes yes, globals are bad. But we don't have any choice because freeglut calls

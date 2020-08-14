@@ -43,7 +43,7 @@ class GCodeSniffer : public BasePeripheral
 		~GCodeSniffer(){};
 
 		// Registers with SimAVR.
-		void Init(avr_t *avr, char chrUART);
+		void Init(avr_t *avr, unsigned char chrUART);
 
 	private:
 

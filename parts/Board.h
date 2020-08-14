@@ -299,8 +299,6 @@ namespace Boards
 
 			avr_flashaddr_t LoadFirmware(const std::string &strFW);
 
-			int m_fdFlash = 0;
-
 			atomic_bool m_bQuit = {false}, m_bReset = {false};
 			bool m_bIsPrimary = false;
 			bool m_bNoHacks = false;

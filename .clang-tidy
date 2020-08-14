@@ -1,1 +1,1 @@
-{Checks: '*,-modernize-use-emplace,-google-readability*,-readability*,-cppcoreguidelines-pro-type-union-access,-cppcoreguidelines-pro-type-vararg,-fuchsia*'}
+{Checks: '*,-modernize-use-emplace,-google-readability*,-readability*,-cppcoreguidelines-pro-type-union-access,-hicpp-braces*,-fuchsia*'}

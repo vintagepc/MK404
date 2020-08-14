@@ -308,7 +308,7 @@ void w25x20cl::Load(const char* path)
 	}
 	m_filepath = path;
 
-	printf("Loading %u bytes of XFLASH\n", W25X20CL_TOTAL_SIZE);
+	cout << "Loading " << W25X20CL_TOTAL_SIZE << " bytes of XFLASH\n";
 	if (ftruncate(m_fdFlash, W25X20CL_TOTAL_SIZE + 1) < 0) {
 		perror(path);
 		exit(1);
@@ -316,7 +316,7 @@ void w25x20cl::Load(const char* path)
 	vector<uint8_t> buffer;
 	buffer.resize(W25X20CL_TOTAL_SIZE+1);
 	ssize_t r = read(m_fdFlash, buffer.data(), W25X20CL_TOTAL_SIZE + 1);
-	printf("Read %d bytes\n", (int)r);
+	cout << "Read " << r << " bytes\n";
 	if (r !=  W25X20CL_TOTAL_SIZE + 1) {
 		cerr << "Unable to load XFLASH\n";
 		perror(path);

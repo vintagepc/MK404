@@ -25,7 +25,6 @@
 #include "RotaryEncoder.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
-#include <cstdio>
 #include <iostream>
 
 static constexpr uint8_t  STATE_COUNT = 4;
@@ -62,7 +61,7 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
 			break;
 
 		default:
-			printf("Rotenc: Invalid direction.\n"); // Invalid direction
+			cout << "Rotenc: Invalid direction.\n"; // Invalid direction
 			break;
 	}
     RaiseIRQ(OUT_A, gsl::at(m_States, m_iPhase)>>1);
@@ -79,7 +78,7 @@ avr_cycle_count_t RotaryEncoder::OnButtonReleaseTimer(avr_t *, avr_cycle_count_t
 {
 	RaiseIRQ(OUT_BUTTON, 1);
 	if (m_bVerbose) {
-		printf("ROTENC: Button release\n");
+		cout << "ROTENC: Button release\n";
 	}
 	return 0;
 }
@@ -88,7 +87,7 @@ void RotaryEncoder::_Push(uint32_t uiDuration)
 {
 	// Press down
 	if (m_bVerbose) {
-		printf("ROTENC: Button press\n");
+		cout << "ROTENC: Button press\n";
 	}
 	RaiseIRQ(OUT_BUTTON, 0);
 

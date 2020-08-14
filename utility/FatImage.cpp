@@ -27,6 +27,7 @@
 #include <cstdlib>     // for exit
 #include <cstring>
 #include <fcntl.h>      // for open, O_CREAT, O_WRONLY, SEEK_SET
+#include <iostream>
 #include <type_traits>  // for __decay_and_strip<>::__type
 #include <unistd.h>     // for close, ftruncate, lseek, write
 #include <vector>       // for vector
@@ -153,7 +154,7 @@ bool FatImage::MakeFatImage(const string &strFile, const string &strSize)
 	lseek(fd,SEEK_SET, 0);
 	size_t s = write(fd,data.data(),data.size());
 	if(s != data.size())
-		fprintf(stderr,"Failed to write full file to disk.\n");
+		std::cerr << "Failed to write full file to disk.\n";
 
 	close(fd);
 	return true;

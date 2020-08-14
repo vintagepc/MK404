@@ -33,7 +33,7 @@
 #include "TMC2130.h"          // for TMC2130
 #include "gsl-lite.hpp"
 #include "uart_pty.h"         // for uart_pty
-#include <cstdio>            // for fprintf, size_t, stderr
+#include <iostream>            // for fprintf, size_t, stderr
 #include <cstdlib>           // for exit
 #include <cstring>
 
@@ -48,7 +48,7 @@ MMU2::MMU2():MM_Control_01()
 {
 	if (g_pMMU)
 	{
-		fprintf(stderr,"Error: Cannot have multiple MMU instances due to freeglut limitations\n");
+		cerr << "Error: Cannot have multiple MMU instances due to freeglut limitations\n";
 		exit(1);
 	}
 	g_pMMU = this;
@@ -143,7 +143,7 @@ void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)
 void MMU2::ToggleFINDA()
 {
 		m_bFINDAManual = !m_bFINDAManual;
-		printf("FINDA (manual) toggled: %u\n",m_bFINDAManual?1U:0U);
+		cout << "FINDA (manual) toggled: " << (m_bFINDAManual?1U:0U) << '\n';
 		SetPin(FINDA_PIN, m_bFINDAManual? 1:0);
 		RaiseIRQ(FINDA_OUT,m_bFINDAManual? 1 : 0);
 }

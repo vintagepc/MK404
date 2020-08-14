@@ -295,7 +295,7 @@ void TMC2130::OnEnableIn(struct avr_irq_t * irq, uint32_t value)
 {
     if (irq->value == value && m_bEnable == (value==0))
         return;
-	TRACE2(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis.load(),value));
+	TRACE(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis.load(),value));
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 

@@ -175,7 +175,7 @@ uint32_t HD44780::OnDataReady()
 
 		TRACE(printf("hd44780_write_data %02x (%c) to %02x\n", m_uiDataPins, m_uiDataPins, m_uiCursor));
 		if (GetFlag(HD44780_FLAG_S_C)) {	// display shift ?
-			printf("Display shift requested. Not implemented, sorry!\n");
+			cout << "Display shift requested. Not implemented, sorry!\n";
 		} else {
 			IncrementCursor();
 		}
@@ -408,10 +408,10 @@ void HD44780::Init(avr_t *avr)
 	ResetCursor();
     ClearScreen();
 
-	printf("LCD: %duS is %d cycles for your AVR\n",
-			37, (int)avr_usec_to_cycles(avr, 37));
-	printf("LCD: %duS is %d cycles for your AVR\n",
-			1, (int)avr_usec_to_cycles(avr, 1));
+	// printf("LCD: %duS is %d cycles for your AVR\n",
+	// 		37, (int)avr_usec_to_cycles(avr, 37));
+	// printf("LCD: %duS is %d cycles for your AVR\n",
+	// 		1, (int)avr_usec_to_cycles(avr, 1));
 
 	auto pTH = TelemetryHost::GetHost();
 	pTH->AddTrace(this, E, {TC::Display, TC::OutputPin});

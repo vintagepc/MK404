@@ -163,7 +163,7 @@ void PINDA::SetMBLMap()
 void PINDA::ToggleSheet()
 {
     m_bIsSheetPresent=!m_bIsSheetPresent;
-    printf("Steel sheet: %s\n", m_bIsSheetPresent? "INSTALLED" : "REMOVED");
+    cout << "Steel sheet: " << (m_bIsSheetPresent? "INSTALLED\n" : "REMOVED\n");
     RaiseIRQ(SHEET_OUT,m_bIsSheetPresent);
 }
 

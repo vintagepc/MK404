@@ -31,6 +31,7 @@
 #include <cstdlib>   // for exit, free
 #include <cstring>    // for memcpy, NULL
 #include <fcntl.h>    // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <fstream>
 #include <iostream>
 #include <unistd.h>   // for close, ftruncate, lseek, read, write, ssize_t
 
@@ -133,41 +134,49 @@ namespace Boards {
 	void Board::_OnAVRInit()
 	{
 		std::string strFlash = GetStorageFileName("flash");
-
-		m_fdFlash = open(strFlash.c_str(), O_RDWR|O_CREAT|O_CLOEXEC, 0644);
-		if (m_fdFlash < 0) {
-			perror(strFlash.c_str());
+		ifstream fsIn(strFlash, fsIn.binary | fsIn.ate);
+		if (!fsIn.is_open() || fsIn.tellg() < m_pAVR->flashend) {
 			cerr << "ERROR: Could not open flash file. Flash contents will NOT persist." << '\n';
 		}
 		else
 		{
-			// resize and map the file the file
-			if (ftruncate(m_fdFlash, m_pAVR->flashend + 1) < 0) {
-				perror(strFlash.c_str());
+			std::vector<char> buffer;
+			buffer.reserve(m_pAVR->flashend);
+			fsIn.seekg(fsIn.beg);
+			fsIn.read(buffer.data(), m_pAVR->flashend);
+			if (fsIn.fail() || fsIn.gcount() != m_pAVR->flashend) {
+				cerr << "Unable to load flash memory. Read: " << fsIn.gcount() << '\n';
 				exit(1);
 			}
-			ssize_t r = read(m_fdFlash, m_pAVR->flash, m_pAVR->flashend + 1);
-			if (r != m_pAVR->flashend + 1) {
-				cerr << "Unable to load flash memory" << '\n';
-				perror(strFlash.c_str());
-				exit(1);
-			}
+			std::memcpy(m_pAVR->flash,buffer.data(), m_pAVR->flashend);
+			cout << strFlash << ": Read " << fsIn.gcount() << " bytes.\n";
 		}
 		// NB: EEPROM happens later, because the AVR is not ready yet right now.
+		fsIn.close();
 		OnAVRInit();
 	}
 
 	void Board::_OnAVRDeinit()
 	{
-		if (m_fdFlash>0)
+		ofstream fsOut(GetStorageFileName("flash"),fsOut.binary | fsOut.out | fsOut.trunc);
+		if (!fsOut.is_open())
 		{
-			lseek(m_fdFlash, SEEK_SET, 0);
-			ssize_t r = write(m_fdFlash, m_pAVR->flash, m_pAVR->flashend + 1);
-			if (r != m_pAVR->flashend + 1) {
+			cerr << "Could not open flash file for writing\n";
+		}
+		else
+		{
+			std::vector<char> buffer;
+			buffer.reserve(m_pAVR->flashend);
+			std::memcpy(buffer.data(), m_pAVR->flash, m_pAVR->flashend);
+			fsOut.write(buffer.data(),m_pAVR->flashend);
+			if ( fsOut.fail() || fsOut.tellp() != m_pAVR->flashend) {
 				cerr <<  "Unable to write flash memory for " << m_strBoard << '\n';
 			}
-			close(m_fdFlash);
-			m_fdFlash = 0;
+			else
+			{
+				cout << "Wrote " << fsOut.tellp() << " bytes of flash\n";
+			}
+			fsOut.close();
 		}
 		m_EEPROM.Save();
 		OnAVRDeinit();

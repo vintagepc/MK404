@@ -139,30 +139,30 @@ void MK3SGL::KeyCB(unsigned char c, int x, int y)
 	// as your position translation. Then, you can move the
 	// object into place using the numpad, and just read off
 	// the correct position values to use when finished.
-	if (c =='+')
-		m_flDbg = m_flDbg+0.001f;
-	else if (c == '-')
-		m_flDbg = m_flDbg-0.001f;
-	if (c =='*')
-		m_flDbg2 = m_flDbg2+0.001f;
-	else if (c == '/')
-		m_flDbg2 = m_flDbg2-0.001f;
-	if (c =='3')
-		m_flDbg3 = m_flDbg3+0.001f;
-	else if (c == '9')
-		m_flDbg3 = m_flDbg3-0.001f;
-	else if (c == '7')
-	{
-		m_iDbg ++;
-		m_MMUBase.SetSubobjectVisible(m_iDbg,false);
-	}
-	else if (c == '8')
-	{
-		m_iDbg --;
-		m_MMUBase.SetSubobjectVisible(m_iDbg,true);
-	}
-	printf("Int: %d\n",m_iDbg.load());
-	printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
+	// if (c =='+')
+	// 	m_flDbg = m_flDbg+0.001f;
+	// else if (c == '-')
+	// 	m_flDbg = m_flDbg-0.001f;
+	// if (c =='*')
+	// 	m_flDbg2 = m_flDbg2+0.001f;
+	// else if (c == '/')
+	// 	m_flDbg2 = m_flDbg2-0.001f;
+	// if (c =='3')
+	// 	m_flDbg3 = m_flDbg3+0.001f;
+	// else if (c == '9')
+	// 	m_flDbg3 = m_flDbg3-0.001f;
+	// else if (c == '7')
+	// {
+	// 	m_iDbg ++;
+	// 	m_MMUBase.SetSubobjectVisible(m_iDbg,false);
+	// }
+	// else if (c == '8')
+	// {
+	// 	m_MMUBase.SetSubobjectVisible(m_iDbg,true);
+	// 	m_iDbg --;
+	// }
+	// printf("Int: %d\n",m_iDbg.load());
+	// printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
 	if (m_pParent)
 		m_pParent->OnKeyPress(c,x,y);
 }

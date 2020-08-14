@@ -282,8 +282,7 @@ void uart_pty::Init(struct avr_t * avr)
 		gsl::at(port,ti).s = m;
 		gsl::at(port,ti).tap = ti != 0;
 		gsl::at(port,ti).crlf = ti != 0;
-		printf("uart_pty_init %s on port *** %s ***\n",
-				ti == 0 ? "bridge" : "tap", static_cast<char*>(gsl::at(port,ti).slavename));
+		cout << "uart_pty_init " << (ti == 0 ? "bridge" : "tap") << " on port *** " << static_cast<char*>(gsl::at(port,ti).slavename) << " ***\n";
 	}
 
 	auto fRunCB =[](void * param) { auto p = static_cast<uart_pty*>(param); return p->Run();};

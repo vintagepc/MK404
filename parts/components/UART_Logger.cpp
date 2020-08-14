@@ -22,9 +22,9 @@
 #include "UART_Logger.h"
 #include "avr_uart.h"  // for ::AVR_UART_FLAG_STDIO, ::UART_IRQ_OUTPUT, AVR_...
 #include "sim_io.h"    // for avr_ioctl, avr_io_getirq
-#include <cstdio>     // for printf, perror
 #include <cstdlib>    // for exit
 #include <fcntl.h>     // for open, O_CREAT, O_RDWR
+#include <iostream>     // for printf, perror
 #include <unistd.h>    // for close, ftruncate, write
 
 
@@ -38,9 +38,9 @@ void UART_Logger::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
     uint8_t c = value;
     if (write(m_fdOut,&c,1))
-	    printf("UART%c: 0x%02x\n",m_chrUART,c);
+	    cout << "UART" << m_chrUART << ": " << hex << c << '\n';
 	else
-		printf("UART Logger: failed to write to FD\n");
+		cerr << "UART Logger: failed to write to FD\n";
 }
 
 void UART_Logger::Init(struct avr_t * avr, char chrUART)
@@ -71,12 +71,12 @@ void UART_Logger::Init(struct avr_t * avr, char chrUART)
 		exit(1);
 	}
 
-    printf("UART %c is now logging to %s\n",m_chrUART,m_strFile.c_str());
+    cout << "UART " << m_chrUART << " is now logging to " << m_strFile << '\n';
 
 }
 
 UART_Logger::~UART_Logger()
 {
 	close(m_fdOut);
-	printf("UART logger finished.\n");
+	cout << "UART logger finished.\n";
 }

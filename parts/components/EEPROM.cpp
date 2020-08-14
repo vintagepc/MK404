@@ -64,7 +64,7 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 		bEmpty &= b==0;
 	}
 	if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
-		avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io);
+		avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io); //NOLINT- complaint is external macro
 }
 
 void EEPROM::Save()
@@ -74,6 +74,7 @@ void EEPROM::Save()
 	vector<uint8_t> vEE;
 	vEE.resize(m_uiSize,0);
 	avr_eeprom_desc_t io {.ee= vEE.data(), .offset = 0, .size = m_uiSize};
+	//NOLINTNEXTLINE - complaint is external macro
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); // Should net a pointer to eeprom[0]
 
 	ssize_t r = write(m_fdEEPROM, io.ee, m_uiSize);
@@ -108,7 +109,7 @@ void EEPROM::Poke(uint16_t address, uint8_t value)
 {
 	avr_eeprom_desc_t io {.ee = &value, .offset = address, .size = 1};
 	Expects(address<m_uiSize);
-	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_SET,&io);
+	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_SET,&io); //NOLINT - complaint is external macro
 }
 
 uint8_t EEPROM::Peek(uint16_t address)
@@ -116,6 +117,6 @@ uint8_t EEPROM::Peek(uint16_t address)
 	uint8_t uiRet = 0;
 	avr_eeprom_desc_t io {.ee = &uiRet, .offset = address, .size = 1};
 	Expects(address<m_uiSize);
-	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io);
+	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); //NOLINT - complaint is external macro
 	return uiRet;
 }

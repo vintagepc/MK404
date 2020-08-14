@@ -43,10 +43,10 @@ static uint8_t CRC7(gsl::span<uint8_t> data)
 	for (auto &c: data) {
 		crc ^= c;
 		for (j = 0; j < 8; j++) {
-			crc = (crc & 0x80u) ? ((crc << 1) ^ (poly << 1)) : (crc << 1);
+			crc = (crc & 0x80u) ? ((crc << 1U) ^ (poly << 1U)) : (crc << 1U);
 		}
 	}
-	return crc | 0x01;
+	return crc | 0x01U;
 }
 
 Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
@@ -68,16 +68,16 @@ Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const vector<str
 
 inline void SDCard::COMMAND_RESPONSE_R1(uint8_t status)
 {
-	m_command_response.data[0] = status & 0x7f;
+	m_command_response.data[0] = status & 0x7fU;
 	m_command_response.length = 1;
 }
 
 inline void SDCard::COMMAND_RESPONSE_R3(uint8_t status, uint32_t payload)
 {
-	m_command_response.data[0] = (status & 0x7f);
-	m_command_response.data[1] = (payload >> 24);
-	m_command_response.data[2] = (payload >> 16);
-	m_command_response.data[3] = (payload >> 8);
+	m_command_response.data[0] = (status & 0x7fU);
+	m_command_response.data[1] = (payload >> 24U);
+	m_command_response.data[2] = (payload >> 16U);
+	m_command_response.data[3] = (payload >> 8U);
 	m_command_response.data[4] = payload;
 	m_command_response.length= 5;
 }
@@ -417,27 +417,27 @@ void SDCard::InitCSD()
 	const uint8_t WP_GRP_SIZE = 0x00;
 	const uint8_t WRITE_BL_LEN = 9;
 
-	_m_csd[0] = 0b01 << 6; //CSD_STRUCTURE
+	_m_csd[0] = 0b01 << 6U; //CSD_STRUCTURE
 	_m_csd[1] = 0x0E; //(TAAC)
 	_m_csd[2] = 0x00; //(NSAC)
 	_m_csd[3] = 0x32; //(TRAN_SPEED)
-	_m_csd[4] = CCC >> 4; //CCC MSB
-	_m_csd[5] = (CCC & 0xF) << 4; //CCC LSB
-	_m_csd[5] |= READ_BL_LEN & 0xF; //(READ_BL_LEN)
-	_m_csd[10] = (1 << 6); //(ERASE_BLK_EN)
-	_m_csd[10] |= SECTOR_SIZE >> 1; // (SECTOR_SIZE MSB)
-	_m_csd[11] = (uint8_t)(SECTOR_SIZE << 7); // (SECTOR_SIZE LSB)
+	_m_csd[4] = CCC >> 4U; //CCC MSB
+	_m_csd[5] = (CCC & 0xFU) << 4U; //CCC LSB
+	_m_csd[5] |= READ_BL_LEN & 0xFU; //(READ_BL_LEN) - also, heh...
+	_m_csd[10] = (1U << 6U); //(ERASE_BLK_EN)
+	_m_csd[10] |= SECTOR_SIZE >> 1U; // (SECTOR_SIZE MSB)
+	_m_csd[11] = (uint8_t)(SECTOR_SIZE << 7U); // (SECTOR_SIZE LSB)
 	_m_csd[11] |= WP_GRP_SIZE; //(WP_GRP_SIZE)
-	_m_csd[12] |= 0 << 7; //(WP_GRP_ENABLE)
-	_m_csd[12] = 0x02 << 2; //(R2W_FACTOR)
-	_m_csd[12] |= WRITE_BL_LEN >> 2; //(WRITE_BL_LEN MSB)
-	_m_csd[13] = (uint8_t)(WRITE_BL_LEN << 6); //(WRITE_BL_LEN LSB)
-	_m_csd[13] |= 0 << 5; //(WRITE_BL_PARTIAL)
-	_m_csd[14] = 0 << 7; //(FILE_FORMAT_GRP)
-	_m_csd[14] |= 1 << 6; //COPY
-	_m_csd[14] |= 0 << 5; //PERM_WRITE_PROTECT
-	_m_csd[14] |= 0 << 4; //TMP_WRITE_PROTECT
-	_m_csd[14] |= 0 << 2; //(FILE_FORMAT)
+	_m_csd[12] |= 0U << 7U; //(WP_GRP_ENABLE)
+	_m_csd[12] = 0x02 << 2U; //(R2W_FACTOR)
+	_m_csd[12] |= WRITE_BL_LEN >> 2U; //(WRITE_BL_LEN MSB)
+	_m_csd[13] = (uint8_t)(WRITE_BL_LEN << 6U); //(WRITE_BL_LEN LSB)
+	_m_csd[13] |= 0U << 5U; //(WRITE_BL_PARTIAL)
+	_m_csd[14] = 0U << 7U; //(FILE_FORMAT_GRP)
+	_m_csd[14] |= 1U << 6U; //COPY
+	_m_csd[14] |= 0U << 5U; //PERM_WRITE_PROTECT
+	_m_csd[14] |= 0U << 4U; //TMP_WRITE_PROTECT
+	_m_csd[14] |= 0U << 2U; //(FILE_FORMAT)
 	m_csd = {static_cast<uint8_t*>(_m_csd),16};
 	_m_csd[15] = CRC7(m_csd.subspan(0,m_csd.size()-1));
 }
@@ -447,11 +447,11 @@ void SDCard::SetCSDCSize(off_t c_size)
 	Expects((c_size % (512 * 1024)) == 0);
 
 	const uint32_t C_SIZE = c_size / (512 * 1024);
-	Expects ((C_SIZE >> 16) == 0); //limit of 32GB
+	Expects ((C_SIZE >> 16U) == 0); //limit of 32GB
 
 	m_csd[9] |= (C_SIZE);
-	m_csd[8] |= (C_SIZE >> 8);
-	m_csd[7] |= (C_SIZE >> 16);
+	m_csd[8] |= (C_SIZE >> 8U);
+	m_csd[7] |= (C_SIZE >> 16U);
 	m_csd[15] = CRC7(m_csd.subspan(0,m_csd.size()-1));
 #ifdef SD_CARD_DEBUG
 	printf("CSD: ");
@@ -467,8 +467,8 @@ void SDCard::Init(struct avr_t *avr)
 {
 	_Init(avr,this);
 
-	m_ocr |= 1 << 30; //SDHC
-	m_ocr |= 1 << 31; //Card power up status bit
+	m_ocr |= 1U << 30U; //SDHC
+	m_ocr |= 1U << 31U; //Card power up status bit
 
 	InitCSD();
 	auto pTH = TelemetryHost::GetHost();
@@ -519,7 +519,7 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 			cout << "No SD image found. Aborting mount.\n";
 			return OnError(-1,true);
 		}
-		cout << "Autodetected SD image size as " << (image_size>>20) << " Mb\n"; // >>20 = div by 1024*1024
+		cout << "Autodetected SD image size as " << (image_size>>20U) << " Mb\n"; // >>20 = div by 1024*1024
 	}
 	else if (stat_buf.st_size < image_size)
 	{

@@ -28,7 +28,7 @@
 
 void SerialLineMonitor::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
-    unsigned char c = value&0xFF;
+    unsigned char c = value&0xFFU;
 	bool bNewLine = (c == 0x0a);
 
 	if (!bNewLine)
@@ -118,10 +118,10 @@ void SerialLineMonitor::Init(struct avr_t * avr, char chrUART)
 	RegisterNotify(BYTE_IN, MAKE_C_CALLBACK(SerialLineMonitor, OnByteIn),this);
 		// disable the stdio dump, as we're pritning in hex.
 
-	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT);
-	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_INPUT);
-	avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XON);
-	avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XOFF);
+	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT); //NOLINT - complaint in external macro
+	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_INPUT); //NOLINT - complaint in external macro
+	avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XON); //NOLINT - complaint in external macro
+	avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XOFF); //NOLINT - complaint in external macro
 	if (src && dst) {
 		ConnectFrom(src, BYTE_IN);
 		ConnectTo(BYTE_OUT, dst);

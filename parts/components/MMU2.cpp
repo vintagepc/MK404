@@ -171,7 +171,7 @@ void MMU2::OnPulleyFeedIn(struct avr_irq_t * ,uint32_t value)
 void MMU2::LEDHandler(avr_irq_t *, uint32_t value)
 {
 	uint32_t valOut = 0;
-	valOut = (value >>6) & 0b1111111111; // Just the LEDs.
+	valOut = (value >>6U) & 0b1111111111U; // Just the LEDs.
 	if (GetIRQ(LEDS_OUT)->value != valOut)
 		RaiseIRQ(LEDS_OUT,valOut);
 }

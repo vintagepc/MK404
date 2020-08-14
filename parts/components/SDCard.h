@@ -115,8 +115,8 @@ class SDCard:public SPIPeripheral, public Scriptable
 		static const uint8_t R1_ERASE_RESET = (1 << 1);
 		static const uint8_t R1_IN_IDLE_STATE = (1 << 0);
 
-		static const int READ_BL_LEN = 9;
-		static const int BLOCK_SIZE = (1<<READ_BL_LEN); // Bytes
+		static const uint8_t READ_BL_LEN = 9;
+		static const unsigned int BLOCK_SIZE = (1U<<READ_BL_LEN); // Bytes
 		static inline bool IsBlockAligned(int iBlock){ return ((iBlock % BLOCK_SIZE) == 0);};
 
 		inline void CRC_ADD(const uint8_t data) {m_CRC = m_crctab[(m_CRC >> 8 ^ data) & 0XFF] ^ (m_CRC << 8); }

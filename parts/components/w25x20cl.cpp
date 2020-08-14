@@ -188,14 +188,14 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 				{
 					if (m_address)
 					{
-						m_cmdOut = (m_UID >> 8*(m_address - 1)) & 0xFF;
+						m_cmdOut = (m_UID >> 8U*(m_address - 1)) & 0xFFU;
 						SetSendReplyFlag();
 						m_address--;
 					}
 				} break;
 				case _CMD_PAGE_PROGRAM:
 				{
-					m_pageBuffer[m_address & 0xFF] = value;
+					m_pageBuffer[m_address & 0xFFU] = value;
 					m_address = ((m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE) + ((m_address + 1) & 0xFF);
 				} break;
 			}

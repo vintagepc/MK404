@@ -79,7 +79,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 			return LineStatus::Finished;
 		case ActWaitForText:
 			int iLine = stoi(vArgs.at(1));
-			uint8_t uiLnChk = iLine<0 ? 0xFF : 1<<iLine;
+			uint8_t uiLnChk = iLine<0 ? 0xFF : 1U<<(unsigned int)iLine;
 			if (!(uiLnChk & m_uiLineChg)) // NO changes to check against.
 				return LineStatus::Waiting;
 
@@ -95,7 +95,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 				}
 			else
 				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=string::npos;
-			m_uiLineChg^= iLine<0 ? 0xFF : 1<<iLine; // Reset line change tracking.
+			m_uiLineChg^= iLine<0 ? 0xFF : 1U<<(unsigned int)iLine; // Reset line change tracking.
 			return bResult ? LineStatus::Finished : LineStatus::Waiting;
 	}
 	return LineStatus::Unhandled;
@@ -164,13 +164,13 @@ uint32_t HD44780::OnDataReady()
 			m_vRam[m_uiCursor] = m_uiDataPins;
 		}
 
-		for (int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
+		for (unsigned int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
 			if (m_uiCursor>= m_lineOffsets.at(i) && m_uiCursor< (m_lineOffsets.at(i) + m_uiWidth))
 			{
 				int iPos =m_uiCursor - m_lineOffsets.at(i);
 				string &line = m_vLines[i];
 				line[iPos] = m_uiDataPins;
-				m_uiLineChg |= 1<<i;
+				m_uiLineChg |= 1U<<i;
 			}
 
 		TRACE(printf("hd44780_write_data %02x (%c) to %02x\n", m_uiDataPins, m_uiDataPins, m_uiCursor));
@@ -191,31 +191,31 @@ uint32_t HD44780::OnDataReady()
 uint32_t HD44780::OnCmdReady()
 {
 	uint32_t delay = 37; // uS
-	int top = 7;	// get highest bit set'm
+	unsigned int top = 7;	// get highest bit set'm
 	while (top)
-		if (m_uiDataPins & (1 << top))
+		if (m_uiDataPins & (1U << top))
 			break;
 		else top--;
 	TRACE(printf("hd44780_write_command %02x (top: %u)\n", m_uiDataPins,top));
 	switch (top) {
 		// Set	DDRAM address
 		case 7:		// 1 ADD ADD ADD ADD ADD ADD ADD
-			m_uiCursor = m_uiDataPins & 0x7f;
+			m_uiCursor = m_uiDataPins & 0x7fU;
 			m_bInCGRAM = false;
 			break;
 		// Set	CGRAM address
 		case 6:		// 0 1 ADD ADD ADD ADD ADD ADD ADD
 			TRACE(printf("cgram enter\n"));
 			m_bInCGRAM = true;
-			m_uiCGCursor = (m_uiDataPins & 0x3f);
+			m_uiCGCursor = (m_uiDataPins & 0x3fU);
 			break;
 		// Function	set
 		case 5:		// 0 0 1 DL N F x x
 		{
 			int four = !GetFlag(HD44780_FLAG_D_L);
-			SetFlag(HD44780_FLAG_D_L, m_uiDataPins & 16);
-			SetFlag(HD44780_FLAG_N, m_uiDataPins & 8);
-			SetFlag(HD44780_FLAG_F, m_uiDataPins & 4);
+			SetFlag(HD44780_FLAG_D_L, m_uiDataPins & 16U);
+			SetFlag(HD44780_FLAG_N, m_uiDataPins & 8U);
+			SetFlag(HD44780_FLAG_F, m_uiDataPins & 4U);
 			if (!four && !GetFlag(HD44780_FLAG_D_L)) {
 				cout << static_cast<const char*>(__FUNCTION__) << "activating 4-bit mode" << '\n';
 				SetFlag(HD44780_FLAG_LOWNIBBLE, 0);
@@ -224,20 +224,20 @@ uint32_t HD44780::OnCmdReady()
 			break;
 		// Cursor display shift
 		case 4:		// 0 0 0 1 S/C R/L x x
-			SetFlag(HD44780_FLAG_S_C, m_uiDataPins & 8);
-			SetFlag(HD44780_FLAG_R_L, m_uiDataPins & 4);
+			SetFlag(HD44780_FLAG_R_L, m_uiDataPins & 4U);
+			SetFlag(HD44780_FLAG_S_C, m_uiDataPins & 8U);
 			break;
 		// Display on/off control
 		case 3:		// 0 0 0 0 1 D C B
-			SetFlag(HD44780_FLAG_D, m_uiDataPins & 4);
-			SetFlag(HD44780_FLAG_C, m_uiDataPins & 2);
-			SetFlag(HD44780_FLAG_B, m_uiDataPins & 1);
+			SetFlag(HD44780_FLAG_D, m_uiDataPins & 4U);
+			SetFlag(HD44780_FLAG_C, m_uiDataPins & 2U);
+			SetFlag(HD44780_FLAG_B, m_uiDataPins & 1U);
 			SetFlag(HD44780_FLAG_DIRTY, 1);
 			break;
 		// Entry mode set
 		case 2:		// 0 0 0 0 0 1 I/D S
-			SetFlag(HD44780_FLAG_I_D, m_uiDataPins & 2);
-			SetFlag(HD44780_FLAG_S, m_uiDataPins & 1);
+			SetFlag(HD44780_FLAG_I_D, m_uiDataPins & 2U);
+			SetFlag(HD44780_FLAG_S, m_uiDataPins & 1U);
 			break;
 		// Return home
 		case 1:		// 0 0 0 0 0 0 1 x
@@ -266,13 +266,13 @@ uint32_t HD44780::ProcessWrite()
 
 	if (four) { // 4 bits !
 		if (comp)
-			m_uiDataPins = (m_uiDataPins & 0xf0) | ((m_uiPinState >>  D4) & 0xf);
+			m_uiDataPins = (m_uiDataPins & 0xf0U) | ((m_uiPinState >>  D4) & 0xfU);
 		else
-			m_uiDataPins = (m_uiDataPins & 0xf) | ((m_uiPinState >>  (D4-4)) & 0xf0);
+			m_uiDataPins = (m_uiDataPins & 0xfU) | ((m_uiPinState >>  (D4-4)) & 0xf0U);
 		write = comp;
 		ToggleFlag(HD44780_FLAG_LOWNIBBLE);
 	} else {	// 8 bits
-		m_uiDataPins = (m_uiPinState >>  D0) & 0xff;
+		m_uiDataPins = (m_uiPinState >>  D0) & 0xffU;
 		write++;
 	}
 	RaiseIRQ(DATA_IN, m_uiDataPins);
@@ -282,7 +282,7 @@ uint32_t HD44780::ProcessWrite()
 		if (GetFlag(HD44780_FLAG_BUSY)) {
 			cout << static_cast<const char*>(__FUNCTION__) << " command " << m_uiDataPins << "write when still BUSY" << '\n';
 		}
-		if (m_uiPinState & (1 << RS))	// write data
+		if (m_uiPinState & (1U << RS))	// write data
 			delay = OnDataReady();
 		else										// write command
 			delay = OnCmdReady();
@@ -306,7 +306,7 @@ uint32_t HD44780::ProcessRead()
 
 	if (!done) { // new read
 
-		if (m_uiPinState & (1 << RS)) {	// read data
+		if (m_uiPinState & (1U << RS)) {	// read data
 			delay = 37;
 			{
 				std::lock_guard<std::mutex> lock(m_lock);
@@ -337,9 +337,9 @@ uint32_t HD44780::ProcessRead()
 
 	// now send the prepared output pins to send as IRQs
 	if (done) {
-		RaiseIRQ(ALL, m_uiReadPins >> 4);
-		for (int i = four ? 4 : 0; i < 8; i++)
-			RaiseIRQ(D0 + i, (m_uiReadPins >> i) & 1);
+		RaiseIRQ(ALL, m_uiReadPins >> 4U);
+		for (unsigned int i = four ? 4 : 0; i < 8; i++)
+			RaiseIRQ(D0 + i, (m_uiReadPins >> i) & 1U);
 	}
 	return delay;
 }
@@ -350,7 +350,7 @@ avr_cycle_count_t HD44780::OnEPinChanged(struct avr_t *, avr_cycle_count_t)
 
 	int delay = 0; // in uS
 
-	if (m_uiPinState & (1 << RW))	// read !?!
+	if (m_uiPinState & (1U << RW))	// read !?!
 		delay = ProcessRead();
 	else										// write
 		delay = ProcessWrite();
@@ -374,12 +374,12 @@ void HD44780::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
 		 * This is a shortcut for firmware that respects the conventions
 		 */
 		case ALL:
-			for (int i = 0; i < 4; i++)
+			for (unsigned int i = 0; i < 4; i++)
 				OnPinChanged(GetIRQ(D4+i),
-						((value >> i) & 1));
-			OnPinChanged(GetIRQ(RS), (value >> 4));
-			OnPinChanged(GetIRQ(E), (value >> 5));
-			OnPinChanged(GetIRQ(RW), (value >> 6));
+						((value >> i) & 1U));
+			OnPinChanged(GetIRQ(RS), (value >> 4U));
+			OnPinChanged(GetIRQ(E), (value >> 5U));
+			OnPinChanged(GetIRQ(RW), (value >> 6U));
 			return; // job already done!
 		case D0 ... D7:
 			// don't update these pins in read mode
@@ -387,9 +387,9 @@ void HD44780::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
 				return;
 			break;
 	}
-	m_uiPinState = (m_uiPinState & ~(1 << irq->irq)) | (value << irq->irq);
-	int eo = old & (1 << E);
-	int e = m_uiPinState & (1 << E);
+	m_uiPinState = (m_uiPinState & ~(1U << irq->irq)) | (value << irq->irq);
+	int eo = old & (1U << E);
+	int e = m_uiPinState & (1U << E);
 	// on the E pin rising edge, do stuff otherwise just exit
 	if (!eo && e)
 		RegisterTimer(m_fcnEPinChanged,1,this);

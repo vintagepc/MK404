@@ -26,6 +26,7 @@
 #include "MK3S_Bear.h"        // for MK3S_Bear
 #include "MK3S_Full.h"        // for MK3S_Full
 #include "MK3S_Lite.h"        // for MK3S_Lite
+#include "Macros.h"
 #include "OBJCollection.h"    // for OBJCollection, OBJCollection::ObjClass
 #include "Printer.h"          // for Printer
 #include "gsl-lite.hpp"
@@ -62,7 +63,7 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 	glewInit();
 
 	glutSetOption(GLUT_MULTISAMPLE,4);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE) ;
+	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH) | US(GLUT_MULTISAMPLE)) ;
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
 	string strTitle = string("Fancy Graphics: ") + m_Objs->GetName();
 	m_iWindow = glutCreateWindow(strTitle.c_str());	/* create window */
@@ -276,11 +277,11 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 	static constexpr uint8_t iLedObj[10] = {4,4,0,0,1,1,2,2,3,3};
 	//static constexpr uint8_t iMtlOff[2] = {32, 31};
 	static constexpr uint8_t iMtlOn[2] = {38,37};
-	for (int i=0; i<10; i++)
+	for (unsigned int i=0; i<10; i++)
 	{
-		if ((bChanged>>i) &1)
+		if ((bChanged>>i) &1U)
 		{
-			if ((value>>i) & 1)
+			if ((value>>i) & 1U)
 				m_MMUBase.SetSubobjectMaterial(gsl::at(iLedBase,i%2)+gsl::at(iLedObj,i),gsl::at(iMtlOn,i%2));
 			else
 				m_MMUBase.SetSubobjectMaterial(gsl::at(iLedBase,i%2)+gsl::at(iLedObj,i),5);//iMtlOff[i%2]);
@@ -344,7 +345,7 @@ void MK3SGL::Draw()
 	glutSetWindow(m_iWindow);
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 	glClearDepth(1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear( US(GL_COLOR_BUFFER_BIT) | US(GL_DEPTH_BUFFER_BIT));
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
@@ -479,7 +480,7 @@ void MK3SGL::DrawRoundLED()
 {
 	std::vector<float> vLED = {1,0,0,1};
 	std::vector<float> vNone = {0,0,0,1};
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,vNone.data());
+	glMaterialfv(GL_FRONT_AND_BACK, US(GL_AMBIENT_AND_DIFFUSE) | US(GL_SPECULAR) ,vNone.data());
 	glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,vLED.data());
 	glPushMatrix();
 		glTranslatef(0.092,0.3355,0.274);

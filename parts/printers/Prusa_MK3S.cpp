@@ -115,7 +115,7 @@ void Prusa_MK3S::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
 {
 	if (v==0x02)// Marlin is done setting up UCSRA0...
 	{
-		v|=(1<<5); // leave the UDRE0 alone
+		v|=(1U<<5U); // leave the UDRE0 alone
 		cout << "Reset UDRE0 after serial config changed\n";
 	}
 	avr_core_watch_write(avr,addr,v);

@@ -32,18 +32,18 @@ void HC595::OnSPIIn(struct avr_irq_t*, uint32_t value)
 {
 	// send "old value" to any chained one..
 	RaiseIRQ(SPI_BYTE_OUT,m_uiValue);
-	m_uiValue = m_uiValue<<8 | (value & 0xFF);
+	m_uiValue = m_uiValue<<8U | (value & 0xFFU);
 }
 
 void HC595::OnDataIn(struct avr_irq_t*, uint32_t value)
 {
-	m_uiCurBit = value&1;
+	m_uiCurBit = value&1U;
 }
 
 void HC595::OnClockIn(struct avr_irq_t * irq, uint32_t value)
 {
 	if (irq->value && !value)
-		m_uiValue = m_uiValue<<1 | (m_uiCurBit);
+		m_uiValue = m_uiValue<<1U | (m_uiCurBit);
 }
 
 /*
@@ -55,9 +55,9 @@ void HC595::OnLatchIn(struct avr_irq_t * irq, uint32_t value)
 		uint32_t uiChanged = m_uiLatch ^ m_uiValue; // Grab the bits that have changed since last latch.
 		m_uiLatch = m_uiValue;
 		RaiseIRQ(OUT, m_uiLatch);
-		for (int i=0; i<32; i++)
+		for (unsigned int i=0; i<32; i++)
 			if (uiChanged & (1U<<i))
-				RaiseIRQ(BIT0+i,(m_uiLatch>>i) & 1);
+				RaiseIRQ(BIT0+i,(m_uiLatch>>i) & 1U);
 
 	}
 }

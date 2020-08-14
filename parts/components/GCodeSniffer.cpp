@@ -58,7 +58,7 @@ void GCodeSniffer::Init(struct avr_t * avr, unsigned char chrUART)
 	RegisterNotify(BYTE_IN, MAKE_C_CALLBACK(GCodeSniffer, OnByteIn),this);
 		// disable the stdio dump, as we're pritning in hex.
 
-	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT);
+	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT); //NOLINT - complaint is external macro
 	if (src)
 		ConnectFrom(src, BYTE_IN);
 

@@ -287,7 +287,7 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     m_regs.defs.DRV_STATUS.stallGuard = bStall;
     m_regs.defs.DRV_STATUS.stst = false;
     // 2^20 comes from the datasheet.
-    RegisterTimer(m_fcnStandstill,2^20,this);
+    RegisterTimer(m_fcnStandstill,1U<<20U,this);
 }
 
 // Called when DRV_EN is triggered.

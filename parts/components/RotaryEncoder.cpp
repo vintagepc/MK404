@@ -64,8 +64,8 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
 			cout << "Rotenc: Invalid direction.\n"; // Invalid direction
 			break;
 	}
-    RaiseIRQ(OUT_A, gsl::at(m_States, m_iPhase)>>1);
-    RaiseIRQ(OUT_B, gsl::at(m_States, m_iPhase)&1);
+    RaiseIRQ(OUT_A, gsl::at(m_States, m_iPhase)>>1U);
+    RaiseIRQ(OUT_B, gsl::at(m_States, m_iPhase)&1U);
 
     if(--m_uiPulseCt >0) // Continue ticking the encoder
 		RegisterTimerUsec(m_fcnStateChange,PULSE_DURATION_US,this);

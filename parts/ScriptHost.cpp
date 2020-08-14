@@ -1,5 +1,3 @@
-
-
 /*
 	ScriptHost.cpp - Core handler responsible for handling
 	scripting actions.
@@ -40,7 +38,6 @@ map<string, int> ScriptHost::m_mMenuIDs;
 map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
 map<string, unsigned> ScriptHost::m_mClient2MenuBase;
 map<string, vector<pair<string,int>>> ScriptHost::m_mClientEntries;
-ScriptHost::linestate_t ScriptHost::m_lnState;
 shared_ptr<ScriptHost> ScriptHost::g_pHost;
 ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
@@ -271,28 +268,29 @@ bool ScriptHost::CheckArg(const ArgType &type, const string &val)
 void ScriptHost::ParseLine(unsigned int iLine)
 {
 	string strCtxt, strAct;
-	m_lnState.isValid = false;
-	//m_lnState.vArgs.clear();
-	if (!ScriptHost::GetLineParts(m_script.at(iLine),strCtxt,strAct,m_lnState.vArgs))
+	auto lnState = GetLineState();
+	lnState.isValid = false;
+	//lnState.vArgs.clear();
+	if (!ScriptHost::GetLineParts(m_script.at(iLine),strCtxt,strAct,lnState.vArgs))
 		return;
 
-	m_lnState.iLine = iLine;
+	lnState.iLine = iLine;
 	if(!m_clients.count(strCtxt) || m_clients.at(strCtxt)==nullptr)
 		return;
 
-	m_lnState.strCtxt = strCtxt;
+	lnState.strCtxt = strCtxt;
 
-	IScriptable *pClient = m_lnState.pClient = m_clients.at(strCtxt);
+	IScriptable *pClient = lnState.pClient = m_clients.at(strCtxt);
 
-	if (!m_lnState.pClient->m_ActionIDs.count(strAct))
+	if (!lnState.pClient->m_ActionIDs.count(strAct))
 		return;
 
-	int iID = m_lnState.iActID = pClient->m_ActionIDs[strAct];
+	int iID = lnState.iActID = pClient->m_ActionIDs[strAct];
 
-	if (m_lnState.vArgs.size()!=pClient->m_ActionArgs.at(iID).size())
+	if (lnState.vArgs.size()!=pClient->m_ActionArgs.at(iID).size())
 		return;
 
-	m_lnState.isValid = true;
+	lnState.isValid = true;
 }
 
 void ScriptHost::AddSubmenu(IScriptable *src)
@@ -356,17 +354,17 @@ void ScriptHost::OnAVRCycle()
 {
 	if (m_iLine>=m_script.size())
 		return; // Done.
-
-	if (m_lnState.iLine != m_iLine || m_state == State::Idle)
+	auto lnState = GetLineState();
+	if (lnState.iLine != m_iLine || m_state == State::Idle)
 	{
 		m_state = State::Running;
 		cout << "ScriptHost: Executing line " << m_script.at(m_iLine) << "\n";
 		ParseLine(m_iLine);
 	}
 
-	if (m_lnState.isValid)
+	if (lnState.isValid)
 	{
-		LS lsResult = m_lnState.pClient->ProcessAction(m_lnState.iActID,m_lnState.vArgs);
+		LS lsResult = lnState.pClient->ProcessAction(lnState.iActID,lnState.vArgs);
 		switch (lsResult)
 		{
 			case LS::Finished:

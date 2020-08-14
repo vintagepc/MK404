@@ -99,7 +99,7 @@ class uart_pty: public BasePeripheral
 				uart_pty_port_t		pty;
 				uart_pty_port_t		tap;
 			};
-			uart_pty_port_t port[2];
+			uart_pty_port_t port[2] = {{},{}};
 		};
 
 

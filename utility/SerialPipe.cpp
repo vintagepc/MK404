@@ -42,7 +42,9 @@ SerialPipe::SerialPipe(string strUART0, string strUART1):m_strPty0(std::move(str
 SerialPipe::~SerialPipe()
 {
 	if (!m_bStarted)
+	{
 		return;
+	}
 	m_bQuit = true;
 	pthread_cancel(m_thread);
 	pthread_join(m_thread,nullptr);
@@ -70,9 +72,13 @@ void* SerialPipe::Run()
 		m_bQuit = true;
 	}
 	if (fdPort.at(0)>fdPort.at(1))
+	{
 		iLastFd = fdPort.at(0);
+	}
 	else
+	{
 		iLastFd = fdPort.at(1);
+	}
 
 	while (!m_bQuit)
 	{
@@ -94,7 +100,9 @@ void* SerialPipe::Run()
 			while ((iChrRd = read(fdPort.at(0), &chrIn,1))>0)
 			{
 				if(write(fdPort[1],&chrIn,1)!=1)
+				{
 					cerr << "Failed to write byte across serial pipe 0.\n";
+				}
 
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
@@ -108,7 +116,9 @@ void* SerialPipe::Run()
 			while ((iChrRd = read(fdPort[1], &chrIn,1))>0)
 			{
 				if(write(fdPort[0],&chrIn,1) !=1)
+				{
 					cerr << "Failed to write byte across serial pipe 0.\n";
+				}
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
 			{

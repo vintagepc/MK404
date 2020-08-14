@@ -113,6 +113,22 @@ class ScriptHost: public IScriptable
 			RegisterAction("SetQuitOnTimeout","If 1, quits when a timeout occurs. Exit code will be non-zero.",ActSetQuitOnTimeout,{ArgType::Bool});
 			m_clients[m_strName] = this;
 		}
+
+		typedef struct linestate_t{
+			string strCtxt;
+			unsigned int iActID;
+			vector<string> vArgs;
+			unsigned int iLine;
+			IScriptable *pClient;
+			bool isValid;
+		}linestate_t;
+
+		inline static linestate_t& GetLineState()
+		{
+			static linestate_t state = {"",0,{},0,nullptr,false};
+			return state;
+		}
+
 		static shared_ptr<ScriptHost> g_pHost;
 		static map<string, IScriptable*> m_clients;
 		static map<string, int> m_mMenuIDs;
@@ -129,15 +145,7 @@ class ScriptHost: public IScriptable
 
 
 
-		typedef struct linestate_t{
-			linestate_t() {iActID = 0, iLine = 0, pClient = nullptr, isValid = false;};
-			string strCtxt;
-			unsigned int iActID;
-			vector<string> vArgs;
-			unsigned int iLine;
-			IScriptable *pClient;
-			bool isValid;
-		}linestate_t;
+
 
 		enum Actions
 		{
@@ -148,7 +156,5 @@ class ScriptHost: public IScriptable
 
 
 		static int m_iTimeoutCycles, m_iTimeoutCount;
-
-		static linestate_t m_lnState;
 
 };

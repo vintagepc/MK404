@@ -66,7 +66,9 @@ void OnSigINT(int) {
 		cout << "Caught SIGINT... stopping..." << '\n';
 		m_bStopping = true;
 		if (printer)
+		{
 			printer->OnKeyPress('q',0,0);
+		}
 	}
 	else
 	{
@@ -129,7 +131,9 @@ void displayCB()		/* function called whenever redisplay needed */
 			glPushAttrib(GL_LINE_BIT);
 				glLineWidth(5);
 				for (auto &i : strState)
+				{
 					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,i);
+				}
 			glPopAttrib();
 		glPopMatrix();
 
@@ -169,10 +173,14 @@ void MotionCB(int x, int y)
 void timerCB(int i)
 {
 	if (bIsQuitting)
+	{
 		return;
+	}
 	glutSetWindow(window);
 	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
+	{
 		glutReshapeWindow(iWinW, iWinH);
+	}
 	glutTimerFunc(50, timerCB, i);
 	glutPostRedisplay();
 }
@@ -181,11 +189,11 @@ void timerCB(int i)
 void ResizeCB(int w, int h)
 {
 	std::pair<int,int> winSize = printer->GetWindowSize();
-	float fWS = (float)w/(float)(winSize.first*4);
-	float fHS = (float)h/(float)(winSize.second*4);
+	float fWS = static_cast<float>(w)/static_cast<float>(winSize.first*4);
+	float fHS = static_cast<float>(h)/static_cast<float>(winSize.second*4);
 	float fScale = max(fWS,fHS);
-	int iW = 4.f*(float)winSize.first*fScale;
-	int iH = 4.f*(float)winSize.second*fScale;
+	int iW = 4.f*static_cast<float>(winSize.first)*fScale;
+	int iH = 4.f*static_cast<float>(winSize.second)*fScale;
 	if (iW!=w || iH !=h)
 	{
 		iWinH = iH;
@@ -314,9 +322,13 @@ int main(int argc, char *argv[])
 
 	string strFW;
 	if (!argLoad.isSet() && !argFW.isSet())
+	{
 		strFW = ""; // No firmware and no load directive.
+	}
 	else
+	{
 		strFW = argFW.getValue();
+	}
 
 	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,
 		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue()); // this line is the CreateBoard() args.
@@ -362,7 +374,9 @@ int main(int argc, char *argv[])
 		initGL();
 
 		if (argGfx.isSet())
+		{
 			printer->SetVisualType(argGfx.getValue());
+		}
 
 
 	}
@@ -381,17 +395,25 @@ int main(int argc, char *argv[])
 	if (argScript.isSet())
 	{
 		if (!ScriptHost::Setup(argScript.getValue(),pBoard->GetAVR()->frequency))
+		{
 			return 1; // validate will have printed error info.
+		}
 	}
 	else
+	{
 		ScriptHost::Setup("",pBoard->GetAVR()->frequency);
+	}
 
 	if (!bNoGraphics)
+	{
 		ScriptHost::CreateRootMenu(window);
+	}
 
 	// This is a little lazy, I know. Figure it out once we have non-einsy printers.
 	if (argMute.isSet())
+	{
 		printer->OnKeyPress('m',0,0);
+	}
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot
@@ -404,7 +426,9 @@ int main(int argc, char *argv[])
 	pBoard->StartAVR();
 
 	if (!bNoGraphics)
+	{
 		glutMainLoop();
+	}
 
 	cout << "Waiting for board to finish..." << '\n';
 	pBoard->SetQuitFlag();
@@ -414,6 +438,8 @@ int main(int argc, char *argv[])
 
 	cout << "Done" << '\n';
 	if (argScript.isSet())
+	{
 		return static_cast<int>(ScriptHost::GetState());
+	}
 
 }

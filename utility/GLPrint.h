@@ -65,8 +65,8 @@ class GLPrint
 		//void FindNearest(const float fVec[3]);
 
 
-		array<int,4> m_iExtrEnd = {0,0,0,0}, m_iExtrStart = {0,0,0,0};
-		array<float,4> m_fExtrEnd = {0,0,0,0}, m_fExtrStart = {0,0,0,0};
+		array<int,4> m_iExtrEnd = {{0,0,0,0}}, m_iExtrStart = {{0,0,0,0}};
+		array<float,4> m_fExtrEnd = {{0,0,0,0}}, m_fExtrStart = {{0,0,0,0}};
 		vector<int> m_ivStart, m_ivTStart;
 		vector<int> m_ivCount, m_ivTCount;
 		vector<float> m_fvDraw, m_fvNorms;

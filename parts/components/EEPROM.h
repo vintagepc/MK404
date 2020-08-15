@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint16_t, uint8_t
+#include <cstdint>          // for uint16_t, uint8_t
 #include <string>            // for string
 #include <vector>            // for vector
 #include "BasePeripheral.h"  // for BasePeripheral
@@ -61,7 +61,6 @@ class EEPROM: public BasePeripheral, public Scriptable {
 
 	private:
 		std::string m_strFile;
-		int m_fdEEPROM = 0;
 		uint16_t m_uiSize = 4096;
 		enum Actions {
 			ActPoke

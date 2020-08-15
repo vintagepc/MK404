@@ -21,11 +21,12 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint32_t
-#include <string>            // for string
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include <cstdint>          // for uint32_t
+#include <fstream>
+#include <string>            // for string
 
 using namespace std;
 
@@ -47,5 +48,5 @@ class UART_Logger : public BasePeripheral
 
 		string m_strFile = "LOG_UARTx.bin";
 		char m_chrUART = '0';
-		int m_fdOut = 0; // File handle.
+		ofstream m_fsOut;
 };

@@ -315,10 +315,10 @@ void uart_pty::Connect(char uart)
 	f &= ~AVR_UART_FLAG_STDIO;
 	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(uart), &f);
 
-	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUTPUT);
-	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_INPUT);
-	avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XON);
-	avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XOFF);
+	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUTPUT); //NOLINT - complaint in external macro
+	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_INPUT); //NOLINT - complaint in external macro
+	avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XON); //NOLINT - complaint in external macro
+	avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XOFF); //NOLINT - complaint in external macro
 	if (src && dst) {
 		ConnectFrom(src, BYTE_IN);
 		ConnectTo(BYTE_OUT, dst);

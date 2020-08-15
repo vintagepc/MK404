@@ -69,7 +69,6 @@ class w25x20cl:public SPIPeripheral
 		uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;
         void OnCSELIn(avr_irq_t *irq, uint32_t value) override;
 
-		int m_fdFlash = 0;
 		uint8_t _m_flash[W25X20CL_TOTAL_SIZE+1];
 		uint8_t _m_pageBuffer[W25X20CL_PAGE_SIZE];
 		uint8_t _m_cmdIn[5];

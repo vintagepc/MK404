@@ -26,10 +26,12 @@
 #include "sim_io.h"      // for avr_ioctl
 #include "unistd.h"      // for close, ftruncate, lseek, read, write
 #include <cstdlib>      // for malloc, exit, free, size_t
-#include <fcntl.h>       // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <fstream>       // for open, O_CREAT, O_RDWR, SEEK_SET
 #include <iostream>       // for perror, printf, fprintf, stderr
 #include <sys/types.h>   // for ssize_t
 
+using std::ifstream;
+using std::ofstream;
 
 void EEPROM::Load(struct avr_t *avr, const string &strFile)
 {
@@ -37,53 +39,54 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
 	m_uiSize = m_pAVR->e2end + 1;
 	m_strFile = strFile;
 
-	m_fdEEPROM = open(m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, 0644);
-	if (m_fdEEPROM < 0) {
-		perror(m_strFile.c_str());
-		exit(1);
+    ifstream fsIn(strFile, fsIn.binary | fsIn.ate);
+	if (!fsIn.is_open() || fsIn.tellg() < m_pAVR->e2end) {
+		cerr << "ERROR: Could not open flash file. Flash contents were NOT restored" << '\n';
 	}
-	cout << "Loading " << m_uiSize  <<" bytes of EEPROM\n";
-	vector<uint8_t> vEE;
-	vEE.resize(m_uiSize,0);
-	avr_eeprom_desc_t io {.ee= vEE.data(), .offset = 0, .size = m_uiSize};
-
-	if (ftruncate(m_fdEEPROM, m_uiSize) < 0) {
-		perror(m_strFile.c_str());
-		exit(1);
-	}
-	ssize_t r = read(m_fdEEPROM, io.ee, m_uiSize);
-	cout << "Read " << r << " bytes\n";
-	if (r !=  io.size) {
-		cerr << "Unable to load EEPROM\n";
-		perror(m_strFile.c_str());
-		exit(1);
-	}
-	bool bEmpty = true;
-	for (auto &b : vEE)
+	else
 	{
-		bEmpty &= b==0;
+		cout << "Loading " << m_uiSize  <<" bytes of EEPROM\n";
+		vector<uint8_t> vEE;
+		vEE.resize(m_uiSize,0);
+		avr_eeprom_desc_t io {.ee= vEE.data(), .offset = 0, .size = m_uiSize};
+		fsIn.seekg(fsIn.beg);
+		fsIn.read(reinterpret_cast<char*>(vEE.data()), m_uiSize); //NOLINT maybe if fstream supported unsigned chars...
+		cout << "Read " << fsIn.tellg() << " bytes\n";
+		if (fsIn.fail() || fsIn.gcount() != m_uiSize) {
+			cerr << "Unable to load EEPROM\n";
+			exit(1);
+		}
+		bool bEmpty = true;
+		for (auto &b : vEE)
+		{
+			bEmpty &= b==0;
+		}
+		if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
+			avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io); //NOLINT- complaint is external macro
 	}
-	if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
-		avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io); //NOLINT- complaint is external macro
+	fsIn.close();
 }
 
 void EEPROM::Save()
 {
 	// Write out the EEPROM contents:
-	lseek(m_fdEEPROM, SEEK_SET, 0);
+	ofstream fsOut(m_strFile, fsOut.binary | fsOut.out | fsOut.trunc);
+	if (!fsOut.is_open())
+	{
+		cerr << "Failed to open EEPROM output file\n";
+		return;
+	}
 	vector<uint8_t> vEE;
 	vEE.resize(m_uiSize,0);
 	avr_eeprom_desc_t io {.ee= vEE.data(), .offset = 0, .size = m_uiSize};
 	//NOLINTNEXTLINE - complaint is external macro
 	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); // Should net a pointer to eeprom[0]
-
-	ssize_t r = write(m_fdEEPROM, io.ee, m_uiSize);
-	cout << "Wrote "<< r <<" bytes of EEPROM to " <<m_strFile <<'\n';
-	if (r != m_uiSize) {
+	fsOut.write(reinterpret_cast<char*>(vEE.data()),m_uiSize); //NOLINT maybe if fstream supported unsigned chars...
+	cout << "Wrote "<< fsOut.tellp() <<" bytes of EEPROM to " << m_strFile <<'\n';
+	if (fsOut.tellp() != m_uiSize) {
 		cerr << "Unable to write EEPROM memory\n";
-		perror(m_strFile.c_str());
 	}
-	close(m_fdEEPROM);
+	fsOut.close();
 }
 
 Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<string> &vArgs)

@@ -504,7 +504,7 @@ void MK3SGL::DrawLED(float r, float g, float b)
 {
 		std::vector<float> vLED = {r,g,b,1};
 		std::vector<float> vNone = {0,0,0,1};
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,vNone.data());
+		glMaterialfv(GL_FRONT_AND_BACK, US(GL_AMBIENT_AND_DIFFUSE) | US(GL_SPECULAR),vNone.data());
 				glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,vLED.data());
 				glBegin(GL_QUADS);
 					glVertex3f(0,0,0);

@@ -498,7 +498,7 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 		m_strFile = filename; // New file given.
 
 	/* Open the specified disk image. */
-	fd = open (m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR);
+	fd = open (m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR); //NOLINT - no c++ stl non vararg memmap available.
 
 	if (fd == -1)
 		return errno;

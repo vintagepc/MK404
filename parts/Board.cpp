@@ -140,15 +140,11 @@ namespace Boards {
 		}
 		else
 		{
-			std::vector<char> buffer;
-			buffer.reserve(m_pAVR->flashend);
-			fsIn.seekg(fsIn.beg);
-			fsIn.read(buffer.data(), m_pAVR->flashend);
+			fsIn.read(reinterpret_cast<char*>(m_pAVR->flash), m_pAVR->flashend+1); //NOLINT maybe if fstream supported unsigned chars...
 			if (fsIn.fail() || fsIn.gcount() != m_pAVR->flashend) {
 				cerr << "Unable to load flash memory. Read: " << fsIn.gcount() << '\n';
 				exit(1);
 			}
-			std::memcpy(m_pAVR->flash,buffer.data(), m_pAVR->flashend);
 			cout << strFlash << ": Read " << fsIn.gcount() << " bytes.\n";
 		}
 		// NB: EEPROM happens later, because the AVR is not ready yet right now.
@@ -165,10 +161,7 @@ namespace Boards {
 		}
 		else
 		{
-			std::vector<char> buffer;
-			buffer.reserve(m_pAVR->flashend);
-			std::memcpy(buffer.data(), m_pAVR->flash, m_pAVR->flashend);
-			fsOut.write(buffer.data(),m_pAVR->flashend);
+			fsOut.write(reinterpret_cast<char*>(m_pAVR->flash),m_pAVR->flashend+1); //NOLINT maybe if fstream supported unsigned chars...
 			if ( fsOut.fail() || fsOut.tellp() != m_pAVR->flashend) {
 				cerr <<  "Unable to write flash memory for " << m_strBoard << '\n';
 			}

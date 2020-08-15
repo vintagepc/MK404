@@ -26,10 +26,9 @@
 #include <cstdint>      // for perror
 #include <cstdlib>     // for exit
 #include <cstring>
-#include <fcntl.h>      // for open, O_CREAT, O_WRONLY, SEEK_SET
+#include <fstream>
 #include <iostream>
 #include <type_traits>  // for __decay_and_strip<>::__type
-#include <unistd.h>     // for close, ftruncate, lseek, write
 #include <vector>       // for vector
 
 // const map<FatImage::Size, uint32_t>FatImage::SectorsPerFat =
@@ -80,20 +79,14 @@ const map<string, FatImage::Size>& FatImage::GetNameToSize()
 bool FatImage::MakeFatImage(const string &strFile, const string &strSize)
 {
 	FatImage::Size size = GetNameToSize().at(strSize);
-	int fd = open(strFile.c_str(), O_WRONLY | O_CREAT | O_CLOEXEC, 0644);
-	if (fd < 0) {
-		perror(strFile.c_str());
-		exit(1);
-	}
-
 	uint32_t uiSize = GetSizeInBytes(size);
 
-	if (ftruncate(fd, uiSize)==-1)
+	ofstream fsOut(strFile, fsOut.binary);
+	if (!fsOut.is_open())
 	{
-		perror(strFile.c_str());
-		exit(1);
+		cerr << "Failed to open output file\n";
+		return false;
 	}
-
 	vector<uint8_t> data;
 
 	// Write main FAT block.
@@ -151,11 +144,22 @@ bool FatImage::MakeFatImage(const string &strFile, const string &strSize)
 	data.resize(GetDataStartAddr(size));
 	data.insert(data.end(), DataRegion.begin(), DataRegion.end());
 
-	lseek(fd,SEEK_SET, 0);
-	size_t s = write(fd,data.data(),data.size());
-	if(s != data.size())
-		std::cerr << "Failed to write full file to disk.\n";
+	fsOut.write(reinterpret_cast<char*>(data.data()),data.size()); //NOLINT - my kingdom for an unsigned char fstream...
 
-	close(fd);
+	fsOut.seekp(uiSize-1);
+	fsOut.put(0);
+	if(!fsOut)
+	{
+		std::cerr << "Failed to write full file to disk... " <<fsOut.tellp() << '\n';
+		fsOut.close();
+		return false;
+	}
+	else
+	{
+		cout << "Wrote " << fsOut.tellp() << " bytes to SD image.";
+	}
+
+
+	fsOut.close();
 	return true;
 }

@@ -26,7 +26,7 @@
 
 #include <cstdlib>     // for exit, free, malloc
 #include <cstring>     // for memset, memcpy, strncpy
-#include <fcntl.h>      // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <fstream>
 #include <iostream>
 #include <unistd.h>     // for close, ftruncate, lseek, read, write, ssize_t
 
@@ -62,11 +62,7 @@
 #define _CMD_RD_UID        0x4b
 
 
-w25x20cl::~w25x20cl()
-{
-	if (m_fdFlash)
-		close(m_fdFlash);
-}
+w25x20cl::~w25x20cl() = default;
 
 /*
  * called when a SPI byte is sent
@@ -301,43 +297,51 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 void w25x20cl::Load(const char* path)
 {
 	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
-	m_fdFlash = open(path, O_RDWR | O_CREAT | O_CLOEXEC, 0644);
-	if (m_fdFlash < 0) {
-		perror(path);
-		exit(1);
-	}
+	ifstream fsIn(path, fsIn.binary | fsIn.ate);
 	m_filepath = path;
 
-	cout << "Loading " << W25X20CL_TOTAL_SIZE << " bytes of XFLASH\n";
-	if (ftruncate(m_fdFlash, W25X20CL_TOTAL_SIZE + 1) < 0) {
-		perror(path);
-		exit(1);
+	if (!fsIn.is_open() || fsIn.tellg() < W25X20CL_TOTAL_SIZE) {
+		cerr << "ERROR: Could not open SPI flash file. Flash contents were NOT restored" << '\n';
 	}
-	vector<uint8_t> buffer;
-	buffer.resize(W25X20CL_TOTAL_SIZE+1);
-	ssize_t r = read(m_fdFlash, buffer.data(), W25X20CL_TOTAL_SIZE + 1);
-	cout << "Read " << r << " bytes\n";
-	if (r !=  W25X20CL_TOTAL_SIZE + 1) {
-		cerr << "Unable to load XFLASH\n";
-		perror(path);
-		exit(1);
-	}
-	bool bEmpty = true;
-	for (auto &b : buffer)
+	else
 	{
-		bEmpty &= (b == 0);
+		cout << "Loading " <<  W25X20CL_TOTAL_SIZE  <<" bytes of EEPROM\n";
+		fsIn.seekg(fsIn.beg);
+		fsIn.read(reinterpret_cast<char*>(m_flash.data()), W25X20CL_TOTAL_SIZE + 1); // NOLINT no choice but to cast...
+		if (fsIn.fail() || fsIn.gcount() != W25X20CL_TOTAL_SIZE + 1 ) {
+			cerr << "Unable to load w25x20cl\n";
+			exit(1);
+		}
+		bool bEmpty = true;
+		for (auto &b : m_flash)
+		{
+			bEmpty &= b==0;
+		}
+		if (bEmpty)
+		{
+			for (auto &c : m_flash)
+			{
+				c = 0xFF;
+			}
+		}
 	}
-	if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
-		memcpy(m_flash.begin(), buffer.data(), W25X20CL_TOTAL_SIZE + 1);
+	fsIn.close();
 }
 
 void w25x20cl::Save()
 {
-	// Also write out the xflash contents. Note we don't close it so you can save snapshots anytime you like.
-	lseek(m_fdFlash, SEEK_SET, 0);
-	ssize_t r = write(m_fdFlash, m_flash.data(), W25X20CL_TOTAL_SIZE + 1);
-	if (r != W25X20CL_TOTAL_SIZE + 1) {
-		cerr << "Unable to write xflash memory\n";
-		perror(m_filepath.c_str());
+	// Also write out the xflash contents. Note  you can save snapshots anytime you like.
+		// Write out the EEPROM contents:
+	ofstream fsOut(m_filepath, fsOut.binary | fsOut.out | fsOut.trunc);
+	if (!fsOut.is_open())
+	{
+		cerr << "Failed to open xflash output file\n";
+		return;
 	}
+	fsOut.write(reinterpret_cast<char*>(m_flash.data()),W25X20CL_TOTAL_SIZE+1); //NOLINT no choice but to cast...
+	cout << "Wrote "<< fsOut.tellp() <<" bytes of xflash to " << m_filepath <<'\n';
+	if (fsOut.tellp() != W25X20CL_TOTAL_SIZE + 1) {
+		cerr << "Unable to write xflash memory\n";
+	}
+	fsOut.close();
 }

@@ -311,8 +311,10 @@ int main(int argc, char *argv[])
 			cerr << "Cannot create an SD image without a filename." << '\n';
 			exit(1);
 		}
-		FatImage::MakeFatImage(argSD.getValue(), argImgSize.getValue());
-		cout << "Wrote " << argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << '\n';
+		if (FatImage::MakeFatImage(argSD.getValue(), argImgSize.getValue()))
+		{
+			cout << "Wrote " << argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << '\n';
+		}
 		return 0;
 	}
 	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue()=="none");

@@ -59,13 +59,13 @@ void* SerialPipe::Run()
 	fd_set fdsIn {}, fdsErr {};
 	unsigned char chrIn;
 	int iLastFd = 0, iReadyRead, iChrRd;
-	if ((fdPort[0]=open(m_strPty0.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC)) == -1)
+	if ((fdPort[0]=open(m_strPty0.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC)) == -1) // NOLINT - no select alternative that uses iostream.
 	{
 		cerr << "Could not open "  << m_strPty0 << '\n';
 		perror(m_strPty0.c_str());
 		m_bQuit = true;
 	}
-	if ((fdPort[1]=open(m_strPty1.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC)) == -1)
+	if ((fdPort[1]=open(m_strPty1.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC)) == -1) // NOLINT - no select alternative that uses iostream.
 	{
 		cerr << "Could not open "  << m_strPty1 << '\n';
 		perror(m_strPty1.c_str());

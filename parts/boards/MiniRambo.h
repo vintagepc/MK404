@@ -24,6 +24,7 @@
 #include "A4982.h"
 #include "HD44780GL.h"                           // for HD44780G
 #include "RotaryEncoder.h"
+#include "Thermistor.h"
 #include "sim_irq.h"                             // for avr_irq_t
 #include "uart_pty.h"                            // for uart_pty
 #include "wiring/miniRAMBo_1_3a.h"                   // for Einsy_1_1a
@@ -53,7 +54,7 @@ namespace Boards
 			uart_pty UART0;
 			RotaryEncoder encoder;
 			A4982 X{'X'};
-
+			Thermistor tExtruder, tBed, tAmbient;
 
 		private:
 

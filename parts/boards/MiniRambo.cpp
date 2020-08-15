@@ -21,7 +21,18 @@
 #include "MiniRambo.h"
 #include "HD44780.h"           // for HD44780
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
+#include "thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 #include <iostream>
+
+#define TEMP_SENSOR_0 5
+#define TEMP_SENSOR_BED 1
+#define TEMP_SENSOR_AMBIENT 2000
+
+#define _TERMISTOR_TABLE(num) \
+		temptable_##num
+#define TERMISTOR_TABLE(num) \
+		_TERMISTOR_TABLE(num)
+
 
 namespace Boards
 {
@@ -46,6 +57,20 @@ namespace Boards
 		TryConnect(encoder, RotaryEncoder::OUT_B, BTN_EN1);
 		TryConnect(encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
 
+		AddHardware(tExtruder,GetPinNumber(TEMP_0_PIN));
+		tExtruder.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_0),
+								sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(short) / 2,
+								OVERSAMPLENR);
+
+		AddHardware(tBed,GetPinNumber(TEMP_BED_PIN));
+		tBed.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
+							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
+							OVERSAMPLENR);
+
+		AddHardware(tAmbient,  GetPinNumber(TEMP_AMBIENT_PIN));
+		tAmbient.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
+		 						sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
+		 						OVERSAMPLENR);
 
 		AddHardware(X);
 		TryConnect(X,A4982::DIR_IN,		X_DIR_PIN);

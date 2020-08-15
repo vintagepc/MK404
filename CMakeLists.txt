@@ -91,6 +91,8 @@ set(H_FILES
 	parts/PinSpec_Helper.h
 	parts/Wiring.h
 #	parts/IRQHelper.h  Can't be checked/used standalone.
+	parts/printers/Prusa_MK25_13.h
+	parts/printers/Prusa_MK3.h
 	parts/printers/Prusa_MK3S.h
 	parts/printers/Prusa_MK3SMMU2.h
 	parts/printers/Prusa_MK3MMU2.h
@@ -118,6 +120,7 @@ set(MK404_SOURCES
 	parts/Board.cpp
 	parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp
+	parts/boards/MiniRambo.cpp
 	parts/ScriptHost.cpp
 	parts/TelemetryHost.cpp
 	parts/components/GCodeSniffer.cpp
@@ -143,6 +146,7 @@ set(MK404_SOURCES
 	parts/components/Thermistor.cpp
 	parts/components/Fan.cpp
 	parts/components/Button.cpp
+	parts/printers/Prusa_MK25_13.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
 	utility/MK3SGL.cpp

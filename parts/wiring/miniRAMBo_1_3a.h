@@ -19,7 +19,7 @@
 	Based on:
 	https://github.com/prusa3d/Prusa-Firmware/blob/MK3/Firmware/pins_Rambo_1_3.h
 	https://github.com/ultimachine/Mini-Rambo/blob/1.3a/board/Project%20Outputs%20for%20Mini-Rambo/Mini-Rambo.PDF
-    
+
     Version 0.1     15 Aug 2020     3d-gussner
 
     Change log:
@@ -28,20 +28,21 @@
 
 #pragma once
 
-#include <miniRMBo_1_0_a.h>
+#include "miniRAMBo_1_1b.h"
+
 namespace Wirings
 {
-	class miniRAMBo_1_3a : public miniRMBo_1_0_a
+	class miniRAMBo_1_3a : public miniRAMBo_1_1b
 	{
 		public:
-			miniRAMBo_1_3a():miniRMBo_1_0_a()
+			miniRAMBo_1_3a():miniRAMBo_1_1b()
 			{
 				m_mPins = GetPinMap();
 			};
 
 		protected:
 			std::map<Pin, MCUPin> GetPinMap() override {
-				auto baseMap = miniRMBo_1_0_a::GetPinMap();
+				auto baseMap = miniRAMBo_1_1b::GetPinMap();
 				baseMap[SWI2C_SCL] = 21;
 				baseMap.erase(KILL_PIN);
 				baseMap[BEEPER] = 84;

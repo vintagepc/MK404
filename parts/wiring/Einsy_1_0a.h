@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include <Wiring.h>
-#include <PinSpec_2560.h>
+#include "Wiring.h"
+#include "PinSpec_2560.h"
 namespace Wirings
 {
 	class Einsy_1_0a : public Wiring

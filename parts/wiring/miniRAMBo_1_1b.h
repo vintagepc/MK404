@@ -1,5 +1,5 @@
  /*
-	miniRAMBo_1_0a.h - Pin definition for an Ultimachine miniRAMBo 1.0a
+	miniRAMBo_1_1b.h - Pin definition for an Ultimachine miniRAMBo 1.1b
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
@@ -19,7 +19,7 @@
 
 	Based on:
 	https://github.com/prusa3d/Prusa-Firmware/blob/MK3/Firmware/pins_Rambo_1_0.h
-	
+
     Version 0.1     15 Aug 2020     3d-gussner
 
     Change log:
@@ -27,8 +27,8 @@
 */
 #pragma once
 
-#include <Wiring.h>
-#include <PinSpec_2560.h>
+#include "Wiring.h"
+#include "PinSpec_2560.h"
 namespace Wirings
 {
 	class miniRAMBo_1_1b : public Wiring
@@ -67,7 +67,7 @@ namespace Wirings
 					{SDCARDDETECT,72},
 					{SDSS,53},
 					{SWI2C_SCL,84},
-					{SWI2C_SDA,20},				//IR_SENSOR_PIN on MK2.5S			
+					{SWI2C_SDA,20},				//IR_SENSOR_PIN on MK2.5S
 					{TEMP_0_PIN,0},
 					{TEMP_1_PIN,1},				//TEMP_PINDA_PIN for MK2.5+MK2.5S
 					{TEMP_AMBIENT_PIN,6},

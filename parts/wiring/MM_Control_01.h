@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include <Wiring.h>
-#include <PinSpec_32u4.h>
+#include "Wiring.h"
+#include "PinSpec_32u4.h"
 namespace Wirings
 {
 	class MM_Control_01 : public Wiring

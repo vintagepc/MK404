@@ -67,7 +67,7 @@ namespace Wirings
 					{SDCARDDETECT,72},
 					{SDSS,53},
 					{SWI2C_SCL,84},
-					{SWI2C_SDA,20}				//IR_SENSOR_PIN on MK2.5S			
+					{SWI2C_SDA,20},				//IR_SENSOR_PIN on MK2.5S			
 					{TEMP_0_PIN,0},
 					{TEMP_1_PIN,1},				//TEMP_PINDA_PIN for MK2.5+MK2.5S
 					{TEMP_AMBIENT_PIN,6},
@@ -95,9 +95,10 @@ namespace Wirings
 					{Z_MS2_PIN,67},
 					{TX2_PIN,17},				//E_MUX0_PIN for MMUv1
 					{RX2_PIN,16},				//E_MUX1_PIN for MMUv1
-					{XY_REF_PIN,46},			//MOTOR_CURRENT_PWM_XY_PIN
+					{X_REF_PIN,46},				//MOTOR_CURRENT_PWM_XY_PIN
+					{Y_REF_PIN,46},				//MOTOR_CURRENT_PWM_XY_PIN
 					{Z_REF_PIN,45},				//MOTOR_CURRENT_PWM_Z_PIN
-					{E_REF_PIN,44}				//MOTOR_CURRENT_PWM_E_PIN
+					{E0_REF_PIN,44}				//MOTOR_CURRENT_PWM_E_PIN
 				};
 			};
 		private:

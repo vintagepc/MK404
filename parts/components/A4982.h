@@ -97,7 +97,7 @@ class A4982: public BasePeripheral
 
         int32_t m_iCurStep = 0;
         int32_t m_iMaxPos = 0;
-		uint8_t m_uiStepSize = 0;
+		uint8_t m_uiStepSize = 16;
         std::atomic<float> m_fCurPos = {0}, m_fEnd = {0}; // Tracks position in float for gl
 		std::atomic_char m_cAxis {' '};
 

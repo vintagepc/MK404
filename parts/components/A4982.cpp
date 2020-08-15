@@ -33,7 +33,7 @@
 #include <cstring>				// for memcpy
 #include <iostream>            // for printf
 
-#define TRACE(x) x
+#define TRACE(x)
 
 void A4982::Draw()
 {
@@ -144,19 +144,17 @@ void A4982::OnDirIn(struct avr_irq_t * irq, uint32_t value)
 // Called when STEP is triggered.
 void A4982::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 {
-	// In  only step on rising pulse
-	if (!m_bEnable || (!value || irq->value))
+	if (!m_bEnable || m_bSleep || m_bReset)
 	{
-		cout << m_strName<< " NOT_ENABLED\n";
+		cout << "A4982: STEP while sleep, reset or disabled!\n";
 		return;
 	}
-	if (m_bSleep || m_bReset)
+	// In  only step on rising pulse
+	if (value==0)
 	{
-		cout << "A4982: STEP WHILE SLEEP OR RESET!\n";
 		return;
 	}
 
-	TRACE( cout << "A4982: STEP\n"; )
     if (m_bDir)
         m_iCurStep-=m_uiStepSize;
     else
@@ -164,7 +162,7 @@ void A4982::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 
     if (!m_cfg.bHasNoEndStops)
     {
-        if (m_iCurStep==-1)
+        if (m_iCurStep<0)
         {
             m_iCurStep = 0;
             RaiseIRQ(MIN_OUT,1);
@@ -257,6 +255,7 @@ void A4982::OnMSIn(avr_irq_t *irq, uint32_t value)
 		uiM2 = value;
 	}
 	uint8_t m_uiNewShift = ((unsigned)uiM1<<1U | (unsigned)uiM2);
+	cout << "MS changed: " << m_uiNewShift << '\n';
 	switch (m_uiNewShift)
 	{
 		case 0:

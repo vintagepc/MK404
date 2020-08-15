@@ -23,6 +23,7 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "SDCard.h"
+#include "Macros.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
 #include <cerrno>     // for errno
@@ -43,7 +44,7 @@ static uint8_t CRC7(gsl::span<uint8_t> data)
 	for (auto &c: data) {
 		crc ^= c;
 		for (j = 0; j < 8; j++) {
-			crc = (crc & 0x80u) ? ((crc << 1U) ^ (poly << 1U)) : (crc << 1U);
+			crc = (crc & 0x80u) ? (((unsigned)crc << 1U) ^ ((unsigned)poly << 1U)) : ((unsigned)crc << 1U);
 		}
 	}
 	return crc | 0x01U;
@@ -417,7 +418,7 @@ void SDCard::InitCSD()
 	const uint8_t WP_GRP_SIZE = 0x00;
 	const uint8_t WRITE_BL_LEN = 9;
 
-	_m_csd[0] = 0b01 << 6U; //CSD_STRUCTURE
+	_m_csd[0] = 0b01U << 6U; //CSD_STRUCTURE
 	_m_csd[1] = 0x0E; //(TAAC)
 	_m_csd[2] = 0x00; //(NSAC)
 	_m_csd[3] = 0x32; //(TRAN_SPEED)
@@ -429,7 +430,7 @@ void SDCard::InitCSD()
 	_m_csd[11] = (uint8_t)(SECTOR_SIZE << 7U); // (SECTOR_SIZE LSB)
 	_m_csd[11] |= WP_GRP_SIZE; //(WP_GRP_SIZE)
 	_m_csd[12] |= 0U << 7U; //(WP_GRP_ENABLE)
-	_m_csd[12] = 0x02 << 2U; //(R2W_FACTOR)
+	_m_csd[12] = 0x02U << 2U; //(R2W_FACTOR)
 	_m_csd[12] |= WRITE_BL_LEN >> 2U; //(WRITE_BL_LEN MSB)
 	_m_csd[13] = (uint8_t)(WRITE_BL_LEN << 6U); //(WRITE_BL_LEN LSB)
 	_m_csd[13] |= 0U << 5U; //(WRITE_BL_PARTIAL)
@@ -519,7 +520,7 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 			cout << "No SD image found. Aborting mount.\n";
 			return OnError(-1,true);
 		}
-		cout << "Autodetected SD image size as " << (image_size>>20U) << " Mb\n"; // >>20 = div by 1024*1024
+		cout << "Autodetected SD image size as " << ((unsigned)image_size>>20U) << " Mb\n"; // >>20 = div by 1024*1024
 	}
 	else if (stat_buf.st_size < image_size)
 	{
@@ -528,7 +529,7 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 	}
 
 	/* Map it into memory. */
-	mapped = mmap (nullptr, image_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	mapped = mmap (nullptr, image_size, US(PROT_READ) | US(PROT_WRITE), MAP_SHARED, fd, 0);
 
 	if (mapped == MAP_FAILED) //NOLINT - complaint in system library
 		return OnError(errno,true);
@@ -555,7 +556,7 @@ int SDCard::Unmount()
 	}
 
 	/* Synchronise changes. */
-	msync (m_data.data(), m_data.size(), MS_SYNC | MS_INVALIDATE);
+	msync (m_data.data(), m_data.size(), US(MS_SYNC) | US(MS_INVALIDATE));
 
 	/* Unlock the file. */
 	flock (m_data_fd, LOCK_UN);

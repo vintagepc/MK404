@@ -311,9 +311,9 @@ void uart_pty::Connect(char uart)
 {
 	// disable the stdio dump, as we are sending binary there
 	uint32_t f = 0;
-	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(uart), &f);
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(uart), &f); //NOLINT - complaint in external macro
 	f &= ~AVR_UART_FLAG_STDIO;
-	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(uart), &f);
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(uart), &f); //NOLINT - complaint in external macro
 
 	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUTPUT); //NOLINT - complaint in external macro
 	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_INPUT); //NOLINT - complaint in external macro

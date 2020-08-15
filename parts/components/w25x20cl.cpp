@@ -192,7 +192,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 				case _CMD_PAGE_PROGRAM:
 				{
 					m_pageBuffer[m_address & 0xFFU] = value;
-					m_address = ((m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE) + ((m_address + 1) & 0xFF);
+					m_address = ((m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE) + (((unsigned)m_address + 1U) & 0xFFU);
 				} break;
 			}
 			break;

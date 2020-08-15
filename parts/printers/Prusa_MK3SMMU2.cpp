@@ -30,10 +30,7 @@
 #include <iostream>                // for printf
 #include <memory>                 // for unique_ptr
 
-Prusa_MK3SMMU2::~Prusa_MK3SMMU2()
-{
-	delete m_pipe;
-}
+Prusa_MK3SMMU2::~Prusa_MK3SMMU2() = default;
 
 void Prusa_MK3SMMU2::SetupHardware()
 {
@@ -45,7 +42,7 @@ void Prusa_MK3SMMU2::SetupHardware()
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes.
 	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
 	// rather than having to roll our own internal FIFO. As an added bonus you can tap the ports for debugging.
-	m_pipe = new SerialPipe(UART2.GetSlaveName(), m_MMU.GetSerialPort());
+	m_pipe.reset(new SerialPipe(UART2.GetSlaveName(), m_MMU.GetSerialPort())); //NOLINT suggestion is c++14 and higher
 }
 
 void Prusa_MK3SMMU2::OnVisualTypeSet(string type)

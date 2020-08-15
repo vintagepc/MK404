@@ -27,8 +27,9 @@
 #include "IRSensor.h"      // for IRSensor, IRSensor::IRState::IR_AUTO
 #include "MMU2.h"          // for MMU2
 #include "Prusa_MK3S.h"    // for Prusa_MK3S
+#include "SerialPipe.h"
 #include "sim_irq.h"       // for avr_irq_t
-class SerialPipe;
+
 
 
 class Prusa_MK3SMMU2 : public Prusa_MK3S
@@ -56,7 +57,7 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 
 		MMU2 m_MMU;
 		GCodeSniffer m_sniffer = GCodeSniffer('T');
-		SerialPipe *m_pipe = nullptr;
+		unique_ptr<SerialPipe> m_pipe {nullptr};
 
 	private:
 

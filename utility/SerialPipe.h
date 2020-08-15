@@ -19,6 +19,8 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include <pthread.h>  // for pthread_t
 #include <string>     // for string
 #include <atomic>

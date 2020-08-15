@@ -147,6 +147,7 @@ void A4982::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 	// In  only step on rising pulse
 	if (!m_bEnable || (!value || irq->value))
 	{
+		cout << m_strName<< " NOT_ENABLED\n";
 		return;
 	}
 	if (m_bSleep || m_bReset)
@@ -280,9 +281,6 @@ void A4982::OnMSIn(avr_irq_t *irq, uint32_t value)
 			cerr << "A4982: PROGRAMMER ERROR! Invalid step size?\n";
 	}
 
-
-
-
 }
 
 void A4982::Init(struct avr_t * avr)
@@ -300,6 +298,8 @@ void A4982::Init(struct avr_t * avr)
     RegisterNotify(STEP_IN,     MAKE_C_CALLBACK(A4982,OnStepIn), this);
 	RegisterNotify(RESET_IN, 	MAKE_C_CALLBACK(A4982, OnResetIn), this);
 
+	RaiseIRQ(MIN_OUT,0);
+	RaiseIRQ(MAX_OUT,0);
 
 	auto pTH = TelemetryHost::GetHost();
 	pTH->AddTrace(this, STEP_IN,{TC::OutputPin, TC::Stepper});

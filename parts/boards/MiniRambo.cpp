@@ -81,6 +81,32 @@ namespace Boards
 		TryConnect(X,A4982::MIN_OUT,	X_MIN_PIN);
 		TryConnect(X,A4982::MAX_OUT,	X_MAX_PIN);
 
+		AddHardware(Y);
+		TryConnect(Y,A4982::DIR_IN,		Y_DIR_PIN);
+		TryConnect(Y,A4982::STEP_IN,	Y_STEP_PIN);
+		TryConnect(Y,A4982::ENABLE_IN,	Y_ENABLE_PIN);
+		TryConnect(Y,A4982::MS1_IN,		Y_MS1_PIN);
+		TryConnect(Y,A4982::MS2_IN,		Y_MS2_PIN);
+		TryConnect(Y,A4982::MIN_OUT,	Y_MIN_PIN);
+		TryConnect(Y,A4982::MAX_OUT,	Y_MAX_PIN);
+
+		AddHardware(Z);
+		TryConnect(Z,A4982::DIR_IN,		Z_DIR_PIN);
+		TryConnect(Z,A4982::STEP_IN,	Z_STEP_PIN);
+		TryConnect(Z,A4982::ENABLE_IN,	Z_ENABLE_PIN);
+		TryConnect(Z,A4982::MS1_IN,		Z_MS1_PIN);
+		TryConnect(Z,A4982::MS2_IN,		Z_MS2_PIN);
+		TryConnect(Z,A4982::MIN_OUT,	Z_MIN_PIN);
+		TryConnect(Z,A4982::MAX_OUT,	Z_MAX_PIN);
+
+		E.GetConfig().bHasNoEndStops = true;
+		AddHardware(E);
+		TryConnect(E,A4982::DIR_IN,		E0_DIR_PIN);
+		TryConnect(E,A4982::STEP_IN,	E0_STEP_PIN);
+		TryConnect(E,A4982::ENABLE_IN,	E0_ENABLE_PIN);
+		TryConnect(E,A4982::MS1_IN,		E0_MS1_PIN);
+		TryConnect(E,A4982::MS2_IN,		E0_MS2_PIN);
+
 		AddUARTTrace('0'); // External
 
 		//avr_irq_register_notify(GetDIRQ(PAT_INT_PIN), MAKE_C_CALLBACK(EinsyRambo, DebugPin),this);

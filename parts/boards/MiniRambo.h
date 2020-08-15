@@ -53,7 +53,7 @@ namespace Boards
 			HD44780GL lcd;
 			uart_pty UART0;
 			RotaryEncoder encoder;
-			A4982 X{'X'};
+			A4982 X{'X'}, Y{'Y'}, Z{'Z'}, E{'E'};
 			Thermistor tExtruder, tBed, tAmbient;
 
 		private:

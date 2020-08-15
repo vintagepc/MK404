@@ -44,6 +44,12 @@ void Prusa_MK25_13::Draw()
 		glPushMatrix();
 			glTranslatef(0, fY,0);
 			X.Draw();
+			glTranslatef(0,10,0);
+			Y.Draw();
+			glTranslatef(0,10,0);
+			Z.Draw();
+			glTranslatef(0,10,0);
+			E.Draw_Simple();
 		glPopMatrix();
 }
 
@@ -202,14 +208,6 @@ void Prusa_MK25_13::OnKeyPress(unsigned char key, int x, int y)
 		// case '`':
 		// 	if (m_pVis)m_pVis->ResetCamera();
 		// 	break;
-		/* case 'r':
-			printf("Starting VCD trace; press 's' to stop\n");
-			avr_vcd_start(&vcd_file);
-			break;
-		case 's':
-			printf("Stopping VCD trace\n");
-			avr_vcd_stop(&vcd_file);
-			break */;
 		default:
 			m_key = key;
 	}

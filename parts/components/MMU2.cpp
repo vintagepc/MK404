@@ -56,7 +56,7 @@ MMU2::MMU2():MM_Control_01()
 	CreateBoard("MM-control-01.hex",0, false, 100,"");
 }
 
-std::string MMU2::GetSerialPort()
+const std::string MMU2::GetSerialPort()
 {
 	return m_UART.GetSlaveName();
 }

@@ -46,7 +46,7 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
 		~MMU2(){StopAVR();}
 
         // Returns the name of the serial port (for the pipe thread)
-        std::string GetSerialPort();
+        const std::string GetSerialPort();
 
         void Draw(float fY);
 

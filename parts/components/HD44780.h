@@ -50,11 +50,6 @@
 #pragma once
 
 #include "Scriptable.h"        // for Scriptable
-#include <stdint.h>            // for uint8_t, uint16_t, uint32_t
-#include <string>              // for string
-#include <vector>              // for vector
-#include <atomic>
-#include <mutex>
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
 #include "IScriptable.h"       // for ArgType, ArgType::Int, ArgType::String
 #include "gsl-lite.hpp"
@@ -62,6 +57,11 @@
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <atomic>
+#include <cstdint>            // for uint8_t, uint16_t, uint32_t
+#include <mutex>
+#include <string>              // for string
+#include <vector>              // for vector
 
 class HD44780:public BasePeripheral, public Scriptable
 {
@@ -116,7 +116,7 @@ class HD44780:public BasePeripheral, public Scriptable
 		std::vector<uint8_t>  m_vRam;
         std::vector<uint8_t>  m_cgRam;
 
-		virtual LineStatus ProcessAction(unsigned int iAction, const vector<string> &args) override;
+		LineStatus ProcessAction(unsigned int iAction, const vector<string> &args) override;
 
 		inline void ToggleFlag(uint16_t bit)
 		{

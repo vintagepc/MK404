@@ -295,7 +295,7 @@ uart_pty::~uart_pty()
 {
 	if (!m_thread)
 		return;
-	cout << static_cast<const char*>(__func__);
+	cout << static_cast<const char*>(__func__) << '\n';
 	m_bQuit = true; // Signal thread it's time to quit.
 	for (auto &p: port)
 	{

@@ -29,11 +29,11 @@
 
 #pragma once
 
-#include <stdint.h>   // for uint32_t, uint8_t
-#include <atomic>
 #include "HD44780.h"  // for HD44780
 #include "sim_avr.h"  // for avr_t
 #include "sim_irq.h"  // for avr_irq_t
+#include <atomic>
+#include <cstdint>   // for uint32_t, uint8_t
 
 class HD44780GL:public HD44780
 {

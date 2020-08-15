@@ -28,6 +28,7 @@
 #include <cstring>     // for memset, memcpy, strncpy
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <unistd.h>     // for close, ftruncate, lseek, read, write, ssize_t
 
 //#define TRACE(_w) _w
@@ -294,7 +295,7 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 	m_status_register.byte = 0b00000000; //SREG default values}
 };
 
-void w25x20cl::Load(const char* path)
+void w25x20cl::Load(const std::string &path)
 {
 	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
 	ifstream fsIn(path, fsIn.binary | fsIn.ate);
@@ -305,7 +306,7 @@ void w25x20cl::Load(const char* path)
 	}
 	else
 	{
-		cout << "Loading " <<  W25X20CL_TOTAL_SIZE  <<" bytes of EEPROM\n";
+		cout << "Loading " <<  W25X20CL_TOTAL_SIZE  <<" bytes of xflash\n";
 		fsIn.seekg(fsIn.beg);
 		fsIn.read(reinterpret_cast<char*>(m_flash.data()), W25X20CL_TOTAL_SIZE + 1); // NOLINT no choice but to cast...
 		if (fsIn.fail() || fsIn.gcount() != W25X20CL_TOTAL_SIZE + 1 ) {
@@ -332,7 +333,7 @@ void w25x20cl::Save()
 {
 	// Also write out the xflash contents. Note  you can save snapshots anytime you like.
 		// Write out the EEPROM contents:
-	ofstream fsOut(m_filepath, fsOut.binary | fsOut.out | fsOut.trunc);
+	ofstream fsOut(m_filepath, fsOut.binary);
 	if (!fsOut.is_open())
 	{
 		cerr << "Failed to open xflash output file\n";

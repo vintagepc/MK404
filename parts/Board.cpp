@@ -140,12 +140,13 @@ namespace Boards {
 		}
 		else
 		{
+			fsIn.seekg(fsIn.beg);
 			fsIn.read(reinterpret_cast<char*>(m_pAVR->flash), m_pAVR->flashend+1); //NOLINT maybe if fstream supported unsigned chars...
-			if (fsIn.fail() || fsIn.gcount() != m_pAVR->flashend) {
-				cerr << "Unable to load flash memory. Read: " << fsIn.gcount() << '\n';
+			cout << strFlash << ": Read " << fsIn.gcount() << " bytes.\n";
+			if (fsIn.fail() || fsIn.gcount() != m_pAVR->flashend+1) {
+				cerr << "Unable to load flash memory.\n";
 				exit(1);
 			}
-			cout << strFlash << ": Read " << fsIn.gcount() << " bytes.\n";
 		}
 		// NB: EEPROM happens later, because the AVR is not ready yet right now.
 		fsIn.close();
@@ -162,7 +163,7 @@ namespace Boards {
 		else
 		{
 			fsOut.write(reinterpret_cast<char*>(m_pAVR->flash),m_pAVR->flashend+1); //NOLINT maybe if fstream supported unsigned chars...
-			if ( fsOut.fail() || fsOut.tellp() != m_pAVR->flashend) {
+			if ( fsOut.fail() || fsOut.tellp() != m_pAVR->flashend+1) {
 				cerr <<  "Unable to write flash memory for " << m_strBoard << '\n';
 			}
 			else

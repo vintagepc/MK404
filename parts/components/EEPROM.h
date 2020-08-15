@@ -22,14 +22,14 @@
 
 #pragma once
 
-#include <cstdint>          // for uint16_t, uint8_t
-#include <string>            // for string
-#include <vector>            // for vector
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "IScriptable.h"     // for ArgType, ArgType::Int, IScriptable::Line...
 #include "Scriptable.h"      // for Scriptable
+#include <cstdint>          // for uint16_t, uint8_t
+#include <string>            // for string
+#include <vector>            // for vector
 
-using namespace std;
+using std::string;
 
 class EEPROM: public BasePeripheral, public Scriptable {
 	public:
@@ -39,9 +39,8 @@ class EEPROM: public BasePeripheral, public Scriptable {
 		RegisterAction("Poke","Pokes a value into the EEPROM. Args are (address,value)", ActPoke, {ArgType::Int, ArgType::Int});
 	};
 	// Loads EEPROM from a file or initializes the file for the first time.
-	EEPROM(struct avr_t * avr, const string &strFile):Scriptable("EEPROM")
+	EEPROM(struct avr_t * avr, const string &strFile):EEPROM()
 	{
-		EEPROM();
 		Load(avr, strFile);
 	};
 

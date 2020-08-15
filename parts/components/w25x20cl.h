@@ -23,10 +23,10 @@
 
 #pragma once
 
-#include "gsl-lite.hpp"
 #include "SPIPeripheral.h"  // for SPIPeripheral
+#include "gsl-lite.hpp"
 #include "sim_irq.h"        // for avr_irq_t
-#include <stdint.h>         // for uint8_t, uint32_t, uint64_t
+#include <cstdint>         // for uint8_t, uint32_t, uint64_t
 #include <string>
 
 #define W25X20CL_TOTAL_SIZE 262144
@@ -51,7 +51,7 @@ class w25x20cl:public SPIPeripheral
 	void Init(struct avr_t * avr, avr_irq_t *irqCS);
 
 	// Loads the flash contents from file. (creates "path" if it does not exit)
-	void Load(const char* path);
+	void Load(const std::string &path);
 
 	// Saves the SPI flash contents back out to file. (Does not close it in case you want to save multiple times)
 	void Save();

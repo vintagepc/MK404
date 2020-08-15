@@ -19,11 +19,11 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 
 #include <sim_avr.h>
 #include <sim_irq.h>
 
-#pragma once
 
 // Use lambdas to expose something that can be called from C, but returns to our C++ object
 // TODO: find a way to ditch the macro. I tried and failed, see the template blocks below...

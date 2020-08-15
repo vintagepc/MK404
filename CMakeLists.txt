@@ -62,6 +62,7 @@ set(H_FILES
 	parts/SPIPeripheral.h
 	parts/Scriptable.h
 	parts/Board.h
+	parts/components/A4982.h
 	parts/components/LED.h
 	parts/components/PINDA.h
 	parts/components/HD44780GL.h
@@ -123,6 +124,7 @@ set(MK404_SOURCES
 	parts/boards/MiniRambo.cpp
 	parts/ScriptHost.cpp
 	parts/TelemetryHost.cpp
+	parts/components/A4982.cpp
 	parts/components/GCodeSniffer.cpp
 	parts/components/Beeper.cpp
 	parts/components/HD44780GL.cpp

@@ -46,6 +46,16 @@ namespace Boards
 		TryConnect(encoder, RotaryEncoder::OUT_B, BTN_EN1);
 		TryConnect(encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
 
+
+		AddHardware(X);
+		TryConnect(X,A4982::DIR_IN,		X_DIR_PIN);
+		TryConnect(X,A4982::STEP_IN,	X_STEP_PIN);
+		TryConnect(X,A4982::ENABLE_IN,	X_ENABLE_PIN);
+		TryConnect(X,A4982::MS1_IN,		X_MS1_PIN);
+		TryConnect(X,A4982::MS2_IN,		X_MS2_PIN);
+		TryConnect(X,A4982::MIN_OUT,	X_MIN_PIN);
+		TryConnect(X,A4982::MAX_OUT,	X_MAX_PIN);
+
 		AddUARTTrace('0'); // External
 
 		//avr_irq_register_notify(GetDIRQ(PAT_INT_PIN), MAKE_C_CALLBACK(EinsyRambo, DebugPin),this);

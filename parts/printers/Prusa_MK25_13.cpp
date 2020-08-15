@@ -36,10 +36,19 @@ void Prusa_MK25_13::Draw()
 					m_colors[(4*m_iScheme) + 2], /* text */
 					m_colors[(4*m_iScheme) + 3] /* shadow */ );
 		glPopMatrix();
+		// Do something for the motors...
+		float fX = (5 + lcd.GetWidth()* 6)*4;
+		float fY = (5 + lcd.GetHeight() * 9);
+		glLoadIdentity();
+		glScalef(fX/350,4,1);
+		glPushMatrix();
+			glTranslatef(0, fY,0);
+			X.Draw();
+		glPopMatrix();
 }
 
 std::pair<int,int> Prusa_MK25_13::GetWindowSize(){
-	std::pair<int,int> prSize = { 5 + lcd.GetWidth() * 6,  5 + lcd.GetHeight() * 9};
+	std::pair<int,int> prSize = { 5 + lcd.GetWidth() * 6, 40 + 5 + lcd.GetHeight() * 9};
 	return prSize;
 }
 

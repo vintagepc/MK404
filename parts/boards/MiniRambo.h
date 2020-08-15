@@ -21,6 +21,7 @@
 #pragma once
 
 #include "Board.h"                               // for Board
+#include "A4982.h"
 #include "HD44780GL.h"                           // for HD44780G
 #include "RotaryEncoder.h"
 #include "sim_irq.h"                             // for avr_irq_t
@@ -51,6 +52,8 @@ namespace Boards
 			HD44780GL lcd;
 			uart_pty UART0;
 			RotaryEncoder encoder;
+			A4982 X{'X'};
+
 
 		private:
 

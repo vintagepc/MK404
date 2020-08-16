@@ -28,12 +28,12 @@
 // #include "Heater.h"                              // for Heater
 // #include "LED.h"                                 // for LED
 // #include "PINDA.h"                               // for PINDA
+#include "IRSensor.h"                          // for IRSensor
 #include "RotaryEncoder.h"                       // for RotaryEncoder
 // #include "SDCard.h"                              // for SDCard
 #include "SerialLineMonitor.h"                   // for SerialLineMonitor
 // #include "TMC2130.h"                             // for TMC2130
 // #include "Thermistor.h"                          // for Thermistor
-// #include "VoltageSrc.h"                          // for VoltageSrc
 // #include "sim_irq.h"                             // for avr_irq_t
 //#include "uart_pty.h"                            // for uart_pty
 // #include "w25x20cl.h"                            // for w25x20cl
@@ -64,6 +64,8 @@ namespace Boards
 			Button m_btn {};
 
 			SerialLineMonitor m_Monitor {"Serial0"};
+
+			IRSensor m_IR;
 
 		private:
 

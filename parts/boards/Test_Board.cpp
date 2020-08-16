@@ -40,6 +40,9 @@ namespace Boards
 		AddHardware(m_btn);
 		TryConnect(m_btn, Button::BUTTON_OUT, BTN_ENC);
 
+		AddHardware(m_IR,0);
+		TryConnect(m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
+
 	}
 
 	// Convenience function for debug printing a particular pin.

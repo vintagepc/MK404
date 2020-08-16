@@ -39,6 +39,7 @@ namespace Wirings
 					{BTN_EN1,72},
 					{BTN_EN2,14},
 					{BTN_ENC,9},
+					{IR_SENSOR_PIN,54}
 				};
 			};
 		private:

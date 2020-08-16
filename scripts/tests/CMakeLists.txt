@@ -31,6 +31,7 @@ foreach(TEST_SRC IN LISTS TESTS_SOURCES)
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
 
 	add_custom_target(${TEST_BASE}.afx
+		SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/${TEST_BASE}.txt ${PROJECT_SOURCE_DIR}/scripts/tests/${TEST_BASE}.c
 		COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/tests"
 		COMMAND  avr-gcc -Wall -gdwarf-2 -Os -std=gnu99 -mmcu=atmega2560 -DF_CPU=16000000 -fno-inline-small-functions -ffunction-sections -fdata-sections
 			-Wl,--relax,--gc-sections -Wl,--undefined=_mmcu,--section-start=.mmcu=0x910000 -I${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/avr

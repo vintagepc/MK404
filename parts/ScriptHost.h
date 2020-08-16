@@ -111,6 +111,7 @@ class ScriptHost: public IScriptable
 		ScriptHost():IScriptable("ScriptHost"){
 			RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{ArgType::Int});
 			RegisterAction("SetQuitOnTimeout","If 1, quits when a timeout occurs. Exit code will be non-zero.",ActSetQuitOnTimeout,{ArgType::Bool});
+			RegisterAction("Log","Print the string to stdout",ActLog,{ArgType::String});
 			m_clients[m_strName] = this;
 		}
 		static shared_ptr<ScriptHost> g_pHost;
@@ -142,7 +143,8 @@ class ScriptHost: public IScriptable
 		enum Actions
 		{
 			ActSetTimeoutMs,
-			ActSetQuitOnTimeout
+			ActSetQuitOnTimeout,
+			ActLog
 		};
 
 

@@ -44,6 +44,7 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 			RegisterAction("WaitForLine","Waits for the provided line to appear on the serial output.",WaitForLine, {ArgType::String});
 			RegisterAction("WaitForLineContains","Waits for the serial output to contain a line with the given string.",WaitForContains,{ArgType::String});
 			RegisterAction("SendGCode","Sends the specified string as G-Code.",SendGCode,{ArgType::String});
+			RegisterAction("NextLineMustBe","Errors if the next output line is not as specified.",NextLineMustBe, {ArgType::String});
 			m_strLine.reserve(100);
 		};
 
@@ -60,7 +61,8 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 		{
 			None = 0,
 			Full,
-			Contains
+			Contains,
+			MustBe
 		};
 		void OnByteIn(avr_irq_t *irq, uint32_t value);
 		void OnXOnIn(avr_irq_t *irq, uint32_t value);
@@ -80,10 +82,12 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 
 		char m_chrUART = '0';
 		bool m_bMatched = false;
+		unsigned int m_iLineCt = 0;
 		bool m_bXOn = false;
 		enum ScriptAction {
 			WaitForLine,
 			WaitForContains,
+			NextLineMustBe,
 			SendGCode
 		};
 

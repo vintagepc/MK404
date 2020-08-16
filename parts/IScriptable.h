@@ -58,6 +58,7 @@ class IScriptable
 	enum class LineStatus
 	{
 		Error,
+		Timeout,
 		Waiting,
 		Running,
 		Finished,

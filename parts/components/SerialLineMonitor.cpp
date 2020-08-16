@@ -54,7 +54,14 @@ Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const v
 {
 	if (m_type != None && m_strMatch.compare(args.at(0))==0) // already in wait state for same find
 	{
-		if (!m_bMatched)
+		if (m_iLineCt>0 && !m_bMatched && ID == NextLineMustBe) // Failed to match on the next line.
+		{
+			m_strMatch.clear();
+			m_type = None;
+			m_bMatched = false;
+			return LineStatus::Timeout;
+		}
+		else if (!m_bMatched)
 			return LineStatus::Waiting;
 		m_strMatch.clear();
 		m_type = None;
@@ -69,6 +76,12 @@ Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const v
 			m_bMatched = false;
 			m_strMatch = args[0];
 			m_type = (ID == WaitForLine) ? Full : Contains;
+			return LineStatus::Waiting;
+		case NextLineMustBe:
+			m_iLineCt = 0;
+			m_bMatched = false;
+			m_strMatch = args[0];
+			m_type = MustBe;
 			return LineStatus::Waiting;
 		case SendGCode:
 			if (m_strGCode.empty())
@@ -98,11 +111,13 @@ Scriptable::LineStatus SerialLineMonitor::SendChar()
 
 void SerialLineMonitor::OnNewLine()
 {
+	m_iLineCt++;
 	if(!m_type)
 		return; // No match configured.
 	switch (m_type)
 	{
 		case Full:
+		case MustBe:
 			m_bMatched = m_strLine == (m_strMatch);
 			break;
 		case Contains:

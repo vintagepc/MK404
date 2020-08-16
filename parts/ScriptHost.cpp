@@ -117,6 +117,11 @@ IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const vector<
 			m_bQuitOnTimeout = stoi(vArgs.at(0))!=0;
 			break;
 		}
+		case ActLog:
+		{
+			printf("ScriptHost: %s\n",vArgs.at(0).c_str());
+			break;
+		}
 	}
 	return LineStatus::Finished;
 }
@@ -361,7 +366,7 @@ void ScriptHost::OnAVRCycle()
 	if (m_lnState.iLine != m_iLine || m_state == State::Idle)
 	{
 		m_state = State::Running;
-		printf("ScriptHost: Executing line %s\n",m_script.at(m_iLine).c_str());
+		printf("ScriptHost: Executing #%u %s\n",m_iLine,m_script.at(m_iLine).c_str());
 		ParseLine(m_iLine);
 	}
 
@@ -382,23 +387,28 @@ void ScriptHost::OnAVRCycle()
 				m_iLine = m_script.size(); // Error, end scripting.
 				m_state = State::Error;
 				return;
+
 			case LS::Waiting:
-				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount>m_iTimeoutCycles)
+				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount<=m_iTimeoutCycles)
 				{
-					m_state = State::Timeout;
-					if (m_bQuitOnTimeout)
-					{
-						printf("ScriptHost: Script TIMED OUT on %s. Quitting...\n",m_script.at(m_iLine).c_str());
-						int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
-						m_clients.at("Board")->ProcessAction(ID,{});
-						m_iLine = m_script.size();
-						return;
-					}
-					printf("ScriptHost: Script TIMED OUT on %s\n",m_script.at(m_iLine).c_str());
-					m_iLine++;
-					m_iTimeoutCount = 0;
+					break; // Fallthrough if timed out.
 				}
-				break;
+			case LS::Timeout:
+			{
+				m_state = State::Timeout;
+				if (m_bQuitOnTimeout)
+				{
+					printf("ScriptHost: Script TIMED OUT on %s. Quitting...\n",m_script.at(m_iLine).c_str());
+					int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
+					m_clients.at("Board")->ProcessAction(ID,{});
+					m_iLine = m_script.size();
+					return;
+				}
+				printf("ScriptHost: Script TIMED OUT on %s\n",m_script.at(m_iLine).c_str());
+				m_iLine++;
+				m_iTimeoutCount = 0;
+			}
+			break;
 			default:
 				break;
 

@@ -1,6 +1,6 @@
 # This script is a component test script for use with the test firmware and printer.
-ScriptHost::SetTimeoutMs(500)
-ScriptHost::SetQuitOnTimeout(1)
+#ScriptHost::SetTimeoutMs(2000)
+#ScriptHost::SetQuitOnTimeout(1)
 Serial0::WaitForLine(READY)
 Encoder::Press()
 Serial0::WaitForLineContains(BTN: 0)

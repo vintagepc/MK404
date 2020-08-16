@@ -20,6 +20,8 @@ endif()
 
 add_subdirectory(3rdParty/tinyobjloader)
 
+add_subdirectory(scripts/tests)
+
 if (ENABLE_IWYU)
 	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/include-what-you-use")
 else()
@@ -273,6 +275,17 @@ add_custom_command(TARGET MK404 POST_BUILD
                      )
 
 
+file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/*.c)
+message(STATUS "Checking for tests...")
+
+enable_testing()
+foreach (TEST_SRC IN LISTS TESTS_SOURCES)
+	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
+	message(STATUS "Adding test: ${TEST_BASE}" )
+	add_test(${TEST_BASE} MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer)
+endforeach()
+
+
 add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
@@ -324,13 +337,7 @@ add_custom_target(Release_Package
 	)
 add_dependencies(Release_Package MK404)
 
-add_custom_target(Test_Firmware
-	COMMAND  avr-gcc -Wall -gdwarf-2 -Os -std=gnu99 -mmcu=atmega2560 -DF_CPU=16000000 -fno-inline-small-functions -ffunction-sections -fdata-sections
-			-Wl,--relax,--gc-sections -Wl,--undefined=_mmcu,--section-start=.mmcu=0x910000 -I${PROJECT_SOURCE_DIR}3rdParty/simavr/simavr/sim/avr -I${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/avr
-			-o ${PROJECT_BINARY_DIR}/Test_firmware.afx ${PROJECT_SOURCE_DIR}/scripts/atmega2560_test_fw.c
-)
-
 add_custom_target(Tests
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 Test_Printer -f Test_firmware.afx --script ../scripts/part_test_script.txt
+	COMMAND cd ${PROJECT_BINARY_DIR} && make test
 )
-add_dependencies(Tests MK404 Test_Firmware)
+add_dependencies(Tests Test_all MK404)

@@ -37,8 +37,6 @@ namespace Boards
 		TryConnect(encoder, RotaryEncoder::OUT_B, BTN_EN1);
 		TryConnect(encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
 
-		avr_irq_register_notify(GetDIRQ(BTN_ENC), MAKE_C_CALLBACK(Test_Board, DebugPin),this);
-
 	}
 
 	// Convenience function for debug printing a particular pin.

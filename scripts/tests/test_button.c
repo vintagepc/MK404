@@ -62,41 +62,25 @@ ISR(USART0_RX_vect)
 //	sleep_cpu();
 }
 
-void Wait()
-{
-	done=0;
-	while(!done)
-		sleep_cpu();
-}
-
 int main()
 {
 	stdout = &mystdout;
 	sei();
 
+	PORTH = 0xFF;
  	DDRH = 0x00;
-	//PORTH = 0xFF;
-
-	DDRJ = 0x00;
 
 	printf("READY\n");
 
-	loop_until_bit_is_clear(PINH,6);
-
-	printf("BTN: %u\n",PIN(H,6));
-
-	loop_until_bit_is_set(PINH,6);
-
-	printf("BTN: %u\n",PINH>>6);
-
-	uint8_t encVal = 0;
-
-	while (PINH>>6)
+	volatile uint8_t encVal = 1;
+	printf("BTN%02x\n",PINH);
+	while (1)
 	{
-		if (encVal!=PINJ)
+		uint8_t bv = PINH;
+		if (encVal!=bv)
 		{
-			printf("ENC%02x\n",PINJ);
-			encVal = PINJ;
+			printf("BTN%02x\n",bv);
+			encVal = bv;
 		}
 	};
 

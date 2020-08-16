@@ -22,7 +22,7 @@
 
 // #include "Beeper.h"                              // for Beeper
 #include "Board.h"                               // for Board
-// #include "Button.h"                              // for Button
+#include "Button.h"                              // for Button
 // #include "Fan.h"                                 // for Fan
 // #include "HD44780GL.h"                           // for HD44780GL
 // #include "Heater.h"                              // for Heater
@@ -60,6 +60,8 @@ namespace Boards
 			void OnAVRDeinit() override;
 
 			RotaryEncoder encoder;
+
+			Button m_btn {};
 
 			SerialLineMonitor m_Monitor {"Serial0"};
 

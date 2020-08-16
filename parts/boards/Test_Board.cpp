@@ -37,6 +37,9 @@ namespace Boards
 		TryConnect(encoder, RotaryEncoder::OUT_B, BTN_EN1);
 		TryConnect(encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
 
+		AddHardware(m_btn);
+		TryConnect(m_btn, Button::BUTTON_OUT, BTN_ENC);
+
 	}
 
 	// Convenience function for debug printing a particular pin.

@@ -42,12 +42,12 @@ AVR_MCU(16000000, "atmega2560");
 // #endif
 // AVR_MCU_VCD_ALL_IRQ();		// also show ALL irqs running
 
+#define PIN(x,y) PORT##x>>y & 1U
+
 volatile uint8_t done = 0;
 
 static int uart_putchar(char c, FILE *stream)
 {
-	if (c == '\n')
-		uart_putchar('\r', stream);
 	loop_until_bit_is_set(UCSR0A, UDRE0);
 	UDR0 = c;
 	return 0;
@@ -58,9 +58,15 @@ static FILE mystdout = FDEV_SETUP_STREAM(uart_putchar, NULL,
 ISR(USART0_RX_vect)
 {
 	uint8_t b = UDR0;
-	if (b == '\n')
-		done++;
+	done++;
 //	sleep_cpu();
+}
+
+void Wait()
+{
+	done=0;
+	while(!done)
+		sleep_cpu();
 }
 
 int main()
@@ -68,12 +74,31 @@ int main()
 	stdout = &mystdout;
 	sei();
 
+ 	DDRH = 0x00;
+	//PORTH = 0xFF;
+
+	DDRJ = 0x00;
+
 	printf("READY\n");
 
-	while (!done)
-		sleep_cpu();
+	loop_until_bit_is_clear(PINH,6);
 
+	printf("BTN: %u\n",PIN(H,6));
 
+	loop_until_bit_is_set(PINH,6);
+
+	printf("BTN: %u\n",PINH>>6);
+
+	uint8_t encVal = 0;
+
+	while (PINH>>6)
+	{
+		if (encVal!=PINJ)
+		{
+			printf("ENC%02x\n",PINJ);
+			encVal = PINJ;
+		}
+	};
 
 	cli();
 

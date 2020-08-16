@@ -103,7 +103,7 @@ void SerialLineMonitor::OnNewLine()
 	switch (m_type)
 	{
 		case Full:
-			m_bMatched = m_strLine.compare(m_strMatch)==0;
+			m_bMatched = m_strLine == (m_strMatch);
 			break;
 		case Contains:
 			m_bMatched = m_strLine.find(m_strMatch) != string::npos;
@@ -111,6 +111,7 @@ void SerialLineMonitor::OnNewLine()
 		case None:
 			break;
 	}
+	m_strLine.clear();
 }
 
 void SerialLineMonitor::Init(struct avr_t * avr, char chrUART)

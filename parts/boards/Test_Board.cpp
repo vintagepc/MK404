@@ -30,12 +30,14 @@ namespace Boards
 	{
 		DisableInterruptLevelPoll(8);
 
+		AddHardware(m_Monitor,'0');
+
 		AddHardware(encoder);
 		TryConnect(encoder, RotaryEncoder::OUT_A, BTN_EN2);
 		TryConnect(encoder, RotaryEncoder::OUT_B, BTN_EN1);
 		TryConnect(encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
 
-		//avr_irq_register_notify(GetDIRQ(PAT_INT_PIN), MAKE_C_CALLBACK(EinsyRambo, DebugPin),this);
+		avr_irq_register_notify(GetDIRQ(BTN_ENC), MAKE_C_CALLBACK(Test_Board, DebugPin),this);
 
 	}
 

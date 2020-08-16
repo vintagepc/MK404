@@ -20,8 +20,10 @@
  */
 
 
-#include <sim_avr.h>
-#include <sim_irq.h>
+#include "sim_avr.h"
+#include "sim_irq.h"
+#include <vector>
+#include <utility>
 
 #pragma once
 
@@ -46,10 +48,28 @@ class BasePeripheral
         inline avr_irq_t * GetIRQ(unsigned int eDest) {return m_pIrq + eDest;}
 
         // Connects internal IRQ to an external one.
-        inline void ConnectTo(unsigned int eSrc, avr_irq_t *irqDest) {avr_connect_irq(m_pIrq + eSrc, irqDest);}
+        inline void ConnectTo(unsigned int eSrc, avr_irq_t *irqDest)
+		{
+			avr_connect_irq(m_pIrq + eSrc, irqDest);
+			//m_vIrqs.push_back({m_pIrq+eSrc, irqDest});
+		}
 
         // Connects external IRQ to internal one.
-        inline void ConnectFrom(avr_irq_t *irqSrc, unsigned int eDest) {avr_connect_irq(irqSrc, m_pIrq + eDest);}
+        inline void ConnectFrom(avr_irq_t *irqSrc, unsigned int eDest)
+		{
+			avr_connect_irq(irqSrc, m_pIrq + eDest);
+			//m_vIrqs.push_back({irqSrc, m_pIrq+eDest});
+		}
+
+		// Disconnects the hardware's IRQs.
+		// void Disconnect()
+		// {
+		// 	for (auto &c: m_vIrqs)
+		// 	{
+		// 		avr_unconnect_irq(c.first, c.second);
+		// 	}
+		// 	m_vIrqs.clear();
+		// }
 
     protected:
 
@@ -124,5 +144,6 @@ class BasePeripheral
         avr_irq_t * m_pIrq = nullptr;
         struct avr_t *m_pAVR = nullptr;
     private:
+	//std::vector<std::pair<avr_irq_t*,avr_irq_t*>> m_vIrqs {};
 
 };

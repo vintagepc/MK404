@@ -94,6 +94,7 @@ set(H_FILES
 	parts/printers/Prusa_MK3S.h
 	parts/printers/Prusa_MK3SMMU2.h
 	parts/printers/Prusa_MK3MMU2.h
+	parts/printers/Test_Printer.h
 	utility/Color.h
 	utility/GLPrint.h
 	utility/FatImage.h
@@ -118,6 +119,7 @@ set(MK404_SOURCES
 	parts/Board.cpp
 	parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp
+	parts/boards/Test_Board.cpp
 	parts/ScriptHost.cpp
 	parts/TelemetryHost.cpp
 	parts/components/GCodeSniffer.cpp
@@ -145,6 +147,7 @@ set(MK404_SOURCES
 	parts/components/Button.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
+	parts/printers/Test_Printer.cpp
 	utility/MK3SGL.cpp
 	utility/GLObj.cpp
 	utility/FatImage.cpp
@@ -320,3 +323,14 @@ add_custom_target(Release_Package
 	COMMAND tar -jcvf "${PROJECT_BINARY_DIR}/MK404-development-build.tar.bz2" "MK404-dev"
 	)
 add_dependencies(Release_Package MK404)
+
+add_custom_target(Test_Firmware
+	COMMAND  avr-gcc -Wall -gdwarf-2 -Os -std=gnu99 -mmcu=atmega2560 -DF_CPU=16000000 -fno-inline-small-functions -ffunction-sections -fdata-sections
+			-Wl,--relax,--gc-sections -Wl,--undefined=_mmcu,--section-start=.mmcu=0x910000 -I${PROJECT_SOURCE_DIR}3rdParty/simavr/simavr/sim/avr -I${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/sim/avr
+			-o ${PROJECT_BINARY_DIR}/Test_firmware.afx ${PROJECT_SOURCE_DIR}/scripts/atmega2560_test_fw.c
+)
+
+add_custom_target(Tests
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 Test_Printer -f Test_firmware.afx --script ../scripts/part_test_script.txt
+)
+add_dependencies(Tests MK404 Test_Firmware)

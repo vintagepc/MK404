@@ -39,6 +39,8 @@ namespace Boards
 			MM_Control_01(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){};
 
+			~MM_Control_01(){};
+
 		protected:
 			void SetupHardware() override;
 

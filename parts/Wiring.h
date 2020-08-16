@@ -68,8 +68,6 @@ namespace Wirings
 			inline MCUPin GetPin(PinNames::Pin ePin) const { return m_mPins.at(ePin);}
 
 		protected:
-			virtual std::map<Pin,MCUPin> GetPinMap() = 0;
-
 			// Gets the PWM id for a given timer number.
 			inline unsigned int _TimerPWMID(uint8_t number) const { return TIMER_IRQ_OUT_PWM0 + number; }
 

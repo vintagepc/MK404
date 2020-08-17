@@ -25,6 +25,7 @@
 
 #include <stdint.h>         // for uint8_t, uint32_t, uint64_t
 #include "SPIPeripheral.h"  // for SPIPeripheral
+#include "Scriptable.h"
 #include "sim_irq.h"        // for avr_irq_t
 #include <string>
 
@@ -34,7 +35,7 @@
 #define W25X20CL_BLOCK32_SIZE 32768
 #define W25X20CL_BLOCK64_SIZE 65536
 
-class w25x20cl:public SPIPeripheral
+class w25x20cl:public SPIPeripheral, public Scriptable
 {
 	public:
 		#define IRQPAIRS \
@@ -42,6 +43,13 @@ class w25x20cl:public SPIPeripheral
 		_IRQ(SPI_BYTE_OUT,  	"8>w25x20cl.byte_out") \
 		_IRQ(SPI_CSEL,          "1<w25x20cl.cs_in")
 		#include "IRQHelper.h"
+
+	w25x20cl():Scriptable("SPIFlash")
+	{
+		RegisterAction("Load","Reloads the last used file",ActLoad);
+		RegisterAction("Save","Saves the file",ActSave);
+		RegisterAction("Clear","Resets the flash memory to empty (0xFF)",ActClear);
+	};
 
 	// Destructor. Closes flash file.
 	~w25x20cl();
@@ -52,17 +60,27 @@ class w25x20cl:public SPIPeripheral
 	// Loads the flash contents from file. (creates "path" if it does not exit)
 	void Load(const char* path);
 
+	// Reloads the current file.
+	void Load();
+
 	// Saves the SPI flash contents back out to file. (Does not close it in case you want to save multiple times)
 	void Save();
 
-	// Needed for telemetryHost because SPI is not scriptable.
-	inline std::string GetName(){return "SPIFlash";}
-
 	protected:
+
+		Scriptable::LineStatus ProcessAction (unsigned int iAct, const vector<string> &vArgs) override;
+
 		enum w25x20cl_states{
 			STATE_IDLE = 0, //when CS is HIGH
 			STATE_LOADING,
 			STATE_RUNNING,
+		};
+
+		enum Actions
+		{
+			ActLoad,
+			ActSave,
+			ActClear
 		};
 
 		uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;

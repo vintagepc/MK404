@@ -43,6 +43,8 @@ namespace Boards
 		AddHardware(m_IR,0);
 		TryConnect(m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
 
+		AddHardware(m_spiFlash, GetDIRQ(W25X20CL_PIN_CS));
+
 	}
 
 	// Convenience function for debug printing a particular pin.
@@ -53,10 +55,13 @@ namespace Boards
 
 	void Test_Board::OnAVRInit()
 	{
+		std::string strSPI = GetStorageFileName("xflash");
+		m_spiFlash.Load(strSPI.c_str());
 	}
 
 	void Test_Board::OnAVRDeinit()
 	{
+		m_spiFlash.Save();
 	}
 
 	void Test_Board::OnAVRReset()

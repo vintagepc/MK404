@@ -36,7 +36,7 @@
 // #include "Thermistor.h"                          // for Thermistor
 // #include "sim_irq.h"                             // for avr_irq_t
 //#include "uart_pty.h"                            // for uart_pty
-// #include "w25x20cl.h"                            // for w25x20cl
+#include "w25x20cl.h"                            // for w25x20cl
 #include "wiring/Test_Wiring.h"                   // for Einsy_1_1a
 #include <cstdint>                              // for uint32_t
 #include <string>                                // for string
@@ -66,6 +66,8 @@ namespace Boards
 			SerialLineMonitor m_Monitor {"Serial0"};
 
 			IRSensor m_IR;
+
+			w25x20cl m_spiFlash;
 
 		private:
 

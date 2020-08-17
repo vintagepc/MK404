@@ -15,7 +15,7 @@ option(ENABLE_TIDY "Enables Clang-tidy")
 option(ENABLE_GCOV "Enables gcov coverage")
 
 if (ENABLE_GCOV)
-	string(REPLACE gcc gcov GCOV_BINARY "${CMAKE_C_COMPILER}")
+	SET(GCOV_BINARY /usr/bin/gcov-7)
 	message(STATUS "Using gcov ${GCOV_BINARY}")
 endif()
 

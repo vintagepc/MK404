@@ -58,10 +58,16 @@ jobs:
       run: sudo chmod -R 744 packages
 
     - name: Prepare CMake build
-      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DGCOV_ENABLE=1 ..
 
     - name: Build Einsy
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Run tests
-      run: cd ${{ runner.workspace }}/MK404/build && make Tests
+      run: cd ${{ runner.workspace }}/MK404/build && make Coverage.tar.gz
+
+    - name: Upload report
+      uses: actions/upload-artifact@v2
+      with:
+        name: Report
+        path: ${{ runner.workspace }}/MK404/build/Coverage.tar.gz

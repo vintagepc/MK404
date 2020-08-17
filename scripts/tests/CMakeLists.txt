@@ -23,9 +23,6 @@ add_custom_target( Test_all
 
 )
 
-
-
-
 foreach(TEST_SRC IN LISTS TESTS_SOURCES)
 
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)

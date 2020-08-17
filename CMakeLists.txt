@@ -12,6 +12,12 @@ set(OpenGL_GL_PREFERENCE LEGACY) # We really don't need GLX here. (Prevents link
 option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
 option(ENABLE_IWYU "Enables Include-what-you-use")
 option(ENABLE_TIDY "Enables Clang-tidy")
+option(ENABLE_GCOV "Enables gcov coverage")
+
+if (ENABLE_GCOV)
+	string(REPLACE gcc gcov GCOV_BINARY "${CMAKE_C_COMPILER}")
+	message(STATUS "Using gcov ${GCOV_BINARY}")
+endif()
 
 # Yells at you if you have extra link args.
 if (NOT APPLE)
@@ -33,7 +39,6 @@ if (ENABLE_TIDY)
 else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()
-
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -238,6 +243,24 @@ if (ENABLE_THREAD_SANITY)
 	target_link_libraries(MK404 -fsanitize=thread)
 endif()
 
+if (ENABLE_GCOV)
+	target_compile_options(MK404 PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
+	target_link_libraries(MK404 -coverage -lgcov)
+	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
+	add_custom_target(Coverage.tar.gz
+		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_BINARY_DIR}/Coverage
+		COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/coverage.info
+		COMMAND lcov --remove coverage.info usr/* -o coverage.info
+		COMMAND lcov --remove coverage.info master/3rdParty/* -o coverage.info
+		COMMAND genhtml coverage.info --output-directory Coverage
+		COMMAND tar -zcvf Coverage.tar.gz Coverage
+		DEPENDS Tests
+	)
+else()
+	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE OFF)
+endif()
+
+
 if(CYGWIN)
 target_link_libraries(MK404 GLEW)
 else()
@@ -338,6 +361,7 @@ add_custom_target(Release_Package
 add_dependencies(Release_Package MK404)
 
 add_custom_target(Tests
+	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
 	COMMAND cd ${PROJECT_BINARY_DIR} && make test
 )
 add_dependencies(Tests Test_all MK404)

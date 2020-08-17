@@ -58,7 +58,7 @@ jobs:
       run: sudo chmod -R 744 packages
 
     - name: Prepare CMake build
-      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DGCOV_ENABLE=1 ..
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DENABLE_GCOV=1 ..
 
     - name: Build Einsy
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
@@ -71,3 +71,9 @@ jobs:
       with:
         name: Report
         path: ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
+        
+    - name: Comment on PR
+      uses: romeovs/lcov-reporter-action@v0.2.16
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        lcov-file: ${{ runner.workspace }}/MK404/build/coverage.info

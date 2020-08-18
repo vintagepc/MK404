@@ -250,8 +250,8 @@ if (ENABLE_GCOV)
 	add_custom_target(Coverage.tar.gz
 		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_BINARY_DIR}/Coverage
 		COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/coverage.info
-		COMMAND lcov --remove coverage.info usr/* -o coverage.info
-		COMMAND lcov --remove coverage.info master/3rdParty/* -o coverage.info
+		COMMAND lcov --remove coverage.info '/usr/*' -o coverage.info
+		COMMAND lcov --remove coverage.info '*/3rdParty/*' -o coverage.info
 		COMMAND genhtml coverage.info --output-directory Coverage
 		COMMAND tar -zcvf Coverage.tar.gz Coverage
 		DEPENDS Tests

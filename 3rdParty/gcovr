@@ -225,8 +225,7 @@ class CoverageData(object):
             if len(t):
                 uncovered_lines += "" # " [* " + t + "]"
         return (total, cover,
-                tmp + str(total).rjust(8) + str(cover).rjust(8) +
-                percent.rjust(6) + "%   ") # + uncovered_lines)
+                tmp.strip() + " | " + str(total) + " | " + str(cover) + " | " + percent + "%") # + uncovered_lines)
 
 
 def resolve_symlinks(orig_path):
@@ -979,19 +978,15 @@ def print_text_report(covdata):
     total_covered = 0
 
     # Header
-    OUTPUT.write("-" * 78 + '\n')
-    OUTPUT.write(" " * 27 + "GCC Code Coverage Report\n")
-    if options.root is not None:
-        OUTPUT.write("Directory: " + options.root + "\n")
+    OUTPUT.write("## Automated Test Code Coverage Report\n")
 
-    OUTPUT.write("-" * 78 + '\n')
     a = options.show_branch and "Branches" or "Lines"
     b = options.show_branch and "Taken" or "Exec"
     c = ""
     OUTPUT.write(
-        "File".ljust(40) + a.rjust(8) + b.rjust(8) + "  Cover   " + c + "\n"
+        "File | " + a + " | " + b + " | Cover   " + c + "\n"
     )
-    OUTPUT.write("-" * 78 + '\n')
+    OUTPUT.write("-----|---------|--------|--------\n")
 
     # Data
     keys = list(covdata.keys())
@@ -1006,14 +1001,11 @@ def print_text_report(covdata):
         OUTPUT.write(txt + '\n')
 
     # Footer & summary
-    OUTPUT.write("-" * 78 + '\n')
     percent = total_lines and str(int(100.0 * total_covered / total_lines)) \
         or "--"
     OUTPUT.write(
-        "TOTAL".ljust(40) + str(total_lines).rjust(8) +
-        str(total_covered).rjust(8) + str(percent).rjust(6) + "%" + '\n'
+        "**TOTAL** | **" + str(total_lines) + "** | **" + str(total_covered) + "** | **" + str(percent) + "%**" + '\n'
     )
-    OUTPUT.write("-" * 78 + '\n')
 
     # Close logfile
     if options.output:

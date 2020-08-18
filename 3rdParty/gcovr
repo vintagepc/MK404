@@ -979,6 +979,7 @@ def print_text_report(covdata):
 
     # Header
     OUTPUT.write("## Automated Test Code Coverage Report\n")
+    OUTPUT.write("\n<details><summary>View details... </summary>\n<p>\n\n")
 
     a = options.show_branch and "Branches" or "Lines"
     b = options.show_branch and "Taken" or "Exec"
@@ -1006,6 +1007,13 @@ def print_text_report(covdata):
     OUTPUT.write(
         "**TOTAL** | **" + str(total_lines) + "** | **" + str(total_covered) + "** | **" + str(percent) + "%**" + '\n'
     )
+
+    OUTPUT.write("\n</details>\n\n")
+
+    OUTPUT.write(
+        "**TOTAL: " + str(total_lines) + " lines of code, " + str(total_covered) + " lines executed, " + str(percent) + "% covered.**" + '\n'
+    )
+
 
     # Close logfile
     if options.output:

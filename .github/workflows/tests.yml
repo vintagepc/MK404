@@ -72,9 +72,9 @@ jobs:
       with:
         name: Report
         path: ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
-        
+
     - name: Comment on PR
-      uses: romeovs/lcov-reporter-action@v0.2.16
+      uses: marocchino/sticky-pull-request-comment@v1
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        lcov-file: ${{ runner.workspace }}/MK404/build/coverage.info
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        path: ${{ runner.workspace }}/MK404/build/summary.txt

@@ -49,6 +49,7 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 		RegisterAction("Load","Reloads the last used file",ActLoad);
 		RegisterAction("Save","Saves the file",ActSave);
 		RegisterAction("Clear","Resets the flash memory to empty (0xFF)",ActClear);
+		RegisterAction("Fill","Fills the flash memory with the given value",ActFill,{ArgType::Int});
 	};
 
 	// Destructor. Closes flash file.
@@ -80,7 +81,8 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 		{
 			ActLoad,
 			ActSave,
-			ActClear
+			ActClear,
+			ActFill
 		};
 
 		uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;

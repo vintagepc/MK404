@@ -17,4 +17,7 @@ EEPROM::Load()
 ScriptHost::Log(Verifying restore)
 Button::PressAndRelease()
 Serial0::NextLineMustBe(EE VERIFY FINISH)
+EEPROM::Poke(123,100)
+Button::PressAndRelease()
+Serial0::NextLineMustBe(BYTE 123: 64)
 Board::Quit();

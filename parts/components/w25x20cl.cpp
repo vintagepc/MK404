@@ -306,6 +306,11 @@ Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const vector<s
 			memset(m_flash,0xFF,sizeof(m_flash));
 			return LineStatus::Finished;
 		}
+		case ActFill:
+		{
+			memset(m_flash,(unsigned)stoi(vArgs.at(0)) & 0xFFU,sizeof(m_flash));
+			return LineStatus::Finished;
+		}
 		case ActLoad:
 		{
 			if (!m_filepath.empty())

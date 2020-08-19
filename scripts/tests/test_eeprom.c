@@ -111,6 +111,11 @@ int main()
 
 	printf("EE VERIFY FINISH\n");
 
+	loop_until_bit_is_clear(PINH,6);
+
+	printf("BYTE 123: %02x\n",eeprom_read_byte((uint8_t*)123));
+
+
 	cli();
 
 	printf("FINISHED\n");

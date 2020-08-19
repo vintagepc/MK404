@@ -74,6 +74,7 @@ jobs:
         path: ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
 
     - name: Comment on PR
+      if: ${{ github.event.pull_request }}
       uses: marocchino/sticky-pull-request-comment@v1
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

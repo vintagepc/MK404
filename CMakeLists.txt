@@ -254,7 +254,7 @@ if (ENABLE_GCOV)
 		COMMAND lcov --remove coverage.info '*/3rdParty/*' -o coverage.info
 		COMMAND genhtml coverage.info --output-directory Coverage
 		COMMAND tar -zcvf Coverage.tar.gz Coverage
-		COMMAND ${PROJECT_SOURCE_DIR}/3rdParty/gcovr -r ${PROJECT_SOURCE_DIR} -e 3rdParty > ${PROJECT_BINARY_DIR}/summary.txt
+		COMMAND ${PROJECT_SOURCE_DIR}/3rdParty/gcovr -r ${PROJECT_SOURCE_DIR} -e 3rdParty |& tee ${PROJECT_BINARY_DIR}/summary.txt
 		DEPENDS Tests
 	)
 else()

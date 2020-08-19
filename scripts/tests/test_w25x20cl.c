@@ -101,14 +101,14 @@ int main()
 
 	PORTB|=1; // CS h
 
-	_delay_ms(100);
+	_delay_ms(20);
 
 	// Write enable
 	PORTB&=0xFE;
 	SPI_TX(0x06);
 
 	PORTB|=1;
-	_delay_ms(100);
+	_delay_ms(20);
 	PORTB&=0xFE;
 
 	SPI_TX(0x02);
@@ -122,12 +122,12 @@ int main()
 
 	PORTB|=1;
 
-	_delay_ms(100);
+	_delay_ms(20);
 	PORTB&=0xFE;
 	SPI_TX(0x06);
 
 	PORTB|=1;
-	_delay_ms(100);
+	_delay_ms(20);
 
 	PORTB&=0xFE;
 
@@ -143,19 +143,19 @@ int main()
 	PORTB|=1;
 	printf("WROTE FLASH\n");
 
-	_delay_ms(100);
+	_delay_ms(20);
 
 	PORTB&=0xFE;
 	SPI_TX(0x06);
 
 	PORTB|=1;
-	_delay_ms(100);
+	_delay_ms(20);
 	// clear flash
 	PORTB&=0xFE;
 	SPI_TX(0x60);
 
 	PORTB|=1;
-	_delay_ms(100);
+	_delay_ms(20);
 
 	PORTB&=0xFE;
 
@@ -194,9 +194,55 @@ int main()
 		}
 	}
 	PORTB|=1;
+	_delay_ms(20);
+	PORTB&=0xFE;
+	SPI_TX(0x06); // enable WR
+	PORTB|=1;
+	_delay_ms(20);
 
-	_delay_ms(100);
+	PORTB&=0xFE;
+	SPI_TX(0x05); // read SR
+	printf("WEL: %02x\n",SPI_TX(0xFF)&0x02);
+	PORTB|=1;
 
+	PORTB&=0xFE;
+	SPI_TX(0x04); // disable WR
+	PORTB|=1;
+	_delay_ms(20);
+
+	PORTB&=0xFE;
+	SPI_TX(0x05); // read SR.
+	printf("WEL: %02x\n",SPI_TX(0xFF)&0x02);
+	PORTB|=1;
+
+	PORTB&=0xFE;
+	// Call the erase commands without WEL to make sure they don't erase...
+	SPI_TX(0xC7); // chip erase.
+	PORTB|=1;
+	_delay_ms(20);
+
+	PORTB&=0xFE;
+	SPI_TX(0x60); // chip erase.
+	PORTB|=1;
+	_delay_ms(20);
+	PORTB&=0xFE;
+
+	SPI_TX(0x20); // sector erase.
+	SPI_TX(0x00); SPI_TX(0x00); SPI_TX(0x00);
+	PORTB|=1;
+	_delay_ms(20);
+	PORTB&=0xFE;
+
+	SPI_TX(0x52); // sector erase.
+	SPI_TX(0x00); SPI_TX(0x00); SPI_TX(0x00);
+	PORTB|=1;
+	_delay_ms(20);
+	PORTB&=0xFE;
+
+	SPI_TX(0xD8); // sector erase.
+	SPI_TX(0x00); SPI_TX(0x00); SPI_TX(0x00);
+	PORTB|=1;
+	_delay_ms(20);
 	PORTB&=0xFE;
 
 	SPI_TX(0x03);
@@ -216,6 +262,91 @@ int main()
 
 	printf("FLASH DONE\n");
 
+	DDRH = 0x00;
+	loop_until_bit_is_clear(PINH,6);
+
+	PORTB&=0xFE;
+	SPI_TX(0x06); // WR EN
+	PORTB|=1;
+	_delay_ms(20);
+
+	PORTB&=0xFE;
+	SPI_TX(0x20); // sector erase.
+	SPI_TX(0x00); SPI_TX(0x00); SPI_TX(0x00);
+	PORTB|=1;
+	_delay_ms(20);
+
+	PORTB&=0xFE;
+	SPI_TX(0x03);
+	//Addr 0x000000; /first page.
+	SPI_TX(0x00);
+	SPI_TX(0x00);
+	SPI_TX(0x00);
+
+	for (unsigned long i=0; i<=0x3FFFF; i++)
+	{
+		if (0xFF!=SPI_TX(0xFF))
+		{
+			printf("NOT EMPTY AT %lu\n",i);
+			break;
+		}
+	}
+	PORTB|=1;
+
+	PORTB&=0xFE;
+	SPI_TX(0x06); // WR EN
+	PORTB|=1;
+	_delay_ms(20);
+
+	PORTB&=0xFE;
+	SPI_TX(0x52); // 32k erase.
+	SPI_TX(0x00); SPI_TX(0x80); SPI_TX(0x00);
+	PORTB|=1;
+	_delay_ms(20);
+
+	PORTB&=0xFE;
+	SPI_TX(0x03);
+	//Addr 0x000000; /2nd block
+	SPI_TX(0x00);
+	SPI_TX(0x80);
+	SPI_TX(0x00);
+
+	for (unsigned long i=0; i<=32769; i++)
+	{
+		if (0xFF!=SPI_TX(0xFF))
+		{
+			printf("NOT EMPTY AT %lu\n",i);
+			break;
+		}
+	}
+	PORTB|=1;
+
+	PORTB&=0xFE;
+	SPI_TX(0x06); // WR EN
+	PORTB|=1;
+	_delay_ms(20);
+
+	PORTB&=0xFE;
+	SPI_TX(0xD8); // 64k erase.
+	SPI_TX(0x01); SPI_TX(0x00); SPI_TX(0x00);
+	PORTB|=1;
+	_delay_ms(20);
+
+	PORTB&=0xFE;
+	SPI_TX(0x03);
+	//Addr 0x000000; /3rd block
+	SPI_TX(0x01);
+	SPI_TX(0x00);
+	SPI_TX(0x00);
+
+	for (unsigned long i=0; i<=65537; i++)
+	{
+		if (0xFF!=SPI_TX(0xFF))
+		{
+			printf("NOT EMPTY AT %lu\n",i);
+			break;
+		}
+	}
 	cli();
 
 

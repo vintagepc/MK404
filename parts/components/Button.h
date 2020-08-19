@@ -46,7 +46,7 @@ class Button:public BasePeripheral, public Scriptable
 	void Init(struct avr_t * avr);
 
 	// Presses the button for a given duration (us, default 1000)
-	void Press(uint32_t uiUSec = 1000);
+	void Press(uint32_t uiUSec = 2000);
 
 	protected:
 		LineStatus ProcessAction(unsigned int iAction, const vector<string> &vArgs) override;

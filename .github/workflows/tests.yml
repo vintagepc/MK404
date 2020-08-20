@@ -65,7 +65,7 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Run tests
-      run: cd ${{ runner.workspace }}/MK404/build && make Coverage.tar.gz
+      run: cd ${{ runner.workspace }}/MK404/build && env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
 
     - name: Upload report
       uses: actions/upload-artifact@v2

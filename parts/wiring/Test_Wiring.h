@@ -40,7 +40,10 @@ namespace Wirings
 					{BTN_EN2,14},
 					{BTN_ENC,9},
 					{IR_SENSOR_PIN,54},
-					{W25X20CL_PIN_CS,53}
+					{W25X20CL_PIN_CS,53},
+					{VOLT_PWR_PIN,55},
+					{BTN_ARRAY,56},
+					{TEMP_0_PIN,57}
 				};
 			};
 		private:

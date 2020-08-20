@@ -22,6 +22,7 @@
 #include "Test_Wiring.h"        // for Einsy_1_1a
 #include "RotaryEncoder.h"           // for HD44780
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
+#include "thermistortables.h"
 
 
 namespace Boards
@@ -44,6 +45,17 @@ namespace Boards
 		TryConnect(m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
 
 		AddHardware(m_spiFlash, GetDIRQ(W25X20CL_PIN_CS));
+
+		AddHardware(m_vSrc,1);
+		TryConnect(m_vSrc,VoltageSrc::DIGITAL_OUT, VOLT_PWR_PIN);
+
+		AddHardware(m_btns,2);
+
+		m_thrm.SetTable((short*)temptable_5,
+								sizeof(temptable_5) / sizeof(short) / 2,
+								OVERSAMPLENR);
+
+		AddHardware(m_thrm,3);
 
 	}
 

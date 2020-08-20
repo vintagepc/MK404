@@ -21,6 +21,7 @@
 #pragma once
 
 // #include "Beeper.h"                              // for Beeper
+#include "ADC_Buttons.h"
 #include "Board.h"                               // for Board
 #include "Button.h"                              // for Button
 // #include "Fan.h"                                 // for Fan
@@ -33,9 +34,10 @@
 // #include "SDCard.h"                              // for SDCard
 #include "SerialLineMonitor.h"                   // for SerialLineMonitor
 // #include "TMC2130.h"                             // for TMC2130
-// #include "Thermistor.h"                          // for Thermistor
+#include "Thermistor.h"                          // for Thermistor
 // #include "sim_irq.h"                             // for avr_irq_t
 //#include "uart_pty.h"                            // for uart_pty
+#include "VoltageSrc.h"
 #include "w25x20cl.h"                            // for w25x20cl
 #include "wiring/Test_Wiring.h"                   // for Einsy_1_1a
 #include <cstdint>                              // for uint32_t
@@ -68,6 +70,12 @@ namespace Boards
 			IRSensor m_IR;
 
 			w25x20cl m_spiFlash;
+
+			VoltageSrc m_vSrc {0.2f, 0.f };
+
+			ADC_Buttons m_btns {"ADCButtons"};
+
+			Thermistor m_thrm {25.f};
 
 		private:
 

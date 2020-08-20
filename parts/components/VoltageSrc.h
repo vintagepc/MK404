@@ -22,12 +22,13 @@
 
 #pragma once
 
-#include <ADCPeripheral.h>  // for ADCPeripheral
+#include "ADCPeripheral.h"  // for ADCPeripheral
+#include "Scriptable.h"
 #include <stdint.h>         // for uint32_t, uint8_t
 #include "sim_irq.h"        // for avr_irq_t
 #include <string>
 
-class VoltageSrc: public ADCPeripheral {
+class VoltageSrc: public ADCPeripheral, public Scriptable {
 public:
     // Macro to define a set of IRQs and string names.
     #define IRQPAIRS    _IRQ(ADC_TRIGGER_IN,"8<voltage.trigger") \
@@ -54,9 +55,18 @@ protected:
     // ADC read trigger.
     virtual uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
+	LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+
     // Input trigger
     void OnInput(avr_irq_t *pIRQ, uint32_t value);
 
     float m_fCurrentV = 0.0f;
     float m_fVScale = 1.0f;
+
+	enum Actions
+	{
+		ActSet,
+		ActSetScale,
+		ActVS_END
+	};
 };

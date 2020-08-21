@@ -299,7 +299,7 @@ add_custom_command(TARGET MK404 POST_BUILD
                      )
 
 
-file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/*.c)
+file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/test_*.c)
 message(STATUS "Checking for tests...")
 
 enable_testing()
@@ -308,6 +308,7 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	message(STATUS "Adding test: ${TEST_BASE}" )
 	add_test(${TEST_BASE} MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer)
 endforeach()
+#	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
 
 
 add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}

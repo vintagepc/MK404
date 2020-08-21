@@ -57,6 +57,28 @@ namespace Boards
 
 		AddHardware(m_thrm,3);
 
+
+		TMC2130::TMC2130_cfg_t cfg;
+		cfg.iMaxMM = 20;
+
+		m_TMC.SetConfig(cfg);
+		AddHardware(m_TMC);
+
+		TryConnect(X_TMC2130_CS, 	m_TMC, TMC2130::SPI_CSEL);
+		TryConnect(X_DIR_PIN,		m_TMC, TMC2130::DIR_IN);
+		TryConnect(X_STEP_PIN,		m_TMC, TMC2130::STEP_IN);
+		TryConnect(X_ENABLE_PIN,	m_TMC, TMC2130::ENABLE_IN);
+		TryConnect(m_TMC,TMC2130::DIAG_OUT, X_TMC2130_DIAG);
+
+		AddHardware(m_shift);
+		TryConnect(SHIFT_LATCH,		m_shift, HC595::IN_LATCH);
+		TryConnect(SHIFT_CLOCK,		m_shift, HC595::IN_CLOCK);
+		TryConnect(SHIFT_DATA,		m_shift, HC595::IN_DATA);
+		// Cheat and reuse a line (driver doesn't care, EN is off)
+		TryConnect(X_DIR_PIN, m_shift, HC595::IN_RESET);
+
+		AddHardware(m_heat,GetPWMIRQ(HEATER_0_PIN), GetDIRQ(HEATER_0_PIN));
+
 	}
 
 	// Convenience function for debug printing a particular pin.

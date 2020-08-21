@@ -264,6 +264,9 @@ bool ScriptHost::CheckArg(const ArgType &type, const string &val)
 				return true;
 			case ArgType::String:
 				return true;
+			case ArgType::uint32:
+				stoul(val);
+				return true;
 		}
 	}
 	catch(const std::exception &e)
@@ -432,4 +435,5 @@ const map<ArgType,string> IScriptable::m_ArgToString = {
 	make_pair(ArgType::Float,"float"),
 	make_pair(ArgType::Int,"int"),
 	make_pair(ArgType::String,"string"),
+	make_pair(ArgType::uint32,"uint32")
 };

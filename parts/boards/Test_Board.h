@@ -26,14 +26,15 @@
 #include "Button.h"                              // for Button
 // #include "Fan.h"                                 // for Fan
 // #include "HD44780GL.h"                           // for HD44780GL
-// #include "Heater.h"                              // for Heater
+#include "Heater.h"                              // for Heater
 // #include "LED.h"                                 // for LED
 // #include "PINDA.h"                               // for PINDA
+#include "HC595.h"
 #include "IRSensor.h"                          // for IRSensor
 #include "RotaryEncoder.h"                       // for RotaryEncoder
 // #include "SDCard.h"                              // for SDCard
 #include "SerialLineMonitor.h"                   // for SerialLineMonitor
-// #include "TMC2130.h"                             // for TMC2130
+#include "TMC2130.h"                             // for TMC2130
 #include "Thermistor.h"                          // for Thermistor
 // #include "sim_irq.h"                             // for avr_irq_t
 //#include "uart_pty.h"                            // for uart_pty
@@ -76,6 +77,12 @@ namespace Boards
 			ADC_Buttons m_btns {"ADCButtons"};
 
 			Thermistor m_thrm {25.f};
+
+			TMC2130 m_TMC {'X'};
+
+			HC595 m_shift{};
+
+			Heater m_heat {3.f, 25.f, false, 'B',10.f,300.f};
 
 		private:
 

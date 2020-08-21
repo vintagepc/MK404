@@ -240,6 +240,8 @@ int main(int argc, char *argv[])
 	cmd.add(argVCDRate);
 	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string");
 	cmd.add(argVCD);
+	SwitchArg argTest("","test","Run it test mode (no graphics, don't auto-exit.");
+	cmd.add(argTest);
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img");
 	cmd.add(argSD);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.");
@@ -303,7 +305,7 @@ int main(int argc, char *argv[])
 	}
 	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue().compare("none")==0);
 
-	m_bTestMode =  argModel.getValue()=="Test_Printer";
+	m_bTestMode =  (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
 	bNoGraphics |= m_bTestMode;
 

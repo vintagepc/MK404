@@ -42,9 +42,8 @@ enum class ArgType
 	Int,
 	String,
 	Bool,
-	Float
-
-
+	Float,
+	uint32
 };
 
 class IScriptable

@@ -57,14 +57,14 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
 	m_iDrawTemp = m_fCurrentTemp;
 
     TRACE(printf("New temp value: %.02f\n",m_fCurrentTemp));
-    RaiseIRQ(TEMP_OUT,(int)m_fCurrentTemp*256);
+    RaiseIRQ(TEMP_OUT,(int)(m_fCurrentTemp*256.f));
 
     if (m_uiPWM>0 || m_fCurrentTemp>m_fAmbientTemp+0.3)
         RegisterTimerUsec(m_fcnTempTick,300000,this);
     else
     {
         m_fCurrentTemp = m_fAmbientTemp;
-        RaiseIRQ(TEMP_OUT,(int)m_fCurrentTemp*256);
+        RaiseIRQ(TEMP_OUT,(int)(m_fCurrentTemp*256.f));
     }
     return 0;
 }
@@ -74,7 +74,7 @@ void Heater::OnPWMChanged(struct avr_irq_t * irq,uint32_t value)
 {
     if (m_bAuto) // Only update if auto (pwm-controlled). Else user supplied RPM.
         m_uiPWM = value;
-
+	TRACE(printf("New PWM: %02x\n",value));
     if (m_uiPWM > 0)
         RegisterTimerUsec(m_fcnTempTick, 100000, this);
     if ((m_pIrq + ON_OUT)->value != (m_uiPWM>0))
@@ -151,6 +151,9 @@ void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)
 	pTH->AddTrace(this, PWM_IN, {TC::Heater,TC::PWM},8);
 	pTH->AddTrace(this, DIGITAL_IN, {TC::Heater});
 	pTH->AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
+	pTH->AddTrace(this, TEMP_OUT, {TC::Heater});
+
+  	RaiseIRQ(TEMP_OUT,(int)(m_fCurrentTemp*256.f));
 }
 
 void Heater::Set(uint8_t uiPWM)
@@ -164,6 +167,7 @@ void Heater::Resume_Auto()
 {
     m_bAuto = true;
 	m_bStopTicking = false;
+	RaiseIRQ(PWM_IN,m_uiPWM);
 }
 
 

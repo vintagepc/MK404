@@ -43,7 +43,16 @@ namespace Wirings
 					{W25X20CL_PIN_CS,53},
 					{VOLT_PWR_PIN,55},
 					{BTN_ARRAY,56},
-					{TEMP_0_PIN,57}
+					{TEMP_0_PIN,57},
+					{X_TMC2130_CS,22},
+					{X_TMC2130_DIAG,23},
+					{X_STEP_PIN,24},
+					{X_DIR_PIN,25},
+					{X_ENABLE_PIN,26},
+					{SHIFT_CLOCK,27},
+					{SHIFT_DATA,28},
+					{SHIFT_LATCH,29},
+					{HEATER_0_PIN,7}
 				};
 			};
 		private:

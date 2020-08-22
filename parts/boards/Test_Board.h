@@ -26,7 +26,7 @@
 #include "Button.h"                              // for Button
 #include "Fan.h"                                 // for Fan
 #include "GCodeSniffer.h"
-// #include "HD44780GL.h"                           // for HD44780GL
+#include "HD44780.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
 // #include "LED.h"                                 // for LED
 #include "PINDA.h"                               // for PINDA
@@ -90,6 +90,8 @@ namespace Boards
 			GCodeSniffer m_Sniff{'T'};
 
 			PINDA m_pinda{0.f,0.f};
+
+			HD44780 m_lcd{20,4};
 
 		private:
 

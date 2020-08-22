@@ -55,7 +55,13 @@ namespace Wirings
 					{FAN_PIN,6},
 					{TACH_0,79},
 					{HEATER_0_PIN,7},
-					{Z_MIN_PIN,79}
+					{Z_MIN_PIN,79},
+					{LCD_PINS_D4,49},
+					{LCD_PINS_D5,48},
+					{LCD_PINS_D6,47},
+					{LCD_PINS_D7,46},
+					{LCD_PINS_ENABLE,45},
+					{LCD_PINS_RS,44}
 				};
 			};
 		private:

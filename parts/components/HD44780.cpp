@@ -51,7 +51,8 @@ void HD44780::ClearScreen()
 	SetFlag(HD44780_FLAG_DIRTY, 1);
 	RaiseIRQ(ADDR, m_uiCursor);
 	for (int i=0; i<m_uiHeight; i++)
-		m_vLines[i].assign(" ",m_uiWidth);
+		m_vLines.at(i).assign(m_uiWidth,' ');
+	m_uiLineChg = 0xFF;
 }
 
 /*
@@ -73,24 +74,47 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 		case ActDesync:
 			ToggleFlag(HD44780_FLAG_LOWNIBBLE);
 			return LineStatus::Finished;
+		case ActCheckCGRAM:
+		{
+			int iAddr = stoi(vArgs.at(1));
+			if (iAddr<0 || iAddr>63)
+			{
+				return IssueLineError(string("ADDR") + to_string(iAddr) + " is out of range [0,63]");
+			}
+			if (m_cgRam[iAddr] == stoi(vArgs.at(0)))
+			{
+				return LineStatus::Finished;
+			}
+			else
+			{
+				return LineStatus::Timeout;
+			}
+		}
 		case ActWaitForText:
 			int iLine = stoi(vArgs.at(1));
 			uint8_t uiLnChk = iLine<0 ? 0xFF : 1<<iLine;
 			if (!(uiLnChk & m_uiLineChg)) // NO changes to check against.
+			{
 				return LineStatus::Waiting;
+			}
 
 			if (iLine>=m_uiHeight || iLine<-1)
 				return IssueLineError(string("Line index ") + to_string(iLine) + " is out of range [-1," + to_string (m_uiHeight) + "]");
 
 			bool bResult = false;
 			if (iLine<0)
+			{
 				for (int i=0; i<m_uiHeight; i++)
 				{
 					bResult |= m_vLines.at(i).find(vArgs.at(0))!=string::npos;
 					if (bResult) break;
 				}
+			}
 			else
+			{
+				printf("LN: \"%s\"\n", m_vLines.at(iLine).c_str());
 				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=string::npos;
+			}
 			m_uiLineChg^= iLine<0 ? 0xFF : 1<<iLine; // Reset line change tracking.
 			return bResult ? LineStatus::Finished : LineStatus::Waiting;
 	}
@@ -129,13 +153,13 @@ void HD44780::IncrementCursor()
 void HD44780::IncrementCGRAMCursor()
 {
 	if (GetFlag(HD44780_FLAG_I_D))
-		if (m_uiCGCursor==64)
+		if (m_uiCGCursor==63)
 			m_uiCGCursor = 0;
 		else
 			m_uiCGCursor++;
 	else
 		if (m_uiCGCursor==0)
-			m_uiCGCursor = 64;
+			m_uiCGCursor = 63;
 		else
 			m_uiCGCursor--;
 }
@@ -343,7 +367,6 @@ uint32_t HD44780::ProcessRead()
 avr_cycle_count_t HD44780::OnEPinChanged(struct avr_t * avr, avr_cycle_count_t when)
 {
     SetFlag(HD44780_FLAG_REENTRANT, 1);
-
 	int delay = 0; // in uS
 
 	if (m_uiPinState & (1 << RW))	// read !?!

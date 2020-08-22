@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 #project (MK404_Tests VERSION 1.0)
 
-file(GLOB TESTS_SOURCES *.c)
+file(GLOB TESTS_SOURCES test_*.c)
 
 set(F_CPU 16000000UL)
 set(MCU atmega2560)

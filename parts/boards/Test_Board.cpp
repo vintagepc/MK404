@@ -86,6 +86,14 @@ namespace Boards
 		AddHardware(m_pinda, nullptr, nullptr, nullptr);
 		TryConnect(m_pinda, PINDA::TRIGGER_OUT, Z_MIN_PIN);
 
+		AddHardware(m_lcd);
+		PinNames::Pin ePins[4] = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
+		for (int i = 0; i < 4; i++) {
+			TryConnect(ePins[i],m_lcd, HD44780::D4+i);
+		}
+		TryConnect(LCD_PINS_RS,m_lcd, HD44780::RS);
+		TryConnect(LCD_PINS_ENABLE, m_lcd,HD44780::E);
+
 	}
 
 	// Convenience function for debug printing a particular pin.

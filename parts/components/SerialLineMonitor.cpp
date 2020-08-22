@@ -52,7 +52,7 @@ void SerialLineMonitor::OnXOffIn(struct avr_irq_t * irq, uint32_t value)
 
 Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const vector<string> &args)
 {
-	if (m_type != None && m_strMatch.compare(args.at(0))==0) // already in wait state for same find
+	if (m_type != None && m_strMatch==args.at(0)) // already in wait state for same find
 	{
 		if (m_iLineCt>0 && !m_bMatched && ID == NextLineMustBe) // Failed to match on the next line.
 		{
@@ -111,9 +111,12 @@ Scriptable::LineStatus SerialLineMonitor::SendChar()
 
 void SerialLineMonitor::OnNewLine()
 {
-	m_iLineCt++;
 	if(!m_type)
+	{
+		m_strLine.clear();
 		return; // No match configured.
+	}
+	m_iLineCt++;
 	switch (m_type)
 	{
 		case Full:

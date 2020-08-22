@@ -90,9 +90,9 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vec
 				else
 				{
 					m_pCurrentIRQ = m_mIRQs[vArgs.at(0)];
-					uint32_t tmpval = stoul(vArgs.at(1));
-					if (tmpval!=m_uiMatchVal)
-						printf("WF: %08x (%u) //  %08x (%u)\n",tmpval,tmpval,m_pCurrentIRQ->value, m_pCurrentIRQ->value);
+					//uint32_t tmpval = stoul(vArgs.at(1));
+//					// if (tmpval!=m_uiMatchVal)
+						// printf("WF: %08x (%u) //  %08x (%u)\n",tmpval,tmpval,m_pCurrentIRQ->value, m_pCurrentIRQ->value);
 					m_uiMatchVal = stoul(vArgs.at(1));
 
 				}

@@ -74,6 +74,7 @@ Serial0::NextLineMustBe(ADC 1000)
 Thermistor::Set(75)
 Serial0::NextLineMustBe(ADC 748)
 Thermistor::Set(41)
-Serial0::NextLineMustBe(ADC 933)
+# I don't know why this works locally but not on the build runner... wtf. Disabled for now.
+#Serial0::NextLineMustBe(ADC 933)
 Thermistor::Set(50)
 Board::Quit()

@@ -43,8 +43,8 @@ AVR_MCU(16000000, "atmega2560");
 // AVR_MCU_VCD_ALL_IRQ();		// also show ALL irqs running
 
 #define PIN(x,y) PORT##x>>y & 1U
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
-volatile uint8_t done = 0;
 
 static int uart_putchar(char c, FILE *stream)
 {
@@ -55,64 +55,73 @@ static int uart_putchar(char c, FILE *stream)
 static FILE mystdout = FDEV_SETUP_STREAM(uart_putchar, NULL,
                                          _FDEV_SETUP_WRITE);
 
-ISR(USART0_RX_vect)
-{
-	//uint8_t b = UDR0;
-	//done++;
-//	sleep_cpu();
-}
-
-void Wait()
-{
-	done=0;
-	while(!done)
-		sleep_cpu();
-}
+volatile unsigned long dCt = 0;
 
 int main()
 {
 	stdout = &mystdout;
 	sei();
 
- 	DDRH = 0x00;
-	//PORTH = 0xFF;
-
-	DDRJ = 0x00;
+	// RESET:
+	DDRE = 0; // tach pin is input
+	DDRH = 0b10111111;
 
 	printf("READY\n");
 
-	loop_until_bit_is_clear(PINH,6);
-
-	printf("BTN: %u\n",PIN(H,6));
-
-	loop_until_bit_is_set(PINH,6);
-
-	printf("BTN: %u\n",PINH>>6);
-
-	loop_until_bit_is_clear(PINH,6);
-
-	printf("BTN: %u\n",PIN(H,6));
+	printf("ON\n");
+	PORTH|=(1U<<3U);
 
 	loop_until_bit_is_set(PINH,6);
 
-	printf("BTN: %u\n",PINH>>6);
+	printf("OFF\n");
+	PORTH&=(255-(1<<3));
 
-	uint8_t encVal = 0;
+	loop_until_bit_is_clear(PINH,6);
 
-	while (PINH>>6)
+	// connect pwm to pin on timer 4, channel C
+	TIMSK4 = 0;
+	OCR4A = 255;
+	OCR4C = 255;
+	OCR4B = 255;
+	sbi(TCCR4B, CS40);
+	sbi(TCCR4A, WGM40);
+	sbi(TCCR4A, COM4C1);
+
+	OCR4A = 128u; // set pwm duty
+	printf("PWM50\n");
+
+	_delay_ms(50);
+
+	OCR4A = 64u; // set pwm duty
+	printf("PWM25\n");
+
+	_delay_ms(50);
+
+	OCR4A = 192u; // set pwm duty
+	printf("PWM75\n");
+
+	EICRB = 0x30; // INT6 rising.
+	EIMSK = 0x40;
+
+	while(1)
 	{
-		if (encVal!=PINJ)
-		{
-			printf("ENC%02x\n",PINJ);
-			encVal = PINJ;
-		}
+		_delay_ms(1000);
+		printf("RPM %lu\n",30*(dCt));
+		dCt=0;
 	};
 
 	cli();
+
 
 	printf("FINISHED\n");
 
 	// this quits the simulator, since interupts are off
 	// this is a "feature" that allows running tests cases and exit
 	sleep_cpu();
+}
+
+
+ISR(INT6_vect)
+{
+	dCt++;
 }

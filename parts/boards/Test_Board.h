@@ -24,7 +24,7 @@
 #include "ADC_Buttons.h"
 #include "Board.h"                               // for Board
 #include "Button.h"                              // for Button
-// #include "Fan.h"                                 // for Fan
+#include "Fan.h"                                 // for Fan
 // #include "HD44780GL.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
 // #include "LED.h"                                 // for LED
@@ -83,6 +83,8 @@ namespace Boards
 			HC595 m_shift{};
 
 			Heater m_heat {3.f, 25.f, false, 'B',10.f,300.f};
+
+			Fan m_Fan {2000,'F'};
 
 		private:
 

@@ -81,6 +81,11 @@ namespace Boards
 
 		AddHardware(m_Fan,GetDIRQ(TACH_0), GetDIRQ(FAN_PIN), GetPWMIRQ(FAN_PIN));
 
+		AddHardware(m_Sniff,'0');
+
+		AddHardware(m_pinda, nullptr, nullptr, nullptr);
+		TryConnect(m_pinda, PINDA::TRIGGER_OUT, Z_MIN_PIN);
+
 	}
 
 	// Convenience function for debug printing a particular pin.

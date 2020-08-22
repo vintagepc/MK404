@@ -21,6 +21,7 @@
  */
 
 #include "GCodeSniffer.h"
+#include "TelemetryHost.h"
 #include <stdio.h>     // for printf
 #include "avr_uart.h"  // for ::UART_IRQ_OUTPUT, AVR_IOCTL_UART_GETIRQ
 #include "sim_io.h"    // for avr_io_getirq
@@ -64,4 +65,7 @@ void GCodeSniffer::Init(struct avr_t * avr, char chrUART)
 
     printf("UART %c is now being monitored for %c codes\n",m_chrUART,m_chrCode);
 
+	TelemetryHost *pTH = TelemetryHost::GetHost();
+
+	pTH->AddTrace(this, CODEVAL_OUT, {TC::Misc, TC::Serial},8);
 }

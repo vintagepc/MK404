@@ -1,0 +1,14 @@
+# This script is a component test script for use with the test firmware and printer.
+ScriptHost::SetTimeoutMs(500)
+ScriptHost::SetQuitOnTimeout(1)
+Serial0::NextLineMustBe(READY)
+Serial0::NextLineMustBe(T0)
+TelHost::WaitFor(Sniffer_8>val_out,0)
+Serial0::NextLineMustBe(T1)
+TelHost::WaitFor(Sniffer_8>val_out,1)
+Serial0::NextLineMustBe(GT2)
+# Should not have changed.
+TelHost::WaitFor(Sniffer_8>val_out,1)
+Serial0::NextLineMustBe(G4 T3)
+TelHost::WaitFor(Sniffer_8>val_out,1)
+Board::Quit()

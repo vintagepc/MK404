@@ -25,10 +25,11 @@
 #include "Board.h"                               // for Board
 #include "Button.h"                              // for Button
 #include "Fan.h"                                 // for Fan
+#include "GCodeSniffer.h"
 // #include "HD44780GL.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
 // #include "LED.h"                                 // for LED
-// #include "PINDA.h"                               // for PINDA
+#include "PINDA.h"                               // for PINDA
 #include "HC595.h"
 #include "IRSensor.h"                          // for IRSensor
 #include "RotaryEncoder.h"                       // for RotaryEncoder
@@ -85,6 +86,10 @@ namespace Boards
 			Heater m_heat {3.f, 25.f, false, 'B',10.f,300.f};
 
 			Fan m_Fan {2000,'F'};
+
+			GCodeSniffer m_Sniff{'T'};
+
+			PINDA m_pinda{0.f,0.f};
 
 		private:
 

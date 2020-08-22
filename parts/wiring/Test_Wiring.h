@@ -54,7 +54,8 @@ namespace Wirings
 					{SHIFT_LATCH,29},
 					{FAN_PIN,6},
 					{TACH_0,79},
-					{HEATER_0_PIN,7}
+					{HEATER_0_PIN,7},
+					{Z_MIN_PIN,79}
 				};
 			};
 		private:

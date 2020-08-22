@@ -41,4 +41,9 @@ foreach(TEST_SRC IN LISTS TESTS_SOURCES)
 		COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/scripts/tests/${TEST_BASE}.txt ${PROJECT_BINARY_DIR}/tests/
 	)
 
+	add_custom_target(Run_${TEST_BASE}
+		COMMAND ${PROJECT_BINARY_DIR}/MK404 Test_Printer -f ${PROJECT_BINARY_DIR}/tests/${TEST_BASE}.afx --script ${PROJECT_BINARY_DIR}/tests/${TEST_BASE}.txt
+		DEPENDS ${TEST_BASE}.afx
+	)
+
 endforeach()

@@ -83,7 +83,7 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 		char m_chrUART = '0';
 		bool m_bMatched = false;
 		unsigned int m_iLineCt = 0;
-		bool m_bXOn = false;
+		bool m_bXOn = true;
 		enum ScriptAction {
 			WaitForLine,
 			WaitForContains,

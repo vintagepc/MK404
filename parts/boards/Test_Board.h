@@ -33,7 +33,7 @@
 #include "HC595.h"
 #include "IRSensor.h"                          // for IRSensor
 #include "RotaryEncoder.h"                       // for RotaryEncoder
-// #include "SDCard.h"                              // for SDCard
+#include "SDCard.h"                              // for SDCard
 #include "SerialLineMonitor.h"                   // for SerialLineMonitor
 #include "TMC2130.h"                             // for TMC2130
 #include "Thermistor.h"                          // for Thermistor
@@ -92,6 +92,8 @@ namespace Boards
 			PINDA m_pinda{0.f,0.f};
 
 			HD44780 m_lcd{20,4};
+
+			SDCard m_card {};
 
 		private:
 

@@ -60,6 +60,7 @@ namespace Boards
 
 		TMC2130::TMC2130_cfg_t cfg;
 		cfg.iMaxMM = 20;
+		cfg.uiStepsPerMM=1;
 
 		m_TMC.SetConfig(cfg);
 		AddHardware(m_TMC);
@@ -93,6 +94,15 @@ namespace Boards
 		}
 		TryConnect(LCD_PINS_RS,m_lcd, HD44780::RS);
 		TryConnect(LCD_PINS_ENABLE, m_lcd,HD44780::E);
+
+		// SD card
+		string strSD = GetSDCardFile();
+		m_card.SetImage(strSD);
+		AddHardware(m_card);
+		TryConnect(SDSS,m_card, SDCard::SPI_CSEL);
+		TryConnect(m_card, SDCard::CARD_PRESENT, SDCARDDETECT);
+
+		m_card.Mount();
 
 	}
 

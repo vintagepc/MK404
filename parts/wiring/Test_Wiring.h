@@ -61,7 +61,10 @@ namespace Wirings
 					{LCD_PINS_D6,47},
 					{LCD_PINS_D7,46},
 					{LCD_PINS_ENABLE,45},
-					{LCD_PINS_RS,44}
+					{LCD_PINS_RS,44},
+					{SDCARDDETECT,43},
+					{SDSS,42}
+
 				};
 			};
 		private:

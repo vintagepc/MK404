@@ -104,7 +104,10 @@ Scriptable::LineStatus SerialLineMonitor::SendChar()
 	if (m_itGCode!=m_strGCode.end())
 		return LineStatus::Waiting;
 	else
+	{
+		m_strGCode.clear();
 		return LineStatus::Finished;
+	}
 
 	return LineStatus::Unhandled;
 }
@@ -137,7 +140,6 @@ void SerialLineMonitor::Init(struct avr_t * avr, char chrUART)
 	_Init(avr, this);
 	m_chrUART = chrUART;
 	RegisterNotify(BYTE_IN, MAKE_C_CALLBACK(SerialLineMonitor, OnByteIn),this);
-		// disable the stdio dump, as we're pritning in hex.
 
 	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT);
 	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_INPUT);

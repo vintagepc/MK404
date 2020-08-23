@@ -303,6 +303,7 @@ file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/test_*.c)
 message(STATUS "Checking for tests...")
 
 enable_testing()
+add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
 foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
 	message(STATUS "Adding test: ${TEST_BASE}" )

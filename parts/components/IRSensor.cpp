@@ -40,8 +40,9 @@ uint32_t IRSensor::OnADCRead(struct avr_irq_t *, uint32_t)
 	return iVOut;
 }
 
-IRSensor::IRSensor():VoltageSrc(),Scriptable("IRSensor")
+IRSensor::IRSensor():VoltageSrc()
 {
+	SetName("IRSensor");
 	RegisterActionAndMenu("Toggle","Toggles the IR sensor state",ActToggle);
 	RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
 	RegisterMenu("v0.4 Set Filament", ActSetV4Filament);
@@ -94,15 +95,16 @@ void IRSensor::Toggle()
 	if (m_eCurrent == IR_AUTO)
 		cout << "NOTE: Overriding IR Auto setting!" << '\n';
 
-	if (m_eCurrent == IR_v4_NO_FILAMENT)
+	if (m_eCurrent == IR_v4_NO_FILAMENT ||
+		m_eCurrent == IR_v3_NO_FILAMENT)
 	{
 		cout << "IRSensor: Filament present!" << '\n';
-		m_eCurrent = IR_v4_FILAMENT_PRESENT;
+		m_eCurrent = (m_eCurrent == IR_v4_NO_FILAMENT ? IR_v4_FILAMENT_PRESENT : IR_v3_FILAMENT_PRESENT);
 	}
 	else
 	{
 		cout << "IRSensor: No filament present!" << '\n';
-		m_eCurrent = IR_v4_NO_FILAMENT;
+		m_eCurrent = (m_eCurrent == IR_v3_FILAMENT_PRESENT ? IR_v3_NO_FILAMENT : IR_v4_NO_FILAMENT);
 	}
 }
 

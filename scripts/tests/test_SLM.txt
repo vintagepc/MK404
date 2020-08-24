@@ -1,0 +1,9 @@
+# This script is a component test script for use with the test firmware and printer.
+ScriptHost::SetTimeoutMs(1000)
+ScriptHost::SetQuitOnTimeout(1)
+Serial0::WaitForLine(READY)
+Serial0::SendGCode(TEST)
+Serial0::NextLineMustBe(REC TEST)
+Serial0::SendGCode(TE)
+Serial0::WaitForLineContains(REC)
+Board::Quit();

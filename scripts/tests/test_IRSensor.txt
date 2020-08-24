@@ -1,0 +1,31 @@
+# This script is a component test script for use with the test firmware and printer.
+ScriptHost::SetTimeoutMs(1000)
+ScriptHost::SetQuitOnTimeout(1)
+Serial0::NextLineMustBe(READY)
+# No filament
+Serial0::NextLineMustBe(ADC e6 PIN 01)
+IRSensor::Toggle()
+Serial0::NextLineMustBe(ADC 14 PIN 00)
+IRSensor::Toggle()
+Serial0::NextLineMustBe(ADC e6 PIN 01)
+#unknown
+IRSensor::Set(3)
+Serial0::NextLineMustBe(ADC 99 PIN 01)
+#NC
+IRSensor::Set(6)
+Serial0::NextLineMustBe(ADC fa PIN 01)
+#v3
+IRSensor::Set(1)
+Serial0::NextLineMustBe(ADC 0a PIN 00)
+#check v3 level Toggle
+IRSensor::Toggle()
+Serial0::NextLineMustBe(ADC f0 PIN 01)
+IRSensor::Toggle()
+Serial0::NextLineMustBe(ADC 0a PIN 00)
+#short
+IRSensor::Set(0)
+Serial0::NextLineMustBe(ADC 05 PIN 00)
+#check that it returns to v4 NF.
+IRSensor::Toggle()
+Serial0::NextLineMustBe(ADC e6 PIN 01)
+Board::Quit();

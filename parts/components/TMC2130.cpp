@@ -144,8 +144,10 @@ void TMC2130::CreateReply()
     {
         m_cmdOut.bitsOut.data = gsl::at(m_regs.raw,m_cmdProc.bitsIn.address);
         if (m_cmdProc.bitsIn.address == 0x01)
+		{
             m_regs.raw[0x01] = 0; // GSTAT is cleared after read.
-        TRACE(printf("Reading out %x (%10lx)", m_cmdProc.bitsIn.address, m_cmdOut.bitsOut.data));
+		}
+        TRACE(printf("Reading out %02x (%10lx)\n", m_cmdProc.bitsIn.address, m_cmdOut.bitsOut.data));
     }
     else
         m_cmdOut.bitsOut.data = m_cmdProc.bitsOut.data;
@@ -162,7 +164,7 @@ void TMC2130::CreateReply()
 // Called when a full command is ready to process.
 void TMC2130::ProcessCommand()
 {
-    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08x\n",m_cAxis, m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
+    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08lx\n",m_cAxis.load(), m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
     if (m_cmdProc.bitsIn.RW)
     {
         gsl::at(m_regs.raw,m_cmdProc.bitsIn.address) = m_cmdProc.bitsIn.data;
@@ -190,11 +192,11 @@ uint8_t TMC2130::OnSPIIn(struct avr_irq_t *, uint32_t value)
 {
     m_cmdIn.all<<=8; // Shift bits up
     m_cmdIn.bytes[0] = value;
-    TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",m_cAxis,value, m_cmdIn.all));
+    TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",m_cAxis.load(),value, m_cmdIn.all));
     // Clock out a reply byte, MSB first
     uint8_t byte = m_cmdOut.bytes[4];
     m_cmdOut.all<<=8;
-    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",m_cAxis,m_cmdOut.all,byte));
+    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",m_cAxis.load(),m_cmdOut.all,byte));
     SetSendReplyFlag();
     return byte; // SPIPeripheral takes care of the reply.
 }
@@ -210,7 +212,7 @@ void TMC2130::CheckDiagOut()
 // Called when CSEL changes.
 void TMC2130::OnCSELIn(struct avr_irq_t *, uint32_t value)
 {
-	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",m_cAxis,value));
+	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",m_cAxis.load(),value));
     if (value == 1) // Just finished a CSEL
     {
         m_cmdProc = m_cmdIn;
@@ -223,7 +225,7 @@ void TMC2130::OnDirIn(struct avr_irq_t * irq, uint32_t value)
 {
     if (irq->value == value)
         return;
-    TRACE(printf("TMC2130 %c: DIR changed to %02x\n",m_cAxis,value));
+    TRACE(printf("TMC2130 %c: DIR changed to %02x\n",m_cAxis.load(),value));
     m_bDir = value^cfg.bInverted; // XOR
 }
 

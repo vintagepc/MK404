@@ -41,7 +41,8 @@ enum class ArgType
 	Int,
 	String,
 	Bool,
-	Float
+	Float,
+	uint32
 };
 
 using std::string;
@@ -61,6 +62,7 @@ class IScriptable
 	enum class LineStatus
 	{
 		Error,
+		Timeout,
 		Waiting,
 		Running,
 		Finished,
@@ -160,6 +162,7 @@ class IScriptable
 				{ArgType::Float,"float"},
 				{ArgType::Int,"int"},
 				{ArgType::String,"string"},
+				{ArgType::uint32,"uint32"}
 			};
 			return m;
 		}

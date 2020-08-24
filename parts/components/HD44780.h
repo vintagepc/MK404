@@ -100,6 +100,7 @@ class HD44780:public BasePeripheral, public Scriptable
 
 			RegisterActionAndMenu("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
 			RegisterAction("WaitForText","Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
+			RegisterAction("CheckCGRAM","Checks if the CGRAM address matches the value. (value, addr)",ActCheckCGRAM,{ArgType::Int,ArgType::Int});
 		};
 
 		// Registers IRQs with SimAVR.
@@ -166,7 +167,8 @@ class HD44780:public BasePeripheral, public Scriptable
 		enum Actions
 		{
 			ActDesync,
-			ActWaitForText
+			ActWaitForText,
+			ActCheckCGRAM
 		};
 
         void ResetCursor();

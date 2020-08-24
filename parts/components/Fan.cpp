@@ -35,6 +35,7 @@ Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,
 {
 	RegisterActionAndMenu("Stall", "Stalls the fan", Actions::Stall);
 	RegisterActionAndMenu("Resume","Resumes fan from a stall condition",Actions::Resume);
+	RegisterAction("SetPWM", "Sets the PWM to a specific value (0-255)",Actions::SetPWM,{ArgType::Int});
 }
 
 avr_cycle_count_t Fan::OnTachChange(avr_t *, avr_cycle_count_t)
@@ -75,6 +76,13 @@ Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const vector<string>&
 {
 	switch (ID)
 	{
+		case Actions::SetPWM:
+		{
+			uint16_t uiRPM = (stoul(vArgs.at(0))*m_uiMaxRPM)/255U;
+			printf("New RPM: %u\n",uiRPM);
+			Set(uiRPM);
+			return LineStatus::Finished;
+		}
 		case Actions::Stall:
 			Set(0);
 			return LineStatus::Finished;
@@ -96,7 +104,7 @@ void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
     float fSecPerRev = 60.0f/(float)m_uiCurrentRPM;
     float fuSPerRev = 1000000*fSecPerRev;
     m_uiUsecPulse = fuSPerRev/4; // 4 pulses per rev.
-    TRACE(printf("New PWM(%u)/RPM/cyc: %u / %u / %u\n", m_uiMaxRPM, m_uiPWM, m_uiCurrentRPM, m_uiUsecPulse));
+    TRACE(printf("New PWM(%u)/RPM/cyc: %u / %u / %u\n", m_uiMaxRPM, m_uiPWM.load(), m_uiCurrentRPM, m_uiUsecPulse));
     if (m_uiCurrentRPM>0)
     {
         RegisterTimerUsec(m_fcnTachChange,m_uiUsecPulse,this);
@@ -110,7 +118,7 @@ void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 // Just a dummy wrapper to handle non-PWM control (digitalWrite)
 void Fan::OnDigitalChange(struct avr_irq_t * irq, uint32_t value)
 {
-   	OnPWMChange(irq, value*0xFF);
+   	RaiseIRQ(PWM_IN, value*0xFF);
 }
 
 void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM)
@@ -136,10 +144,11 @@ void Fan::Set(uint16_t iRPM)
 {
     m_bAuto = false;
     m_uiCurrentRPM = iRPM;
-    RaiseIRQ(PWM_IN,0XFF);
+    RaiseIRQ(PWM_IN,m_uiPWM);
 }
 
 void Fan::Resume_Auto()
 {
     m_bAuto = true;
+	RaiseIRQ(PWM_IN,m_uiPWM);
 }

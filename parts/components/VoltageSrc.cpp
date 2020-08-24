@@ -34,14 +34,37 @@ void VoltageSrc::OnInput(struct avr_irq_t*, uint32_t value)
     m_fCurrentV = (float)value / 256.0f;
 }
 
-VoltageSrc::VoltageSrc(float fVScale,float fStart):m_fCurrentV(fStart), m_fVScale(fVScale)
+VoltageSrc::VoltageSrc(float fVScale,float fStart):Scriptable("VSrc"),m_fCurrentV(fStart), m_fVScale(fVScale)
 {
+}
+
+Scriptable::LineStatus VoltageSrc::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActSet:
+		{
+			Set(stof(vArgs.at(0)));
+			return LineStatus::Finished;
+		}
+		case ActSetScale:
+		{
+			m_fVScale =stof (vArgs.at(0));
+			return LineStatus::Finished;
+		}
+		default:
+			return LineStatus::Unhandled;
+	}
 }
 
 void VoltageSrc::Init(struct avr_t * avr , uint8_t uiMux)
 {
     _Init(avr,uiMux,this);
     RegisterNotify(VALUE_IN, MAKE_C_CALLBACK(VoltageSrc,OnInput), this);
+
+	RegisterAction("SetV", "Sets the value the ADC reports", ActSet, {ArgType::Float});
+	RegisterAction("SetVScale", "Changes the scale factor to convert the input to the ADC input range",ActSetScale,{ArgType::Float});
+
 	auto pTH = TelemetryHost::GetHost();
 	pTH->AddTrace(this, ADC_VALUE_OUT, {TC::ADC, TC::Power},16);
 	pTH->AddTrace(this, DIGITAL_OUT,{TC::Power,TC::InputPin});

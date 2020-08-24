@@ -64,7 +64,8 @@ class Thermistor: public ADCPeripheral, public Scriptable
 		{
 			OpenCircuit,
 			Shorted,
-			Connected
+			Connected,
+			ActSetTemp
 		};
 
 		void OnTempIn(avr_irq_t *irq, uint32_t value);

@@ -60,14 +60,17 @@ Boards::Board *pBoard = nullptr;
 
 bool m_bStopping = false;
 
+bool m_bTestMode = false;
+
 // Exit cleanly on ^C
 void OnSigINT(int) {
 	if (!m_bStopping)
 	{
 		cout << "Caught SIGINT... stopping..." << '\n';
 		m_bStopping = true;
-		if (printer)
-		{
+		if (m_bTestMode)
+			pBoard->SetQuitFlag();
+		else if (printer)
 			printer->OnKeyPress('q',0,0);
 		}
 	}
@@ -254,6 +257,8 @@ int main(int argc, char *argv[])
 	cmd.add(argVCDRate);
 	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string");
 	cmd.add(argVCD);
+	SwitchArg argTest("","test","Run it test mode (no graphics, don't auto-exit.");
+	cmd.add(argTest);
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img");
 	cmd.add(argSD);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.");
@@ -319,6 +324,10 @@ int main(int argc, char *argv[])
 	}
 	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue()=="none");
 
+	m_bTestMode =  (argModel.getValue()=="Test_Printer") | argTest.isSet();
+
+	bNoGraphics |= m_bTestMode;
+
 	TelemetryHost::GetHost()->SetCategories(argVCD.getValue());
 
 	ScriptHost::Init();
@@ -334,7 +343,7 @@ int main(int argc, char *argv[])
 	}
 
 	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,
-		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue()); // this line is the CreateBoard() args.
+		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),""); // this line is the CreateBoard() args.
 
 	pBoard->SetPrimary(true); // This is the primary board, responsible for scripting/dispatch. Blocks contention from sub-boards, e.g. MMU.
 
@@ -434,7 +443,10 @@ int main(int argc, char *argv[])
 	}
 
 	cout << "Waiting for board to finish..." << '\n';
-	pBoard->SetQuitFlag();
+	if (!m_bTestMode)
+	{
+		pBoard->SetQuitFlag();
+	}
 	pBoard->WaitForFinish();
 
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);

@@ -295,8 +295,59 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 	m_status_register.byte = 0b00000000; //SREG default values}
 };
 
-void w25x20cl::Load(const std::string &path)
+Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
 {
+	switch (iAct)
+	{
+		case ActClear:
+		{
+			memset(m_flash,0xFF,sizeof(m_flash));
+			return LineStatus::Finished;
+		}
+		case ActFill:
+		{
+			memset(m_flash,(unsigned)stoi(vArgs.at(0)) & 0xFFU,sizeof(m_flash));
+			return LineStatus::Finished;
+		}
+		case ActLoad:
+		{
+			if (!m_filepath.empty())
+			{
+				Load();
+				return LineStatus::Finished;
+			}
+			else
+			{
+				return LineStatus::Error;
+			}
+
+		}
+		case ActSave:
+		{
+			if (!m_filepath.empty())
+			{
+				Save();
+				return LineStatus::Finished;
+			}
+			else
+			{
+				return LineStatus::Error;
+			}
+		}
+		default:
+			return LineStatus::Unhandled;
+	}
+}
+
+void w25x20cl::Load(const char* path)
+{
+		m_filepath = path;
+		Load();
+}
+
+void w25x20cl::Load()
+{
+	auto *path = m_filepath.c_str();
 	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
 	ifstream fsIn(path, fsIn.binary | fsIn.ate);
 	m_filepath = path;

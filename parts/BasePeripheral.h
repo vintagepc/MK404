@@ -21,8 +21,11 @@
 
 #pragma once
 
-#include <sim_avr.h>
-#include <sim_irq.h>
+#include "sim_avr.h"
+#include "sim_irq.h"
+#include <array>
+#include <iostream>
+#include <utility>
 
 
 // Use lambdas to expose something that can be called from C, but returns to our C++ object
@@ -46,10 +49,43 @@ class BasePeripheral
         inline avr_irq_t * GetIRQ(unsigned int eDest) {return m_pIrq + eDest;}
 
         // Connects internal IRQ to an external one.
-        inline void ConnectTo(unsigned int eSrc, avr_irq_t *irqDest) {avr_connect_irq(m_pIrq + eSrc, irqDest);}
+        inline void ConnectTo(unsigned int eSrc, avr_irq_t *irqDest)
+		{
+			avr_connect_irq(m_pIrq + eSrc, irqDest);
+			StashIRQs(m_pIrq+eSrc, irqDest);
+		}
 
         // Connects external IRQ to internal one.
-        inline void ConnectFrom(avr_irq_t *irqSrc, unsigned int eDest) {avr_connect_irq(irqSrc, m_pIrq + eDest);}
+        inline void ConnectFrom(avr_irq_t *irqSrc, unsigned int eDest)
+		{
+			avr_connect_irq(irqSrc, m_pIrq + eDest);
+			StashIRQs(irqSrc, m_pIrq + eDest);
+
+		}
+
+		// Detaches the component from its registered IRQs. They must have come through ConnectTo/From!
+		void DisconnectAll()
+		{
+			if (!m_bCanDetach)
+			{
+				std::cout << "Cannot disconnect component, it has registered too many IRQs (>15).\n";
+				return;
+			}
+			for (auto it = m_vIrqs.begin(); it!=m_vIrqs.end(); it+=2)
+			{
+				avr_unconnect_irq(*it, *(it+1));
+			}
+		}
+
+		// Disconnects the hardware's IRQs.
+		// void Disconnect()
+		// {
+		// 	for (auto &c: m_vIrqs)
+		// 	{
+		// 		avr_unconnect_irq(c.first, c.second);
+		// 	}
+		// 	m_vIrqs.clear();
+		// }
 
     protected:
 
@@ -124,5 +160,22 @@ class BasePeripheral
         avr_irq_t * m_pIrq = nullptr;
         struct avr_t *m_pAVR = nullptr;
     private:
+
+		inline void StashIRQs(avr_irq_t *p1, avr_irq_t *p2)
+		{
+			if (m_irqCt>28)
+			{
+				std::cout << ">15 IRQs on peripheral, it can no longer be detached cleanly.\n";
+				m_bCanDetach = false;
+				return;
+			}
+			m_vIrqs[m_irqCt++] = p1;
+			m_vIrqs[m_irqCt++] = p2;
+		}
+
+		// Can't use vector because some derivatives have atomic members...
+		std::array<avr_irq_t*,30> m_vIrqs {};
+		int m_irqCt = 0;
+		bool m_bCanDetach = true;
 
 };

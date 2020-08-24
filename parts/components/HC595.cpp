@@ -68,7 +68,12 @@ void HC595::OnLatchIn(struct avr_irq_t * irq, uint32_t value)
 void HC595::OnResetIn(struct avr_irq_t * irq, uint32_t value)
 {
 	if (irq->value && !value) 	// falling edge
+	{
 		m_uiLatch = m_uiValue = 0;
+		RaiseIRQ(OUT, m_uiLatch);
+		for (int i=0; i<32; i++)
+				RaiseIRQ(BIT0+i,0);
+	}
 }
 
 void HC595::Init(struct avr_t * avr)

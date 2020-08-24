@@ -97,7 +97,8 @@ public:
 		enum Actions
 		{
 			Stall,
-			Resume
+			Resume,
+			SetPWM
 		};
 
 };

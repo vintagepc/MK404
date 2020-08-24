@@ -23,6 +23,18 @@
 #include "IScriptable.h"
 #include <iostream>
 
+ADC_Buttons::ADC_Buttons(const std::string &strName):Scriptable(strName)
+{
+	m_fcnRelease = MAKE_C_TIMER_CALLBACK(ADC_Buttons,AutoRelease);
+	RegisterAction("Press","Presses the specified button in the array",0,{ArgType::Int});
+	RegisterActionAndMenu("Push Left","Press left button",ActBtnLeft);
+	RegisterActionAndMenu("Push Middle","Press middle button",ActBtnMiddle);
+	RegisterActionAndMenu("Push Right","Press right button",ActBtnRight);
+};
+
+ADC_Buttons::~ADC_Buttons() = default;
+
+
 uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t *, uint32_t)
 {
     //if (raw < 50) return Btn::right;
@@ -77,3 +89,10 @@ void ADC_Buttons::Push(uint8_t uiBtn)
 	m_uiCurBtn = uiBtn;
 	RegisterTimerUsec(m_fcnRelease,2500000, this);
 }
+
+avr_cycle_count_t ADC_Buttons::AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen)
+{
+	printf("%s button release\n", GetName().c_str());
+	m_uiCurBtn = 0;
+	return 0;
+};

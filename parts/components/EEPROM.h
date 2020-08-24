@@ -37,16 +37,26 @@ class EEPROM: public BasePeripheral, public Scriptable {
 	EEPROM():Scriptable("EEPROM")
 	{
 		RegisterAction("Poke","Pokes a value into the EEPROM. Args are (address,value)", ActPoke, {ArgType::Int, ArgType::Int});
+		RegisterActionAndMenu("Save", "Saves EEPROM contents to disk.", ActSave);
+		RegisterActionAndMenu("Clear", "Clears EEPROM to 0xFF", ActClear);
+		RegisterActionAndMenu("Load", "Loads the last-used file again", ActLoad);
 	};
 	// Loads EEPROM from a file or initializes the file for the first time.
 	EEPROM(struct avr_t * avr, const string &strFile):EEPROM()
 	{
 		Load(avr, strFile);
 	};
-
+	// Loads the given file.
 	void Load(struct avr_t * avr, const string &strFile);
+
+	// Reloads last file:
+	void Load();
+
 	// Saves EEPROM to the file
 	void Save();
+
+	// Clears the contents to 0xFF
+	void Clear();
 
 	// Pokes something into the EEPROM.
 	void Poke(uint16_t address,	uint8_t value);
@@ -62,7 +72,10 @@ class EEPROM: public BasePeripheral, public Scriptable {
 		std::string m_strFile;
 		uint16_t m_uiSize = 4096;
 		enum Actions {
-			ActPoke
+			ActPoke,
+			ActSave,
+			ActLoad,
+			ActClear
 		};
 
 };

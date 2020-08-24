@@ -35,7 +35,7 @@
 #include "sim_irq.h"      // for avr_irq_t
 
 
-class IRSensor: public VoltageSrc, public Scriptable
+class IRSensor: public VoltageSrc
 {
 public:
 	// Enumeration for IR sensor states.
@@ -72,7 +72,7 @@ private:
 
 	enum Actions
 	{
-		ActToggle,
+		ActToggle = VoltageSrc::ActVS_END,
 		ActSet,
 		ActSetV3NoFilament,
 		ActSetV3Filament,

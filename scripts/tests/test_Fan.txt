@@ -1,0 +1,44 @@
+# This script is a component test script for use with the test firmware and printer.
+ScriptHost::SetTimeoutMs(500)
+ScriptHost::SetQuitOnTimeout(1)
+Serial0::NextLineMustBe(READY)
+TelHost::WaitFor(Fan_>Fan.speed_out,0)
+TelHost::WaitFor(Fan_<Fan.pwm_in,0)
+Serial0::NextLineMustBe(ON)
+TelHost::WaitFor(Fan_>Fan.speed_out,2000)
+TelHost::WaitFor(Fan_<Fan.pwm_in,255)
+Button::Press();
+Button::Release();
+Serial0::NextLineMustBe(OFF)
+TelHost::WaitFor(Fan_>Fan.speed_out,0)
+TelHost::WaitFor(Fan_<Fan.pwm_in,0)
+ScriptHost::SetTimeoutMs(200);
+Button::PressAndRelease();
+# Check PWMs:
+Serial0::NextLineMustBe(PWM50)
+TelHost::WaitFor(Fan_<Fan.pwm_in,128)
+TelHost::WaitFor(Fan_>Fan.speed_out,1003)
+Serial0::NextLineMustBe(PWM25)
+TelHost::WaitFor(Fan_<Fan.pwm_in,64)
+TelHost::WaitFor(Fan_>Fan.speed_out,501)
+Serial0::NextLineMustBe(PWM75)
+TelHost::WaitFor(Fan_<Fan.pwm_in,192)
+TelHost::WaitFor(Fan_>Fan.speed_out,1505)
+Fan::Stall();
+# Note: Stall doesn't change the PWM
+TelHost::WaitFor(Fan_<Fan.pwm_in,192)
+TelHost::WaitFor(Fan_>Fan.speed_out,0)
+Fan::Resume()
+TelHost::WaitFor(Fan_<Fan.pwm_in,192)
+TelHost::WaitFor(Fan_>Fan.speed_out,1505)
+ScriptHost::SetTimeoutMs(3000)
+Board::WaitMs(500)
+Serial0::NextLineMustBe(RPM 1500)
+Fan::SetPWM(255)
+Board::WaitMs(1000)
+# Not exact because of int rounding in pulse counts.
+Serial0::NextLineMustBe(RPM 1980)
+Fan::SetPWM(153)
+Board::WaitMs(1000)
+Serial0::NextLineMustBe(RPM 1200)
+Board::Quit()

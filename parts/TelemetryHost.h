@@ -144,7 +144,9 @@ class TelemetryHost: public BasePeripheral, public Scriptable
             printf("Cygwin detected - skipping TelHost action registration...\n");
 #else
             // Sorry, this segfaults on win32 for some reason...
-			RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::Int});
+			RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::uint32});
+			RegisterAction("WaitForGT","Waits for a specified telemetry value to be greater than specified",ActWaitForGT, {ArgType::String,ArgType::uint32});
+			RegisterAction("WaitForLT","Waits for a specified telemetry value to be less than specified",ActWaitForLT, {ArgType::String,ArgType::uint32});
 			RegisterActionAndMenu("StartTrace", "Starts the telemetry trace. You must have set a category or set of items with the -t option",ActStartTrace);
 			RegisterActionAndMenu("StopTrace", "Stops a running telemetry trace.",ActStopTrace);
 #endif
@@ -153,6 +155,8 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 		enum Actions
 		{
 			ActWaitFor,
+			ActWaitForGT,
+			ActWaitForLT,
 			ActStartTrace,
 			ActStopTrace
 		};

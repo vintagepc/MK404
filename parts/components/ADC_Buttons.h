@@ -41,13 +41,9 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable
 		#define IRQPAIRS _IRQ(ADC_TRIGGER_IN,"<adc.trigger") _IRQ(ADC_VALUE_OUT,">adc.out") _IRQ(DIGITAL_OUT, ">adc.digital_out")
 		#include "IRQHelper.h"
 
-		ADC_Buttons(std::string strName):Scriptable(strName)
-		{
-			RegisterAction("Press","Presses the specified button in the array",0,{ArgType::Int});
-			RegisterMenu("Push Left",ActBtnLeft);
-			RegisterMenu("Push Middle",ActBtnMiddle);
-			RegisterMenu("Push Right",ActBtnRight);
-		};
+		ADC_Buttons(const std::string &strName);
+
+		~ADC_Buttons();
 
 
 		// TODO.. extend this with flexibility for any number of buttons/voltage levels.
@@ -60,14 +56,9 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable
 			LineStatus ProcessAction(unsigned int uiAct, const vector<string> &vArgs) override;
 	private:
 
-		inline avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen)
-		{
-			printf("%s button release\n", GetName().c_str());
-			m_uiCurBtn = 0;
-			return 0;
-		};
+		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);
 
-		avr_cycle_timer_t m_fcnRelease = MAKE_C_TIMER_CALLBACK(ADC_Buttons,AutoRelease);
+		avr_cycle_timer_t m_fcnRelease;
 
 		uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) override;
 

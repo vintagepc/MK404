@@ -1,0 +1,18 @@
+# This script is a component test script for use with the test firmware and printer.
+ScriptHost::SetTimeoutMs(1000)
+ScriptHost::SetQuitOnTimeout(1)
+Serial0::NextLineMustBe(READY)
+VSrc::SetV(2.5)
+Serial0::NextLineMustBe(ADC 7f PIN 02)
+VSrc::SetV(5)
+Serial0::NextLineMustBe(ADC ff PIN 02)
+VSrc::SetV(0.0)
+Serial0::NextLineMustBe(ADC 00 PIN 00)
+VSrc::SetVScale(0.1)
+VSrc::SetV(2.5)
+Serial0::NextLineMustBe(ADC 3f PIN 02)
+VSrc::SetV(5)
+Serial0::NextLineMustBe(ADC 7f PIN 02)
+VSrc::SetV(10.0)
+Serial0::NextLineMustBe(ADC ff PIN 02)
+Board::Quit();

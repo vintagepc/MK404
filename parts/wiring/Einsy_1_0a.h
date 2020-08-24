@@ -33,7 +33,7 @@ namespace Wirings
 			};
 
 		protected:
-			virtual std::map<Pin,MCUPin> GetPinMap() override
+			std::map<Pin,MCUPin> GetPinMap()
 			{
 				return {
 					{BEEPER,84},

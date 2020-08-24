@@ -12,6 +12,12 @@ set(OpenGL_GL_PREFERENCE LEGACY) # We really don't need GLX here. (Prevents link
 option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
 option(ENABLE_IWYU "Enables Include-what-you-use")
 option(ENABLE_TIDY "Enables Clang-tidy")
+option(ENABLE_GCOV "Enables gcov coverage")
+
+if (ENABLE_GCOV)
+	SET(GCOV_BINARY /usr/bin/gcov-7)
+	message(STATUS "Using gcov ${GCOV_BINARY}")
+endif()
 
 # Yells at you if you have extra link args.
 if (NOT APPLE)
@@ -19,6 +25,8 @@ set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 endif()
 
 add_subdirectory(3rdParty/tinyobjloader)
+
+add_subdirectory(scripts/tests)
 
 if (ENABLE_IWYU)
 	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/include-what-you-use")
@@ -31,7 +39,6 @@ if (ENABLE_TIDY)
 else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()
-
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -94,6 +101,7 @@ set(H_FILES
 	parts/printers/Prusa_MK3S.h
 	parts/printers/Prusa_MK3SMMU2.h
 	parts/printers/Prusa_MK3MMU2.h
+	parts/printers/Test_Printer.h
 	utility/Color.h
 	utility/GLPrint.h
 	utility/FatImage.h
@@ -118,6 +126,7 @@ set(MK404_SOURCES
 	parts/Board.cpp
 	parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp
+	parts/boards/Test_Board.cpp
 	parts/ScriptHost.cpp
 	parts/TelemetryHost.cpp
 	parts/components/GCodeSniffer.cpp
@@ -145,6 +154,7 @@ set(MK404_SOURCES
 	parts/components/Button.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
+	parts/printers/Test_Printer.cpp
 	utility/MK3SGL.cpp
 	utility/GLObj.cpp
 	utility/FatImage.cpp
@@ -241,6 +251,25 @@ if (ENABLE_THREAD_SANITY)
 	target_link_libraries(MK404 -fsanitize=thread)
 endif()
 
+if (ENABLE_GCOV)
+	target_compile_options(MK404 PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
+	target_link_libraries(MK404 -coverage -lgcov)
+	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
+	add_custom_target(Coverage.tar.gz
+		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_BINARY_DIR}/Coverage
+		COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/coverage.info
+		COMMAND lcov --remove coverage.info '/usr/*' -o coverage.info
+		COMMAND lcov --remove coverage.info '*/3rdParty/*' -o coverage.info
+		COMMAND genhtml coverage.info --output-directory Coverage
+		COMMAND tar -zcvf Coverage.tar.gz Coverage
+		COMMAND ${PROJECT_SOURCE_DIR}/3rdParty/gcovr -r ${PROJECT_SOURCE_DIR} -e 3rdParty | tee ${PROJECT_BINARY_DIR}/summary.txt
+		DEPENDS Tests
+	)
+else()
+	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE OFF)
+endif()
+
+
 if(CYGWIN)
 target_link_libraries(MK404 GLEW)
 else()
@@ -278,6 +307,22 @@ add_custom_command(TARGET MK404 POST_BUILD
                     ${MODEL_FILES}
                     "${PROJECT_BINARY_DIR}/assets/"
                      )
+
+
+file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/test_*.c)
+message(STATUS "Checking for tests...")
+
+enable_testing()
+add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
+add_test(Test_Printer_Trace MK404 Test_Printer --trace ?)
+add_test(Test_Printer_Script MK404 Test_Printer --scripthelp)
+
+foreach (TEST_SRC IN LISTS TESTS_SOURCES)
+	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
+	message(STATUS "Adding test: ${TEST_BASE}" )
+	add_test(${TEST_BASE} MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer)
+endforeach()
+#	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
 
 
 add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}
@@ -330,3 +375,9 @@ add_custom_target(Release_Package
 	COMMAND tar -jcvf "${PROJECT_BINARY_DIR}/MK404-development-build.tar.bz2" "MK404-dev"
 	)
 add_dependencies(Release_Package MK404)
+
+add_custom_target(Tests
+	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
+	COMMAND cd ${PROJECT_BINARY_DIR} && make test
+)
+add_dependencies(Tests Test_all MK404)

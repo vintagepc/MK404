@@ -154,14 +154,16 @@ class TMC2130: public SPIPeripheral, public Scriptable
                     uint8_t small_hysteresis    :1;
                     uint8_t stop_enable :1;
                     uint8_t direct_mode         :1;
-                } GCONF;             // 0x00
+					uint16_t :14;
+                }  __attribute__ ((__packed__)) GCONF;             // 0x00
                 struct                 // 0x01
                 {
                     uint8_t reset   :1;
                     uint8_t drv_err :1;
                     uint8_t uv_cp   :1;
-                } GSTAT;
-                uint32_t _unimplemented[107]; //0x02 - 0x6B
+					uint32_t :29; // unused
+                }  __attribute__ ((__packed__)) GSTAT;
+                uint32_t _unimplemented[106]; //0x02 - 0x6B
 				struct                        //0x6C
 				{
 					uint32_t toff		:4;
@@ -181,7 +183,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
 					uint32_t dedge		:1;
 					uint32_t diss2g		:1;
 					uint32_t			:1;
-				} CHOPCONF;
+				} __attribute__ ((__packed__)) CHOPCONF;
                 uint32_t _unimplemented2[2]; //0x6D - 0x6E
                 struct                       //0x6F
                 {
@@ -198,7 +200,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
                     uint8_t ola         :1;
                     uint8_t olb         :1;
                     uint8_t stst        :1;
-                }DRV_STATUS;
+                }  __attribute__ ((__packed__)) DRV_STATUS;
             }defs;
         } tmc2130_registers_t;
 

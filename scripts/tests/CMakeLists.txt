@@ -42,7 +42,7 @@ foreach(TEST_SRC IN LISTS TESTS_SOURCES)
 	)
 
 	add_custom_target(Run_${TEST_BASE}
-		COMMAND ${PROJECT_BINARY_DIR}/MK404 Test_Printer -f ${PROJECT_BINARY_DIR}/tests/${TEST_BASE}.afx --script ${PROJECT_BINARY_DIR}/tests/${TEST_BASE}.txt
+		COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 Test_Printer -f ${PROJECT_BINARY_DIR}/tests/${TEST_BASE}.afx --script ${PROJECT_BINARY_DIR}/tests/${TEST_BASE}.txt
 		DEPENDS ${TEST_BASE}.afx
 	)
 

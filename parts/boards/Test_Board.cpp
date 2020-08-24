@@ -102,8 +102,6 @@ namespace Boards
 		TryConnect(SDSS,m_card, SDCard::SPI_CSEL);
 		TryConnect(m_card, SDCard::CARD_PRESENT, SDCARDDETECT);
 
-		m_card.Mount();
-
 	}
 
 	// Convenience function for debug printing a particular pin.

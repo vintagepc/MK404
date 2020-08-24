@@ -42,9 +42,8 @@ enum class ArgType
 	Int,
 	String,
 	Bool,
-	Float
-
-
+	Float,
+	uint32
 };
 
 class IScriptable
@@ -58,6 +57,7 @@ class IScriptable
 	enum class LineStatus
 	{
 		Error,
+		Timeout,
 		Waiting,
 		Running,
 		Finished,

@@ -215,8 +215,8 @@ namespace Boards
 					}
 					state = avr_run(m_pAVR);
 				}
+				printf("%s finished (%d).\n",m_wiring.GetMCUName().c_str(),state);
 				avr_terminate(m_pAVR);
-				printf("%s finished.\n",m_wiring.GetMCUName().c_str());
 				return nullptr;
 			};
 

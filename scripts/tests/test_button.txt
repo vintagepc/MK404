@@ -1,0 +1,18 @@
+# This script is a component test script for use with the test firmware and printer.
+ScriptHost::SetTimeoutMs(1000)
+ScriptHost::SetQuitOnTimeout(1)
+Serial0::NextLineMustBe(READY)
+Button::Press()
+Serial0::NextLineMustBe(BTN00)
+Button::Release()
+Serial0::NextLineMustBe(BTN40)
+Button::Press()
+Serial0::NextLineMustBe(BTN00)
+Button::Release()
+Serial0::NextLineMustBe(BTN40)
+ScriptHost::Log(Test release delay)
+Button::PressAndRelease()
+Serial0::NextLineMustBe(BTN00)
+Board::WaitMs(1)
+Serial0::NextLineMustBe(BTN40)
+Board::Quit();

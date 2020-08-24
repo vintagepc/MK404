@@ -52,9 +52,16 @@ void SerialLineMonitor::OnXOffIn(struct avr_irq_t * irq, uint32_t value)
 
 Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const vector<string> &args)
 {
-	if (m_type != None && m_strMatch.compare(args.at(0))==0) // already in wait state for same find
+	if (m_type != None && m_strMatch==args.at(0)) // already in wait state for same find
 	{
-		if (!m_bMatched)
+		if (m_iLineCt>0 && !m_bMatched && ID == NextLineMustBe) // Failed to match on the next line.
+		{
+			m_strMatch.clear();
+			m_type = None;
+			m_bMatched = false;
+			return LineStatus::Timeout;
+		}
+		else if (!m_bMatched)
 			return LineStatus::Waiting;
 		m_strMatch.clear();
 		m_type = None;
@@ -69,6 +76,12 @@ Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const v
 			m_bMatched = false;
 			m_strMatch = args[0];
 			m_type = (ID == WaitForLine) ? Full : Contains;
+			return LineStatus::Waiting;
+		case NextLineMustBe:
+			m_iLineCt = 0;
+			m_bMatched = false;
+			m_strMatch = args[0];
+			m_type = MustBe;
 			return LineStatus::Waiting;
 		case SendGCode:
 			if (m_strGCode.empty())
@@ -91,7 +104,10 @@ Scriptable::LineStatus SerialLineMonitor::SendChar()
 	if (m_itGCode!=m_strGCode.end())
 		return LineStatus::Waiting;
 	else
+	{
+		m_strGCode.clear();
 		return LineStatus::Finished;
+	}
 
 	return LineStatus::Unhandled;
 }
@@ -99,11 +115,16 @@ Scriptable::LineStatus SerialLineMonitor::SendChar()
 void SerialLineMonitor::OnNewLine()
 {
 	if(!m_type)
+	{
+		m_strLine.clear();
 		return; // No match configured.
+	}
+	m_iLineCt++;
 	switch (m_type)
 	{
 		case Full:
-			m_bMatched = m_strLine.compare(m_strMatch)==0;
+		case MustBe:
+			m_bMatched = m_strLine == (m_strMatch);
 			break;
 		case Contains:
 			m_bMatched = m_strLine.find(m_strMatch) != string::npos;
@@ -111,6 +132,7 @@ void SerialLineMonitor::OnNewLine()
 		case None:
 			break;
 	}
+	m_strLine.clear();
 }
 
 void SerialLineMonitor::Init(struct avr_t * avr, char chrUART)
@@ -118,7 +140,6 @@ void SerialLineMonitor::Init(struct avr_t * avr, char chrUART)
 	_Init(avr, this);
 	m_chrUART = chrUART;
 	RegisterNotify(BYTE_IN, MAKE_C_CALLBACK(SerialLineMonitor, OnByteIn),this);
-		// disable the stdio dump, as we're pritning in hex.
 
 	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT);
 	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_INPUT);

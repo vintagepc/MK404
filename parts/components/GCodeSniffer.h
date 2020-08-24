@@ -45,6 +45,8 @@ class GCodeSniffer : public BasePeripheral
 		// Registers with SimAVR.
 		void Init(avr_t *avr, char chrUART);
 
+		inline std::string GetName(){return std::string("Sniffer");}
+
 	private:
 
 		void OnByteIn(avr_irq_t *irq, uint32_t value);

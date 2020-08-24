@@ -60,7 +60,8 @@ private:
 	{
 		ActToggleSheet,
 		ActSetMBLPoint,
-		ActSetXYCalPont
+		ActSetXYCalPont,
+		ActSetPos
 	};
 
     void OnXChanged(avr_irq_t *irq, uint32_t value);

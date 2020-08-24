@@ -80,6 +80,8 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vec
 	switch (iAct)
 	{
 		case ActWaitFor:
+		case ActWaitForGT:
+		case ActWaitForLT:
 		{
 			if (m_pCurrentIRQ == nullptr)
 			{
@@ -88,10 +90,22 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vec
 				else
 				{
 					m_pCurrentIRQ = m_mIRQs[vArgs.at(0)];
+					//uint32_t tmpval = stoul(vArgs.at(1));
+//					// if (tmpval!=m_uiMatchVal)
+						// printf("WF: %08x (%u) //  %08x (%u)\n",tmpval,tmpval,m_pCurrentIRQ->value, m_pCurrentIRQ->value);
 					m_uiMatchVal = stoul(vArgs.at(1));
+
 				}
 			}
-			if (m_pCurrentIRQ->value == m_uiMatchVal)
+			bool bMatch = false;
+			if (iAct==ActWaitForLT)
+				bMatch = m_pCurrentIRQ->value < m_uiMatchVal;
+			else if (iAct == ActWaitForGT)
+				bMatch = m_pCurrentIRQ->value > m_uiMatchVal;
+			else
+				bMatch = m_pCurrentIRQ->value == m_uiMatchVal;
+
+			if (bMatch)
 			{
 				m_pCurrentIRQ = nullptr;
 				return LineStatus::Finished;

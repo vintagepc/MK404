@@ -22,6 +22,7 @@
 #include "PINDA.h"
 #include <stdio.h>  // for printf
 #include <cmath>    // for pow, floor, round, sqrt
+#include <cstring>
 #include "TelemetryHost.h"
 
 //#define TRACE(_w)_w
@@ -55,6 +56,10 @@ void PINDA::CheckTriggerNoSheet()
         else
             RaiseIRQ(TRIGGER_OUT,0);
     }
+	else
+	{
+		RaiseIRQ(TRIGGER_OUT,0);
+}
 }
 
 Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<string> &vArgs)
@@ -64,6 +69,20 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<str
 		case ActToggleSheet:
 			ToggleSheet();
 			return LineStatus::Finished;
+		case ActSetPos:
+		{
+			uint32_t uiVal;
+			float fIn = stof(vArgs.at(0));
+			std::memcpy(&uiVal, &fIn,4);
+			RaiseIRQ(X_POS_IN, uiVal);
+			fIn = stof(vArgs.at(1));
+			std::memcpy(&uiVal, &fIn,4);
+			RaiseIRQ(Y_POS_IN, uiVal);
+			fIn = stof(vArgs.at(2));
+			std::memcpy(&uiVal, &fIn,4);
+			RaiseIRQ(Z_POS_IN, uiVal);
+			return LineStatus::Finished;
+		}
 		case ActSetMBLPoint:
 		{
 			int iVal = stoi(vArgs.at(0));
@@ -92,7 +111,10 @@ void PINDA::CheckTrigger()
 {
     // Bail early if too high to matter, to avoid needing to do all the math.
     if (m_fPos[2]>5)
+	{
+		RaiseIRQ(TRIGGER_OUT,0);
         return;
+	}
 
     // Just calc the nearest MBL point and report it.
     uint8_t iX = round(((m_fPos[0] - m_fOffset[0])/255.0)*7);
@@ -105,8 +127,10 @@ void PINDA::CheckTrigger()
         //printf("Trig @ %u %u\n",iX,iY);
         RaiseIRQ(TRIGGER_OUT,1);
     }
-    else if (m_fPos[2]<=fZTrig + 0.5) // Just reset to 0 in a small distance above the trigger, to avoid IRQspam.
+    else
+	{
         RaiseIRQ(TRIGGER_OUT,0);
+}
 }
 
 void PINDA::OnXChanged(struct avr_irq_t * irq,uint32_t value)
@@ -174,14 +198,16 @@ void PINDA::Init(struct avr_t * avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t
 	RegisterActionAndMenu("ToggleSheet","Toggles the presence of the steel sheet",ActToggleSheet);
 	RegisterAction("SetMBLPoint","Sets the given MBL point (0-48) to the given Z value",ActSetMBLPoint,{ArgType::Int,ArgType::Float});
 	RegisterAction("SetXYPoint","Sets the (0-3)rd XY cal point position to x,y. (index, x,y)",ActSetXYCalPont,{ArgType::Int, ArgType::Float,ArgType::Float});
+	RegisterAction("SetPos", "Sets X/Y/Z position of the probe", ActSetPos, {ArgType::Float, ArgType::Float, ArgType::Float});
 
-    ConnectFrom(irqX, X_POS_IN);
-    ConnectFrom(irqY, Y_POS_IN);
-    ConnectFrom(irqZ, Z_POS_IN);
+    if (irqX) ConnectFrom(irqX, X_POS_IN);
+    if (irqY) ConnectFrom(irqY, Y_POS_IN);
+    if (irqZ) ConnectFrom(irqZ, Z_POS_IN);
 
     RegisterNotify(X_POS_IN, MAKE_C_CALLBACK(PINDA,OnXChanged),this);
     RegisterNotify(Y_POS_IN, MAKE_C_CALLBACK(PINDA,OnYChanged),this);
     RegisterNotify(Z_POS_IN, MAKE_C_CALLBACK(PINDA,OnZChanged),this);
+	GetIRQ(TRIGGER_OUT)->flags |= IRQ_FLAG_FILTERED; // No retriggers.
     RaiseIRQ(TRIGGER_OUT,0);
 
 	auto pTH = TelemetryHost::GetHost();

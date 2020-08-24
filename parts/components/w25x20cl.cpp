@@ -297,15 +297,66 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 	m_status_register.byte = 0b00000000; //SREG default values}
 };
 
+Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActClear:
+		{
+			memset(m_flash,0xFF,sizeof(m_flash));
+			return LineStatus::Finished;
+		}
+		case ActFill:
+		{
+			memset(m_flash,(unsigned)stoi(vArgs.at(0)) & 0xFFU,sizeof(m_flash));
+			return LineStatus::Finished;
+		}
+		case ActLoad:
+		{
+			if (!m_filepath.empty())
+			{
+				Load();
+				return LineStatus::Finished;
+			}
+			else
+			{
+				return LineStatus::Error;
+			}
+
+		}
+		case ActSave:
+		{
+			if (!m_filepath.empty())
+			{
+				Save();
+				return LineStatus::Finished;
+			}
+			else
+			{
+				return LineStatus::Error;
+			}
+		}
+		default:
+			return LineStatus::Unhandled;
+	}
+}
+
 void w25x20cl::Load(const char* path)
 {
+		m_filepath = path;
+		Load();
+}
+
+void w25x20cl::Load()
+{
+	auto *path = m_filepath.c_str();
 	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
 	m_fdFlash = open(path, O_RDWR | O_CREAT, 0644);
 	if (m_fdFlash < 0) {
 		perror(path);
 		exit(1);
 	}
-	m_filepath = path;
+
 
 	printf("Loading %u bytes of XFLASH\n", W25X20CL_TOTAL_SIZE);
 	if (ftruncate(m_fdFlash, W25X20CL_TOTAL_SIZE + 1) < 0) {

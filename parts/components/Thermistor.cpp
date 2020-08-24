@@ -30,15 +30,30 @@ Thermistor::Thermistor(float fStartTemp):Scriptable("Thermistor"),m_fCurrentTemp
 {
 	RegisterActionAndMenu("Disconnect","Disconnects the thermistor as though it has gone open circuit",Actions::OpenCircuit);
 	RegisterActionAndMenu("Short","Short the thermistor out",Actions::Shorted);
-	RegisterActionAndMenu("Reconnct","Restores the normal thermistor state",Actions::Connected);
-
+	RegisterActionAndMenu("Reconnect","Restores the normal thermistor state",Actions::Connected);
+	RegisterAction("Set", "Sets the temperature to the specified value", ActSetTemp, {ArgType::Float});
 }
 
 
 Scriptable::LineStatus Thermistor::ProcessAction(unsigned int iAction, const vector<string> &args)
 {
-	m_eState = (Actions)iAction;
-	return LineStatus::Finished;
+	switch (iAction)
+	{
+		case ActSetTemp:
+		{
+			Set(stof(args.at(0)));
+			return LineStatus::Finished;
+		}
+		case Shorted:
+		case OpenCircuit:
+		case Connected:
+		{
+			m_eState = (Actions)iAction;
+			return LineStatus::Finished;
+		}
+		default:
+			return LineStatus::Unhandled;
+	}
 }
 
 uint32_t Thermistor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
@@ -100,7 +115,5 @@ void Thermistor::SetTable(short *pTable, unsigned int uiEntries, int iOversamp)
 void Thermistor::Set(float fTempC)
 {
 	uint32_t value = fTempC * 256;
-	m_fCurrentTemp = fTempC;
-
-	RaiseIRQ(TEMP_OUT, value);
+	RaiseIRQ(TEMP_IN,value);
 }

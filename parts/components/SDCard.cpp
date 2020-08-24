@@ -476,6 +476,7 @@ void SDCard::Init(struct avr_t *avr)
 	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
 	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
 	pTH->AddTrace(this, CARD_PRESENT, {TC::InputPin, TC::Storage});
+	RaiseIRQ(CARD_PRESENT,1);
 }
 
 int SDCard::Mount(const std::string &filename, off_t image_size)
@@ -551,6 +552,7 @@ int SDCard::Unmount()
 {
 	if (m_data == nullptr) {
 		/* No disk mounted. */
+		RaiseIRQ(CARD_PRESENT,1);
 		m_bMounted = false;
 		return 0;
 	}

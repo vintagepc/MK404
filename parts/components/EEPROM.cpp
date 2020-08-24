@@ -33,9 +33,14 @@
 
 void EEPROM::Load(struct avr_t *avr, const string &strFile)
 {
-	m_pAVR = avr;
-	m_uiSize = m_pAVR->e2end + 1;
 	m_strFile = strFile;
+	m_pAVR = avr;
+	Load();
+}
+
+void EEPROM::Load()
+{
+	m_uiSize = m_pAVR->e2end + 1;
 
 	m_fdEEPROM = open(m_strFile.c_str(), O_RDWR | O_CREAT, 0644);
 	if (m_fdEEPROM < 0) {
@@ -67,6 +72,14 @@ void EEPROM::Load(struct avr_t *avr, const string &strFile)
     free(io.ee);
 }
 
+void EEPROM::Clear()
+{
+	std::vector<uint8_t> vE;
+	vE.resize(m_uiSize,0xFF);
+	avr_eeprom_desc_t io {.ee= vE.data(), .offset = 0, .size = m_uiSize};
+	avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io);
+}
+
 void EEPROM::Save()
 {
 	// Write out the EEPROM contents:
@@ -90,6 +103,7 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 	switch (uiAct)
 	{
 		case ActPoke:
+		{
 			unsigned int uiAddr = stoi(vArgs.at(0));
 			uint8_t uiVal = stoi(vArgs.at(1));
 			if (uiAddr>=m_uiSize)
@@ -99,6 +113,26 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 				Poke(uiAddr, uiVal);
 				return LineStatus::Finished;
 			}
+		}
+		break;
+		case ActClear:
+		{
+			Clear();
+			return LineStatus::Finished;
+		}
+		break;
+		case ActSave:
+		{
+			Save();
+			return LineStatus::Finished;
+		}
+		break;
+		case ActLoad:
+		{
+			Load();
+			return LineStatus::Finished;
+		}
+		break;
 	}
 	return LineStatus::Unhandled;
 }

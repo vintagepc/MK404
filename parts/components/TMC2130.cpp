@@ -144,8 +144,10 @@ void TMC2130::CreateReply()
     {
         m_cmdOut.bitsOut.data = m_regs.raw[m_cmdProc.bitsIn.address];
         if (m_cmdProc.bitsIn.address == 0x01)
+		{
             m_regs.raw[0x01] = 0; // GSTAT is cleared after read.
-        TRACE(printf("Reading out %x (%10lx)", m_cmdProc.bitsIn.address, m_cmdOut.bitsOut.data));
+		}
+        TRACE(printf("Reading out %02x (%10lx)\n", m_cmdProc.bitsIn.address, m_cmdOut.bitsOut.data));
     }
     else
         m_cmdOut.bitsOut.data = m_cmdProc.bitsOut.data;
@@ -162,11 +164,11 @@ void TMC2130::CreateReply()
 // Called when a full command is ready to process.
 void TMC2130::ProcessCommand()
 {
-    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08x\n",m_cAxis, m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
+    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08lx\n",m_cAxis.load(), m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
     if (m_cmdProc.bitsIn.RW)
     {
         m_regs.raw[m_cmdProc.bitsIn.address] = m_cmdProc.bitsIn.data;
-        //printf("REG %c %02x set to: %010x\n", m_cAxis, m_cmdIn.bitsIn.address, m_cmdIn.bitsIn.data);
+        TRACE(printf("REG %c %02x set to: %08x\n", m_cAxis.load(), m_cmdProc.bitsIn.address,  m_regs.raw[m_cmdProc.bitsIn.address]));
 
 		if(m_cmdProc.bitsIn.address == 0x6C) // CHOPCONF
 		{
@@ -190,11 +192,11 @@ uint8_t TMC2130::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 {
     m_cmdIn.all<<=8; // Shift bits up
     m_cmdIn.bytes[0] = value;
-    TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",m_cAxis,value, m_cmdIn.all));
+    TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",m_cAxis.load(),value, m_cmdIn.all));
     // Clock out a reply byte, MSB first
     uint8_t byte = m_cmdOut.bytes[4];
     m_cmdOut.all<<=8;
-    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",m_cAxis,m_cmdOut.all,byte));
+    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",m_cAxis.load(),m_cmdOut.all,byte));
     SetSendReplyFlag();
     return byte; // SPIPeripheral takes care of the reply.
 }
@@ -210,7 +212,7 @@ void TMC2130::CheckDiagOut()
 // Called when CSEL changes.
 void TMC2130::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 {
-	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",m_cAxis,value));
+	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",m_cAxis.load(),value));
     if (value == 1) // Just finished a CSEL
     {
         m_cmdProc = m_cmdIn;
@@ -223,7 +225,7 @@ void TMC2130::OnDirIn(struct avr_irq_t * irq, uint32_t value)
 {
     if (irq->value == value)
         return;
-    TRACE(printf("TMC2130 %c: DIR changed to %02x\n",m_cAxis,value));
+    TRACE(printf("TMC2130 %c: DIR changed to %02x\n",m_cAxis.load(),value));
     m_bDir = value^cfg.bInverted; // XOR
 }
 
@@ -271,7 +273,7 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     m_fCurPos = StepToPos(m_iCurStep);
     uint32_t* posOut = (uint32_t*)(&m_fCurPos); // both 32 bits, just mangle it for sending over the wire.
     RaiseIRQ(POSITION_OUT, posOut[0]);
-    TRACE(printf("cur pos: %f (%u)\n",m_fCurPos,m_iCurStep));
+    TRACE(printf("cur pos: %f (%u) DE(%01x)\n",m_fCurPos.load(),m_iCurStep,m_regs.defs.CHOPCONF.dedge));
 	bStall |= m_bStall;
     if (bStall)
     {

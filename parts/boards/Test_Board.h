@@ -30,6 +30,7 @@
 #include "Heater.h"                              // for Heater
 // #include "LED.h"                                 // for LED
 #include "PINDA.h"                               // for PINDA
+#include "PAT9125.h"
 #include "HC595.h"
 #include "IRSensor.h"                          // for IRSensor
 #include "RotaryEncoder.h"                       // for RotaryEncoder
@@ -94,6 +95,8 @@ namespace Boards
 			HD44780 m_lcd{20,4};
 
 			SDCard m_card {};
+
+			PAT9125 m_pat{};
 
 		private:
 

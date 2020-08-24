@@ -63,7 +63,9 @@ namespace Wirings
 					{LCD_PINS_ENABLE,45},
 					{LCD_PINS_RS,44},
 					{SDCARDDETECT,43},
-					{SDSS,42}
+					{SDSS,42},
+					{SWI2C_SCL, 21},
+					{SWI2C_SDA, 20},
 
 				};
 			};

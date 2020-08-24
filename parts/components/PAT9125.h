@@ -59,8 +59,8 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		{
 			RegisterActionAndMenu("Toggle","Toggles the IR sensor state",ActToggle);
 			RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
-			RegisterMenu("Toggle Filament jam",ActToggleJam);
-			RegisterMenu("Resume Auto",ActResumeAuto);
+			RegisterActionAndMenu("Toggle Jam","Toggles a jam (motion stall)",ActToggleJam);
+			RegisterActionAndMenu("Resume Auto","Resumes auto (MMU-pulley-based) operation",ActResumeAuto);
 		};
 
 		void Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)

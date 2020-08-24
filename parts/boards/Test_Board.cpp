@@ -102,6 +102,8 @@ namespace Boards
 		TryConnect(SDSS,m_card, SDCard::SPI_CSEL);
 		TryConnect(m_card, SDCard::CARD_PRESENT, SDCARDDETECT);
 
+		AddHardware(m_pat, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
+
 	}
 
 	// Convenience function for debug printing a particular pin.

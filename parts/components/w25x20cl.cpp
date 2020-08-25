@@ -24,6 +24,7 @@
 #include "w25x20cl.h"
 #include "TelemetryHost.h"
 
+#include <algorithm>
 #include <cstdlib>     // for exit, free, malloc
 #include <cstring>     // for memset, memcpy, strncpy
 #include <fstream>
@@ -74,7 +75,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 	{
 		case STATE_LOADING:
 		{
-			if (m_rxCnt >= sizeof(m_cmdIn))
+			if (m_rxCnt >= m_cmdIn.size())
 			{
 				cout << "w25x20cl_t: error: command too long: ";
 				for (auto i : m_cmdIn)
@@ -122,7 +123,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 							m_address |= m_cmdIn[i + 1];
 						}
 						m_address %= W25X20CL_TOTAL_SIZE;
-						memcpy(m_pageBuffer.begin(), m_flash.begin() + (m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE, W25X20CL_PAGE_SIZE);
+						memcpy(m_pageBuffer.data(), m_flash.begin() + (m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE, W25X20CL_PAGE_SIZE);
 						m_state = STATE_RUNNING;
 					}
 				} break;
@@ -216,7 +217,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t *, uint32_t value)
 	if (value == 0)
 	{
 		m_state = STATE_LOADING;
-		memset(m_cmdIn.begin(), 0, sizeof(m_cmdIn));
+		memset(m_cmdIn.data(), 0, m_cmdIn.size_bytes());
 		m_rxCnt = 0;
 		m_cmdOut = 0;
 		m_command = 0;
@@ -241,7 +242,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t *, uint32_t value)
 					if(!m_status_register.bits.WEL) break;
 					m_address /= W25X20CL_PAGE_SIZE;
 					m_address *= W25X20CL_PAGE_SIZE;
-					for (unsigned int i = 0; i < sizeof(m_pageBuffer); i++)
+					for (unsigned int i = 0; i < m_pageBuffer.size(); i++)
 						m_flash[m_address + i] &= m_pageBuffer[i];
 					m_status_register.bits.WEL = 0;
 				} break;
@@ -249,7 +250,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t *, uint32_t value)
 				case _CMD_CHIP_ERASE2:
 				{
 					if(!m_status_register.bits.WEL) break;
-					memset(m_flash.data(), 0xFF, sizeof(m_flash));
+					memset(m_flash.data(), 0xFF, m_flash.size_bytes());
 					m_status_register.bits.WEL = 0;
 				} break;
 				case _CMD_SECTOR_ERASE:

@@ -89,7 +89,7 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 		uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;
         void OnCSELIn(avr_irq_t *irq, uint32_t value) override;
 
-		uint8_t _m_flash[W25X20CL_TOTAL_SIZE+1];
+		uint8_t _m_flash[W25X20CL_TOTAL_SIZE];
 		uint8_t _m_pageBuffer[W25X20CL_PAGE_SIZE];
 		uint8_t _m_cmdIn[5];
 		gsl::span<uint8_t> m_flash {_m_flash};

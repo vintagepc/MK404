@@ -79,7 +79,7 @@ Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const vector<string>&
 		case Actions::SetPWM:
 		{
 			uint16_t uiRPM = (stoul(vArgs.at(0))*m_uiMaxRPM)/255U;
-			printf("New RPM: %u\n",uiRPM);
+			cout << "New RPM: " << uiRPM << '\n';
 			Set(uiRPM);
 			return LineStatus::Finished;
 		}
@@ -116,7 +116,7 @@ void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 }
 
 // Just a dummy wrapper to handle non-PWM control (digitalWrite)
-void Fan::OnDigitalChange(struct avr_irq_t * irq, uint32_t value)
+void Fan::OnDigitalChange(struct avr_irq_t *, uint32_t value)
 {
    	RaiseIRQ(PWM_IN, value*0xFF);
 }

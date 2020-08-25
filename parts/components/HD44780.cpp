@@ -116,7 +116,6 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 			}
 			else
 			{
-				printf("LN: \"%s\"\n", m_vLines.at(iLine).c_str());
 				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=string::npos;
 			}
 			m_uiLineChg^= iLine<0 ? 0xFF : 1U<<(unsigned int)iLine; // Reset line change tracking.

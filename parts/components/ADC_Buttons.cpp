@@ -90,9 +90,9 @@ void ADC_Buttons::Push(uint8_t uiBtn)
 	RegisterTimerUsec(m_fcnRelease,2500000, this);
 }
 
-avr_cycle_count_t ADC_Buttons::AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen)
+avr_cycle_count_t ADC_Buttons::AutoRelease(avr_t *, avr_cycle_count_t)
 {
-	printf("%s button release\n", GetName().c_str());
+	cout  << GetName() << " button release\n";
 	m_uiCurBtn = 0;
 	return 0;
 };

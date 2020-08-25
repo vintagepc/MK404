@@ -19,9 +19,9 @@
  */
 
 #include "Test_Board.h"
-#include "Test_Wiring.h"        // for Einsy_1_1a
-#include "RotaryEncoder.h"           // for HD44780
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
+#include "RotaryEncoder.h"           // for HD44780
+#include "Test_Wiring.h"        // for Einsy_1_1a
 #include "thermistortables.h"
 
 
@@ -50,10 +50,8 @@ namespace Boards
 		TryConnect(m_vSrc,VoltageSrc::DIGITAL_OUT, VOLT_PWR_PIN);
 
 		AddHardware(m_btns,2);
-
-		m_thrm.SetTable({(short*)temptable_5,
-								sizeof(temptable_5) / sizeof(short) / 2},
-								OVERSAMPLENR);
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
+		m_thrm.SetTable({(int16_t*)temptable_5, sizeof(temptable_5)},OVERSAMPLENR);
 
 		AddHardware(m_thrm,3);
 
@@ -88,9 +86,9 @@ namespace Boards
 		TryConnect(m_pinda, PINDA::TRIGGER_OUT, Z_MIN_PIN);
 
 		AddHardware(m_lcd);
-		PinNames::Pin ePins[4] = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
+		vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
 		for (int i = 0; i < 4; i++) {
-			TryConnect(ePins[i],m_lcd, HD44780::D4+i);
+			TryConnect(vePins.at(i),m_lcd, HD44780::D4+i);
 		}
 		TryConnect(LCD_PINS_RS,m_lcd, HD44780::RS);
 		TryConnect(LCD_PINS_ENABLE, m_lcd,HD44780::E);
@@ -107,9 +105,9 @@ namespace Boards
 	}
 
 	// Convenience function for debug printing a particular pin.
-	void Test_Board::DebugPin(avr_irq_t *irq, uint32_t value)
+	void Test_Board::DebugPin(avr_irq_t *, uint32_t value)
 	{
-		printf("Pin DBG: change to %8x\n",value);
+		cout << "Pin DBG: change to " << hex << value << '\n';
 	}
 
 	void Test_Board::OnAVRInit()
@@ -128,4 +126,4 @@ namespace Boards
 
 	}
 
-};
+}; // namespace Boards

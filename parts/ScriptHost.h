@@ -115,7 +115,10 @@ class ScriptHost: public IScriptable
 			m_clients[m_strName] = this;
 		}
 
+
 		typedef struct linestate_t{
+			linestate_t(){strCtxt = ""; iActID =  0; vArgs = {}; iLine = 0; pClient = nullptr; isValid = false; };
+			void dump() { cout << strCtxt << iActID <<iLine << pClient << isValid << "\n";}
 			string strCtxt;
 			unsigned int iActID;
 			vector<string> vArgs;
@@ -126,7 +129,7 @@ class ScriptHost: public IScriptable
 
 		inline static linestate_t& GetLineState()
 		{
-			static linestate_t state = {"",0,{},0,nullptr,false};
+			static linestate_t state;
 			return state;
 		}
 

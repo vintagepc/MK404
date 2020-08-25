@@ -48,7 +48,7 @@ jobs:
 
     - name: Install packages
       run: |
-        sudo apt-get update 
+        sudo apt-get update
         sudo apt-get purge clang-*
         sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install clang-5.0 clang-tidy
         sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu cppcheck
@@ -60,23 +60,22 @@ jobs:
       run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=DEBUG -DCPPCHECK_ONLY=1 ..
 
     - name: Run CPPCheck
-      run: cd ${{ runner.workspace }}/MK404/build && make CPPCheck
-      
+      run: cd ${{ runner.workspace }}/MK404/build && make -j2 CPPCheck
+
     - name: Run Clang-tidy
       run: |
         cd ${{ runner.workspace }}/MK404/build
         cmake -DCMAKE_BUILD_TYPE=DEBUG -DCPPCHECK_ONLY=0 -DENABLE_TIDY=1 ..
-        make simavr
-        make |& tee tidy.txt
-        
+        make -j2 simavr
+        make -j2 |& tee tidy.txt
+
     - name: Upload clang-tidy log
       uses: actions/upload-artifact@v2
       with:
         name: warnings
         path: ${{ runner.workspace }}/MK404/build/tidy.txt
-                
+
     - name : Final status
       id: tidy_status
       run: |
         ! grep -q "warning:" ${{ runner.workspace }}/MK404/build/tidy.txt
-        

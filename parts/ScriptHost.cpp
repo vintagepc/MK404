@@ -276,29 +276,40 @@ bool ScriptHost::CheckArg(const ArgType &type, const string &val)
 void ScriptHost::ParseLine(unsigned int iLine)
 {
 	string strCtxt, strAct;
-	auto lnState = GetLineState();
-	lnState.isValid = false;
-	//lnState.vArgs.clear();
-	if (!ScriptHost::GetLineParts(m_script.at(iLine),strCtxt,strAct,lnState.vArgs))
+	GetLineState().isValid = false;
+	//GetLineState().vArgs.clear();
+	if (!ScriptHost::GetLineParts(m_script.at(iLine),strCtxt,strAct,GetLineState().vArgs))
+	{
+		cout << "Failed to get parts\n";
 		return;
+	}
 
-	lnState.iLine = iLine;
+	GetLineState().iLine = iLine;
 	if(!m_clients.count(strCtxt) || m_clients.at(strCtxt)==nullptr)
+	{
+		cout << "No client\n";
 		return;
+	}
 
-	lnState.strCtxt = strCtxt;
+	GetLineState().strCtxt = strCtxt;
 
-	IScriptable *pClient = lnState.pClient = m_clients.at(strCtxt);
+	IScriptable *pClient = GetLineState().pClient = m_clients.at(strCtxt);
 
-	if (!lnState.pClient->m_ActionIDs.count(strAct))
+	if (!GetLineState().pClient->m_ActionIDs.count(strAct))
+	{
+		cout << "No action\n";
 		return;
+	}
 
-	int iID = lnState.iActID = pClient->m_ActionIDs[strAct];
+	int iID = GetLineState().iActID = pClient->m_ActionIDs[strAct];
 
-	if (lnState.vArgs.size()!=pClient->m_ActionArgs.at(iID).size())
+	if (GetLineState().vArgs.size()!=pClient->m_ActionArgs.at(iID).size())
+	{
+		cout << "Arg count mismatch\n";
 		return;
+	}
 
-	lnState.isValid = true;
+	GetLineState().isValid = true;
 }
 
 void ScriptHost::AddSubmenu(IScriptable *src)
@@ -362,17 +373,15 @@ void ScriptHost::OnAVRCycle()
 {
 	if (m_iLine>=m_script.size())
 		return; // Done.
-	auto lnState = GetLineState();
-	if (lnState.iLine != m_iLine || m_state == State::Idle)
+	if (GetLineState().iLine != m_iLine || m_state == State::Idle)
 	{
 		m_state = State::Running;
 		cout << "ScriptHost: Executing line " << m_script.at(m_iLine) << "\n";
 		ParseLine(m_iLine);
 	}
-
-	if (lnState.isValid)
+	if (GetLineState().isValid)
 	{
-		LS lsResult = lnState.pClient->ProcessAction(lnState.iActID,lnState.vArgs);
+		LS lsResult = GetLineState().pClient->ProcessAction(GetLineState().iActID,GetLineState().vArgs);
 		switch (lsResult)
 		{
 			case LS::Finished:
@@ -391,6 +400,10 @@ void ScriptHost::OnAVRCycle()
 			case LS::Waiting:
 			{
 				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount<=m_iTimeoutCycles)
+				{
+					break;
+				}
+				else
 				{
 					m_state = State::Timeout;
 				}

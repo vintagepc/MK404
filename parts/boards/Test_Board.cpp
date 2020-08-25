@@ -51,8 +51,8 @@ namespace Boards
 
 		AddHardware(m_btns,2);
 
-		m_thrm.SetTable((short*)temptable_5,
-								sizeof(temptable_5) / sizeof(short) / 2,
+		m_thrm.SetTable({(short*)temptable_5,
+								sizeof(temptable_5) / sizeof(short) / 2},
 								OVERSAMPLENR);
 
 		AddHardware(m_thrm,3);

@@ -301,12 +301,12 @@ Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const vector<s
 	{
 		case ActClear:
 		{
-			memset(m_flash,0xFF,sizeof(m_flash));
+			memset(m_flash.data(),0xFF,m_flash.size_bytes());
 			return LineStatus::Finished;
 		}
 		case ActFill:
 		{
-			memset(m_flash,(unsigned)stoi(vArgs.at(0)) & 0xFFU,sizeof(m_flash));
+			memset(m_flash.data(),(unsigned)stoi(vArgs.at(0)) & 0xFFU,m_flash.size_bytes());
 			return LineStatus::Finished;
 		}
 		case ActLoad:
@@ -339,7 +339,7 @@ Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const vector<s
 	}
 }
 
-void w25x20cl::Load(const char* path)
+void w25x20cl::Load(const string &path)
 {
 		m_filepath = path;
 		Load();

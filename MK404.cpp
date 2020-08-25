@@ -72,7 +72,6 @@ void OnSigINT(int) {
 			pBoard->SetQuitFlag();
 		else if (printer)
 			printer->OnKeyPress('q',0,0);
-		}
 	}
 	else
 	{

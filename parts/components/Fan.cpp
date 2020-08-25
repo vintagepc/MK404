@@ -72,7 +72,7 @@ void Fan::Draw()
 }
 
 
-Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const vector<string>&)
+Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const vector<string>& vArgs)
 {
 	switch (ID)
 	{

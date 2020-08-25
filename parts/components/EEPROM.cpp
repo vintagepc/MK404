@@ -44,7 +44,7 @@ void EEPROM::Load()
 {
 	m_uiSize = m_pAVR->e2end + 1;
 
-    ifstream fsIn(strFile, fsIn.binary | fsIn.ate);
+    ifstream fsIn(m_strFile, fsIn.binary | fsIn.ate);
 	if (!fsIn.is_open() || fsIn.tellg() < m_pAVR->e2end) {
 		cerr << "ERROR: Could not open flash file. Flash contents were NOT restored" << '\n';
 	}

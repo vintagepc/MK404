@@ -25,6 +25,7 @@ set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 endif()
 
 add_subdirectory(3rdParty/tinyobjloader)
+add_subdirectory(3rdParty/gsl)
 
 add_subdirectory(scripts/tests)
 
@@ -225,14 +226,6 @@ include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 
 INCLUDE(3rdParty/gitversion/cmake.cmake)
 TARGET_GIT_VERSION_INIT(MK404)
-
-project( use-gsl-lite LANGUAGES CXX )
-
-# Provide #include access to gsl-lite as 'gsl/gsl-lite.hpp':
-
-add_library( gsl-lite INTERFACE )
-target_include_directories( gsl-lite INTERFACE 3rdParty/gsl )  # adapt as necessary
-
 
 if (NOT CPPCHECK_ONLY)
 

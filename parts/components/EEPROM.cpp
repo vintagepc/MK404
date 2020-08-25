@@ -77,7 +77,7 @@ void EEPROM::Clear()
 	std::vector<uint8_t> vE;
 	vE.resize(m_uiSize,0xFF);
 	avr_eeprom_desc_t io {.ee= vE.data(), .offset = 0, .size = m_uiSize};
-	avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io);
+	avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io); //NOLINT- complaint is external macro
 }
 
 void EEPROM::Save()

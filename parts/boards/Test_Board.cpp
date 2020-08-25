@@ -51,7 +51,7 @@ namespace Boards
 
 		AddHardware(m_btns,2);
 		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
-		m_thrm.SetTable({(int16_t*)temptable_5, sizeof(temptable_5)},OVERSAMPLENR);
+		m_thrm.SetTable({(int16_t*)temptable_5, sizeof(temptable_5)/sizeof(int16_t)},OVERSAMPLENR);
 
 		AddHardware(m_thrm,3);
 

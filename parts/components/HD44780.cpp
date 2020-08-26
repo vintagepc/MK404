@@ -98,14 +98,16 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 		}
 		case ActWaitForText:
 			int iLine = stoi(vArgs.at(1));
-			uint8_t uiLnChk = iLine<0 ? 0xFF : 1U<<(unsigned int)iLine;
+			uint8_t uiLnChk = iLine<0 ? 0xFF : 1U<<gsl::narrow<uint8_t>(iLine);
 			if (!(uiLnChk & m_uiLineChg)) // NO changes to check against.
 			{
 				return LineStatus::Waiting;
 			}
 
 			if (iLine>=m_uiHeight || iLine<-1)
+			{
 				return IssueLineError(string("Line index ") + to_string(iLine) + " is out of range [-1," + to_string (m_uiHeight) + "]");
+			}
 
 			bool bResult = false;
 			if (iLine<0)
@@ -120,7 +122,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 			{
 				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=string::npos;
 			}
-			m_uiLineChg^= iLine<0 ? 0xFF : 1U<<(unsigned int)iLine; // Reset line change tracking.
+			m_uiLineChg^= iLine<0 ? 0xFF : 1U<<gsl::narrow<uint8_t>(iLine); // Reset line change tracking.
 			return bResult ? LineStatus::Finished : LineStatus::Waiting;
 	}
 	return LineStatus::Unhandled;
@@ -214,6 +216,7 @@ uint32_t HD44780::OnDataReady()
 		}
 
 		for (unsigned int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
+		{
 			if (m_uiCursor>= m_lineOffsets.at(i) && m_uiCursor< (m_lineOffsets.at(i) + m_uiWidth))
 			{
 				int iPos =m_uiCursor - m_lineOffsets.at(i);
@@ -221,7 +224,7 @@ uint32_t HD44780::OnDataReady()
 				line[iPos] = m_uiDataPins;
 				m_uiLineChg |= 1U<<i;
 			}
-
+		}
 		TRACE(printf("hd44780_write_data %02x (%c) to %02x\n", m_uiDataPins, m_uiDataPins, m_uiCursor));
 		if (GetFlag(HD44780_FLAG_S_C)) {	// display shift ?
 			cout << "Display shift requested. Not implemented, sorry!\n";
@@ -323,18 +326,18 @@ uint32_t HD44780::ProcessWrite()
 	if (four) { // 4 bits !
 		if (comp)
 		{
-			m_uiDataPins = ((unsigned)m_uiDataPins & 0xf0U) | (((unsigned)m_uiPinState >> (unsigned)D4) & 0xfU);
+			m_uiDataPins = (m_uiDataPins & 0xf0U) | ((m_uiPinState >> gsl::narrow<uint8_t>(D4)) & 0xfU);
 		}
 		else
 		{
-			m_uiDataPins = ((unsigned)m_uiDataPins & 0xfU) | (((unsigned)m_uiPinState >> (unsigned)(D4-4U)) & 0xf0U);
+			m_uiDataPins = (m_uiDataPins & 0xfU) | ((m_uiPinState >> gsl::narrow<uint8_t>(D4-4U)) & 0xf0U);
 		}
 		write = comp;
 		ToggleFlag(HD44780_FLAG_LOWNIBBLE);
 	}
 	else
 	{	// 8 bits
-		m_uiDataPins = ((unsigned)m_uiPinState >> (unsigned int)D0) & 0xffU;
+		m_uiDataPins = (m_uiPinState >> gsl::narrow<uint8_t>(D0)) & 0xffU;
 		write++;
 	}
 	RaiseIRQ(DATA_IN, m_uiDataPins);

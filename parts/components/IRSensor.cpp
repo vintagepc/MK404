@@ -70,7 +70,7 @@ Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<s
 			{
 				return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [" + to_string(IR_MIN+1) + "," + to_string(IR_MAX-1) + "]" );
 			}
-			Set((IRState)iVal);
+			Set(static_cast<IRState>(iVal));
 			return LineStatus::Finished;
 		}
 		case ActSetV3Filament:

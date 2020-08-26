@@ -36,10 +36,15 @@
 #include <sys/stat.h>  // for fstat, stat, S_IRUSR, S_IWUSR
 #include <unistd.h>    // for close, off_t, ftruncate
 
-SDCard:: SDCard(const std::string &strFile):Scriptable("SDCard"),m_strFile(strFile)
+SDCard:: SDCard(std::string strFile):Scriptable("SDCard"),m_strFile(std::move(strFile))
 {
 	// Verify register packing/bounds/alignment.
 	Expects(sizeof(m_CmdIn.bits) == sizeof(m_CmdIn.bytes));
+
+	read_ptr = write_ptr = nullptr;
+	read_bytes_remaining = write_bytes_remaining = 0;
+	// lint complains.
+
 
 	RegisterActionAndMenu("Unmount", "Unmounts the currently mounted file, if any.", Actions::ActUnmount);
 	RegisterActionAndMenu("Remount", "Remounts the last mounted file, if any.", Actions::ActMountLast);
@@ -54,7 +59,7 @@ static uint8_t CRC7(gsl::span<uint8_t> data)
 	for (auto &c: data) {
 		crc ^= c;
 		for (j = 0; j < 8; j++) {
-			crc = (crc & 0x80u) ? (((unsigned)crc << 1U) ^ ((unsigned)poly << 1U)) : ((unsigned)crc << 1U);
+			crc = (crc & 0x80u) ? gsl::narrow_cast<uint8_t>(((crc << 1U) ^ (poly << 1U))) : gsl::narrow_cast<uint8_t>((crc << 1U));
 		}
 	}
 	return crc | 0x01U;
@@ -303,7 +308,7 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *, uint32_t value)
 		case State::COMMAND_REQUEST:
 			/* Receive a 6-byte command header. */
 			m_CmdIn.all<<=8;
-			m_CmdIn.all |= (uint8_t)value;
+			m_CmdIn.all |= gsl::narrow<uint8_t>(value);
 
 			if (++m_CmdCount > 5) {
 				/* If we've finished receiving the packet, process it and move to the response state. */
@@ -439,12 +444,12 @@ void SDCard::InitCSD()
 	_m_csd[5] |= READ_BL_LEN & 0xFU; //(READ_BL_LEN) - also, heh...
 	_m_csd[10] = (1U << 6U); //(ERASE_BLK_EN)
 	_m_csd[10] |= SECTOR_SIZE >> 1U; // (SECTOR_SIZE MSB)
-	_m_csd[11] = (uint8_t)(SECTOR_SIZE << 7U); // (SECTOR_SIZE LSB)
+	_m_csd[11] = gsl::narrow_cast<uint8_t>(SECTOR_SIZE << 7U); // (SECTOR_SIZE LSB)
 	_m_csd[11] |= WP_GRP_SIZE; //(WP_GRP_SIZE)
 	_m_csd[12] |= 0U << 7U; //(WP_GRP_ENABLE)
 	_m_csd[12] = 0x02U << 2U; //(R2W_FACTOR)
 	_m_csd[12] |= WRITE_BL_LEN >> 2U; //(WRITE_BL_LEN MSB)
-	_m_csd[13] = (uint8_t)(WRITE_BL_LEN << 6U); //(WRITE_BL_LEN LSB)
+	_m_csd[13] = gsl::narrow_cast<uint8_t>(WRITE_BL_LEN << 6U); //(WRITE_BL_LEN LSB)
 	_m_csd[13] |= 0U << 5U; //(WRITE_BL_PARTIAL)
 	_m_csd[14] = 0U << 7U; //(FILE_FORMAT_GRP)
 	_m_csd[14] |= 1U << 6U; //COPY
@@ -540,7 +545,7 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 			cout << "No SD image found. Aborting mount.\n";
 			return OnError(-1,true);
 		}
-		cout << "Autodetected SD image size as " << ((unsigned)image_size>>20U) << " Mb\n"; // >>20 = div by 1024*1024
+		cout << "Autodetected SD image size as " << image_size/(1024*1024) << " Mb\n";
 	}
 	else if (stat_buf.st_size < image_size)
 	{

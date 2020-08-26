@@ -322,9 +322,6 @@ TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
 	);
     memset(&m_regs.raw, 0, sizeof(m_regs.raw));
 
-	GetIRQ(DIR_IN)->flags |= IRQ_FLAG_FILTERED;
-	GetIRQ(ENABLE_IN)->flags |= IRQ_FLAG_FILTERED;
-
     m_regs.defs.DRV_STATUS.stst = true;
     m_regs.defs.DRV_STATUS.SG_RESULT = 250;
     m_regs.defs.GSTAT.reset = 1; // signal reset
@@ -367,6 +364,9 @@ void TMC2130::Init(struct avr_t * avr)
     RegisterNotify(DIR_IN,      MAKE_C_CALLBACK(TMC2130,OnDirIn), this);
     RegisterNotify(STEP_IN,     MAKE_C_CALLBACK(TMC2130,OnStepIn), this);
     RegisterNotify(ENABLE_IN,   MAKE_C_CALLBACK(TMC2130,OnEnableIn), this);
+
+	GetIRQ(DIR_IN)->flags |= IRQ_FLAG_FILTERED;
+	GetIRQ(ENABLE_IN)->flags |= IRQ_FLAG_FILTERED;
 
 	auto pTH = TelemetryHost::GetHost();
 	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Stepper},8);

@@ -31,7 +31,7 @@
 #include <string>
 
 #define W25X20CL_TOTAL_SIZE 262144
-#define W25X20CL_PAGE_SIZE 256
+#define W25X20CL_PAGE_SIZE 256U
 #define W25X20CL_SECTOR_SIZE 4096
 #define W25X20CL_BLOCK32_SIZE 32768
 #define W25X20CL_BLOCK64_SIZE 65536
@@ -83,16 +83,16 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 		uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;
         void OnCSELIn(avr_irq_t *irq, uint32_t value) override;
 
-		uint8_t _m_flash[W25X20CL_TOTAL_SIZE];
-		uint8_t _m_pageBuffer[W25X20CL_PAGE_SIZE];
-		uint8_t _m_cmdIn[5];
+		uint8_t _m_flash[W25X20CL_TOTAL_SIZE] = {0xFF};
+		uint8_t _m_pageBuffer[W25X20CL_PAGE_SIZE] = {0xFF};
+		uint8_t _m_cmdIn[5] = {0};
 		gsl::span<uint8_t> m_flash {_m_flash};
 		gsl::span<uint8_t> m_pageBuffer {_m_pageBuffer};
 		gsl::span<uint8_t> m_cmdIn {_m_cmdIn};
-		uint8_t m_rxCnt;
-		uint8_t m_cmdOut;
-		uint8_t m_command;
-		uint32_t m_address;
+		uint8_t m_rxCnt = 0;
+		uint8_t m_cmdOut = 0;
+		uint8_t m_command = 0;
+		uint32_t m_address = 0;
 		uint64_t m_UID = 0xDEADBEEFDEADBEEF;
 		union
 		{
@@ -107,7 +107,7 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 				uint8_t RES6 :1;
 				uint8_t SRP :1;
 			} bits;
-		} m_status_register;
+		} m_status_register {.byte = 0};
 		w25x20cl_states m_state = STATE_IDLE;
 		std::string m_filepath;
 

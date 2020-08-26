@@ -48,7 +48,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t *, avr_cycle_count_t)
 
     if (m_uiPWM>0)
     {
-        float fDelta = (m_fThermalMass*((float)(m_uiPWM)/255.0f))*0.3;
+        float fDelta = (m_fThermalMass*(static_cast<float>(m_uiPWM)/255.0f))*0.3f;
         m_fCurrentTemp += fDelta;
     }
     else // Cooling - do a little exponential decay
@@ -59,7 +59,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t *, avr_cycle_count_t)
 	m_iDrawTemp = m_fCurrentTemp;
 
     TRACE(printf("New temp value: %.02f\n",m_fCurrentTemp));
-    RaiseIRQ(TEMP_OUT,(int)(m_fCurrentTemp*256.f));
+    RaiseIRQ(TEMP_OUT,static_cast<int>(m_fCurrentTemp*256.f));
 
     if (m_uiPWM>0 || m_fCurrentTemp>m_fAmbientTemp+0.3)
 	{
@@ -68,7 +68,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t *, avr_cycle_count_t)
     else
     {
         m_fCurrentTemp = m_fAmbientTemp;
-        RaiseIRQ(TEMP_OUT,(int)(m_fCurrentTemp*256.f));
+        RaiseIRQ(TEMP_OUT,static_cast<int>(m_fCurrentTemp*256.f));
     }
     return 0;
 }
@@ -165,7 +165,7 @@ void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)
 	pTH->AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
 	pTH->AddTrace(this, TEMP_OUT, {TC::Heater});
 
-  	RaiseIRQ(TEMP_OUT,(int)(m_fCurrentTemp*256.f));
+  	RaiseIRQ(TEMP_OUT,static_cast<int>(m_fCurrentTemp*256.f));
 }
 
 void Heater::Set(uint8_t uiPWM)

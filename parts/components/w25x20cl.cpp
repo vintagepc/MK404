@@ -68,6 +68,7 @@ w25x20cl::w25x20cl():Scriptable("SPIFlash")
 	// Verify register packing/bounds/alignment.
 	Expects(sizeof(m_status_register) == sizeof(m_status_register.byte));
 
+
 	RegisterAction("Load","Reloads the last used file",ActLoad);
 	RegisterAction("Save","Saves the file",ActSave);
 	RegisterAction("Clear","Resets the flash memory to empty (0xFF)",ActClear);
@@ -205,7 +206,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 				case _CMD_PAGE_PROGRAM:
 				{
 					m_pageBuffer[m_address & 0xFFU] = value;
-					m_address = ((m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE) + (((unsigned)m_address + 1U) & 0xFFU);
+					m_address = ((m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE) + (((m_address) + 1U) & 0xFFU);
 				} break;
 			}
 			break;
@@ -254,7 +255,9 @@ void w25x20cl::OnCSELIn(struct avr_irq_t *, uint32_t value)
 					m_address /= W25X20CL_PAGE_SIZE;
 					m_address *= W25X20CL_PAGE_SIZE;
 					for (unsigned int i = 0; i < m_pageBuffer.size(); i++)
+					{
 						m_flash[m_address + i] &= m_pageBuffer[i];
+					}
 					m_status_register.bits.WEL = 0;
 				} break;
 				case _CMD_CHIP_ERASE:
@@ -318,7 +321,7 @@ Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const vector<s
 		}
 		case ActFill:
 		{
-			memset(m_flash.data(),(unsigned)stoi(vArgs.at(0)) & 0xFFU,m_flash.size_bytes());
+			memset(m_flash.data(),gsl::narrow<uint8_t>(stoi(vArgs.at(0))) & 0xFFU,m_flash.size_bytes());
 			return LineStatus::Finished;
 		}
 		case ActLoad:

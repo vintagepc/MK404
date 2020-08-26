@@ -45,7 +45,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 			_IRQ(CARD_PRESENT,		">SD.card_present")
 		#include "IRQHelper.h"
 
-		SDCard(const std::string &strFile = "SDCard.bin");
+		SDCard(std::string strFile = "SDCard.bin");
 
 		void Init(avr_t *avr);
 
@@ -153,7 +153,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 		struct {
 			uint8_t data[5];
 			uint8_t length; /* number of bytes of data which are valid */
-		} m_command_response;
+		} m_command_response {0, 0};
 
 		bool m_bSelected = false, m_bMounted = false;
 
@@ -181,11 +181,11 @@ class SDCard:public SPIPeripheral, public Scriptable
 
 		/* Internal registers. */
 		uint32_t m_ocr = 0; /* operation conditions register (OCR) */
-		uint8_t _m_csd[16]; /* card-specific data (CSD) register */
+		uint8_t _m_csd[16] = {0}; /* card-specific data (CSD) register */
 		gsl::span<uint8_t> m_csd;
 
-		uint16_t m_CRC;
-		uint8_t _m_ByteCRC[2];
+		uint16_t m_CRC = 0;
+		uint8_t _m_ByteCRC[2] = {0,0};
 		gsl::span<uint8_t> m_byteCRC {_m_ByteCRC,2};
 
 		/* Card data. */

@@ -325,18 +325,18 @@ uint32_t HD44780::ProcessWrite()
 	if (four) { // 4 bits !
 		if (comp)
 		{
-			m_uiDataPins = (m_uiDataPins & 0xf0U) | ((m_uiPinState >> gsl::narrow<uint8_t>(D4)) & 0xfU);
+			m_uiDataPins = (m_uiDataPins & 0xf0U) | (gsl::narrow<unsigned>(m_uiPinState >> gsl::narrow<uint8_t>(D4)) & 0xfU);
 		}
 		else
 		{
-			m_uiDataPins = (m_uiDataPins & 0xfU) | ((m_uiPinState >> gsl::narrow<uint8_t>(D4-4U)) & 0xf0U);
+			m_uiDataPins = (m_uiDataPins & 0xfU) | (gsl::narrow<unsigned>(m_uiPinState >> gsl::narrow<uint8_t>(D4-4U)) & 0xf0U);
 		}
 		write = comp;
 		ToggleFlag(HD44780_FLAG_LOWNIBBLE);
 	}
 	else
 	{	// 8 bits
-		m_uiDataPins = (m_uiPinState >> gsl::narrow<uint8_t>(D0)) & 0xffU;
+		m_uiDataPins = gsl::narrow<uint8_t>(m_uiPinState >> gsl::narrow<uint8_t>(D0));
 		write++;
 	}
 	RaiseIRQ(DATA_IN, m_uiDataPins);

@@ -60,7 +60,7 @@ static uint8_t CRC7(gsl::span<uint8_t> data)
 	for (auto &c: data) {
 		crc ^= c;
 		for (j = 0; j < 8; j++) {
-			crc = (crc & 0x80u) ? gsl::narrow_cast<uint8_t>(((crc << 1U) ^ (poly << 1U))) : gsl::narrow_cast<uint8_t>((crc << 1U));
+			crc = (crc & 0x80u) ? gsl::narrow_cast<uint8_t>((gsl::narrow_cast<uint8_t>(crc << 1U) ^ (poly << 1U))) : gsl::narrow_cast<uint8_t>((crc << 1U));
 		}
 	}
 	return crc | 0x01U;

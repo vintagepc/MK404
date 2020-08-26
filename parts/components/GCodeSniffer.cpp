@@ -48,7 +48,9 @@ void GCodeSniffer::OnByteIn(struct avr_irq_t *, uint32_t value)
 			m_strLine.clear();
 		}
 		else
+		{
 			m_strLine.push_back(c);
+		}
 	}
 }
 
@@ -61,7 +63,9 @@ void GCodeSniffer::Init(struct avr_t * avr, unsigned char chrUART)
 
 	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT); //NOLINT - complaint is external macro
 	if (src)
+	{
 		ConnectFrom(src, BYTE_IN);
+	}
 
     cout << "UART " << m_chrUART << " is now being monitored for '" << m_chrCode << "'" << '\n';
 

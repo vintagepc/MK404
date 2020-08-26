@@ -63,6 +63,17 @@
 // #define _CMD_JEDEC_ID      0x9f
 #define _CMD_RD_UID        0x4b
 
+w25x20cl::w25x20cl():Scriptable("SPIFlash")
+{
+	// Verify register packing/bounds/alignment.
+	Expects(sizeof(m_status_register) == sizeof(m_status_register.byte));
+
+	RegisterAction("Load","Reloads the last used file",ActLoad);
+	RegisterAction("Save","Saves the file",ActSave);
+	RegisterAction("Clear","Resets the flash memory to empty (0xFF)",ActClear);
+	RegisterAction("Fill","Fills the flash memory with the given value",ActFill,{ArgType::Int});
+};
+
 
 w25x20cl::~w25x20cl() = default;
 

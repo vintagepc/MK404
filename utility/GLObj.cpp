@@ -56,13 +56,17 @@ void GLObj::Load()
 {
 	m_bLoaded = LoadObjAndConvert(m_strFile.c_str());
 	if (!m_bLoaded)
+	{
 		cout << "Failed to load obj\n";
+	}
 
 	m_fMaxExtent = 0.5f * (m_extMax[0] - m_extMin[0]);
-	if (m_fMaxExtent < 0.5f * (m_extMax[1] - m_extMin[1])) {
+	if (m_fMaxExtent < 0.5f * (m_extMax[1] - m_extMin[1]))
+	{
 			m_fMaxExtent = 0.5f * (m_extMax[1] - m_extMin[1]);
 	}
-	if (m_fMaxExtent < 0.5f * (m_extMax[2] - m_extMin[2])) {
+	if (m_fMaxExtent < 0.5f * (m_extMax[2] - m_extMin[2]))
+	{
 			m_fMaxExtent = 0.5f * (m_extMax[2] - m_extMin[2]);
 	}
 }
@@ -71,14 +75,18 @@ void GLObj::SetAllVisible(bool bVisible)
 {
 	lock_guard<mutex> lock(m_lock);
 	for (auto &obj : m_DrawObjects)
+	{
 		obj.bDraw = bVisible;
+	}
 }
 
 void GLObj::SetSubobjectVisible(unsigned iObj, bool bVisible)
 {
 	lock_guard<mutex> lock(m_lock);
 	if (iObj<m_DrawObjects.size())
+	{
 		m_DrawObjects[iObj].bDraw = bVisible;
+	}
 }
 
 
@@ -91,12 +99,16 @@ void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 		m_DrawObjects[iObj].material_id = iMat;
 	}
 	else
+	{
 		cout << "GLObj: Tried to set invalid material or object.\n";
+	}
 }
 
 void GLObj::Draw() {
 	if (!m_bLoaded)
+	{
 		return;
+	}
 
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_FILL);
@@ -110,7 +122,9 @@ void GLObj::Draw() {
 	glTranslatef(m_fCorr[0],m_fCorr[1],m_fCorr[2]);
 	//glScalef(m_fScale,m_fScale,m_fScale);
 	if (m_swapMode == SwapMode::YMINUSZ)
+	{
 		glRotatef(-90,1,0,0);
+	}
 	lock_guard<mutex> lock(m_lock);
 	for (auto o : m_DrawObjects) {
 		if (o.vb < 1 || !o.bDraw) {
@@ -161,7 +175,9 @@ void GLObj::Draw() {
 
 static std::string GetBaseDir(const std::string &filepath) {
 	if (filepath.find_last_of("/\\") != std::string::npos)
+	{
 		return filepath.substr(0, filepath.find_last_of("/\\"));
+	}
 	return "";
 }
 
@@ -210,7 +226,9 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 		return false;
 	}
 	for (auto &vert : attrib.vertices)
+	{
 		vert *= m_fScale;
+	}
 
 	cout << "##### " << filename <<" #####\n";
 	cout << "# of vertices  = " << (attrib.vertices.size()) / 3 << '\n';
@@ -295,7 +313,9 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 					iMatlId = m_materials.size() - 1; // Default material is added to the last item in `m_materials`.
 				}
 				else
+				{
 					iMatlId = current_material_id;
+				}
 
 				//if (current_material_id >= m_materials.size()) {
 				//    std::cerr << "Invalid material index: " << current_material_id << '\n';

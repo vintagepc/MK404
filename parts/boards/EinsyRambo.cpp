@@ -179,7 +179,9 @@ namespace Boards
 		TryConnect(PowerPanic, Button::BUTTON_OUT, UVLO_PIN);
 
 		if (m_wiring.IsPin(W25X20CL_PIN_CS))
+		{
 			AddHardware(spiFlash,GetDIRQ(W25X20CL_PIN_CS));
+		}
 
 		AddUARTTrace('0'); // External
 		AddUARTTrace('2'); // MMU/internal/P3
@@ -218,9 +220,13 @@ namespace Boards
 
 		//depress encoder knob
 		if (!m_bFactoryReset)
+		{
 			SetPin(BTN_ENC,1);
+		}
 		else
+		{
 			SetPin(BTN_ENC,0);
+		}
 
 		m_bFactoryReset = false;
 

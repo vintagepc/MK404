@@ -50,11 +50,17 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 	}
 	g_pMK3SGL = this;
 	if (strModel == "lite")
+	{
 		m_Objs = new MK3S_Lite(bMMU);
+	}
 	else if (strModel == "fancy")
+	{
 		m_Objs = new MK3S_Full(bMMU);
+	}
 	else if (strModel == "bear")
+	{
 		m_Objs = new MK3S_Bear(bMMU);
+	}
 
 	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
 	RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);
@@ -110,7 +116,9 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 			m_MMUBase.SetAllVisible(false);
 			m_MMUBase.SetSubobjectVisible(17);
 			for (size_t i=32; i<43; i++)
+			{
 				m_MMUBase.SetSubobjectVisible(i); // LEDs
+			}
 		}
 	}
 
@@ -129,7 +137,7 @@ void MK3SGL::ResizeCB(int w, int h)
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, (float)w / (float)h, 0.01f, 100.0f);
+	gluPerspective(45.0, static_cast<float>(w) / static_cast<float>(h), 0.01f, 100.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -165,7 +173,9 @@ void MK3SGL::KeyCB(unsigned char c, int x, int y)
 	// printf("Int: %d\n",m_iDbg.load());
 	// printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
 	if (m_pParent)
+	{
 		m_pParent->OnKeyPress(c,x,y);
+	}
 }
 
 void MK3SGL::Init(avr_t *avr)
@@ -218,9 +228,13 @@ Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const vector<str
 void MK3SGL::TwistKnob(bool bDir)
 {
 	if (bDir)
+	{
 		m_iKnobPos = (m_iKnobPos+18)%360;
+	}
 	else
+	{
 		m_iKnobPos = (m_iKnobPos + 342)%360;
+	}
 }
 
 void MK3SGL::OnBoolChanged(avr_irq_t *irq, uint32_t value)
@@ -282,9 +296,13 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 		if ((bChanged>>i) &1U)
 		{
 			if ((value>>i) & 1U)
+			{
 				m_MMUBase.SetSubobjectMaterial(gsl::at(iLedBase,i%2)+gsl::at(iLedObj,i),gsl::at(iMtlOn,i%2));
+			}
 			else
+			{
 				m_MMUBase.SetSubobjectMaterial(gsl::at(iLedBase,i%2)+gsl::at(iLedObj,i),5);//iMtlOff[i%2]);
+			}
 		}
 	}
 
@@ -414,13 +432,17 @@ void MK3SGL::Draw()
 				}
 				glPushMatrix();
 					if (m_bPFanOn)
+					{
 						m_iPFanPos = (m_iPFanPos + 5)%360;
+					}
 					m_Objs->DrawPFan(m_iPFanPos);
 				glPopMatrix();
 
 				glPushMatrix();
 					if (m_bFanOn)
+					{
 						m_iFanPos = (m_iFanPos + 339)%360;
+					}
 					m_Objs->DrawEFan(m_iFanPos);
 				glPopMatrix();
 				glPushMatrix();
@@ -433,12 +455,16 @@ void MK3SGL::Draw()
 			glTranslatef(0,0,(m_fYPos));
 			m_Objs->Draw(OBJCollection::ObjClass::Y);
 			if (m_bPrintSurface)
+			{
 				m_Objs->Draw(OBJCollection::ObjClass::PrintSurface);
+			}
 			glPushMatrix();
 				glScalef(1,1,-1);
 				m_Objs->ApplyPrintTransform();
 				for (auto &c : m_vPrints)
+				{
 					c->Draw();
+				}
 			glPopMatrix();
 			if (m_bBedOn)
 			{
@@ -468,9 +494,13 @@ void MK3SGL::Draw()
 			glPopMatrix();
 		}
 		if (m_bSDCard) //if card present
+		{
 			m_Objs->Draw(OBJCollection::ObjClass::Media); // Draw removable media (SD, USB, etc)
+		}
 		if (m_Objs->SupportsMMU() && m_bMMU)
+		{
 			DrawMMU();
+		}
 		glutSwapBuffers();
 		m_bDirty = false;
 		glutSetWindow(iOldWin);
@@ -602,28 +632,44 @@ void MK3SGL::MouseCB(int button, int action, int, int)
 {
  	if (button == GLUT_LEFT_BUTTON) {
 		if (action == GLUT_DOWN)
+		{
 			m_camera.beginRotate();
+		}
 		else if (action == GLUT_UP)
+		{
 			m_camera.endRotate();
+		}
 	}
 	if (button == GLUT_RIGHT_BUTTON) {
 		if (action == GLUT_DOWN)
+		{
 			m_camera.beginPan();
+		}
 		else if (action == GLUT_UP)
+		{
 			m_camera.endPan();
+		}
 
 	}
 	if (button == GLUT_MIDDLE_BUTTON) {
 		if (action == GLUT_DOWN)
+		{
 			m_camera.beginZoom();
+		}
 		else if (action == GLUT_UP)
+		{
 			m_camera.endZoom();
+		}
 
 	}
 	if (button==3)
+	{
 		m_camera.zoom(0.5f);
+	}
 	if (button==4)
+	{
 		m_camera.zoom(-0.5f);
+	}
 
 	m_bDirty = true;
 }

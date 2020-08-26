@@ -55,16 +55,19 @@ glColorHelper(const hexColor_t &color, bool bMaterial = false)
 
 	if (bMaterial)
 	{
-		float fCol[4] = {	(float)(color.red)/255.0f,
-					(float)(color.green) / 255.0f,
-					(float)(color.blue) / 255.0f,
-					(float)(color.alpha) / 255.0f };
+		float fCol[4] = {
+					static_cast<float>(color.red)/255.0f,
+					static_cast<float>(color.green) / 255.0f,
+					static_cast<float>(color.blue) / 255.0f,
+					static_cast<float>(color.alpha) / 255.0f };
 		float fNone[4] = {0,0,0,1};
 		glMaterialfv(GL_FRONT_AND_BACK, US(GL_AMBIENT_AND_DIFFUSE) | US(GL_SPECULAR), static_cast<float*>(fNone));
 		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,  static_cast<float*>(fCol));
 	}
 	else
+	{
 		glColor4ub(color.red, color.green, color.blue, color.alpha);
+	}
 
 }
 
@@ -93,9 +96,13 @@ void HD44780GL::OnBrightnessDigital(struct avr_irq_t *,	uint32_t value)
 	}
 	//printf("Brightness digital pin changed: %02x\n",value);
 	if (value)
+	{
 		m_uiBrightness = 0xFF;
+	}
 	else
+	{
 		m_uiBrightness = 0x00;
+	}
 	SetFlag(HD44780_FLAG_DIRTY,1);
 
 }
@@ -114,7 +121,9 @@ void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, ui
 	auto uiData = hd44780_ROM_AOO.data.begin();
 	uint8_t iCols=8;
 	if (c<16)
+	{
 		uiData = m_cgRam.begin() + ((c & 7U) <<3U);
+	}
 	else
 	{
 		uiData += c*hd44780_ROM_AOO.h;
@@ -134,8 +143,8 @@ void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, ui
 
 			if (*uiData & (16U>>j))
 			{
-				auto x = (float)j;
-				auto y = (float)i;
+				auto x = static_cast<float>(j);
+				auto y = static_cast<float>(i);
 				float inset = 0.85;
 				if (shadow)
 				{
@@ -172,7 +181,7 @@ void HD44780GL::Draw(
 	uint8_t iCols = m_uiWidth;
 	uint8_t iRows = m_uiHeight;
 	int border = 3;
-	float fScale = (float)m_uiBrightness/255.f;
+	float fScale = static_cast<float>(m_uiBrightness)/255.f;
 	hexColor_t bg(background,fScale);
 
 	glColorHelper(bg, bMaterial);

@@ -77,7 +77,9 @@ void MMU2::Draw(float fY)		/* function called whenever redisplay needed */
         glColor3f(1,1,1);
 		glScalef(0.09,-0.05,0);
 		for (auto &c : m_strTitle)
+		{
 			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
+		}
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
@@ -135,9 +137,13 @@ void MMU2::SetupHardware()
 void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)
 {
 	if (!value && !m_bStarted)
+	{
 		StartAVR();
+	}
     else if (irq->value && !value)
+	{
         m_bReset = true;
+	}
 }
 
 void MMU2::ToggleFINDA()
@@ -173,5 +179,7 @@ void MMU2::LEDHandler(avr_irq_t *, uint32_t value)
 	uint32_t valOut = 0;
 	valOut = (value >>6U) & 0b1111111111U; // Just the LEDs.
 	if (GetIRQ(LEDS_OUT)->value != valOut)
+	{
 		RaiseIRQ(LEDS_OUT,valOut);
+	}
 }

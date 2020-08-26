@@ -45,13 +45,7 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 		_IRQ(SPI_CSEL,          "1<w25x20cl.cs_in")
 		#include "IRQHelper.h"
 
-	w25x20cl():Scriptable("SPIFlash")
-	{
-		RegisterAction("Load","Reloads the last used file",ActLoad);
-		RegisterAction("Save","Saves the file",ActSave);
-		RegisterAction("Clear","Resets the flash memory to empty (0xFF)",ActClear);
-		RegisterAction("Fill","Fills the flash memory with the given value",ActFill,{ArgType::Int});
-	};
+	w25x20cl();
 
 	// Destructor. Closes flash file.
 	~w25x20cl();

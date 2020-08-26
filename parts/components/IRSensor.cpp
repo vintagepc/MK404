@@ -27,9 +27,13 @@ uint32_t IRSensor::OnADCRead(struct avr_irq_t *, uint32_t)
 {
     float fVal;
     if (m_eCurrent != IR_AUTO)
+	{
         fVal = m_mIRVals[m_eCurrent];
+	}
     else if (m_bExternal)
+	{
         fVal = m_mIRVals[IR_v4_FILAMENT_PRESENT];
+	}
     else
 	{
         fVal = m_mIRVals[IR_v4_NO_FILAMENT];
@@ -63,7 +67,9 @@ Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<s
 		{
 			int iVal = stoi(vArgs.at(0));
 			if (iVal<=IR_MIN || iVal >= IR_MAX)
+			{
 				return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [" + to_string(IR_MIN+1) + "," + to_string(IR_MAX-1) + "]" );
+			}
 			Set((IRState)iVal);
 			return LineStatus::Finished;
 		}
@@ -93,8 +99,9 @@ Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<s
 void IRSensor::Toggle()
 {
 	if (m_eCurrent == IR_AUTO)
+	{
 		cout << "NOTE: Overriding IR Auto setting!" << '\n';
-
+	}
 	if (m_eCurrent == IR_v4_NO_FILAMENT ||
 		m_eCurrent == IR_v3_NO_FILAMENT)
 	{

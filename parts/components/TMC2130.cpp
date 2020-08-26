@@ -41,7 +41,9 @@
 void TMC2130::Draw()
 {
         if (!m_bConfigured)
+		{
             return; // Motors not ready yet.
+		}
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -70,9 +72,10 @@ void TMC2130::Draw()
             glTranslatef(280,7,0);
             glScalef(0.09,-0.05,0);
             string strPos = to_string(m_fCurPos);
-            for (int i=0; i<min(7,(int)strPos.size()); i++)
+            for (int i=0; i<min(7,static_cast<int>(strPos.size())); i++)
+			{
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
-
+			}
         glPopMatrix();
 		glPushMatrix();
 			glTranslatef(20,0,0);
@@ -103,7 +106,9 @@ void TMC2130::Draw()
 void TMC2130::Draw_Simple()
 {
         if (!m_bConfigured)
+		{
             return; // Motors not ready yet.
+		}
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -132,8 +137,10 @@ void TMC2130::Draw_Simple()
             glTranslatef(30,7,0);
             glScalef(0.09,-0.05,0);
 			string strPos = to_string(m_fCurPos);
-            for (int i=0; i<min(7,(int)strPos.size()); i++)
+            for (int i=0; i<min(7,static_cast<int>(strPos.size())); i++)
+			{
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
+			}
         glPopMatrix();
 }
 
@@ -150,7 +157,9 @@ void TMC2130::CreateReply()
         TRACE(printf("Reading out %02x (%10lx)\n", m_cmdProc.bitsIn.address, m_cmdOut.bitsOut.data));
     }
     else
+	{
         m_cmdOut.bitsOut.data = m_cmdProc.bitsOut.data;
+	}
     // If the last was a write, the old data is left intact.
 
     // Set the status bits on the reply:
@@ -206,7 +215,9 @@ void TMC2130::CheckDiagOut()
     bool bDiag = m_regs.defs.DRV_STATUS.stallGuard && m_regs.defs.GCONF.diag0_stall;
     //printf("Diag: %01x\n",bDiag);
     if (bDiag)
+	{
         RaiseIRQ(DIAG_OUT, bDiag^ m_regs.defs.GCONF.diag0_int_pushpull);
+	}
 }
 
 // Called when CSEL changes.
@@ -221,10 +232,8 @@ void TMC2130::OnCSELIn(struct avr_irq_t *, uint32_t value)
 }
 
 // Called when DIR pin changes.
-void TMC2130::OnDirIn(struct avr_irq_t * irq, uint32_t value)
+void TMC2130::OnDirIn(struct avr_irq_t * , uint32_t value)
 {
-    if (irq->value == value)
-        return;
     TRACE(printf("TMC2130 %c: DIR changed to %02x\n",m_cAxis.load(),value));
     m_bDir = value^cfg.bInverted; // XOR
 }
@@ -252,9 +261,13 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     CancelTimer(m_fcnStandstill,this);
 	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",m_cAxis,value));
     if (m_bDir)
+	{
         m_iCurStep--;
+	}
     else
+	{
         m_iCurStep++;
+	}
     bool bStall = false;
     if (!cfg.bHasNoEndStops)
     {
@@ -293,17 +306,25 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 }
 
 // Called when DRV_EN is triggered.
-void TMC2130::OnEnableIn(struct avr_irq_t * irq, uint32_t value)
+void TMC2130::OnEnableIn(struct avr_irq_t *, uint32_t value)
 {
-    if (irq->value == value && m_bEnable == (value==0))
-        return;
 	TRACE(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis.load(),value));
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
 TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
 {
+		// Check register packing/sizes:
+	Expects(sizeof(m_regs) == sizeof(m_regs.raw));
+	Expects(
+		sizeof(m_cmdIn.bitsIn)==sizeof(m_cmdIn.bytes) &&
+		sizeof(m_cmdIn.bitsOut) == sizeof(m_cmdIn.bytes)
+	);
     memset(&m_regs.raw, 0, sizeof(m_regs.raw));
+
+	GetIRQ(DIR_IN)->flags |= IRQ_FLAG_FILTERED;
+	GetIRQ(ENABLE_IN)->flags |= IRQ_FLAG_FILTERED;
+
     m_regs.defs.DRV_STATUS.stst = true;
     m_regs.defs.DRV_STATUS.SG_RESULT = 250;
     m_regs.defs.GSTAT.reset = 1; // signal reset
@@ -359,10 +380,10 @@ void TMC2130::Init(struct avr_t * avr)
 
 float TMC2130::StepToPos(int32_t step)
 {
-	return (float)step/16*(float)(1u<<m_regs.defs.CHOPCONF.mres)/(float)cfg.uiStepsPerMM;
+	return static_cast<float>(step)/16*static_cast<float>(1u<<m_regs.defs.CHOPCONF.mres)/static_cast<float>(cfg.uiStepsPerMM);
 }
 
 int32_t TMC2130::PosToStep(float pos)
 {
-	return pos*16/(float)(1u<<m_regs.defs.CHOPCONF.mres)*(float)cfg.uiStepsPerMM;
+	return pos*16/static_cast<float>(1u<<m_regs.defs.CHOPCONF.mres)*static_cast<float>(cfg.uiStepsPerMM);
 }

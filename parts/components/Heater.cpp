@@ -42,7 +42,9 @@
 avr_cycle_count_t Heater::OnTempTick(avr_t *, avr_cycle_count_t)
 {
 	if (m_bStopTicking)
+	{
 		return 0;
+	}
 
     if (m_uiPWM>0)
     {
@@ -60,7 +62,9 @@ avr_cycle_count_t Heater::OnTempTick(avr_t *, avr_cycle_count_t)
     RaiseIRQ(TEMP_OUT,(int)(m_fCurrentTemp*256.f));
 
     if (m_uiPWM>0 || m_fCurrentTemp>m_fAmbientTemp+0.3)
+	{
         RegisterTimerUsec(m_fcnTempTick,300000,this);
+	}
     else
     {
         m_fCurrentTemp = m_fAmbientTemp;
@@ -73,12 +77,18 @@ avr_cycle_count_t Heater::OnTempTick(avr_t *, avr_cycle_count_t)
 void Heater::OnPWMChanged(struct avr_irq_t *,uint32_t value)
 {
     if (m_bAuto) // Only update if auto (pwm-controlled). Else user supplied RPM.
+	{
         m_uiPWM = value;
+	}
 	TRACE(printf("New PWM: %02x\n",value));
     if (m_uiPWM > 0)
+	{
         RegisterTimerUsec(m_fcnTempTick, 100000, this);
+	}
     if (GetIRQ(ON_OUT)->value != (m_uiPWM>0))
+	{
         RaiseIRQ(ON_OUT,m_uiPWM>0);
+	}
 }
 
 //TCCR0A  _SFR_IO8(0x24)
@@ -95,7 +105,9 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
     }
 
     if (value==1)
+	{
         value = 255;
+	}
 
     OnPWMChanged(irq,value);
 }

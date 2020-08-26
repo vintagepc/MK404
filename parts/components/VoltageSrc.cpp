@@ -31,7 +31,7 @@ uint32_t VoltageSrc::OnADCRead(struct avr_irq_t*, uint32_t)
 
 void VoltageSrc::OnInput(struct avr_irq_t*, uint32_t value)
 {
-    m_fCurrentV = (float)value / 256.0f;
+    m_fCurrentV = static_cast<float>(value) / 256.0f;
 }
 
 VoltageSrc::VoltageSrc(float fVScale,float fStart):Scriptable("VSrc"),m_fCurrentV(fStart), m_fVScale(fVScale)

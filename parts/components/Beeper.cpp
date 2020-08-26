@@ -39,7 +39,9 @@
 Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 {
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
+	{
 		cerr << "Failed to init SDL_Audio" << '\n';
+	}
 
     m_specWant.freq = m_uiSampleRate; // number of samples per second
     m_specWant.format = AUDIO_S16SYS; // sample type (here: signed short i.e. 16 bit)
@@ -111,7 +113,9 @@ void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)
 void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 {
 	if (m_bMuted)
+	{
 		return;
+	}
 	//printf("Beeper debug: %u on, %u total\n", uiTOn,uiTTotal);
 	if (uiTOn == 0)
 	{
@@ -124,10 +128,14 @@ void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 		m_uiCtOff = m_pAVR->frequency/(uiTTotal-uiTOn);
 		//printf("Beep @ %u Hz, duty cycle %u %\n",m_pAVR->frequency/uiTTotal, (100*uiTOn)/uiTTotal);
 		if (m_uiCtOn == 0)
+		{
 			return;
+		}
 		{
 			if (m_bPlaying && m_bAudioAvail)
+			{
 				SDL_PauseAudio(1);
+			}
 			m_uiCounter = m_uiSampleRate/m_uiCtOn;
 			m_bPlaying = true;
 			if (m_bAudioAvail) SDL_PauseAudio(0);
@@ -149,9 +157,13 @@ void Beeper::Draw()
 	uint16_t uiBrt = 255;//((m_uiFreq*9)/10)+25;
     glPushMatrix();
         if (m_bPlaying)
+		{
             glColor3us(255*uiBrt, 128*uiBrt, 0);
+		}
         else
+		{
             glColor3ub(25,12,0);
+		}
 
         glBegin(GL_QUADS);
             glVertex2f(0,10);
@@ -166,6 +178,8 @@ void Beeper::Draw()
         	glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'T');
 		glPopMatrix();
 		if (m_bMuted)
+		{
 			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'X');
+		}
     glPopMatrix();
 }

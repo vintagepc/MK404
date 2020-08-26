@@ -44,11 +44,17 @@ void rgb2hsv(gsl::span<const float> rgb, gsl::span<float> hsv)
 	else
 	{
 		if (max == r)
+		{
 			h = fmod(((g - b) / c), 6);
+		}
 		else if (max == g)
+		{
 			h = (b - r) / c + 2;
+		}
 		else
+		{
 			h = (r - g) / c + 4;
+		}
 		s = c / max;
 	}
 
@@ -118,9 +124,13 @@ void colorLerp(gsl::span<const float> a, gsl::span<const float> b, float v, gsl:
 	Color3fv hsv_a, hsv_b, hsv_c;
 
 	if (v > 1)
+	{
 		v = 1;
+	}
 	else if (v < 0)
+	{
 		v = 0;
+	}
 
 	rgb2hsv(a, hsv_a);
 	rgb2hsv(b, hsv_b);

@@ -36,6 +36,16 @@
 #include <sys/stat.h>  // for fstat, stat, S_IRUSR, S_IWUSR
 #include <unistd.h>    // for close, off_t, ftruncate
 
+SDCard:: SDCard(const std::string &strFile):Scriptable("SDCard"),m_strFile(strFile)
+{
+	// Verify register packing/bounds/alignment.
+	Expects(sizeof(m_CmdIn.bits) == sizeof(m_CmdIn.bytes));
+
+	RegisterActionAndMenu("Unmount", "Unmounts the currently mounted file, if any.", Actions::ActUnmount);
+	RegisterActionAndMenu("Remount", "Remounts the last mounted file, if any.", Actions::ActMountLast);
+	RegisterAction("Mount", "Mounts the specified file on the SD card.",ActMountFile,{ArgType::String});
+};
+
 static uint8_t CRC7(gsl::span<uint8_t> data)
 {
 	const uint8_t poly = 0b10001001;
@@ -267,7 +277,9 @@ void SDCard::OnCSELIn (struct avr_irq_t *, uint32_t value)
 	m_bSelected = value==0;
 	DEBUG ("SD card selected: %u. In state: %d", m_bSelected, m_state);
 	if (!m_bSelected)
+	{
 		m_state = State::IDLE;
+	}
 }
 
 uint8_t SDCard::OnSPIIn(struct avr_irq_t *, uint32_t value)
@@ -442,7 +454,6 @@ void SDCard::InitCSD()
 	m_csd = {static_cast<uint8_t*>(_m_csd),16};
 	_m_csd[15] = CRC7(m_csd.subspan(0,m_csd.size()-1));
 }
-
 void SDCard::SetCSDCSize(off_t c_size)
 {
 	Expects((c_size % (512 * 1024)) == 0);
@@ -497,21 +508,29 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 
 	struct stat stat_buf {};
 	if (!filename.empty())
+	{
 		m_strFile = filename; // New file given.
+	}
 
 	/* Open the specified disk image. */
 	fd = open (m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR); //NOLINT - no c++ stl non vararg memmap available.
 
 	if (fd == -1)
+	{
 		return errno;
+	}
 
 	/* Lock it for exclusive access. */
 	if (flock (fd, LOCK_EX) == -1)
+	{
 		return OnError(errno);
+	}
 
 	/* Check its size. If it's smaller than the requested size, expand it. Otherwise, ignore any excess size. */
 	if (fstat (fd, &stat_buf) == -1)
+	{
 		return OnError(errno,true);
+	}
 
 	if (image_size == 0)
 	{
@@ -526,14 +545,18 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 	else if (stat_buf.st_size < image_size)
 	{
 		if (ftruncate (fd, image_size) == -1)
+		{
 			return OnError(errno, true);
+		}
 	}
 
 	/* Map it into memory. */
 	mapped = mmap (nullptr, image_size, US(PROT_READ) | US(PROT_WRITE), MAP_SHARED, fd, 0);
 
 	if (mapped == MAP_FAILED) //NOLINT - complaint in system library
+	{
 		return OnError(errno,true);
+	}
 
 	/* Success. */
 	m_data = {static_cast<uint8_t*>(mapped),gsl::narrow<uint64_t>(image_size)};

@@ -53,14 +53,18 @@ void PINDA::CheckTriggerNoSheet()
         float fTrigZ = (1.0*(1-pow(fEdist/5,2))) + 3.0 ;
         //printf("fTZ:%f fZ: %f\n",fTrigZ, this->fPos[2]);
         if (m_fPos[2]<=fTrigZ)
+		{
             RaiseIRQ(TRIGGER_OUT,1);
+		}
         else
+		{
             RaiseIRQ(TRIGGER_OUT,0);
+		}
     }
 	else
 	{
 		RaiseIRQ(TRIGGER_OUT,0);
-}
+	}
 }
 
 Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<string> &vArgs)
@@ -88,7 +92,9 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<str
 		{
 			int iVal = stoi(vArgs.at(0));
 			if (iVal<0 || iVal > 48)
+			{
 				return IssueLineError(string("Index ") + to_string(iVal) + " is out of range [0,48]");
+			}
 			float fVal = stof(vArgs.at(1));
 			gsl::at(m_mesh.points,iVal) = fVal;
 			return LineStatus::Finished;
@@ -97,7 +103,9 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const vector<str
 		{
 			int iVal = stoi(vArgs.at(0));
 			if ((iVal<0) | (iVal>3))
+			{
 				return IssueLineError(string("Index ") + to_string(iVal) + " is out of range [0,3]");
+			}
 			float fX = stof(vArgs.at(1)), fY = stof(vArgs.at(2));
 			gsl::at(_bed_calibration_points,2*iVal) = fX;
 			gsl::at(_bed_calibration_points,(2*iVal)+1) = fY;
@@ -131,7 +139,7 @@ void PINDA::CheckTrigger()
     else
 	{
         RaiseIRQ(TRIGGER_OUT,0);
-}
+	}
 }
 
 void PINDA::OnXChanged(struct avr_irq_t*,uint32_t value)
@@ -140,8 +148,7 @@ void PINDA::OnXChanged(struct avr_irq_t*,uint32_t value)
 	std::memcpy(&fVal,&value,4);
      m_fPos[0] = fVal + m_fOffset[0];
     // We only need to check triggering on XY motion for selfcal
-    if (!m_bIsSheetPresent)
-        CheckTriggerNoSheet();
+    if (!m_bIsSheetPresent) CheckTriggerNoSheet();
 
 }
 
@@ -151,8 +158,7 @@ void PINDA::OnYChanged(struct avr_irq_t*,uint32_t value)
 	std::memcpy(&fVal,&value,4);
      m_fPos[1] = fVal + m_fOffset[1];
     // We only need to check triggering on XY motion for selfcal
-    if (!m_bIsSheetPresent)
-        CheckTriggerNoSheet();
+    if (!m_bIsSheetPresent) CheckTriggerNoSheet();
 
 }
 
@@ -164,15 +170,19 @@ void PINDA::OnZChanged(avr_irq_t*, uint32_t value)
 	std::memcpy(&fVal,&value,4);
     m_fPos[2] = fVal - m_fZTrigHeight;
     if (!m_bIsSheetPresent)
+	{
         CheckTriggerNoSheet();
+	}
     else
+	{
         CheckTrigger();
+	}
 }
 
 
 void PINDA::SetMBLMap()
 {
-    // TODO: read this from a file or so. For now just set it explicitly:
+    // Eventually. read this from a file or so. For now just set it explicitly:
     // Double braces are to squelch GCC bug 53119
     m_mesh = (MBLMap_t){{0.04584,	0.07806,	0.10584,	0.12917,	0.14806,	0.1625, 	0.1725,
         0.00973,	0.04031,	0.06306,	0.07797,	0.08503,	0.08426,	0.07565,

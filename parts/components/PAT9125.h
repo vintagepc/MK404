@@ -57,6 +57,9 @@ class PAT9125: public I2CPeripheral, public Scriptable
 
 		PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125")
 		{
+			// Check register packing/sizes:
+			Expects(sizeof(m_regs) == sizeof(m_regs.raw));
+
 			RegisterActionAndMenu("Toggle","Toggles the IR sensor state",ActToggle);
 			RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
 			RegisterActionAndMenu("Toggle Jam","Toggles a jam (motion stall)",ActToggleJam);

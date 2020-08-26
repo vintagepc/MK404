@@ -37,7 +37,9 @@
 void UART_Logger::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
 	if (!m_fsOut.is_open())
+	{
 		return;
+	}
     uint8_t c = value;
     m_fsOut.put(c);
 	if (!m_fsOut.fail())
@@ -62,8 +64,7 @@ void UART_Logger::Init(struct avr_t * avr, char chrUART)
 	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(chrUART), &f); //NOLINT - complaint is external macro
 
 	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT); //NOLINT - complaint is external macro
-	if (src)
-		ConnectFrom(src, BYTE_IN);
+	if (src) ConnectFrom(src, BYTE_IN);
 
     m_strFile[8] = chrUART;
 

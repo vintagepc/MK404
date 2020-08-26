@@ -39,7 +39,7 @@ class Scriptable: public IScriptable
 		// Registers a new no-argument Scriptable action with the given function, description, and an ID that will be
 		// provided in ProcessAction. This lets you set up an internal enum and switch() on actions
 		// instead of needing to make a string-comparison if-else conditional.
-		inline bool RegisterAction(const string &strAct, const string& strDesc, unsigned int ID) override
+		inline bool RegisterAction(const string &strAct, const string& strDesc, unsigned int ID) final
 		{
 			if (IScriptable::RegisterAction(strAct,strDesc,ID))
 			{

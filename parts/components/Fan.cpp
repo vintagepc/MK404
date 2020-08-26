@@ -61,7 +61,9 @@ void Fan::Draw()
         glTranslatef(9,5,-1);
         glScalef(0.10,-0.05,1);
 		if (bOn)
+		{
 			m_uiRot = (m_uiRot + (2*(m_uiPWM)/10))%360;
+		}
 		glRotatef(m_uiRot,0,0,-1);
 		glTranslatef(-50,-50,0);
 		glPushAttrib(GL_LINE_BIT);
@@ -97,11 +99,13 @@ void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 {
     m_uiPWM = value;
     if (m_bAuto) // Only update RPM if auto (pwm-controlled). Else user supplied RPM.
+	{
         m_uiCurrentRPM = ((m_uiMaxRPM)*value)/255;
+	}
 
     RaiseIRQ(SPEED_OUT,m_uiCurrentRPM);
 
-    float fSecPerRev = 60.0f/(float)m_uiCurrentRPM;
+    float fSecPerRev = 60.0f/static_cast<float>(m_uiCurrentRPM);
     float fuSPerRev = 1000000*fSecPerRev;
     m_uiUsecPulse = fuSPerRev/4; // 4 pulses per rev.
     TRACE(printf("New PWM(%u)/RPM/cyc: %u / %u / %u\n", m_uiMaxRPM, m_uiPWM.load(), m_uiCurrentRPM, m_uiUsecPulse));

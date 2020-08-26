@@ -103,13 +103,17 @@ bool FatImage::MakeFatImage(const string &strFile, const string &strSize)
 	std::memcpy(uiSectBytes.data(), &uiSector, 4);
 
 	for (int i=0; i<4; i++)
+	{
 		data[0x20+i] = uiSectBytes.at(i);
+	}
 
 	uiSector = SectorsPerFat(size);
 	std::memcpy(uiSectBytes.data(), &uiSector, 4);
 
 	for (int i=0; i<4; i++)
+	{
 		data[0x24+i] = uiSectBytes.at(i);
+	}
 
 
 	gsl::span<const uint8_t> FSInfo_1 (_FSInfo_1);

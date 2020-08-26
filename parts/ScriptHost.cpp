@@ -69,8 +69,9 @@ void ScriptHost::LoadScript(const string &strFile)
 	while (getline(fileIn, strLn))
 	{
 		if (strLn.empty() || strLn[0]=='#')
+		{
 			continue;
-
+		}
 		m_script.push_back(strLn);
 	}
 	m_iLine = 0;
@@ -85,13 +86,17 @@ bool ScriptHost::GetLineParts(const string &strLine, string &strCtxt, string& st
 	size_t iArgEnd = strLine.find(')');
 	vector<string> args;
 	if (iCtxEnd == string::npos || iArgBegin == string::npos || iArgEnd == string::npos)
+	{
 		return false;
+	}
 	strCtxt = strLine.substr(0,iCtxEnd);
 	strAct = strLine.substr(iCtxEnd+2, (iArgBegin - iCtxEnd)-2);
 	string strTmp, strArgs = strLine.substr(iArgBegin+1, (iArgEnd-iArgBegin)-1);
 	istringstream argsIn(strArgs);
 	while (getline(argsIn, strTmp,','))
+	{
 		args.push_back(strTmp);
+	}
 	vArgs = args;
 	return true;
 }
@@ -222,11 +227,15 @@ void ScriptHost::CreateRootMenu(int iWinID)
 	for (auto it = m_mMenuIDs.begin(); it!=m_mMenuIDs.end(); it++)
 	{
 		if (it->second != 0)
+		{
 			continue;
+		}
 		auto str = it->first;
 		int iID = glutCreateMenu(ScriptHost::MenuCB);
 		if (m_mClientEntries.count(str)==0)
+		{
 			glutAddMenuEntry("No options",m_mClient2MenuBase.at(str));
+		}
 		else
 		{
 			while (m_mClientEntries.at(str).size()>0)
@@ -316,7 +325,9 @@ void ScriptHost::AddSubmenu(IScriptable *src)
 {
 	std::string strName = src->GetName();
 	if (m_bMenuCreated)
+	{
 		cout << "Adding a menu entry after GLUT is up... TODO\n";
+	}
 	else if (!m_mMenuIDs.count(strName)) // GLUT isn't up yet, queue it for later.
 	{
 		m_mMenuIDs[strName] = 0;
@@ -361,7 +372,9 @@ void ScriptHost::AddScriptable(const string &strName, IScriptable* src)
 				return;
 			}
 			else if (m_clients.at(strNew) == src)
+			{
 				return;
+			}
 		};
 		cerr << "ScriptHost: More than 10 duplicate identifiers. You should do something about that.\n";
 
@@ -372,7 +385,9 @@ using LS = IScriptable::LineStatus;
 void ScriptHost::OnAVRCycle()
 {
 	if (m_iLine>=m_script.size())
+	{
 		return; // Done.
+	}
 	if (GetLineState().iLine != m_iLine || m_state == State::Idle)
 	{
 		m_state = State::Running;

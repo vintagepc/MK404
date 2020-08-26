@@ -48,7 +48,9 @@ void Prusa_MK3SMMU2::SetupHardware()
 void Prusa_MK3SMMU2::OnVisualTypeSet(string type)
 {
 	if (type=="none")
+	{
 		return;
+	}
 	Prusa_MK3S::OnVisualTypeSet(type);
 	// Wire up the additional MMU stuff.
 
@@ -72,7 +74,7 @@ void Prusa_MK3SMMU2::Draw()
 {
 	glPushMatrix();
 		Prusa_MK3S::Draw();
-		m_MMU.Draw((float)GetWindowSize().second);
+		m_MMU.Draw(static_cast<float>(GetWindowSize().second));
 	glPopMatrix();
 }
 

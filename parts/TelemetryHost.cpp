@@ -32,22 +32,24 @@ void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uin
 	bool bShouldAdd = false;
 	// Check categories.
 	for (auto &vCat : vCats)
+	{
 		if (find(m_VLoglst.begin(), m_VLoglst.end(), vCat)!=m_VLoglst.end())
 		{
 			bShouldAdd = true;
 			break;
 		}
-
+	}
 	strName+= "_";
 	strName.append(pIRQ->name);
 	// Check explicit names
 	for (auto &sName : m_vsNames)
+	{
 		if (strName.rfind(sName,0)==0)
 		{
 			bShouldAdd = true;
 			break;
 		}
-
+	}
 
 	if (bShouldAdd)
 	{
@@ -59,10 +61,14 @@ void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uin
 		m_mIRQs[strName] = pIRQ;
 		m_mCatsByName[strName] = vCats;
 		for(auto &vCat : vCats)
+		{
 			m_mNamesByCat[vCat].push_back(strName);
+		}
 	}
 	else
+	{
 		cerr << "ERROR: Trying to add the same IRQ "<<  strName <<" to a VCD trace multiple times!\n";
+	}
 }
 
 void TelemetryHost::SetCategories(const vector<string> &vsCats)
@@ -70,9 +76,13 @@ void TelemetryHost::SetCategories(const vector<string> &vsCats)
 	for (auto &sCat : vsCats)
 	{
 		if (!m_mStr2Cat.count(sCat))
+		{
 			m_vsNames.push_back(sCat); // Save non-category for name check later.
+		}
 		else if (find(m_VLoglst.begin(), m_VLoglst.end(), m_mStr2Cat.at(sCat))==m_VLoglst.end())
+		{
 			m_VLoglst.push_back(m_mStr2Cat.at(sCat));
+		}
 	}
 }
 
@@ -87,7 +97,9 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vec
 			if (m_pCurrentIRQ == nullptr)
 			{
 				if (!m_mIRQs.count(vArgs.at(0)))
+				{
 					return IssueLineError("Asked to wait for telemetry " + vArgs.at(0) + " but it was not found");
+				}
 				else
 				{
 					m_pCurrentIRQ = m_mIRQs[vArgs.at(0)];
@@ -100,19 +112,26 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vec
 			}
 			bool bMatch = false;
 			if (iAct==ActWaitForLT)
+			{
 				bMatch = m_pCurrentIRQ->value < m_uiMatchVal;
+			}
 			else if (iAct == ActWaitForGT)
+			{
 				bMatch = m_pCurrentIRQ->value > m_uiMatchVal;
+			}
 			else
+			{
 				bMatch = m_pCurrentIRQ->value == m_uiMatchVal;
-
+			}
 			if (bMatch)
 			{
 				m_pCurrentIRQ = nullptr;
 				return LineStatus::Finished;
 			}
 			else
+			{
 				return LineStatus::Waiting;
+			}
 		}
 		case ActStartTrace:
 		{
@@ -151,12 +170,17 @@ void TelemetryHost::PrintTelemetry(bool bMarkdown)
 	{
 		string strCats(bMarkdown?"|":"");
 		for (auto &sName : it.second)
+		{
 			strCats += " `" + m_mCat2Str.at(sName) + "`";
-
+		}
 		if (bMarkdown)
+		{
 			cout << it.first << strCats << '\n';
+		}
 		else
+		{
 			cout << '\t' << std::setw(40) << std::left << it.first << strCats << '\n';
+		}
 
 	}
 	cout << (bMarkdown? "### " : "\t") << "By Category\n";
@@ -167,9 +191,13 @@ void TelemetryHost::PrintTelemetry(bool bMarkdown)
 		for (auto &name : cat.second)
 		{
 			if (bMarkdown)
+			{
 				cout << " - ";
+			}
 			else
+			{
 				cout << "\t\t\t";
+			}
 			cout << name << '\n';
 		}
 	}

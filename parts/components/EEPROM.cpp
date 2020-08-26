@@ -67,7 +67,9 @@ void EEPROM::Load()
 			bEmpty &= b==0;
 		}
 		if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
+		{
 			avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io); //NOLINT- complaint is external macro
+		}
 	}
 	fsIn.close();
 }
@@ -111,7 +113,9 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 			unsigned int uiAddr = stoi(vArgs.at(0));
 			uint8_t uiVal = stoi(vArgs.at(1));
 			if (uiAddr>=m_uiSize)
+			{
 				return IssueLineError(string("Address ") + to_string(uiAddr) + " is out of range [0," + to_string(m_uiSize-1) + "]");
+			}
 			else
 			{
 				Poke(uiAddr, uiVal);

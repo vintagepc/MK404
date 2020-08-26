@@ -69,9 +69,13 @@ void OnSigINT(int) {
 		cout << "Caught SIGINT... stopping..." << '\n';
 		m_bStopping = true;
 		if (m_bTestMode)
+		{
 			pBoard->SetQuitFlag();
+		}
 		else if (printer)
+		{
 			printer->OnKeyPress('q',0,0);
+		}
 	}
 	else
 	{

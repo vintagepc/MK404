@@ -21,6 +21,7 @@
 
 
 #include "LED.h"
+#include "gsl-lite.hpp"
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex2f, glBegin, glColor3f, glEnd
@@ -41,10 +42,15 @@ void LED::OnValueChanged(struct avr_irq_t*, uint32_t value)
 
 void LED::OnPWMChanged(struct avr_irq_t*, uint32_t value)
 {
+	auto uiVal = gsl::narrow<uint8_t>(value);
 	if (m_bInvert)
-		m_uiBrightness = 255-((uint8_t)value);
+	{
+		m_uiBrightness = 255u-uiVal;
+	}
 	else
-		m_uiBrightness = ((uint8_t)value);
+	{
+		m_uiBrightness = uiVal;
+	}
 }
 
 void LED::Draw()
@@ -53,9 +59,13 @@ void LED::Draw()
 	uint16_t uiBrt = ((m_uiBrightness*9)/10)+25;
     glPushMatrix();
         if (m_bOn)
+		{
             glColor3us(m_Color.red*uiBrt, m_Color.green*uiBrt, m_Color.blue*uiBrt);
+		}
         else
+		{
             glColor3ub(m_Color.red/10, m_Color.green/10, m_Color.blue/10);
+		}
 
         glBegin(GL_QUADS);
             glVertex2f(0,10);

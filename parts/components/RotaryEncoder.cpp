@@ -68,18 +68,21 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
     RaiseIRQ(OUT_B, gsl::at(m_States, m_iPhase)&1U);
 
     if(--m_uiPulseCt >0) // Continue ticking the encoder
+	{
 		RegisterTimerUsec(m_fcnStateChange,PULSE_DURATION_US,this);
+	}
 	else
+	{
 		m_bTimerRunning = false;
+	}
 	return 0;
 }
 
 avr_cycle_count_t RotaryEncoder::OnButtonReleaseTimer(avr_t *, avr_cycle_count_t)
 {
 	RaiseIRQ(OUT_BUTTON, 1);
-	if (m_bVerbose) {
-		cout << "ROTENC: Button release\n";
-	}
+	if (m_bVerbose)	cout << "ROTENC: Button release\n";
+
 	return 0;
 }
 
@@ -121,7 +124,9 @@ void RotaryEncoder::Release()
 void RotaryEncoder::Twist(Direction eDir)
 {
 	if (m_eDirection == eDir)
+	{
 		m_uiPulseCt+=4; // Just tick it more if the dir is correct.
+	}
 	else
 	{
 		m_eDirection = eDir;

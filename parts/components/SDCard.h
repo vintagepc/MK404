@@ -45,12 +45,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 			_IRQ(CARD_PRESENT,		">SD.card_present")
 		#include "IRQHelper.h"
 
-		SDCard(const std::string &strFile = "SDCard.bin"):Scriptable("SDCard"),m_strFile(strFile)
-		{
-			RegisterActionAndMenu("Unmount", "Unmounts the currently mounted file, if any.", Actions::ActUnmount);
-			RegisterActionAndMenu("Remount", "Remounts the last mounted file, if any.", Actions::ActMountLast);
-			RegisterAction("Mount", "Mounts the specified file on the SD card.",ActMountFile,{ArgType::String});
-		};
+		SDCard(const std::string &strFile = "SDCard.bin");
 
 		void Init(avr_t *avr);
 

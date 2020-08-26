@@ -32,9 +32,13 @@ void SerialLineMonitor::OnByteIn(struct avr_irq_t *, uint32_t value)
 	bool bNewLine = (c == 0x0a);
 
 	if (!bNewLine)
+	{
 		m_strLine.push_back(c);
+	}
 	else
+	{
 		OnNewLine();
+	}
 }
 
 void SerialLineMonitor::OnXOnIn(struct avr_irq_t *, uint32_t)
@@ -60,7 +64,9 @@ Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const v
 			return LineStatus::Timeout;
 		}
 		else if (!m_bMatched)
+		{
 			return LineStatus::Waiting;
+		}
 		m_strMatch.clear();
 		m_type = None;
 		m_bMatched = false;
@@ -96,11 +102,15 @@ Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const v
 Scriptable::LineStatus SerialLineMonitor::SendChar()
 {
 	if (!m_bXOn)
+	{
 		return LineStatus::Waiting;
+	}
 	RaiseIRQ(BYTE_OUT,m_itGCode[0]);
 	m_itGCode++;
 	if (m_itGCode!=m_strGCode.end())
+	{
 		return LineStatus::Waiting;
+	}
 	else
 	{
 		m_strGCode.clear();
@@ -147,8 +157,6 @@ void SerialLineMonitor::Init(struct avr_t * avr, char chrUART)
 		ConnectFrom(src, BYTE_IN);
 		ConnectTo(BYTE_OUT, dst);
 	}
-	if (xon)
-		avr_irq_register_notify(xon, MAKE_C_CALLBACK(SerialLineMonitor,OnXOnIn), this);
-	if (xoff)
-		avr_irq_register_notify(xoff, MAKE_C_CALLBACK(SerialLineMonitor,OnXOffIn),this);
+	if (xon) avr_irq_register_notify(xon, MAKE_C_CALLBACK(SerialLineMonitor,OnXOnIn), this);
+	if (xoff) avr_irq_register_notify(xoff, MAKE_C_CALLBACK(SerialLineMonitor,OnXOffIn),this);
 }

@@ -60,7 +60,7 @@ using std::cerr;
 using std::stoi;
 
 extern "C" {
-DEFINE_FIFO(uint8_t,uart_pty_fifo); //NOLINT - 3rd party file.
+	DEFINE_FIFO(uint8_t,uart_pty_fifo); //NOLINT - 3rd party file.
 }
 
 /*
@@ -74,7 +74,9 @@ void uart_pty::OnByteIn(struct avr_irq_t *, uint32_t value)
 
 	if (tap.s) {
 		if (tap.crlf && value == '\n')
+		{
 			uart_pty_fifo_write(&tap.in, '\r');
+		}
 		uart_pty_fifo_write(&tap.in, value);
 	}
 }
@@ -89,18 +91,24 @@ void uart_pty::FlushData()
 		uint8_t byte = uart_pty_fifo_read(&pty.out);
 		TRACE(printf("uart_pty_flush_incoming send r %03d:%02x\n", r, byte);)
 		if (m_chrLast == '\n' && byte == '\n')
+		{
 			cout << "Swallowing repeated newlines\n";
+		}
 		else
 		{
 			if (byte !='\n')
+			{
 				m_chrLast = byte;
+			}
 			RaiseIRQ(BYTE_OUT, byte);
 
 		}
 
 		if (tap.s) {
 			if (tap.crlf && byte == '\n')
+			{
 				uart_pty_fifo_write(&tap.in, '\r');
+			}
 			uart_pty_fifo_write(&tap.in, byte);
 		}
 	}
@@ -111,14 +119,20 @@ void uart_pty::FlushData()
 				uart_pty_fifo_write(&tap.in, '\n');
 			}
 			if (byte == '\n')
+			{
 				continue;
+			}
 			uart_pty_fifo_write(&tap.in, byte);
 			if (m_chrLast == '\n' && byte == '\n')
+			{
 				cout << "2Swallowing repeated newlines\n";
+			}
 			else
 			{
 				if (byte !='\n')
+				{
 					m_chrLast = byte;
+				}
 				RaiseIRQ(BYTE_OUT, byte);
 
 			}
@@ -145,8 +159,7 @@ void uart_pty::OnXOnIn(struct avr_irq_t * ,uint32_t)
 	FlushData();
 
 	// if the buffer is not flushed, try to do it later
-	if (m_bXOn)
-			RegisterTimer(m_fcnFlush,avr_hz_to_cycles(m_pAVR, 1000),this);
+	if (m_bXOn)	RegisterTimer(m_fcnFlush,avr_hz_to_cycles(m_pAVR, 1000),this);
 }
 
 /*
@@ -194,7 +207,9 @@ void* uart_pty::Run()
 		int ret = select(max+1, &read_set, &write_set, nullptr, &timo);
 
 		if (ret < 0)
+		{
 			break;
+		}
 
 		for (auto &p : port)
 		{
@@ -294,7 +309,9 @@ void uart_pty::Init(struct avr_t * avr)
 uart_pty::~uart_pty()
 {
 	if (!m_thread)
+	{
 		return;
+	}
 	cout << static_cast<const char*>(__func__) << '\n';
 	m_bQuit = true; // Signal thread it's time to quit.
 	for (auto &p: port)
@@ -319,14 +336,13 @@ void uart_pty::Connect(char uart)
 	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_INPUT); //NOLINT - complaint in external macro
 	avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XON); //NOLINT - complaint in external macro
 	avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XOFF); //NOLINT - complaint in external macro
-	if (src && dst) {
+	if (src && dst)
+	{
 		ConnectFrom(src, BYTE_IN);
 		ConnectTo(BYTE_OUT, dst);
 	}
-	if (xon)
-		avr_irq_register_notify(xon, MAKE_C_CALLBACK(uart_pty,OnXOnIn), this);
-	if (xoff)
-		avr_irq_register_notify(xoff, MAKE_C_CALLBACK(uart_pty,OnXOffIn),this);
+	if (xon) avr_irq_register_notify(xon, MAKE_C_CALLBACK(uart_pty,OnXOnIn), this);
+	if (xoff) avr_irq_register_notify(xoff, MAKE_C_CALLBACK(uart_pty,OnXOffIn),this);
 
 	//for (int ti = 0; ti < 1; ti++)
 		if (port[0].s) {
@@ -340,16 +356,24 @@ void uart_pty::Connect(char uart)
 			if (symlink(static_cast<char*>(port[0].slavename), strLnk.c_str()) != 0)
 			{
 				cerr << "WARN: Can't create " << strLnk << " " << strerror(errno);
-			} else {
+			}
+			else
+			{
 				cout << strLnk << " now points to: " << static_cast<char*>(port[0].slavename);
 			}
 		}
-	if (getenv("SIMAVR_UART_XTERM") && stoi(getenv("SIMAVR_UART_XTERM"))) {
+	if (getenv("SIMAVR_UART_XTERM") && stoi(getenv("SIMAVR_UART_XTERM")))
+	{
 		std::string strCmd("xterm -e picocom -b 115200 ");
 		strCmd += static_cast<char*>(tap.slavename);
 		strCmd += " >/dev/null 2>&1 &";
 		if (system(strCmd.c_str())<0) //NOLINT - no user-alterable params inside...
+		{
 			cout << "Could not launch xterm\n";
-	} else
+		}
+	}
+	else
+	{
 		cout << "note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal\n";
+	}
 }

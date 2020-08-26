@@ -68,10 +68,14 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 	// Trailing 0.0002 is fudge factor for LA/retraction threshold to avoid gaps at E end.
 
 	if ((bSamePos && !bExtruding) || (bSamePos && (iZ == m_iExtrEnd[1]))) //SamePos doesn't inculde Z so we don't get inf/zero slopes on hops.
+	{
 		return;
+	}
 
 	if (fE>m_fEMax)
+	{
 		m_fEMax = fE;
+	}
 	else if (!m_bExtruding && !bExtruding)
 	{
 		// Just update segment end if we are mid non-extrusion (travel)
@@ -125,7 +129,7 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 	else if (!bColinear)
 	{
 		// First, update the previous normal with the new vertex info.
-		// TODO: fB really should be pointing at the nearest vertex on the layer below, but that's a lot of coordinate
+		// TODO(#114): fB really should be pointing at the nearest vertex on the layer below, but that's a lot of coordinate
 		// that's going to be disposable once this changes to a geometry or normal shader instead of the current implemetnation
 		// so I'm going to leave it as is for now.
 		std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
@@ -201,7 +205,9 @@ void GLPrint::Draw()
 			glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());
 			if (m_ivCount.size()>0)
+			{
 				glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),((m_fvDraw.size()/3)-m_ivStart.back())-1);
+			}
 			if (m_bExtruding && m_fvDraw.size() >0)
 			{
 				glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fY.data());

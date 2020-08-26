@@ -124,7 +124,9 @@ namespace Boards {
 	{
 		cout << "Stopping " << m_strBoard << "_" << m_wiring.GetMCUName() << '\n';
 		if (m_thread==0)
+		{
 			return;
+		}
 		m_bQuit = true;
 		pthread_join(m_thread,nullptr);
 		m_thread = 0;
@@ -143,7 +145,8 @@ namespace Boards {
 			fsIn.seekg(fsIn.beg);
 			fsIn.read(reinterpret_cast<char*>(m_pAVR->flash), m_pAVR->flashend+1); //NOLINT maybe if fstream supported unsigned chars...
 			cout << strFlash << ": Read " << fsIn.gcount() << " bytes.\n";
-			if (fsIn.fail() || fsIn.gcount() != m_pAVR->flashend+1) {
+			if (fsIn.fail() || fsIn.gcount() != m_pAVR->flashend+1)
+			{
 				cerr << "Unable to load flash memory.\n";
 				exit(1);
 			}
@@ -185,7 +188,9 @@ namespace Boards {
 			{
 				gsl::unique_ptr<uint8_t> puiBytes {read_ihex_file(strFW.c_str(),&uiFWSize, &uiFWStart) };
 				if (!puiBytes)
+				{
 					cout << "WARN: Could not load " << strFW << ". MCU will execute existing flash." << '\n';
+				}
 				else
 				{
 					cout << "Loaded "  << uiFWSize << " bytes from HEX file: " << strFW << '\n';

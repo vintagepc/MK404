@@ -81,7 +81,9 @@ void Prusa_MK3S::Draw()
 			lIR.Draw();
 		glPopMatrix();
 	if ((GetVisualType()!="none") && m_pVis)
+	{
 		m_pVis->Draw();
+	}
 }
 
 std::pair<int,int> Prusa_MK3S::GetWindowSize(){
@@ -92,7 +94,9 @@ std::pair<int,int> Prusa_MK3S::GetWindowSize(){
 void Prusa_MK3S::OnVisualTypeSet(string type)
 {
 	if (type=="none")
+	{
 		return;
+	}
 
 	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
 
@@ -137,7 +141,9 @@ void Prusa_MK3S::SetupHardware()
 	SetupIR();
 
 	if (GetConnectSerial())
+	{
 		UART0.Connect('0');
+	}
 
 	auto fcnSerial = [](avr_t *avr, avr_io_addr_t addr, uint8_t v, void * param)
 	{auto *p = static_cast<Prusa_MK3S*>(param); p->FixSerial(avr, addr,v);};
@@ -243,7 +249,7 @@ void Prusa_MK3S::OnAVRCycle()
 
 void Prusa_MK3S::OnMouseMove(int,int)
 {
-	// TODO - passthrough for vis.
+	// Passthrough? May not be necessary...
 }
 
 void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)

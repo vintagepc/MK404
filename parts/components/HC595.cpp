@@ -43,7 +43,9 @@ void HC595::OnDataIn(struct avr_irq_t*, uint32_t value)
 void HC595::OnClockIn(struct avr_irq_t * irq, uint32_t value)
 {
 	if (irq->value && !value)
+	{
 		m_uiValue = m_uiValue<<1U | (m_uiCurBit);
+	}
 }
 
 /*
@@ -51,14 +53,15 @@ void HC595::OnClockIn(struct avr_irq_t * irq, uint32_t value)
  */
 void HC595::OnLatchIn(struct avr_irq_t * irq, uint32_t value)
 {
-	if (!irq->value && value) {	// rising edge
+	if (!irq->value && value)
+	{	// rising edge
 		uint32_t uiChanged = m_uiLatch ^ m_uiValue; // Grab the bits that have changed since last latch.
 		m_uiLatch = m_uiValue;
 		RaiseIRQ(OUT, m_uiLatch);
 		for (unsigned int i=0; i<32; i++)
-			if (uiChanged & (1U<<i))
-				RaiseIRQ(BIT0+i,(m_uiLatch>>i) & 1U);
-
+		{
+			if (uiChanged & (1U<<i)) RaiseIRQ(BIT0+i,(m_uiLatch>>i) & 1U);
+		}
 	}
 }
 
@@ -72,7 +75,9 @@ void HC595::OnResetIn(struct avr_irq_t * irq, uint32_t value)
 		m_uiLatch = m_uiValue = 0;
 		RaiseIRQ(OUT, m_uiLatch);
 		for (int i=0; i<32; i++)
+		{
 				RaiseIRQ(BIT0+i,0);
+		}
 	}
 }
 

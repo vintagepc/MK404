@@ -43,12 +43,17 @@ uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t *, uint32_t)
 
 	uint32_t iVOut = 5000;
     if (m_uiCurBtn == 1)
+	{
         iVOut = 170*5000/1023;
+	}
     else if (m_uiCurBtn == 2)
+	{
         iVOut = 90*5000/1023;
+	}
     else if (m_uiCurBtn ==3)
+	{
         iVOut = 25*5000/1023;
-
+	}
     return iVOut;
 }
 
@@ -65,7 +70,9 @@ Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const vect
 				return LineStatus::Finished;
 			}
 			else
+			{
 				return LineStatus::Error;
+			}
 		}
 		case ActBtnLeft:
 		case ActBtnMiddle:

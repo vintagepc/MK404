@@ -49,7 +49,7 @@ Scriptable::LineStatus Thermistor::ProcessAction(unsigned int iAction, const vec
 		case OpenCircuit:
 		case Connected:
 		{
-			m_eState = (Actions)iAction;
+			m_eState = static_cast<Actions>(iAction);
 			return LineStatus::Finished;
 		}
 		default:
@@ -60,9 +60,13 @@ Scriptable::LineStatus Thermistor::ProcessAction(unsigned int iAction, const vec
 uint32_t Thermistor::OnADCRead(struct avr_irq_t*, uint32_t)
 {
 	if (m_eState == Shorted)
+	{
 		return 0;
+	}
 	else if (m_eState == OpenCircuit)
+	{
 		return 5000;
+	}
 
 	for (auto it = m_vTable.begin(); it!= m_vTable.end(); it++) {
 		if (it->second <= m_fCurrentTemp) {
@@ -86,7 +90,7 @@ uint32_t Thermistor::OnADCRead(struct avr_irq_t*, uint32_t)
 
 void Thermistor::OnTempIn(struct avr_irq_t *, uint32_t value)
 {
-	float fv = ((float)value) / 256;
+	float fv = static_cast<float>(value) / 256.f;
 	m_fCurrentTemp = fv;
 
 	RaiseIRQ(TEMP_OUT, value);

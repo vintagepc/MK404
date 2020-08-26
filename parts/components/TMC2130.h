@@ -118,15 +118,15 @@ class TMC2130: public SPIPeripheral, public Scriptable
                 unsigned long data :32; // 32 bits of data
                 uint8_t address :7;
                 uint8_t RW :1;
-            } bitsIn;
+            } __attribute__ ((__packed__)) bitsIn;
             struct {
                 unsigned long data :32; // 32 bits of data
                 uint8_t reset_flag :1;
                 uint8_t driver_error :1;
                 uint8_t sg2 :1;
                 uint8_t standstill :1;
-                uint8_t :5; // unused
-            } bitsOut;
+                uint8_t :4; // unused
+            }  __attribute__ ((__packed__)) bitsOut;
             uint8_t bytes[5]; // Raw bytes as piped in/out by SPI.
         } tmc2130_cmd_t;
 

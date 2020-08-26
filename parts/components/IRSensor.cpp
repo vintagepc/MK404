@@ -20,6 +20,7 @@
  */
 
 #include "IRSensor.h"
+#include "Scriptable.h"
 #include <iostream>  // for printf
 
 // ADC read trigger.

@@ -35,6 +35,7 @@
 #include "uart_pty.h"         // for uart_pty
 #include <GL/glew.h>		// NOLINT must come before freeglut
 #include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
+#include <cstdint>
 #include <iostream>            // for printf
 
 void Prusa_MK3S::Draw()

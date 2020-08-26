@@ -21,10 +21,10 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint32_t, uint8_t
-#include <stdio.h>           // for fprintf, printf, stderr
-#include <stdlib.h>          // for exit
-#include <string.h>          // for memset
+#include <cstdint>          // for uint32_t, uint8_t
+#include <cstdio>           // for fprintf, printf, stderr
+#include <cstdlib>          // for exit
+#include <cstring>          // for memset
 #include <map>               // for map
 #include <string>            // for string
 #include <type_traits>       // for __decay_and_strip<>::__type
@@ -36,8 +36,6 @@
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
 #include "sim_vcd_file.h"    // for avr_vcd_init, avr_vcd_start, avr_vcd_stop
-
-using namespace std;
 
 #define TCENTRIES \
 	_TC(Display,"Display"),\
@@ -68,7 +66,10 @@ enum class TelCategory {
 // Only items in categries specified by a command line
 // argument (or explicitly named) will be logged.
 
-
+using std::vector;
+using std::string;
+using std::shared_ptr;
+using std::map;
 
 typedef const vector<TelCategory>& TelCats;
 using TC = TelCategory;

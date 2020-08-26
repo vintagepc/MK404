@@ -237,7 +237,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			return true;
 		};
 
-		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override
 		{
 			switch (iAct)
 			{
@@ -248,7 +248,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				{
 					int iVal = stoi(vArgs.at(0));
 					if (iVal<0 || iVal >= FSState::FS_MAX)
-						return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [0,3]" );
+						return IssueLineError(std::string("Set value ") + to_string(iVal) + " is out of the range [0,3]" );
 					Set((FSState)iVal);
 					return LineStatus::Finished;
 				}

@@ -30,8 +30,9 @@
 #include "gsl-lite.hpp"
 #include "sim_avr.h"        // for avr_t
 #include "sim_irq.h"        // for avr_irq_t
-#include <stdint.h>         // for uint32_t, uint8_t
+#include <cstdint>         // for uint32_t, uint8_t
 #include <string>           // for string
+#include <utility>
 #include <vector>           // for vector
 
 class Thermistor: public ADCPeripheral, public Scriptable

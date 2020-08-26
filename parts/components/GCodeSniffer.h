@@ -28,8 +28,6 @@
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
 
-using namespace std;
-
 class GCodeSniffer : public BasePeripheral
 {
 	public:
@@ -52,7 +50,7 @@ class GCodeSniffer : public BasePeripheral
 		void OnByteIn(avr_irq_t *irq, uint32_t value);
 
 		unsigned char m_chrCode;
-		string m_strLine;
+		std::string m_strLine;
 		bool m_bNewLine = false, m_bCapture = false;
 		char m_chrUART = '0';
 

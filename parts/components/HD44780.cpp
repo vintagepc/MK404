@@ -23,11 +23,10 @@
 #include "HD44780.h"
 #include "Scriptable.h"      // for Scriptable
 #include "TelemetryHost.h"
-#include "sim_time.h"        // for avr_usec_to_cycles
-#include <cstdio>           // for printf
-#include <cstring>          // for memset
+#include "gsl-lite.hpp"
 #include <iostream>
-#include <scoped_allocator>  // for allocator_traits<>::value_type
+#include <memory>
+
 
 //#define TRACE(_w) _w
 #ifndef TRACE

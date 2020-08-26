@@ -20,6 +20,7 @@
  */
 
 #include "ADC_Buttons.h"
+#include "BasePeripheral.h"
 #include "IScriptable.h"
 #include <iostream>
 

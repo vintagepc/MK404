@@ -26,7 +26,6 @@
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "SPIPeripheral.h"     // for SPIPeripheral
 #include "Scriptable.h"        // for Scriptable
-#include "gsl-lite.hpp"
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t

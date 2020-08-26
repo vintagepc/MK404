@@ -21,10 +21,12 @@
 
 #include "SerialPipe.h"
 #include <cerrno>       // for EAGAIN, errno
+#include <cstdio>
 #include <fcntl.h>       // for open, O_NONBLOCK, O_RDWR
 #include <iostream>       // for fprintf, printf, perror, NULL, stderr
 #include <sys/select.h>  // for FD_ISSET, FD_SET, select, FD_ZERO, fd_set
 #include <unistd.h>      // for read, write, close
+#include <utility>
 #include <vector>
 
 using std::cout;

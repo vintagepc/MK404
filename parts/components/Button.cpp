@@ -24,6 +24,7 @@
 #include "Button.h"
 #include "TelemetryHost.h"
 #include <iostream>  // for printf
+#include <memory>
 
 Button::Button(const std::string &strName):Scriptable(strName),m_strName(strName)
 {

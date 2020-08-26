@@ -24,11 +24,9 @@
 #include "gsl-lite.hpp"
 #include "sim_avr.h"     // for avr_t
 #include "sim_io.h"      // for avr_ioctl
-#include "unistd.h"      // for close, ftruncate, lseek, read, write
 #include <cstdlib>      // for malloc, exit, free, size_t
-#include <fstream>       // for open, O_CREAT, O_RDWR, SEEK_SET
+#include <fstream>       // IWYU pragma: keep
 #include <iostream>       // for perror, printf, fprintf, stderr
-#include <sys/types.h>   // for ssize_t
 
 using std::ifstream;
 using std::ofstream;

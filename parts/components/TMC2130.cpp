@@ -21,6 +21,8 @@
 
 #include "TMC2130.h"
 #include "TelemetryHost.h"
+#include "gsl-lite.hpp"
+
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex3f, glColor3f, glBegin, glEnd
@@ -28,8 +30,8 @@
 # include <GL/gl.h>           // for glVertex3f, glColor3f, glBegin, glEnd
 #endif
 #include <algorithm>          // for min
-#include <cstdio>            // for printf
 #include <cstring>           // for memset
+#include <memory>
 
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (m_cAxis=='S' || m_cAxis=='I') _w

@@ -22,10 +22,7 @@
 #include "UART_Logger.h"
 #include "avr_uart.h"  // for ::AVR_UART_FLAG_STDIO, ::UART_IRQ_OUTPUT, AVR_...
 #include "sim_io.h"    // for avr_ioctl, avr_io_getirq
-#include <cstdlib>    // for exit
-#include <fcntl.h>     // for open, O_CREAT, O_RDWR
 #include <iostream>     // for printf, perror
-#include <unistd.h>    // for close, ftruncate, write
 
 
 //#define TRACE(_w) _w

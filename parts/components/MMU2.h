@@ -21,16 +21,15 @@
 
 #pragma once
 
-#include <pthread.h>               // for pthread_t
-#include <stdint.h>                // for uint32_t
-#include <uart_pty.h>              // for _IRQ
-#include <string>                  // for string
+#include "ADC_Buttons.h"
 #include "BasePeripheral.h"        // for BasePeripheral
 #include "boards/MM_Control_01.h"  // for MM_Control_01
 #include "sim_irq.h"               // for avr_irq_t
 #include <atomic>
+#include <cstdint>                // for uint32_t
+#include <pthread.h>               // for pthread_t
+#include <string>                  // for string
 
-using namespace std;
 
 class MMU2: public BasePeripheral, public Boards::MM_Control_01
 {

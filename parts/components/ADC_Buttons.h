@@ -22,18 +22,16 @@
 
 #pragma once
 
-#include <stdint.h>            // for uint32_t, uint8_t
-#include <stdio.h>             // for printf
-#include <atomic>              // for atomic_uint8_t, __atomic_base
-#include <string>              // for string
-#include <vector>              // for vector
 #include "ADCPeripheral.h"     // for ADCPeripheral
-#include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
 #include "IScriptable.h"       // for ArgType, ArgType::Int, IScriptable::Li...
 #include "Scriptable.h"        // for Scriptable
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include <atomic>              // for atomic_uint8_t, __atomic_base
+#include <cstdint>            // for uint32_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
 
 class ADC_Buttons:public ADCPeripheral, public Scriptable
 {

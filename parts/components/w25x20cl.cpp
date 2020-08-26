@@ -24,13 +24,12 @@
 #include "w25x20cl.h"
 #include "TelemetryHost.h"
 
-#include <algorithm>
 #include <cstdlib>     // for exit, free, malloc
 #include <cstring>     // for memset, memcpy, strncpy
-#include <fstream>
+#include <fstream>		// IWYU pragma: keep
 #include <iostream>
+#include <memory>
 #include <string>
-#include <unistd.h>     // for close, ftruncate, lseek, read, write, ssize_t
 
 //#define TRACE(_w) _w
 #ifndef TRACE

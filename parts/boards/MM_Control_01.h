@@ -20,8 +20,6 @@
 
 #pragma once
 
-#include <stdint.h>                // for uint32_t
-#include <string>                  // for string
 #include "Board.h"                 // for Board
 #include "wiring/MM_Control_01.h"  // for MM_Control_01
 #include "ADC_Buttons.h"           // for ADC_Buttons
@@ -30,6 +28,7 @@
 #include "MM_Control_01.h"
 #include "TMC2130.h"               // for TMC2130
 #include "uart_pty.h"              // for uart_pty
+#include <cstdint>                // for uint32_t
 
 namespace Boards
 {

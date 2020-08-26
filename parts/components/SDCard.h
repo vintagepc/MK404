@@ -153,7 +153,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 		struct {
 			uint8_t data[5];
 			uint8_t length; /* number of bytes of data which are valid */
-		} m_command_response {0, 0};
+		} m_command_response {{0}, 0};
 
 		bool m_bSelected = false, m_bMounted = false;
 

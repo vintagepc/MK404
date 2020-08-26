@@ -23,8 +23,9 @@
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
 #include <cmath>    // for pow, floor, round, sqrt
-#include <cstdio>  // for printf
 #include <cstring>
+#include <iostream>
+#include <memory>
 
 //#define TRACE(_w)_w
 #ifndef TRACE

@@ -21,13 +21,12 @@
  */
 
 #include "ScriptHost.h"
+#include "gsl-lite.hpp"
 #include <GL/freeglut_std.h> // glut menus
-#include <cassert> // assert.
 #include <exception>    // for exception
 #include <fstream>      // IWYU pragma: keep for basic_istream, char_traits, ifstream, istring...
 #include <iostream>
 #include <sstream>		// IWYU pragma: keep
-#include <type_traits>  // for __decay_and_strip<>::__type
 #include <utility>      // for make_pair, pair
 
 map<string, IScriptable*> ScriptHost::m_clients;
@@ -340,7 +339,7 @@ void ScriptHost::AddSubmenu(IScriptable *src)
 
 void ScriptHost::AddMenuEntry(const string &strName, unsigned uiID, IScriptable* src)
 {
-	assert(uiID<100); //NOLINT - complaint is in system include file
+	Expects(uiID<100); //NOLINT - complaint is in system include file
 	auto strClient = src->GetName();
 	unsigned uiBase = m_mClient2MenuBase.at(strClient);
 	m_mClientEntries[strClient].push_back({strName, uiBase + uiID});

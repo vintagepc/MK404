@@ -27,6 +27,8 @@
 #include "SerialPipe.h"           // for SerialPipe
 #include "printers/Prusa_MK3S.h"  // for Prusa_MK3S
 #include "uart_pty.h"             // for uart_pty
+#include <GL/glew.h>
+#include <cstring>
 #include <iostream>                // for printf
 #include <memory>                 // for unique_ptr
 

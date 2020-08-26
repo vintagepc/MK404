@@ -26,6 +26,7 @@
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
 #include <iostream>
+#include <memory>
 
 static constexpr uint8_t  STATE_COUNT = 4;
 static constexpr uint32_t PULSE_DURATION_US = 10000UL;

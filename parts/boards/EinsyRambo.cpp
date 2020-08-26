@@ -24,6 +24,7 @@
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
 #include "thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 #include <iostream>             // for fprintf, printf, stderr
+#include <vector>
 
 #define TEMP_SENSOR_0 5
 #define TEMP_SENSOR_BED 1

@@ -20,8 +20,7 @@
 
 #pragma once
 
-#include <stdint.h>                              // for uint32_t
-#include <string>                                // for string
+#include <cstdint>                              // for uint32_t
 #include "Beeper.h"                              // for Beeper
 #include "Board.h"                               // for Board
 #include "Button.h"                              // for Button

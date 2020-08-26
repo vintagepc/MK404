@@ -30,7 +30,6 @@
 #include <utility>        // for make_pair, pair
 #include <vector>         // for vector
 #include "IScriptable.h"  // for IScriptable::LineStatus
-#include "Scriptable.h"   // for Scriptable
 #include "VoltageSrc.h"   // for VoltageSrc
 #include "sim_irq.h"      // for avr_irq_t
 

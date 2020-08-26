@@ -20,17 +20,18 @@
 
 #pragma once
 
-#include <stdint.h>         // for uint32_t, uint8_t
-#include <atomic>           // for atomic_int
-#include <memory>           // for unique_ptr
-#include <string>           // for string
-#include <utility>          // for pair
 #include "EinsyRambo.h"     // for EinsyRambo
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "sim_avr.h"        // for avr_t
 #include "sim_avr_types.h"  // for avr_io_addr_t
 #include "IRSensor.h"
 #include "MK3SGL.h"
+#include <atomic>           // for atomic_int
+#include <cstdint>
+#include <memory>           // for unique_ptr
+#include <string>           // for string
+#include <utility>          // for pair
+#include <vector>
 
 class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 {
@@ -44,7 +45,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 		virtual void OnKeyPress(unsigned char key, int x, int y) override;
 		void OnMousePress(int button, int action, int x, int y) override;
 		void OnMouseMove(int x,int y) override;
-		void OnVisualTypeSet(string type) override;
+		void OnVisualTypeSet(std::string type) override;
 
 		std::pair<int,int> GetWindowSize() override;
 

@@ -28,12 +28,12 @@
 #include "sim_gdb.h"  // for avr_gdb_init
 #include "sim_hex.h"  // for read_ihex_file
 #include "sim_io.h"         // for avr_io_getirq
+#include <cstdint>
 #include <cstdlib>   // for exit, free
 #include <cstring>    // for memcpy, NULL
-#include <fcntl.h>    // for open, O_CREAT, O_RDWR, SEEK_SET
-#include <fstream>
+#include <fstream>		// IWYU pragma: keep
 #include <iostream>
-#include <unistd.h>   // for close, ftruncate, lseek, read, write, ssize_t
+#include <memory>
 
 namespace Boards {
 	void Board::CreateAVR()

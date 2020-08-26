@@ -21,15 +21,15 @@
 
 #pragma once
 
-#include <SDL_audio.h>      // for SDL_AudioSpec
-#include <stdint.h>         // for uint16_t, uint8_t, uint32_t
-#include <string>           // for string
-#include <vector>           // for vector
-#include <atomic>
 #include "IScriptable.h"    // for IScriptable::LineStatus
 #include "Scriptable.h"     // for Scriptable
 #include "SoftPWMable.h"    // for SoftPWMable
 #include "sim_avr.h"        // for avr_t
+#include <SDL_audio.h>      // for SDL_AudioSpec
+#include <atomic>
+#include <cstdint>         // for uint16_t, uint8_t, uint32_t
+#include <string>           // for string
+#include <vector>           // for vector
 
 class Beeper:public SoftPWMable, public Scriptable
 {
@@ -57,7 +57,7 @@ class Beeper:public SoftPWMable, public Scriptable
 	protected:
 		virtual void OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal) override;
 
-		Scriptable::LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+		Scriptable::LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 	private:
 		void StartTone();
@@ -65,12 +65,12 @@ class Beeper:public SoftPWMable, public Scriptable
 
 		void(*m_fcnSDL)(void* p, uint8_t*, int) = [](void *p, uint8_t *raw_buffer, int bytes){Beeper *self = static_cast<Beeper*>(p); self->SDL_FillBuffer(raw_buffer,bytes);};
 
-		atomic_bool m_bPlaying = {false}, m_bMuted = {false};
+		std::atomic_bool m_bPlaying = {false}, m_bMuted = {false};
 
 		SDL_AudioSpec m_specWant {}, m_specHave {};
 
-		atomic_uint16_t m_uiCtOn = {0}, m_uiCtOff = {0};
-		atomic_uint16_t m_uiCounter {0};
+		std::atomic_uint16_t m_uiCtOn = {0}, m_uiCtOff = {0};
+		std::atomic_uint16_t m_uiCounter {0};
 		static constexpr uint16_t m_uiSampleRate = 44100;
 		bool m_bState = false;
 		bool m_bAudioAvail = false;

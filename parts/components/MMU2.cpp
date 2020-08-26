@@ -20,12 +20,6 @@
  */
 
 #include "MMU2.h"
-#include <GL/freeglut_std.h>          // for glutGet, glutStrokeCharacter, GLUT_STRO...
-#if defined(__APPLE__)
-# include <OpenGL/gl.h>       // for glTranslatef, glVertex3f, glColor3f
-#else
-# include <GL/gl.h>           // for glTranslatef, glVertex3f, glColor3f
-#endif
 #include "HC595.h"            // for HC595, TMC2130::IRQ::POSITION_OUT, MMU2...
 #include "LED.h"              // for LED
 #include "MM_Control_01.h"    // for MM_Control_01
@@ -33,6 +27,12 @@
 #include "TMC2130.h"          // for TMC2130
 #include "gsl-lite.hpp"
 #include "uart_pty.h"         // for uart_pty
+#include <GL/freeglut_std.h>          // for glutGet, glutStrokeCharacter, GLUT_STRO...
+#if defined(__APPLE__)
+# include <OpenGL/gl.h>       // for glTranslatef, glVertex3f, glColor3f
+#else
+# include <GL/gl.h>           // for glTranslatef, glVertex3f, glColor3f
+#endif
 #include <cstdlib>           // for exit
 #include <cstring>
 #include <iostream>            // for fprintf, size_t, stderr

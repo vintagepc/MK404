@@ -24,11 +24,15 @@
 #pragma once
 
 #include "SPIPeripheral.h"  // for SPIPeripheral
+#include "IScriptable.h"
 #include "Scriptable.h"
 #include "gsl-lite.hpp"
 #include "sim_irq.h"        // for avr_irq_t
 #include <cstdint>         // for uint8_t, uint32_t, uint64_t
 #include <string>
+#include <vector>
+
+using std::string;
 
 #define W25X20CL_TOTAL_SIZE 262144
 #define W25X20CL_PAGE_SIZE 256U

@@ -41,7 +41,7 @@
 # include <GL/gl.h>           // for glVertex3f, glBegin, glEnd, glMaterialfv
 #endif
 #include <mutex>
-
+#include <vector>
 
 //#define TRACE(_w) _w
 #ifndef TRACE

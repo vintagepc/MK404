@@ -54,10 +54,12 @@ using std::cout;
 class IScriptable
 {
 	friend Scriptable;
+
+
 	friend ScriptHost;
 	friend TelemetryHost;
     public:
-		IScriptable(const string &strName):m_strName(strName){}
+		IScriptable(const std::string &strName):m_strName(strName){}
         virtual ~IScriptable() {}
 	enum class LineStatus
 	{
@@ -71,13 +73,13 @@ class IScriptable
 
 
     protected:
-		inline IScriptable::LineStatus IssueLineError(const string &msg)
+		inline IScriptable::LineStatus IssueLineError(const std::string &msg)
 		{
-			cerr << m_strName << "ERROR: " << msg << '\n';
+			std::cerr << m_strName << "ERROR: " << msg << '\n';
 			return LineStatus::Error;
 		}
 
-		virtual LineStatus ProcessAction(unsigned int iAction, const vector<string> &args)
+		virtual LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &args)
 		{
 			return IssueLineError(" Has registered actions but does not have an action handler!");
 		}
@@ -93,19 +95,19 @@ class IScriptable
 				if (LSResult != LineStatus::Error || LSResult != LineStatus::Unhandled)
 					return;
 			}
-			cerr << "Programmer error: " << m_strName << " has registered menu items but no valid handler!\n";
+			std::cerr << "Programmer error: " << m_strName << " has registered menu items but no valid handler!\n";
 		}
 
-		void SetName(const string &strName)
+		void SetName(const std::string &strName)
 		{
 			if (m_bRegistered)
-				cerr << "ERROR: Tried to change a Scriptable object's name after it has already registered.\n";
+				std::cerr << "ERROR: Tried to change a Scriptable object's name after it has already registered.\n";
 			else
 				m_strName = strName;
 		}
 
 		// Returns the name. Used by, e.g. TelHost for consistency.
-		inline string GetName() {return m_strName;}
+		inline std::string GetName() {return m_strName;}
 
 		// Prints help text for this Scriptable
 		void PrintRegisteredActions(bool bMarkdown = false)
@@ -114,7 +116,7 @@ class IScriptable
 			for (auto it=m_ActionIDs.begin();it!=m_ActionIDs.end();it++)
 			{
 				unsigned int ID = it->second;
-				string strArgFmt = it->first;
+				std::string strArgFmt = it->first;
 				strArgFmt.push_back('(');
 				if (m_ActionArgs[ID].size()>0)
 				{
@@ -133,11 +135,11 @@ class IScriptable
 		// Registers a new no-argument Scriptable action with the given function, description, and an ID that will be
 		// provided in ProcessAction. This lets you set up an internal enum and switch() on actions
 		// instead of needing to make a string-comparison if-else conditional.
-		inline virtual bool RegisterAction(const string &strAct, const string& strDesc, unsigned int ID)
+		inline virtual bool RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID)
 		{
 			if (m_ActionIDs.count(strAct)>0)
 			{
-				cerr << "ERROR: Attempted to register duplicate action handler " << m_strName << "::" << strAct;
+				std::cerr << "ERROR: Attempted to register duplicate action handler " << m_strName << "::" << strAct;
 				return false;
 			}
 			m_ActionIDs[strAct] = ID;
@@ -148,16 +150,16 @@ class IScriptable
 
 		// Registers a scriptable action Name::strAct(), help description strDesc, internal ID, and a vector of argument types.
 		// The types are (currently) for display only but the count is used to sanity-check lines before passing them to you in ProcessAction.
-		inline void RegisterAction(const string &strAct, const string& strDesc, unsigned int ID, const vector<ArgType>& vTypes)
+		inline void RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID, const std::vector<ArgType>& vTypes)
 		{
 			if (!RegisterAction(strAct,strDesc, ID))
 				return;
 			m_ActionArgs[ID] = vTypes;
 		}
 
-		static const map<ArgType,string>& GetArgTypeNames()
+		static const std::map<ArgType,std::string>& GetArgTypeNames()
 		{
-			static const map<ArgType,string> m {
+			static const std::map<ArgType,std::string> m {
 				{ArgType::Bool,"bool"},
 				{ArgType::Float,"float"},
 				{ArgType::Int,"int"},
@@ -168,9 +170,9 @@ class IScriptable
 		}
 
     private:
-		string m_strName;
+		std::string m_strName;
 		bool m_bRegistered = false;
-		map<unsigned int, vector<ArgType>> m_ActionArgs;
-		map<string, unsigned int> m_ActionIDs;
-		map<unsigned int,string> m_mHelp;
+		std::map<unsigned int, std::vector<ArgType>> m_ActionArgs;
+		std::map<std::string, unsigned int> m_ActionIDs;
+		std::map<unsigned int,std::string> m_mHelp;
 };

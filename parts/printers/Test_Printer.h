@@ -22,13 +22,7 @@
 
 #include "Test_Board.h"     		// for EinsyRambo
 #include "Printer.h"        // for Printer, Printer::VisualType
-#include "sim_avr.h"        // for avr_t
-#include "sim_avr_types.h"  // for avr_io_addr_t
 
-#include <atomic>           // for atomic_int
-#include <cstdint>         // for uint32_t, uint8_t
-#include <memory>           // for unique_ptr
-#include <string>           // for string
 #include <utility>          // for pair
 
 class Test_Printer : public Boards::Test_Board, public Printer

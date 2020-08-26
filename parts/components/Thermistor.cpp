@@ -24,8 +24,9 @@
 #include "Thermistor.h"
 #include "BasePeripheral.h"  // for MAKE_C_CALLBACK
 #include "TelemetryHost.h"
-#include <cstdio>           // for printf, NULL
 #include <iostream>
+#include <iterator>
+#include <memory>
 
 Thermistor::Thermistor(float fStartTemp):Scriptable("Thermistor"),m_fCurrentTemp(fStartTemp)
 {

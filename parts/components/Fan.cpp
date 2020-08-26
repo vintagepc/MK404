@@ -26,6 +26,9 @@
 #else
 # include <GL/gl.h>           // for glVertex2f, glTranslatef, glBegin, glCo..
 #endif
+#include <iostream>
+#include <memory>
+
 //#define TRACE(_w)_w
 #ifndef TRACE
 #define TRACE(_w)

@@ -23,10 +23,12 @@
 #pragma once
 
 #include "ADCPeripheral.h"  // for ADCPeripheral
+#include "IScriptable.h"
 #include "Scriptable.h"
-#include <stdint.h>         // for uint32_t, uint8_t
 #include "sim_irq.h"        // for avr_irq_t
+#include <cstdint>         // for uint32_t, uint8_t
 #include <string>
+#include <vector>
 
 class VoltageSrc: public ADCPeripheral, public Scriptable {
 public:

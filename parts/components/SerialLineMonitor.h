@@ -21,16 +21,14 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint32_t
-#include <string>            // for string, basic_string
-#include <vector>            // for vector
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "IScriptable.h"     // for ArgType, ArgType::String, IScriptable::L...
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
-
-using namespace std;
+#include <cstdint>          // for uint32_t
+#include <string>            // for string, basic_string
+#include <vector>            // for vector
 
 class SerialLineMonitor : public BasePeripheral,public Scriptable
 {
@@ -39,22 +37,15 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 		#include "IRQHelper.h"
 
 		// Creates a logger that sniffs for
-		SerialLineMonitor(string strName):Scriptable(strName)
-		{
-			RegisterAction("WaitForLine","Waits for the provided line to appear on the serial output.",WaitForLine, {ArgType::String});
-			RegisterAction("WaitForLineContains","Waits for the serial output to contain a line with the given string.",WaitForContains,{ArgType::String});
-			RegisterAction("SendGCode","Sends the specified string as G-Code.",SendGCode,{ArgType::String});
-			RegisterAction("NextLineMustBe","Errors if the next output line is not as specified.",NextLineMustBe, {ArgType::String});
-			m_strLine.reserve(100);
-		};
+		explicit SerialLineMonitor(const std::string &strName);
 
 		// Shuts down
-		~SerialLineMonitor(){};
+		~SerialLineMonitor() override = default;
 
 		// Registers with SimAVR.
 		void Init(avr_t *avr, char chrUART);
 	protected:
-		LineStatus ProcessAction(unsigned int ID, const vector<string> &args) override;
+		LineStatus ProcessAction(unsigned int ID, const std::vector<std::string> &args) override;
 
 	private:
 		enum matchType
@@ -74,9 +65,9 @@ class SerialLineMonitor : public BasePeripheral,public Scriptable
 		matchType m_type = None;
 
 
-		string m_strLine;
-		string m_strMatch;
-		string m_strGCode;
+		std::string m_strLine;
+		std::string m_strMatch;
+		std::string m_strGCode;
 
 		std::string::iterator  m_itGCode;
 

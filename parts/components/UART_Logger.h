@@ -28,8 +28,6 @@
 #include <fstream>
 #include <string>            // for string
 
-using namespace std;
-
 class UART_Logger : public BasePeripheral
 {
 	public:
@@ -46,7 +44,7 @@ class UART_Logger : public BasePeripheral
 
 		void OnByteIn(avr_irq_t *irq, uint32_t value);
 
-		string m_strFile = "LOG_UARTx.bin";
+		std::string m_strFile = "LOG_UARTx.bin";
 		char m_chrUART = '0';
-		ofstream m_fsOut;
+		std::ofstream m_fsOut;
 };

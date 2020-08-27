@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include <stdint.h>            // for uint8_t, uint32_t, int32_t, uint16_t
+#include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include "BasePeripheral.h"
 #include <avr_twi.h>
 

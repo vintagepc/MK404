@@ -38,7 +38,7 @@ class Beeper:public SoftPWMable, public Scriptable
 		#include "IRQHelper.h"
 
 		Beeper();
-		~Beeper();
+		~Beeper() override;
 		// Initializes the LED to the AVR
 		void Init(avr_t * avr);
 
@@ -47,15 +47,12 @@ class Beeper:public SoftPWMable, public Scriptable
 
 		inline void ToggleMute()
 		{
-			if(m_bMuted)
-				m_bMuted = false;
-			else
-				m_bMuted = true;
+			m_bMuted = !m_bMuted;
 		}
 
 
 	protected:
-		virtual void OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal) override;
+		void OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal) override;
 
 		Scriptable::LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
@@ -63,7 +60,7 @@ class Beeper:public SoftPWMable, public Scriptable
 		void StartTone();
 		void SDL_FillBuffer(uint8_t *raw_buffer, int bytes);
 
-		void(*m_fcnSDL)(void* p, uint8_t*, int) = [](void *p, uint8_t *raw_buffer, int bytes){Beeper *self = static_cast<Beeper*>(p); self->SDL_FillBuffer(raw_buffer,bytes);};
+		void(*m_fcnSDL)(void* p, uint8_t*, int) = [](void *p, uint8_t *raw_buffer, int bytes){auto self = static_cast<Beeper*>(p); self->SDL_FillBuffer(raw_buffer,bytes);};
 
 		std::atomic_bool m_bPlaying = {false}, m_bMuted = {false};
 

@@ -22,7 +22,7 @@
 
 #include <GL/glew.h>         // for glTranslatef
 #include <GLPrint.h>         // for GLPrint
-#include <stdint.h>          // for uint32_t
+#include <cstdint>          // for uint32_t
 #include <Camera.hpp>        // for Camera
 #include <atomic>            // for atomic, atomic_bool, atomic_int
 #include <string>            // for string

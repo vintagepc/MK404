@@ -30,9 +30,9 @@
 #include "Scriptable.h"     // for Scriptable
 #include "gsl-lite.hpp"
 #include "sim_avr.h"        // for avr_t
-#include <stdint.h>         // for uint8_t, uint32_t, uint16_t, uint64_t
-#include <sys/types.h>      // for off_t
+#include <cstdint>         // for uint8_t, uint32_t, uint16_t, uint64_t
 #include <string>           // for string
+#include <sys/types.h>      // for off_t
 #include <vector>           // for vector
 
 class SDCard:public SPIPeripheral, public Scriptable
@@ -45,7 +45,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 			_IRQ(CARD_PRESENT,		">SD.card_present")
 		#include "IRQHelper.h"
 
-		SDCard(std::string strFile = "SDCard.bin");
+		explicit SDCard(std::string strFile = "SDCard.bin");
 
 		void Init(avr_t *avr);
 
@@ -62,9 +62,9 @@ class SDCard:public SPIPeripheral, public Scriptable
 		inline bool IsMounted(){return m_bMounted; }
 
 	protected:
-		virtual uint8_t OnSPIIn(struct avr_irq_t * irq, uint32_t value) override;
+		uint8_t OnSPIIn(struct avr_irq_t * irq, uint32_t value) override;
 
-        virtual void OnCSELIn(struct avr_irq_t * irq, uint32_t value) override;
+        void OnCSELIn(struct avr_irq_t * irq, uint32_t value) override;
 
 		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
 
@@ -162,7 +162,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 			inline void SetData(const gsl::span<uint8_t> &in){data = in; pos = in.begin();};
 			inline bool IsFinsihed(){ return pos==data.end(); }
 			gsl::span<uint8_t> data;
-			gsl::span<uint8_t>::iterator pos;
+			gsl::span<uint8_t>::iterator pos {nullptr};
 		}m_currOp;
 
 		union {
@@ -186,7 +186,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 
 		uint16_t m_CRC = 0;
 		uint8_t _m_ByteCRC[2] = {0,0};
-		gsl::span<uint8_t> m_byteCRC {_m_ByteCRC,2};
+		gsl::span<uint8_t> m_byteCRC {_m_ByteCRC};
 
 		/* Card data. */
 		gsl::span<uint8_t> m_data; /* mmap()ed data */

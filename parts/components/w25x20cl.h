@@ -23,16 +23,14 @@
 
 #pragma once
 
-#include "SPIPeripheral.h"  // for SPIPeripheral
 #include "IScriptable.h"
+#include "SPIPeripheral.h"  // for SPIPeripheral
 #include "Scriptable.h"
 #include "gsl-lite.hpp"
 #include "sim_irq.h"        // for avr_irq_t
 #include <cstdint>         // for uint8_t, uint32_t, uint64_t
 #include <string>
 #include <vector>
-
-using std::string;
 
 #define W25X20CL_TOTAL_SIZE 262144
 #define W25X20CL_PAGE_SIZE 256U
@@ -52,7 +50,7 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 	w25x20cl();
 
 	// Destructor. Closes flash file.
-	~w25x20cl();
+	~w25x20cl() override;
 
 	// Initializes an SPI flash on "avr" with a CSEL irq "irqCS"
 	void Init(struct avr_t * avr, avr_irq_t *irqCS);
@@ -68,7 +66,7 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 
 	protected:
 
-		Scriptable::LineStatus ProcessAction (unsigned int iAct, const vector<string> &vArgs) override;
+		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 		enum w25x20cl_states{
 			STATE_IDLE = 0, //when CS is HIGH

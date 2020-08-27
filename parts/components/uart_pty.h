@@ -24,18 +24,18 @@
 
 #pragma once
 
-#include <pthread.h>           // for pthread_t
-#include <stddef.h>            // for size_t
-#include <stdint.h>            // for uint8_t, uint32_t
-#include <mutex>
-#include <atomic>
-#include <string>              // for string
 #include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
 #include "fifo_declare.h"      // for DECLARE_FIFO, DEFINE_FIFO
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <atomic>
+#include <cstddef>            // for size_t
+#include <cstdint>            // for uint8_t, uint32_t
+#include <mutex>
+#include <pthread.h>           // for pthread_t
+#include <string>              // for string
 
 extern "C" {
     DECLARE_FIFO(uint8_t,uart_pty_fifo, 512);
@@ -50,6 +50,9 @@ class uart_pty: public BasePeripheral
 
 		uart_pty();
 
+		uart_pty(const uart_pty&) = delete;
+
+
 		// Destructor. Kills the thread, if it was started.
 		~uart_pty();
 
@@ -60,10 +63,10 @@ class uart_pty: public BasePeripheral
 		void Connect(char chrUART);
 
 		// Resets the newline trap after a printer reset.
-		void Reset() { m_chrLast = '\n';}
+		inline void Reset() { m_chrLast = '\n';}
 
 		// Gets the slave name (file). Used by the pipe thread.
-		const std::string GetSlaveName() { return std::string(pty.slavename); };
+		inline const std::string GetSlaveName() { return std::string(static_cast<char*>(pty.slavename)); };
 
 	private:
 
@@ -84,7 +87,7 @@ class uart_pty: public BasePeripheral
 
 		std::mutex m_lock;
 
-		typedef struct uart_pty_port_t {
+		using uart_pty_port_t = struct{
 			unsigned int	tap : 1, crlf : 1;
 			int 		s;			// socket we chat on
 			char 		slavename[64];
@@ -92,7 +95,7 @@ class uart_pty: public BasePeripheral
 			uart_pty_fifo_t out;
 			uint8_t		buffer[512];
 			size_t		buffer_len, buffer_done;
-		} uart_pty_port_t, *uart_pty_port_p;
+		};
 
 		union {
 			struct {

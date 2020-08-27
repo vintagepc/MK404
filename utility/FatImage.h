@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <stdint.h>  // for uint32_t, uint8_t
+#include <cstdint>  // for uint32_t, uint8_t
 #include <map>       // for _Rb_tree_const_iterator, map
 #include <string>    // for string
 #include <utility>   // for pair

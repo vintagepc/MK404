@@ -42,7 +42,7 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
         // Creates a new MMU2. Does all of the setup and firmware load.
         MMU2();
 
-		~MMU2(){StopAVR();}
+		~MMU2() override {StopAVR();}
 
         // Returns the name of the serial port (for the pipe thread)
         const std::string GetSerialPort();

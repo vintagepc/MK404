@@ -33,9 +33,6 @@ ADC_Buttons::ADC_Buttons(const std::string &strName):Scriptable(strName)
 	RegisterActionAndMenu("Push Right","Press right button",ActBtnRight);
 };
 
-ADC_Buttons::~ADC_Buttons() = default;
-
-
 uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t *, uint32_t)
 {
     //if (raw < 50) return Btn::right;

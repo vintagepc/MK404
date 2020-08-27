@@ -49,9 +49,10 @@
 
 #pragma once
 
-#include "Scriptable.h"        // for Scriptable
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
 #include "IScriptable.h"       // for ArgType, ArgType::Int, ArgType::String
+#include "Scriptable.h"        // for Scriptable
+#include "gsl-lite.hpp"
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
@@ -86,35 +87,23 @@ class HD44780:public BasePeripheral, public Scriptable
 		#include "IRQHelper.h"
 
 		// Makes a display with the given dimensions.
-		HD44780(uint8_t width = 20, uint8_t height = 4):Scriptable("LCD"),m_uiHeight(height),m_uiWidth(width)
-		{
-			m_cgRam.resize(64,' ');
-			m_vRam.resize(104,' ');
-			m_lineOffsets[2] += width;
-			m_lineOffsets[3] += width;
-			string strBlnk;
-			strBlnk.assign(width,' ');
-			for (int i=0; i<height; i++)
-				m_vLines.push_back(strBlnk);
-
-			RegisterActionAndMenu("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
-			RegisterAction("WaitForText","Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
-			RegisterAction("CheckCGRAM","Checks if the CGRAM address matches the value. (value, addr)",ActCheckCGRAM,{ArgType::Int,ArgType::Int});
-		};
+		explicit HD44780(uint8_t width = 20, uint8_t height = 4);
 
 		// Registers IRQs with SimAVR.
 		void Init(avr_t *avr);
 
 		// Returns height and width.
-        uint8_t GetWidth() { return m_uiWidth;}
-        uint8_t GetHeight() { return m_uiHeight;}
+        inline uint8_t GetWidth() { return m_uiWidth;}
+        inline uint8_t GetHeight() { return m_uiHeight;}
 
     protected:
     // The GL draw accesses these:
 		atomic_uint8_t m_uiHeight = {4};				// width and height of the LCD
         atomic_uint8_t	m_uiWidth = {20};
-		std::vector<uint8_t>  m_vRam;
-        std::vector<uint8_t>  m_cgRam;
+		uint8_t _m_vRam[104] {' '};
+        uint8_t _m_cgRam[64] {' '};
+		gsl::span<uint8_t> m_vRam {_m_vRam};
+		gsl::span<uint8_t> m_cgRam {_m_cgRam};
 
 		LineStatus ProcessAction(unsigned int iAction, const vector<string> &args) override;
 

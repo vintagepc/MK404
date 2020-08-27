@@ -21,18 +21,21 @@
 
 #pragma once
 
-#include <stdint.h>            // for uint8_t, uint32_t, int32_t, uint16_t
-#include <string>              // for string
-#include <vector>              // for vector
-#include <map>
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
-#include "IScriptable.h"       // for IScriptable::LineStatus
 #include "I2CPeripheral.h"     // for I2CPeripheral
+#include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
+#include "gsl-lite.hpp"
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
+#include <cstring>
+#include <iostream>
+#include <map>
+#include <string>              // for string
+#include <vector>              // for vector
 
 class PAT9125: public I2CPeripheral, public Scriptable
 {
@@ -46,14 +49,14 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			_IRQ(LED_OUT, "<presence.out")
 		#include "IRQHelper.h"
 
-		typedef enum FSState {
+		using FSState = enum {
 			FS_MIN = -1,
 			FS_NO_FILAMENT,
 			FS_FILAMENT_PRESENT,
 			FS_JAM,
 			FS_AUTO, // Special state that only respects the auto value.
 			FS_MAX
-		}FSState_t;
+		};
 
 		PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125")
 		{
@@ -69,9 +72,9 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		void Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)
 		{
 			_Init(pAVR, pSDA, pSCL, this);
-			printf("\n\n--------- Your attention please! ----------\n");
-			printf("NOTE: PAT9125 is minimally functional. If you encounter issues or need advanced functionality \n feel free to contribute or open an issue.\n");
-			printf("--------- Your attention please! ----------\n\n\n");
+			cout << "\n\n--------- Your attention please! ----------\n";
+			cout << "NOTE: PAT9125 is minimally functional. If you encounter issues or need advanced functionality \n feel free to contribute or open an issue.\n";
+			cout << "--------- Your attention please! ----------\n\n\n";
 			RegisterNotify(E_IN, MAKE_C_CALLBACK(PAT9125,OnEMotion),this);
 			RegisterNotify(P_IN, MAKE_C_CALLBACK(PAT9125,OnPMotion),this);
 		}
@@ -85,10 +88,14 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		inline void ToggleJam()
 		{
 			if (m_state == FS_JAM)
+			{
 				m_state = FS_FILAMENT_PRESENT;
+			}
 			else
+			{
 				m_state = FS_JAM;
-			printf("PAT9125 Jam: %u\n", m_state == FS_JAM);
+			}
+			cout << "PAT9125 Jam: " << (m_state == FS_JAM) << '\n';
 
 		}
 
@@ -97,7 +104,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			switch (m_state)
 			{
 			case FS_AUTO:
-				printf("Leaving PAT9125 Auto mode\n");
+				cout << "Leaving PAT9125 Auto mode\n";
 				m_state = m_bFilament ? FS_FILAMENT_PRESENT : FS_NO_FILAMENT;
 				/* FALLTHRU */  // Deliberate fallthrough - will toggle from current.
 			case FS_NO_FILAMENT:
@@ -122,8 +129,10 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		void UpdateSensorState()
 		{
 			if (m_state != FS_AUTO)
+			{
 				m_bFilament = m_state == FS_FILAMENT_PRESENT || m_state == FS_JAM;
-			printf("Filament Present: %u\n",m_bFilament);
+			}
+			cout << "Filament Present: " << m_bFilament << '\n';
 			RaiseIRQ(LED_OUT,!m_bFilament); // LED is inverted.
 			if (m_bFilament)
 			{
@@ -138,11 +147,12 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			}
 		}
 
-		void OnPMotion(avr_irq_t *pIRQ, uint32_t value)
+		void OnPMotion(avr_irq_t *, uint32_t value)
 		{
 			m_bLoading=false; // clear loading flag once E move started.
-			auto fVal = reinterpret_cast<float*>(&value);
-			bool bLoaded = fVal[0]>370.f;
+			float fVal;
+			std::memcpy(&fVal,&value, sizeof(value));
+			bool bLoaded = fVal>370.f;
 			if (m_state == FS_AUTO) // Set filament state if auto.
 			{
 				if (m_bFilament != bLoaded)
@@ -152,17 +162,20 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				}
 			}
 			if (bLoaded) // Pass through if fed enough to reach.
-				SetYMotion(m_fEPos,fVal[0]-370.f);
+			{
+				SetYMotion(m_fEPos,fVal-370.f);
+			}
 
 
 		}
-		void OnEMotion(avr_irq_t *pIRQ, uint32_t value)
+		void OnEMotion(avr_irq_t *, uint32_t value)
 		{
 			m_bLoading=false; // clear loading flag once E move started.
 			if (m_bFilament)
 			{
-				float *fV = reinterpret_cast<float*>(&value);
-				SetYMotion(fV[0], m_fPPos);
+				float fV;
+				std::memcpy(&fV, &value, sizeof(value));
+				SetYMotion(fV, m_fPPos);
 			}
 			else // Clear motion and regs.
 			{
@@ -176,23 +189,29 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		{
 				//printf("YMotion update: %f %f\n",fEVal, fPVal);
 				float fDelta = (fEVal+fPVal)-m_fYPos;
-				int16_t iCounts  = fDelta*(5.f*(float)m_regs.Res_Y/25.4f);
+				int16_t iCounts  = fDelta*(5.f*static_cast<float>(m_regs.Res_Y)/25.4f);
 				iCounts = -iCounts;
 				if (fDelta>0 && iCounts==0) // Enforce minimum motion of at least 1 count.
+				{
 					iCounts = -1;
+				}
 				else if (fDelta<0 && iCounts==0)
+				{
 					iCounts = 1;
+				}
 				m_fEPos = fEVal;
 				m_fPPos = fPVal;
 				m_fCurY = fEVal+fPVal;
 				m_regs.DeltaXYHi = (iCounts >> 8) & 0b1111;
 				m_regs.DYLow = iCounts & 0xFF;
 				if (m_state != FS_JAM)
+				{
 					m_regs.MStatus = 0x80;
+				}
 
 		}
 
-		virtual uint8_t GetRegVal(uint8_t uiAddr) override
+		uint8_t GetRegVal(uint8_t uiAddr) override
 		{
 			switch (uiAddr)
 			{
@@ -200,7 +219,9 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				{
 					uint8_t val = m_regs.MStatus;
 					if (!m_bLoading)
+					{
 						m_regs.MStatus = 0; // clear motion flag.
+					}
 					else
 					{
 						SetYMotion(m_fCurY += 1.f,m_fPPos);
@@ -215,24 +236,24 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				}
 				case 0x04:
 				{
-					printf("Read DY: %d (%f) \n",m_regs.raw[uiAddr], (m_fYPos-m_fCurY));
+					//printf("Read DY: %d (%f) \n",m_regs.raw[uiAddr], (m_fYPos-m_fCurY));
 					m_fYPos = m_fCurY;
 				}
 				/* FALLTHRU */
 				default:
 					//printf("Read: %02x, %02x\n",uiAddr, m_regs.raw[uiAddr]);
-					return m_regs.raw[uiAddr];
+					return gsl::at(m_regs.raw,uiAddr);
 			}
 		};
 
-		virtual bool SetRegVal(uint8_t uiAddr, uint32_t uiData) override
+		bool SetRegVal(uint8_t uiAddr, uint32_t uiData) override
 		{
 			if (!(m_uiRW  & (0x01<<uiAddr)))
 			{
-				printf("PAT9125: tried to write Read-only register\n");
+				cerr << "PAT9125: tried to write Read-only register\n";
 				return false; // RO register.
 			}
-			m_regs.raw[uiAddr] = uiData & 0xFF;
+			gsl::at(m_regs.raw,uiAddr) = gsl::narrow<uint8_t>(uiData);
 			//printf("Wrote: %02x = %02x (%02x)\n",uiAddr,uiData, m_regs.raw[uiAddr]);
 			return true;
 		};
@@ -248,8 +269,10 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				{
 					int iVal = stoi(vArgs.at(0));
 					if (iVal<0 || iVal >= FSState::FS_MAX)
+					{
 						return IssueLineError(std::string("Set value ") + to_string(iVal) + " is out of the range [0,3]" );
-					Set((FSState)iVal);
+					}
+					Set(static_cast<FSState>(iVal));
 					return LineStatus::Finished;
 				}
 				case ActToggleJam:
@@ -276,22 +299,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		float m_fCurY = 0.f;
 		union m_regs
 		{
-			m_regs()
-			{
-				for (int i=0; i<32; i++)
-					raw[i] = 0;
-				PID1 = 0x31;
-				PID2 = 0x91;
-				Mode = 0xA0;
-				Config = 0x17;
-				Sleep1 = 0x77;
-				Sleep2 = 0x10;
-				Res_X = Res_Y = 0x14;
-				Orientation = 0x04;
-				FrameAvg = 40; // "no filament" default.
-				Shutter = 20;// 5;
-			};
-			uint8_t raw[32];
+			uint8_t raw[32] {0x31, 0x91, 0, 0, 0, 0xA0, 0x17, 0,0, 0, 0x77, 0x10, 0, 0x14, 0x14, 0,0,0,0,0, 20, 0,0, 40,0, 0x04 };
 			struct {
 				uint8_t PID1;
 				uint8_t PID2;

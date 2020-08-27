@@ -24,10 +24,6 @@
 
 #pragma once
 
-#include <stdint.h>            // for uint32_t, uint16_t, uint8_t
-#include <string>              // for string
-#include <vector>              // for vector
-#include <atomic>
 #include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
 #include "Color.h"             // for Color3fv
 #include "IScriptable.h"       // for IScriptable::LineStatus
@@ -36,6 +32,10 @@
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <atomic>
+#include <cstdint>            // for uint32_t, uint16_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
 
 class Heater : public BasePeripheral, public Scriptable
 {

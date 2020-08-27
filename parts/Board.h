@@ -37,7 +37,7 @@
 #include <cstdio>          // for printf, fprintf, NULL, stderr
 #include <pthread.h>        // for pthread_join, pthread_t
 #include <string>           // for string, basic_string, stoi
-#include <stdint.h>         // for uint32_t, uint8_t, int8_t
+#include <cstdint>         // for uint32_t, uint8_t, int8_t
 #include <vector>           // for vector
 #include <uart_pty.h>       // for uart_pty
 #include <unistd.h>         // for usleep

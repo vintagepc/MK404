@@ -22,11 +22,11 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint32_t
-#include <string>            // for string
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include <cstdint>          // for uint32_t
+#include <string>            // for string
 
 class GCodeSniffer : public BasePeripheral
 {
@@ -35,10 +35,10 @@ class GCodeSniffer : public BasePeripheral
 		#include "IRQHelper.h"
 
 		// Creates a logger that sniffs for
-		GCodeSniffer(unsigned char chrSniff):m_chrCode(chrSniff){};
+		explicit GCodeSniffer(unsigned char chrSniff):m_chrCode(chrSniff){};
 
 		// Shuts down the logger/closes file.
-		~GCodeSniffer(){};
+		~GCodeSniffer() = default;
 
 		// Registers with SimAVR.
 		void Init(avr_t *avr, unsigned char chrUART);

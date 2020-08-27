@@ -30,10 +30,10 @@
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
-#include <stdint.h>            // for uint8_t, uint32_t, int32_t, uint16_t
+#include <atomic>
+#include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <string>              // for string
 #include <vector>              // for vector
-#include <atomic>
 
 class TMC2130: public SPIPeripheral, public Scriptable
 {
@@ -52,16 +52,15 @@ class TMC2130: public SPIPeripheral, public Scriptable
         #include "IRQHelper.h"
 
         struct TMC2130_cfg_t {
-            TMC2130_cfg_t():bInverted(false),uiStepsPerMM(100),iMaxMM(200),fStartPos(10.0),bHasNoEndStops(false){};
-            bool bInverted;
-            uint16_t uiStepsPerMM;
-            int16_t iMaxMM;
-            float fStartPos;
-            bool bHasNoEndStops;
+            bool bInverted {false};
+            uint16_t uiStepsPerMM {100};
+            int16_t iMaxMM {200};
+            float fStartPos{ 10.0};
+            bool bHasNoEndStops {false};
         };
 
         // Default constructor.
-        TMC2130(char cAxis = ' ');
+        explicit TMC2130(char cAxis = ' ');
 
         // Sets the configuration to the provided values. (inversion, positions, etc)
         void SetConfig(TMC2130_cfg_t cfg);
@@ -105,35 +104,34 @@ class TMC2130: public SPIPeripheral, public Scriptable
 
         void CheckDiagOut();
 
-        bool m_bDir  = 0;
+        bool m_bDir  = false;
         atomic_bool m_bEnable {true}, m_bConfigured {false};
 
         TMC2130_cfg_t cfg;
         // Register definitions.
-        typedef union tmc2130_cmd_t{
-            tmc2130_cmd_t():all(0x0){}
+        using tmc2130_cmd_t = union {
             uint64_t all :40;
             struct {
-                unsigned long data :32; // 32 bits of data
-                uint8_t address :7;
-                uint8_t RW :1;
+				uint32_t data :32; // 32 bits of data
+				uint8_t address :7;
+				uint8_t RW :1;
             } __attribute__ ((__packed__)) bitsIn;
             struct {
-                unsigned long data :32; // 32 bits of data
+                uint32_t data :32; // 32 bits of data
                 uint8_t reset_flag :1;
                 uint8_t driver_error :1;
                 uint8_t sg2 :1;
                 uint8_t standstill :1;
                 uint8_t :4; // unused
             }  __attribute__ ((__packed__)) bitsOut;
-            uint8_t bytes[5]; // Raw bytes as piped in/out by SPI.
-        } tmc2130_cmd_t;
+            uint8_t bytes[5] {0,0,0,0,0}; // Raw bytes as piped in/out by SPI.
+        };
 
         // the internal programming registers.
-        typedef union
+        using tmc2130_registers_t =  union
         {
-            uint32_t raw[128]; // There are 128, 7-bit addressing.
-            // TODO: add fields for specific ones down the line...
+            uint32_t raw[128] {0}; // There are 128, 7-bit addressing.
+            // Add fields for specific ones down the line as you see fit...
             struct {
                 struct {
                     uint8_t I_scale_analog  :1;
@@ -201,7 +199,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
                     uint8_t stst        :1;
                 }  __attribute__ ((__packed__)) DRV_STATUS;
             }defs;
-        } tmc2130_registers_t;
+        };
 
         int32_t m_iCurStep = 0;
         int32_t m_iMaxPos = 0;

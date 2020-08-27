@@ -26,6 +26,15 @@
 #include "sim_io.h"    // for avr_io_getirq
 
 
+SerialLineMonitor::SerialLineMonitor(const string &strName):Scriptable(strName)
+{
+	RegisterAction("WaitForLine","Waits for the provided line to appear on the serial output.",WaitForLine, {ArgType::String});
+	RegisterAction("WaitForLineContains","Waits for the serial output to contain a line with the given string.",WaitForContains,{ArgType::String});
+	RegisterAction("SendGCode","Sends the specified string as G-Code.",SendGCode,{ArgType::String});
+	RegisterAction("NextLineMustBe","Errors if the next output line is not as specified.",NextLineMustBe, {ArgType::String});
+	m_strLine.reserve(100);
+};
+
 void SerialLineMonitor::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
     unsigned char c = value&0xFFU;

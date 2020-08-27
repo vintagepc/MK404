@@ -33,6 +33,22 @@
 #define TRACE(_w)
 #endif
 
+		// Makes a display with the given dimensions.
+HD44780::HD44780(uint8_t width, uint8_t height):Scriptable("LCD"),m_uiHeight(height),m_uiWidth(width)
+{
+	m_lineOffsets[2] += width;
+	m_lineOffsets[3] += width;
+	string strBlnk;
+	strBlnk.assign(width,' ');
+	for (int i=0; i<height; i++)
+	{
+		m_vLines.push_back(strBlnk);
+	}
+	RegisterActionAndMenu("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
+	RegisterAction("WaitForText","Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
+	RegisterAction("CheckCGRAM","Checks if the CGRAM address matches the value. (value, addr)",ActCheckCGRAM,{ArgType::Int,ArgType::Int});
+};
+
 void HD44780::ResetCursor()
 {
 	m_uiCursor = m_uiCGCursor = 0;

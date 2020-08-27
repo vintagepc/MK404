@@ -30,6 +30,8 @@
 #define TRACE(_w)
 #endif
 
+using std::cerr;
+using std::cout;
 
 void UART_Logger::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
@@ -41,7 +43,7 @@ void UART_Logger::OnByteIn(struct avr_irq_t *, uint32_t value)
     m_fsOut.put(c);
 	if (!m_fsOut.fail())
 	{
-	    cout << "UART" << m_chrUART << ": " << hex << c << '\n';
+	    cout << "UART" << m_chrUART << ": " << std::hex << c << '\n';
 	}
 	else
 	{

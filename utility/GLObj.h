@@ -25,7 +25,7 @@
 #include "gsl-lite.hpp"
 #include <GL/glew.h>          // for GLuint
 #include <map>                // for map
-#include <stddef.h>           // for size_t
+#include <cstddef>           // for size_t
 #include <string>             // for string
 #include <vector>             // for vector
 #include <mutex>

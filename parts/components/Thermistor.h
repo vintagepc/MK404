@@ -44,7 +44,7 @@ class Thermistor: public ADCPeripheral, public Scriptable
 		#include "IRQHelper.h"
 
 		// Creates a new thermistor with given starting/ambient temperature.
-		Thermistor(float fStartTemp = 25);
+		explicit Thermistor(float fStartTemp = 25);
 
 		// Registers with SimAVR on the given mux,
 		void Init(avr_t *avr, uint8_t adc_mux_number);
@@ -55,11 +55,11 @@ class Thermistor: public ADCPeripheral, public Scriptable
 		// Set the temperature explicitly.
 		void Set(float fTemp);
 	protected:
-		LineStatus ProcessAction(unsigned int iAction, const vector<string> &args);
+		LineStatus ProcessAction(unsigned int iAction, const vector<string> &args) override;
 
 	private:
 
-		uint32_t OnADCRead(avr_irq_t *irq, uint32_t value);
+		uint32_t OnADCRead(avr_irq_t *irq, uint32_t value) override;
 
 		enum Actions
 		{

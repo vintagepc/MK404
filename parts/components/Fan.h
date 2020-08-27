@@ -20,10 +20,6 @@
  */
 #pragma once
 
-#include <stdint.h>            // for uint16_t, uint32_t, uint8_t
-#include <string>              // for string
-#include <vector>              // for vector
-#include <atomic>
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
@@ -32,6 +28,10 @@
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <atomic>
+#include <cstdint>            // for uint16_t, uint32_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
 
 class Fan:public SoftPWMable, public Scriptable
 {
@@ -47,7 +47,7 @@ public:
     #include "IRQHelper.h"
 
 	// Constructs a new Fan with a max RPM of iMaxRPM (at PWM 255)
-	Fan(uint16_t iMaxRPM, char chrSym = ' ', bool bIsSoftPWM = false);
+	explicit Fan(uint16_t iMaxRPM, char chrSym = ' ', bool bIsSoftPWM = false);
 
 	// Draws a small fan indicator.
 	void Draw();

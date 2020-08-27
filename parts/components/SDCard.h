@@ -102,13 +102,13 @@ class SDCard:public SPIPeripheral, public Scriptable
 		static inline off_t AddressToDataIdx (off_t input_address){ return input_address * BLOCK_SIZE;}
 
 		/* Bit fields for R1 responses. Reference: JESD84-A44, Section 7.13. */
-		static const uint8_t R1_ADDRESS_OUT_OF_RANGE = (1 << 6);
-		static const uint8_t R1_ADDRESS_MISALIGN = (1 << 5);
-		static const uint8_t R1_ERASE_SEQ_ERROR = (1 << 4);
-		static const uint8_t R1_COM_CRC_ERROR = (1 << 3);
-		static const uint8_t R1_ILLEGAL_COMMAND = (1 << 2);
-		static const uint8_t R1_ERASE_RESET = (1 << 1);
-		static const uint8_t R1_IN_IDLE_STATE = (1 << 0);
+		static const uint8_t R1_ADDRESS_OUT_OF_RANGE = (1u << 6);
+		static const uint8_t R1_ADDRESS_MISALIGN = (1u << 5);
+		static const uint8_t R1_ERASE_SEQ_ERROR = (1u << 4);
+		static const uint8_t R1_COM_CRC_ERROR = (1u << 3);
+		static const uint8_t R1_ILLEGAL_COMMAND = (1u << 2);
+		static const uint8_t R1_ERASE_RESET = (1u << 1);
+		static const uint8_t R1_IN_IDLE_STATE = (1u << 0);
 
 		static const uint8_t READ_BL_LEN = 9;
 		static const unsigned int BLOCK_SIZE = (1U<<READ_BL_LEN); // Bytes

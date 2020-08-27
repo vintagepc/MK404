@@ -202,8 +202,8 @@ class PAT9125: public I2CPeripheral, public Scriptable
 				m_fEPos = fEVal;
 				m_fPPos = fPVal;
 				m_fCurY = fEVal+fPVal;
-				m_regs.DeltaXYHi = (iCounts >> 8) & 0b1111;
-				m_regs.DYLow = iCounts & 0xFF;
+				m_regs.DeltaXYHi = (iCounts >> 8) & 0b1111; //NOLINT
+				m_regs.DYLow = iCounts & 0xFF; //NOLINT
 				if (m_state != FS_JAM)
 				{
 					m_regs.MStatus = 0x80;

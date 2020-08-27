@@ -109,19 +109,19 @@ class HD44780:public BasePeripheral, public Scriptable
 
 		inline void ToggleFlag(uint16_t bit)
 		{
-			m_flags ^= (1<<bit);
+			m_flags ^= (1U<<bit);
 		}
 
 		inline bool SetFlag(uint16_t bit, uint8_t uiVal)
 		{
-			int old = m_flags &  (1 << bit);
-			m_flags = (m_flags & ~(1 << bit)) | (uiVal ? (1 << bit) : 0);
+			int old = m_flags &  (1U << bit);
+			m_flags = (m_flags & ~(1U << bit)) | (uiVal ? (1U << bit) : 0);
 			return old != 0;
 		}
 
 		inline bool GetFlag(uint16_t bit)
 		{
-			return (m_flags &  (1 << bit)) != 0;
+			return (m_flags &  (1U << bit)) != 0;
 		}
 
 

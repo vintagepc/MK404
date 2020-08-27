@@ -38,7 +38,7 @@
 #include <string>              // for string
 
 extern "C" {
-    DECLARE_FIFO(uint8_t,uart_pty_fifo, 512);
+    DECLARE_FIFO(uint8_t,uart_pty_fifo, 512); //NOLINT - complaint in external macro
 }
 
 class uart_pty: public BasePeripheral

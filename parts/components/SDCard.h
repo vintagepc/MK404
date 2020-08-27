@@ -114,7 +114,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 		static const unsigned int BLOCK_SIZE = (1U<<READ_BL_LEN); // Bytes
 		static inline bool IsBlockAligned(int iBlock){ return ((iBlock % BLOCK_SIZE) == 0);};
 
-		inline void CRC_ADD(const uint8_t data) {m_CRC = m_crctab[(m_CRC >> 8 ^ data) & 0XFF] ^ (m_CRC << 8); }
+		inline void CRC_ADD(const uint8_t data) {m_CRC = m_crctab[(m_CRC >> 8u ^ data) & 0XFFu] ^ (m_CRC << 8u); }
 
 		/* TODO: See diskio.c */
 		enum Command {

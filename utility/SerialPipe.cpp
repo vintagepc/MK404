@@ -20,6 +20,7 @@
  */
 
 #include "SerialPipe.h"
+#include "gsl-lite.hpp"
 #include <cerrno>       // for EAGAIN, errno
 #include <cstdio>
 #include <fcntl.h>       // for open, O_NONBLOCK, O_RDWR
@@ -57,7 +58,8 @@ void* SerialPipe::Run()
 {
 	// Not much to see here, we just open the ports and shuttle characters back and forth across them.
 	//printf("Starting serial transfer thread...\n");
-	std::vector<int> fdPort;
+	int _fdPort[2] ={0,0};
+	gsl::span<int> fdPort(_fdPort);
 	fd_set fdsIn {}, fdsErr {};
 	unsigned char chrIn;
 	int iLastFd = 0, iReadyRead, iChrRd;

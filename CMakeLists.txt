@@ -13,6 +13,7 @@ option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
 option(ENABLE_IWYU "Enables Include-what-you-use")
 option(ENABLE_TIDY "Enables Clang-tidy")
 option(ENABLE_GCOV "Enables gcov coverage")
+option(ENABLE_GPERF "Enables gperf profiling")
 
 if (ENABLE_GCOV)
 	SET(GCOV_BINARY /usr/bin/gcov-7)
@@ -169,6 +170,10 @@ if (ENABLE_TIDY)
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${FIRMWARE})
 else()
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
+endif()
+
+if (ENABLE_GPERF)
+	target_link_libraries(MK404 -lprofiler)
 endif()
 
 target_compile_features(MK404 PRIVATE cxx_range_for)

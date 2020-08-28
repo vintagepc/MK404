@@ -127,11 +127,6 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 	private:
 		TelemetryHost():Scriptable("TelHost")
 		{
-			if (m_pHost !=nullptr)
-			{
-				std::cerr << "ERROR - duplicate initialization of telemetry host!\n";
-				exit(1);
-			}
 			memset(&m_trace, 0, sizeof(m_trace));
 #ifdef __CYGWIN__
             printf("Cygwin detected - skipping TelHost action registration...\n");
@@ -158,8 +153,6 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 
 		std::vector<TelCategory> m_VLoglst;
 		std::vector<std::string> m_vsNames;
-
-		static std::shared_ptr<TelemetryHost> m_pHost;
 
 		std::map<std::string, avr_irq_t*>m_mIRQs;
 		std::map<std::string, std::vector<TC>>m_mCatsByName;

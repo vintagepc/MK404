@@ -37,24 +37,14 @@
 class ScriptHost: public IScriptable
 {
     public:
-		// static std::shared_ptr<ScriptHost> Get()
-		// {
-		// 	return g_pHost;
-		// }
-
 		inline static bool IsInitialized()
 		{
-			return g_pHost!=nullptr;
+			return m_bIsInitialized;
 		}
 		static bool Init()
 		{
-			// I don't even think we need this, all methods are static...
-			if (g_pHost!=nullptr)
-			{
-				std::cerr << "ERROR: Duplicate initialization attempt for scripthost!\n";
-				return false;
-			}
-			g_pHost.reset(new ScriptHost());
+			GetHost()._Init();
+			m_bIsInitialized = true;
 			return true;
 		}
 
@@ -120,10 +110,20 @@ class ScriptHost: public IScriptable
 		LineStatus ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs) override;
 
 		ScriptHost():IScriptable("ScriptHost"){
+		}
+
+		void _Init()
+		{
 			RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{ArgType::Int});
 			RegisterAction("SetQuitOnTimeout","If 1, quits when a timeout occurs. Exit code will be non-zero.",ActSetQuitOnTimeout,{ArgType::Bool});
 			RegisterAction("Log","Print the std::string to stdout",ActLog,{ArgType::String});
 			m_clients[m_strName] = this;
+		}
+
+		static ScriptHost& GetHost()
+		{
+			static ScriptHost h;
+			return h;
 		}
 
 
@@ -142,7 +142,6 @@ class ScriptHost: public IScriptable
 			return state;
 		}
 
-		static std::unique_ptr<ScriptHost> g_pHost;
 		static std::map<std::string, IScriptable*> m_clients;
 		static std::map<std::string, int> m_mMenuIDs;
 		static std::map<std::string, unsigned> m_mClient2MenuBase;
@@ -153,6 +152,7 @@ class ScriptHost: public IScriptable
 		static ScriptHost::State m_state;
 		static bool m_bQuitOnTimeout;
 		static bool m_bMenuCreated;
+		static bool m_bIsInitialized;
 
 		static std::atomic_uint m_uiQueuedMenu;
 

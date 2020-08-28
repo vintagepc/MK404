@@ -25,8 +25,6 @@
 #include <iomanip>
 #include <iostream>
 
-std::shared_ptr<TelemetryHost> TelemetryHost::m_pHost;
-
 void TelemetryHost::AddTrace(avr_irq_t *pIRQ, std::string strName, TelCats vCats, uint8_t uiBits)
 {
 	bool bShouldAdd = false;

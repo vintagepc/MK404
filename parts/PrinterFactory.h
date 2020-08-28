@@ -92,7 +92,7 @@ class PrinterFactory
 		template<class P>
 		static void* _CreatePrinter(Boards::Board *&pBoard, Printer *&pPrinter)//NOLINT
 		{
-			auto p = new P();
+			auto p = new P(); //NOLINT
 			pPrinter = p;
 			pBoard = p;
 			return p;

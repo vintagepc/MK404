@@ -133,11 +133,11 @@ class IScriptable
 				}
 				if (bMarkdown)
 				{
-					std::cout << " - `" << std::setw(30) << strArgFmt << "` - `" << m_mHelp.at(ID) << "`\n";
+					std::cout << " - `" << std::setw(30) << std::left << strArgFmt << "` - `" << m_mHelp.at(ID) << "`\n";
 				}
 				else
 				{
-					std::cout << "\t\t" << std::setw(30) << strArgFmt << m_mHelp.at(ID) << '\n';
+					std::cout << "\t\t" << std::setw(30) << std::left << strArgFmt << m_mHelp.at(ID) << '\n';
 				}
 			}
 		}

@@ -37,12 +37,11 @@ std::map<std::string, int> ScriptHost::m_mMenuIDs;
 std::map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
 std::map<std::string, unsigned> ScriptHost::m_mClient2MenuBase;
 std::map<std::string, std::vector<std::pair<std::string,int>>> ScriptHost::m_mClientEntries;
-std::unique_ptr<ScriptHost> ScriptHost::g_pHost;
 ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
 bool ScriptHost::m_bQuitOnTimeout = false;
 bool ScriptHost::m_bMenuCreated = false;
-
+bool ScriptHost::m_bIsInitialized = false;
 std::atomic_uint ScriptHost::m_uiQueuedMenu {0};
 
 void ScriptHost::PrintScriptHelp(bool bMarkdown)

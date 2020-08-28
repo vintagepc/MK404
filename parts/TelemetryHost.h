@@ -81,14 +81,10 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 		const char *_IRQNAMES[IRQ::COUNT] = {
 		};
 
-		inline static std::shared_ptr<TelemetryHost> GetHost()
+		static TelemetryHost& GetHost()
 		{
-			if (m_pHost == nullptr)
-			{
-				std::cout << "TelemetryHost::Init\n";
-				m_pHost.reset(new TelemetryHost());
-			}
-			return m_pHost;
+			static TelemetryHost h;
+			return h;
 		}
 
 		// Inits the VCD file at the specified rate (in us)

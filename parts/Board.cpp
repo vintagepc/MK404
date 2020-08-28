@@ -82,7 +82,7 @@ namespace Boards {
 		m_pAVR->avcc = 5000;
 		m_pAVR->log = 1 + uiV;
 
-		TelemetryHost::GetHost()->Init(m_pAVR, strVCD,uiVCDRate);
+		TelemetryHost::GetHost().Init(m_pAVR, strVCD,uiVCDRate);
 
 		// even if not setup at startup, activate gdb if crashing
 		m_pAVR->gdb_port = 1234;
@@ -99,16 +99,16 @@ namespace Boards {
 
 	void Board::AddUARTTrace(const char chrUART)
 	{
-			auto pTH = TelemetryHost::GetHost();
+			auto &TH = TelemetryHost::GetHost();
 			avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT); //NOLINT - complaint is external macro
 			avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_INPUT);//NOLINT - complaint is external macro
 			avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XON); //NOLINT - complaint is external macro
 			avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUT_XOFF); //NOLINT - complaint is external macro
 
-			pTH->AddTrace(src, string("UART")+chrUART, {TC::Serial},8);
-			pTH->AddTrace(dst, string("UART")+chrUART, {TC::Serial},8);
-			pTH->AddTrace(xon, string("UART")+chrUART, {TC::Serial});
-			pTH->AddTrace(xoff, string("UART")+chrUART, {TC::Serial});
+			TH.AddTrace(src, string("UART")+chrUART, {TC::Serial},8);
+			TH.AddTrace(dst, string("UART")+chrUART, {TC::Serial},8);
+			TH.AddTrace(xon, string("UART")+chrUART, {TC::Serial});
+			TH.AddTrace(xoff, string("UART")+chrUART, {TC::Serial});
 	}
 
 	void Board::StartAVR()

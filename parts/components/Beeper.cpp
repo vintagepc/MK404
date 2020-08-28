@@ -151,7 +151,7 @@ void Beeper::Init(avr_t *avr)
     _Init(avr, this);
 	Beeper::RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Beeper,OnDigitalInSPWM), this);
 
-	TelemetryHost::GetHost()->AddTrace(this, DIGITAL_IN, {TC::OutputPin, TC::Misc},8);
+	TelemetryHost::GetHost().AddTrace(this, DIGITAL_IN, {TC::OutputPin, TC::Misc},8);
 }
 
 void Beeper::Draw()

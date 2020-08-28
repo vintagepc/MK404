@@ -91,10 +91,10 @@ void HC595::Init(struct avr_t * avr)
 	RegisterNotify(IN_CLOCK, 	MAKE_C_CALLBACK(HC595,OnClockIn), 	this);
 	RegisterNotify(IN_DATA, 	MAKE_C_CALLBACK(HC595,OnDataIn), 	this);
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, IN_LATCH,{TC::OutputPin, TC::Misc});
-	pTH->AddTrace(this, IN_RESET,{TC::OutputPin, TC::Misc});
-	pTH->AddTrace(this, IN_CLOCK,{TC::OutputPin, TC::Misc});
-	pTH->AddTrace(this, IN_DATA,{TC::OutputPin, TC::Misc});
-	pTH->AddTrace(this, OUT,{TC::Misc},32);
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, IN_LATCH,{TC::OutputPin, TC::Misc});
+	TH.AddTrace(this, IN_RESET,{TC::OutputPin, TC::Misc});
+	TH.AddTrace(this, IN_CLOCK,{TC::OutputPin, TC::Misc});
+	TH.AddTrace(this, IN_DATA,{TC::OutputPin, TC::Misc});
+	TH.AddTrace(this, OUT,{TC::Misc},32);
 }

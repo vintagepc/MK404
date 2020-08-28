@@ -160,11 +160,11 @@ void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)
     RegisterNotify(DIGITAL_IN, MAKE_C_CALLBACK(Heater,OnDigitalChanged),this);
 
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, PWM_IN, {TC::Heater,TC::PWM},8);
-	pTH->AddTrace(this, DIGITAL_IN, {TC::Heater});
-	pTH->AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
-	pTH->AddTrace(this, TEMP_OUT, {TC::Heater});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, PWM_IN, {TC::Heater,TC::PWM},8);
+	TH.AddTrace(this, DIGITAL_IN, {TC::Heater});
+	TH.AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
+	TH.AddTrace(this, TEMP_OUT, {TC::Heater});
 
   	RaiseIRQ(TEMP_OUT,static_cast<int>(m_fCurrentTemp*256.f));
 }

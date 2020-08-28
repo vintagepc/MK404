@@ -70,5 +70,5 @@ void GCodeSniffer::Init(struct avr_t * avr, unsigned char chrUART)
 
     std::cout << "UART " << m_chrUART << " is now being monitored for '" << m_chrCode << "'" << '\n';
 
-	TelemetryHost::GetHost()->AddTrace(this, CODEVAL_OUT, {TC::Misc, TC::Serial},8);
+	TelemetryHost::GetHost().AddTrace(this, CODEVAL_OUT, {TC::Misc, TC::Serial},8);
 }

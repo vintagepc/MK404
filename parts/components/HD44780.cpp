@@ -515,11 +515,11 @@ void HD44780::Init(avr_t *avr)
 	// printf("LCD: %duS is %d cycles for your AVR\n",
 	// 		1, (int)avr_usec_to_cycles(avr, 1));
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, E, {TC::Display, TC::OutputPin});
-	pTH->AddTrace(this, RS, {TC::Display, TC::OutputPin});
-	pTH->AddTrace(this, RW, {TC::Display, TC::OutputPin});
-	pTH->AddTrace(this, DATA_IN, {TC::Display},8);
-	pTH->AddTrace(this, BRIGHTNESS_IN, {TC::Display, TC::OutputPin});
-	pTH->AddTrace(this, BRIGHTNESS_PWM_IN, {TC::Display, TC::PWM});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, E, {TC::Display, TC::OutputPin});
+	TH.AddTrace(this, RS, {TC::Display, TC::OutputPin});
+	TH.AddTrace(this, RW, {TC::Display, TC::OutputPin});
+	TH.AddTrace(this, DATA_IN, {TC::Display},8);
+	TH.AddTrace(this, BRIGHTNESS_IN, {TC::Display, TC::OutputPin});
+	TH.AddTrace(this, BRIGHTNESS_PWM_IN, {TC::Display, TC::PWM});
 }

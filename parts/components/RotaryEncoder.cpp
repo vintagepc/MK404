@@ -143,10 +143,10 @@ void RotaryEncoder::Twist(Direction eDir)
 void RotaryEncoder::Init(avr_t *avr)
 {
 	_Init(avr, this);
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this,OUT_BUTTON,{TC::InputPin, TC::Display});
-	pTH->AddTrace(this,OUT_A,{TC::InputPin, TC::Display});
-	pTH->AddTrace(this,OUT_B,{TC::InputPin, TC::Display});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this,OUT_BUTTON,{TC::InputPin, TC::Display});
+	TH.AddTrace(this,OUT_A,{TC::InputPin, TC::Display});
+	TH.AddTrace(this,OUT_B,{TC::InputPin, TC::Display});
 }
 
 Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const std::vector<std::string>&)

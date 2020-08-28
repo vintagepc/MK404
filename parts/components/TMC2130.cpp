@@ -341,14 +341,14 @@ void TMC2130::Init(struct avr_t * avr)
 	GetIRQ(DIR_IN)->flags |= IRQ_FLAG_FILTERED;
 	GetIRQ(ENABLE_IN)->flags |= IRQ_FLAG_FILTERED;
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Stepper},8);
-	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Stepper},8);
-	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Stepper, TC::OutputPin});
-	pTH->AddTrace(this, STEP_IN,{TC::OutputPin, TC::Stepper});
-	pTH->AddTrace(this, DIR_IN,{TC::OutputPin, TC::Stepper});
-	pTH->AddTrace(this, ENABLE_IN,{TC::OutputPin, TC::Stepper});
-	pTH->AddTrace(this, DIAG_OUT,{TC::InputPin, TC::Stepper});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Stepper},8);
+	TH.AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Stepper},8);
+	TH.AddTrace(this, SPI_CSEL, {TC::SPI, TC::Stepper, TC::OutputPin});
+	TH.AddTrace(this, STEP_IN,{TC::OutputPin, TC::Stepper});
+	TH.AddTrace(this, DIR_IN,{TC::OutputPin, TC::Stepper});
+	TH.AddTrace(this, ENABLE_IN,{TC::OutputPin, TC::Stepper});
+	TH.AddTrace(this, DIAG_OUT,{TC::InputPin, TC::Stepper});
 }
 
 float TMC2130::StepToPos(int32_t step)

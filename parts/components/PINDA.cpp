@@ -219,8 +219,8 @@ void PINDA::Init(struct avr_t * avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t
 	GetIRQ(TRIGGER_OUT)->flags |= IRQ_FLAG_FILTERED; // No retriggers.
     RaiseIRQ(TRIGGER_OUT,0);
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, TRIGGER_OUT, {TC::InputPin, TC::Misc});
-	pTH->AddTrace(this, SHEET_OUT, {TC::InputPin, TC::Misc});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, TRIGGER_OUT, {TC::InputPin, TC::Misc});
+	TH.AddTrace(this, SHEET_OUT, {TC::InputPin, TC::Misc});
 
 }

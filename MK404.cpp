@@ -155,11 +155,11 @@ void keyCB(unsigned char key, int x, int y)	/* called on key press */
 	switch(key)
 	{
 		case '+':
-			TelemetryHost::GetHost()->StartTrace();
+			TelemetryHost::GetHost().StartTrace();
 			std::cout << "Enabled VCD trace." << '\n';
 			break;
 		case '-':
-			TelemetryHost::GetHost()->StopTrace();
+			TelemetryHost::GetHost().StopTrace();
 			std::cout << "Stopped VCD trace" << '\n';
 			break;
 		default:
@@ -332,7 +332,7 @@ int main(int argc, char *argv[])
 
 	bNoGraphics |= m_bTestMode;
 
-	TelemetryHost::GetHost()->SetCategories(argVCD.getValue());
+	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 
 	ScriptHost::Init();
 
@@ -398,7 +398,7 @@ int main(int argc, char *argv[])
 	}
 	if (argVCD.isSet() && argVCD.getValue().at(0)=="?")
 	{
-		TelemetryHost::GetHost()->PrintTelemetry(argMD.isSet());
+		TelemetryHost::GetHost().PrintTelemetry(argMD.isSet());
 		exit(0);
 	}
 

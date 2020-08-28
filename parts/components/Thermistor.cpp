@@ -104,9 +104,9 @@ void Thermistor::Init(struct avr_t * avr, uint8_t uiMux)
 	RegisterNotify(TEMP_IN,MAKE_C_CALLBACK(Thermistor,OnTempIn),this);
 	std::cout << static_cast<const char*>(__FUNCTION__) << " on ADC " << GetMuxNumber() << " start temp: " <<m_fCurrentTemp << '\n';
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, ADC_VALUE_OUT, {TC::ADC,TC::Thermistor}, 16);
-	pTH->AddTrace(this, TEMP_OUT, {TC::Thermistor,TC::Misc},16);
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, ADC_VALUE_OUT, {TC::ADC,TC::Thermistor}, 16);
+	TH.AddTrace(this, TEMP_OUT, {TC::Thermistor,TC::Misc},16);
 }
 
 void Thermistor::SetTable(const gsl::span<const int16_t> table, int iOversamp)

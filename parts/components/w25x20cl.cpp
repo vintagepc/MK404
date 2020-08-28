@@ -301,10 +301,10 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 	_Init(avr,this);
 	ConnectFrom(irqCS, SPI_CSEL);
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
-	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
-	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
+	TH.AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
+	TH.AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
 
 	m_status_register.byte = 0b00000000; //SREG default values}
 };

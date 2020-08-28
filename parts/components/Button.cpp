@@ -56,8 +56,8 @@ void Button::Init(avr_t* avr)
 	const char * pName = m_strName.c_str();
 	_Init(avr, this, &pName);
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, BUTTON_OUT,{TC::InputPin, TC::Misc});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, BUTTON_OUT,{TC::InputPin, TC::Misc});
 
 }
 

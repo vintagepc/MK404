@@ -66,9 +66,9 @@ void VoltageSrc::Init(struct avr_t * avr , uint8_t uiMux)
 	RegisterAction("SetV", "Sets the value the ADC reports", ActSet, {ArgType::Float});
 	RegisterAction("SetVScale", "Changes the scale factor to convert the input to the ADC input range",ActSetScale,{ArgType::Float});
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, ADC_VALUE_OUT, {TC::ADC, TC::Power},16);
-	pTH->AddTrace(this, DIGITAL_OUT,{TC::Power,TC::InputPin});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, ADC_VALUE_OUT, {TC::ADC, TC::Power},16);
+	TH.AddTrace(this, DIGITAL_OUT,{TC::Power,TC::InputPin});
 
 }
 

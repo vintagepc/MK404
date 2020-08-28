@@ -489,11 +489,11 @@ void SDCard::Init(struct avr_t *avr)
 	m_ocr |= 1U << 31U; //Card power up status bit
 
 	InitCSD();
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
-	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
-	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
-	pTH->AddTrace(this, CARD_PRESENT, {TC::InputPin, TC::Storage});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
+	TH.AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
+	TH.AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
+	TH.AddTrace(this, CARD_PRESENT, {TC::InputPin, TC::Storage});
 	RaiseIRQ(CARD_PRESENT,1);
 }
 

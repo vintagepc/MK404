@@ -139,11 +139,11 @@ void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr
     RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnPWMChange), this);
     RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalInSPWM), this);
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, PWM_IN,{TC::PWM, TC::Fan},8);
-	pTH->AddTrace(this, DIGITAL_IN, {TC::Fan, TC::OutputPin});
-	pTH->AddTrace(this, TACH_OUT, {TC::Fan, TC::InputPin});
-	pTH->AddTrace(this, SPEED_OUT,{TC::Fan, TC::Misc},16);
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, PWM_IN,{TC::PWM, TC::Fan},8);
+	TH.AddTrace(this, DIGITAL_IN, {TC::Fan, TC::OutputPin});
+	TH.AddTrace(this, TACH_OUT, {TC::Fan, TC::InputPin});
+	TH.AddTrace(this, SPEED_OUT,{TC::Fan, TC::Misc},16);
 
 }
 

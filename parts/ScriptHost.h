@@ -48,6 +48,7 @@ class ScriptHost: public IScriptable
 		}
 		static bool Init()
 		{
+			// I don't even think we need this, all methods are static...
 			if (g_pHost!=nullptr)
 			{
 				std::cerr << "ERROR: Duplicate initialization attempt for scripthost!\n";

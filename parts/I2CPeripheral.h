@@ -184,7 +184,7 @@ class I2CPeripheral: public BasePeripheral
 								m_uiByte = GetRegVal(msgIn.writeRegAddr);
 								//printf("Sending %02x\n",m_uiByte);
 							}
-							avr_raise_irq(m_pSDA, m_uiByte>>(--m_uiBitCt) &1u);
+							avr_raise_irq(m_pSDA, static_cast<unsigned>(m_uiByte)>>(--m_uiBitCt) &1u);
 						}
 						else
 						{

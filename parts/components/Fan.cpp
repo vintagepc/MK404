@@ -77,13 +77,13 @@ void Fan::Draw()
 }
 
 
-Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const std::vector<string>& vArgs)
+Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const std::vector<std::string>& vArgs)
 {
 	switch (ID)
 	{
 		case Actions::SetPWM:
 		{
-			uint16_t uiRPM = (stoul(vArgs.at(0))*m_uiMaxRPM)/255U;
+			uint16_t uiRPM = (std::stoul(vArgs.at(0))*m_uiMaxRPM)/255U;
 			std::cout << "New RPM: " << uiRPM << '\n';
 			Set(uiRPM);
 			return LineStatus::Finished;

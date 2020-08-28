@@ -66,7 +66,7 @@ static uint8_t CRC7(gsl::span<uint8_t> data)
 	return crc | 0x01U;
 }
 
-Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
+Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{

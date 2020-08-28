@@ -105,7 +105,7 @@ class HD44780:public BasePeripheral, public Scriptable
 		gsl::span<uint8_t> m_vRam {_m_vRam};
 		gsl::span<uint8_t> m_cgRam {_m_cgRam};
 
-		LineStatus ProcessAction(unsigned int iAction, const std::vector<string> &args) override;
+		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &args) override;
 
 		inline void ToggleFlag(uint16_t bit)
 		{
@@ -188,7 +188,7 @@ class HD44780:public BasePeripheral, public Scriptable
         uint8_t  m_uiReadPins = 0;
         volatile uint16_t m_flags = 0;				// LCD flags ( HD44780_FLAG_*)
 
-		std::vector<string> m_vLines;
+		std::vector<std::string> m_vLines;
 
 		uint8_t m_uiLineChg = 0;
 

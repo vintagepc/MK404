@@ -37,13 +37,13 @@ Thermistor::Thermistor(float fStartTemp):Scriptable("Thermistor"),m_fCurrentTemp
 }
 
 
-Scriptable::LineStatus Thermistor::ProcessAction(unsigned int iAction, const std::vector<string>& vArgs)
+Scriptable::LineStatus Thermistor::ProcessAction(unsigned int iAction, const std::vector<std::string>& vArgs)
 {
 	switch (iAction)
 	{
 		case ActSetTemp:
 		{
-			Set(stof(vArgs.at(0)));
+			Set(std::stof(vArgs.at(0)));
 			return LineStatus::Finished;
 		}
 		case Shorted:

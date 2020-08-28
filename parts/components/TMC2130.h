@@ -75,7 +75,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
         void Draw_Simple();
 
 	protected:
-		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<string> &vArgs) override;
+		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
     private:
 		enum Actions
@@ -84,6 +84,8 @@ class TMC2130: public SPIPeripheral, public Scriptable
 			ActSetDiag,
 			ActResetDiag
 		};
+
+		void _Draw(bool bSimple);
 
         // SPI handlers.
         uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;

@@ -62,7 +62,7 @@ public:
 	void Draw();
 
 	protected:
-		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<string> &vArgs) override;
+		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 
     private:

@@ -55,7 +55,7 @@ uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t *, uint32_t)
     return iVOut;
 }
 
-Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const std::vector<string> &vArgs)
+Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs)
 {
 	switch (uiAct)
 	{

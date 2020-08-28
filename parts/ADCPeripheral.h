@@ -22,7 +22,7 @@
 #pragma once
 
 #include "BasePeripheral.h"
-#include <avr_adc.h>
+#include "avr_adc.h"
 
 class ADCPeripheral: public BasePeripheral
 {
@@ -36,7 +36,7 @@ class ADCPeripheral: public BasePeripheral
 
         // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
         template<class C>
-        void _Init(avr_t *avr, uint8_t uiADC, C *p, const char** IRQNAMES = nullptr) {
+        void _Init(avr_t *avr, uint8_t uiADC, C *p /*const char** IRQNAMES = nullptr*/) {
             BasePeripheral::_Init(avr,p);
 
             m_uiMux = uiADC;

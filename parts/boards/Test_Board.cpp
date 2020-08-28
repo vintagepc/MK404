@@ -96,7 +96,7 @@ namespace Boards
 		TryConnect(LCD_PINS_ENABLE, m_lcd,HD44780::E);
 
 		// SD card
-		string strSD = GetSDCardFile();
+		std::string strSD = GetSDCardFile();
 		m_card.SetImage(strSD);
 		AddHardware(m_card);
 		TryConnect(SDSS,m_card, SDCard::SPI_CSEL);
@@ -109,7 +109,7 @@ namespace Boards
 	// Convenience function for debug printing a particular pin.
 	void Test_Board::DebugPin(avr_irq_t *, uint32_t value)
 	{
-		std::cout << "Pin DBG: change to " << hex << value << '\n';
+		std::cout << "Pin DBG: change to " << std::hex << value << '\n';
 	}
 
 	void Test_Board::OnAVRInit()

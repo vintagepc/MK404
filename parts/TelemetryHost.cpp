@@ -27,7 +27,7 @@
 
 std::shared_ptr<TelemetryHost> TelemetryHost::m_pHost;
 
-void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits)
+void TelemetryHost::AddTrace(avr_irq_t *pIRQ, std::string strName, TelCats vCats, uint8_t uiBits)
 {
 	bool bShouldAdd = false;
 	// Check categories.
@@ -71,7 +71,7 @@ void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uin
 	}
 }
 
-void TelemetryHost::SetCategories(const std::vector<string> &vsCats)
+void TelemetryHost::SetCategories(const std::vector<std::string> &vsCats)
 {
 	for (auto &sCat : vsCats)
 	{
@@ -86,7 +86,7 @@ void TelemetryHost::SetCategories(const std::vector<string> &vsCats)
 	}
 }
 
-Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
+Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -168,7 +168,7 @@ void TelemetryHost::PrintTelemetry(bool bMarkdown)
 	}
 	for (auto &it : m_mCatsByName)
 	{
-		string strCats(bMarkdown?"|":"");
+		std::string strCats(bMarkdown?"|":"");
 		for (auto &sName : it.second)
 		{
 			strCats += " `" + m_mCat2Str.at(sName) + "`";

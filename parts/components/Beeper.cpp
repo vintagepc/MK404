@@ -70,7 +70,7 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 
 }
 
-Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const std::vector<string>&)
+Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const std::vector<std::string>&)
 {
 	switch (iAct)
 	{

@@ -115,7 +115,7 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
 
 Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 			   char chrLabel, float fColdTemp, float fHotTemp):
-			   								Scriptable(string("Heater_") + chrLabel),
+			   								Scriptable(std::string("Heater_") + chrLabel),
                                             m_fThermalMass(fThermalMass),
                                             m_fAmbientTemp(fAmbientTemp),
                                             m_fCurrentTemp(fAmbientTemp),
@@ -129,7 +129,7 @@ Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 	RegisterActionAndMenu("StopHeating","Stops heating, as if a thermal runaway is happening due to loose heater or thermistor",ActStopHeating);
 }
 
-Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
+Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{

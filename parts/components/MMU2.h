@@ -67,10 +67,10 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
 
         void LEDHandler(avr_irq_t *irq, uint32_t value);
 
-        atomic_bool m_bAutoFINDA = {true};
-		atomic_bool m_bFINDAManual = {false};
-        atomic_bool m_bStarted = {false};
-        atomic_bool m_bReset ={false};
+        std::atomic_bool m_bAutoFINDA = {true};
+		std::atomic_bool m_bFINDAManual = {false};
+        std::atomic_bool m_bStarted = {false};
+        std::atomic_bool m_bReset ={false};
         pthread_t m_tRun = 0;
 
         std::string m_strTitle = "Missing Material Unit 2";

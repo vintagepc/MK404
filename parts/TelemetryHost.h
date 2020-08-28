@@ -66,7 +66,8 @@ enum class TelCategory {
 // Only items in categries specified by a command line
 // argument (or explicitly named) will be logged.
 
-typedef const std::vector<TelCategory>& TelCats;
+//typedef const std::vector<TelCategory>& TelCats;
+using TelCats = const std::vector<TelCategory>&;
 using TC = TelCategory;
 
 class TelemetryHost: public BasePeripheral, public Scriptable
@@ -157,7 +158,7 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 			ActStopTrace
 		};
 
-		avr_vcd_t m_trace;
+		avr_vcd_t m_trace {};
 
 		std::vector<TelCategory> m_VLoglst;
 		std::vector<std::string> m_vsNames;

@@ -20,12 +20,13 @@
 
 #pragma once
 
+#include "PinNames.h"
 #include "PinSpec_2560.h"
 #include "Wiring.h"
 
 namespace Wirings
 {
-	using namespace PinNames;
+
 	class Test_Wiring : public Wiring
 	{
 		public:

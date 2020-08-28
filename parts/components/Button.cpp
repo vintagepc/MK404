@@ -33,7 +33,7 @@ Button::Button(const std::string &strName):Scriptable(strName),m_strName(strName
 	RegisterActionAndMenu("PressAndRelease", "Simulate pressing and then releasing  the button", Actions::ActPressAndRelease);
 }
 
-Scriptable::LineStatus Button::ProcessAction(unsigned int iAction, const std::vector<string>&)
+Scriptable::LineStatus Button::ProcessAction(unsigned int iAction, const std::vector<std::string>&)
 {
 	switch (iAction)
 	{

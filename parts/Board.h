@@ -38,13 +38,12 @@
 #include <iostream>          // for printf, fprintf, NULL, stderr
 #include <pthread.h>        // for pthread_join, pthread_t
 #include <string>           // for string, basic_string, stoi
-#include <vector>           // for vector
 #include <uart_pty.h>       // for uart_pty
 #include <unistd.h>         // for usleep
+#include <vector>           // for vector
 
-using namespace PinNames;
-//using namespace Wirings;
-using namespace std;
+using namespace PinNames; //NOLINT - because proper using declarations don't support enums.
+
 namespace Boards
 {
 	class Board : public Scriptable
@@ -305,7 +304,7 @@ namespace Boards
 
 			struct avr_t* m_pAVR = nullptr;
 
-			atomic_uint8_t m_bPaused = {false};
+			std::atomic_uint8_t m_bPaused = {false};
 
 		private:
 			void CreateAVR();
@@ -322,7 +321,7 @@ namespace Boards
 
 			avr_flashaddr_t LoadFirmware(const std::string &strFW);
 
-			atomic_bool m_bQuit = {false}, m_bReset = {false};
+			std::atomic_bool m_bQuit = {false}, m_bReset = {false};
 			bool m_bIsPrimary = false;
 			bool m_bNoHacks = false;
 			pthread_t m_thread = 0;
@@ -337,7 +336,7 @@ namespace Boards
 
 			unsigned int m_uiWtCycleCount = 0;
 
-			avr_flashaddr_t m_bootBase, m_FWBase;
+			avr_flashaddr_t m_bootBase{0}, m_FWBase{0};
 
 			// Loads an ELF or HEX file into the MCU. Returns boot PC
 			enum ScriptAction

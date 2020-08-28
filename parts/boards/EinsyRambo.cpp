@@ -48,7 +48,7 @@ namespace Boards
 		AddHardware(m_Mon0,'0');
 
 		// SD card
-		string strSD = GetSDCardFile();
+		std::string strSD = GetSDCardFile();
 		sd_card.SetImage(strSD);
 		AddHardware(sd_card);
 		TryConnect(PinNames::Pin::SDSS, sd_card, SDCard::SPI_CSEL);

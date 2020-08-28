@@ -31,6 +31,7 @@
 
 namespace Wirings
 {
+	using namespace PinNames; //NOLINT - because proper using declarations don't support enums.
 	class Wiring
 	{
 		public:

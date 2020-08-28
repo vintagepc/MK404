@@ -49,7 +49,7 @@ class Button:public BasePeripheral, public Scriptable
 	void Press(uint32_t uiUSec = 2000);
 
 	protected:
-		LineStatus ProcessAction(unsigned int iAction, const std::vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &vArgs) override;
 
 	private:
 		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);

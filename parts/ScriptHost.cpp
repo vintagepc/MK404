@@ -29,14 +29,14 @@
 #include <sstream>		// IWYU pragma: keep
 #include <utility>      // for make_pair, pair
 
-std::map<string, IScriptable*> ScriptHost::m_clients;
+std::map<std::string, IScriptable*> ScriptHost::m_clients;
 
-std::vector<string> ScriptHost::m_script;
+std::vector<std::string> ScriptHost::m_script;
 unsigned int ScriptHost::m_iLine, ScriptHost::m_uiAVRFreq;
-std::map<string, int> ScriptHost::m_mMenuIDs;
+std::map<std::string, int> ScriptHost::m_mMenuIDs;
 std::map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
-std::map<string, unsigned> ScriptHost::m_mClient2MenuBase;
-std::map<string, std::vector<std::pair<string,int>>> ScriptHost::m_mClientEntries;
+std::map<std::string, unsigned> ScriptHost::m_mClient2MenuBase;
+std::map<std::string, std::vector<std::pair<std::string,int>>> ScriptHost::m_mClientEntries;
 std::shared_ptr<ScriptHost> ScriptHost::g_pHost;
 ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
@@ -61,9 +61,9 @@ void ScriptHost::PrintScriptHelp(bool bMarkdown)
 	}
 }
 
-void ScriptHost::LoadScript(const string &strFile)
+void ScriptHost::LoadScript(const std::string &strFile)
 {
-	string strLn;
+	std::string strLn;
 	std::ifstream fileIn(strFile);
 	while (getline(fileIn, strLn))
 	{
@@ -78,20 +78,20 @@ void ScriptHost::LoadScript(const string &strFile)
 }
 
 // Parse line in the format Context::Action(arg1, arg2,...)
-ScriptHost::LineParts_t ScriptHost::GetLineParts(const string &strLine)
+ScriptHost::LineParts_t ScriptHost::GetLineParts(const std::string &strLine)
 {
 	LineParts_t sParts;
 	size_t iCtxEnd = strLine.find("::");
 	size_t iArgBegin = strLine.find('(');
 	size_t iArgEnd = strLine.find(')');
-	std::vector<string> args;
-	if (iCtxEnd == string::npos || iArgBegin == string::npos || iArgEnd == string::npos)
+	std::vector<std::string> args;
+	if (iCtxEnd == std::string::npos || iArgBegin == std::string::npos || iArgEnd == std::string::npos)
 	{
 		return sParts;
 	}
 	sParts.strCtxt = strLine.substr(0,iCtxEnd);
 	sParts.strAct = strLine.substr(iCtxEnd+2, (iArgBegin - iCtxEnd)-2);
-	string strTmp, strArgs = strLine.substr(iArgBegin+1, (iArgEnd-iArgBegin)-1);
+	std::string strTmp, strArgs = strLine.substr(iArgBegin+1, (iArgEnd-iArgBegin)-1);
 	std::istringstream argsIn(strArgs);
 	while (getline(argsIn, strTmp,','))
 	{
@@ -102,13 +102,13 @@ ScriptHost::LineParts_t ScriptHost::GetLineParts(const string &strLine)
 	return sParts;
 }
 
-IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const std::vector<string> &vArgs)
+IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs)
 {
 	switch (ID)
 	{
 		case ActSetTimeoutMs:
 		{
-			int iTime = stoi(vArgs.at(0));
+			int iTime = std::stoi(vArgs.at(0));
 			m_iTimeoutCycles = iTime *(m_uiAVRFreq/1000);
 			std::cout << "ScriptHost::SetTimeoutMs changed to " << iTime << " Ms (" << m_iTimeoutCycles << " cycles)\n";
 			m_iTimeoutCount = 0;
@@ -116,7 +116,7 @@ IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const std::ve
 		}
 		case ActSetQuitOnTimeout:
 		{
-			m_bQuitOnTimeout = stoi(vArgs.at(0))!=0;
+			m_bQuitOnTimeout = std::stoi(vArgs.at(0))!=0;
 			break;
 		}
 		case ActLog:
@@ -130,10 +130,10 @@ IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const std::ve
 
 bool ScriptHost::ValidateScript()
 {
-	string strCtxt;
+	std::string strCtxt;
 	std::cout << "Validating script...\n";
 	bool bClean = true;
-	auto fcnErr = [](const string &sMsg, const int iLine) { std::cout << "ScriptHost: Validation failed: "<< sMsg <<" on line " << iLine <<":" << m_script.at(iLine) << '\n';};
+	auto fcnErr = [](const std::string &sMsg, const int iLine) { std::cout << "ScriptHost: Validation failed: "<< sMsg <<" on line " << iLine <<":" << m_script.at(iLine) << '\n';};
 	for (size_t i=0; i<m_script.size(); i++)
 	{
 		LineParts_t sLine = ScriptHost::GetLineParts(m_script.at(i));
@@ -148,7 +148,7 @@ bool ScriptHost::ValidateScript()
 		{
 			bClean = false;
 			fcnErr("Unknown context " + strCtxt, i);
-			string strCtxts = "Available contexts:";
+			std::string strCtxts = "Available contexts:";
 			for (auto &it: m_clients)
 			{
 				strCtxts += " " + it.first + ",";
@@ -160,7 +160,7 @@ bool ScriptHost::ValidateScript()
 		if (m_clients.at(strCtxt)->m_ActionIDs.count(sLine.strAct)==0)
 		{
 			bClean = false;
-			fcnErr(string("Unknown action ").append(strCtxt).append("::").append(sLine.strAct),i);
+			fcnErr(std::string("Unknown action ").append(strCtxt).append("::").append(sLine.strAct),i);
 			std::cout << "Available actions:\n";
 			m_clients.at(strCtxt)->PrintRegisteredActions();
 			continue;
@@ -253,25 +253,25 @@ void ScriptHost::CreateRootMenu(int iWinID)
 	}
 }
 
-bool ScriptHost::CheckArg(const ArgType &type, const string &val)
+bool ScriptHost::CheckArg(const ArgType &type, const std::string &val)
 {
 	try
 	{
 		switch (type)
 		{
 			case ArgType::Int:
-				stoi(val);
+				std::stoi(val);
 				return true;
 			case ArgType::Float:
-				stof(val);
+				std::stof(val);
 				return true;
 			case ArgType::Bool:
-				stoi(val);
+				std::stoi(val);
 				return true;
 			case ArgType::String:
 				return true;
 			case ArgType::uint32:
-				stoul(val);
+				std::stoul(val);
 				return true;
 		}
 	}
@@ -338,7 +338,7 @@ void ScriptHost::AddSubmenu(IScriptable *src)
 	}
 }
 
-void ScriptHost::AddMenuEntry(const string &strName, unsigned uiID, IScriptable* src)
+void ScriptHost::AddMenuEntry(const std::string &strName, unsigned uiID, IScriptable* src)
 {
 	Expects(uiID<100); //NOLINT - complaint is in system include file
 	auto strClient = src->GetName();
@@ -348,7 +348,7 @@ void ScriptHost::AddMenuEntry(const string &strName, unsigned uiID, IScriptable*
 }
 
 
-void ScriptHost::AddScriptable(const string &strName, IScriptable* src)
+void ScriptHost::AddScriptable(const std::string &strName, IScriptable* src)
 {
 	if (m_clients.count(strName)==0)
 	{
@@ -358,7 +358,7 @@ void ScriptHost::AddScriptable(const string &strName, IScriptable* src)
 	else if (m_clients.at(strName)!=src)
 	{
 		int i=0;
-		string strNew;
+		std::string strNew;
 		std::cout << "ScriptHost: NOTE: Duplicate context name (" << strName << ") with different pointer. Incrementing ID...\n";
 		while (i<10)
 		{

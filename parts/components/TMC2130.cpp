@@ -39,8 +39,17 @@
 #define TRACE(_w)
 #endif
 
-
 void TMC2130::Draw()
+{
+	_Draw(false);
+}
+
+void TMC2130::Draw_Simple()
+{
+	_Draw(true);
+}
+
+void TMC2130::_Draw(bool bIsSimple)
 {
         if (!m_bConfigured)
 		{
@@ -71,14 +80,18 @@ void TMC2130::Draw()
         glPopMatrix();
         glColor3f(1,1,1);
         glPushMatrix();
-            glTranslatef(280,7,0);
+            glTranslatef(  bIsSimple? 30 : 280 ,7,0);
             glScalef(0.09,-0.05,0);
-            string strPos = std::to_string(m_fCurPos);
+            std::string strPos = std::to_string(m_fCurPos);
             for (int i=0; i<std::min(7,static_cast<int>(strPos.size())); i++)
 			{
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
 			}
         glPopMatrix();
+		if (bIsSimple)
+		{
+			return;
+		}
 		glPushMatrix();
 			glTranslatef(20,0,0);
 			glColor3f(1,0,0);
@@ -102,48 +115,6 @@ void TMC2130::Draw()
 				glVertex3f(m_fCurPos-0.5,8,0);
 			glEnd();
 		glPopMatrix();
-}
-
-
-void TMC2130::Draw_Simple()
-{
-        if (!m_bConfigured)
-		{
-            return; // Motors not ready yet.
-		}
-        glColor3f(0,0,0);
-	    glBegin(GL_QUADS);
-			glVertex3f(0,0,0);
-			glVertex3f(350,0,0);
-			glVertex3f(350,10,0);
-			glVertex3f(0,10,0);
-		glEnd();
-        glColor3f(1,1,1);
-         if (m_bEnable)
-        {
-            glBegin(GL_QUADS);
-                glVertex3f(3,8,0);
-                glVertex3f(13,8,0);
-                glVertex3f(13,1,0);
-                glVertex3f(3,1,0);
-            glEnd();
-            glColor3f(0,0,0);
-        }
-        glPushMatrix();
-            glTranslatef(3,7,0);
-            glScalef(0.09,-0.05,0);
-            glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_cAxis);
-        glPopMatrix();
-        glColor3f(1,1,1);
-        glPushMatrix();
-            glTranslatef(30,7,0);
-            glScalef(0.09,-0.05,0);
-			string strPos = std::to_string(m_fCurPos);
-            for (int i=0; i<std::min(7,static_cast<int>(strPos.size())); i++)
-			{
-                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
-			}
-        glPopMatrix();
 }
 
 void TMC2130::CreateReply()
@@ -314,7 +285,7 @@ void TMC2130::OnEnableIn(struct avr_irq_t *, uint32_t value)
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
-TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
+TMC2130::TMC2130(char cAxis):Scriptable(std::string("") + cAxis),m_cAxis(cAxis)
 {
 		// Check register packing/sizes:
 	Expects(sizeof(m_regs) == sizeof(m_regs.raw));
@@ -332,7 +303,7 @@ TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
 	RegisterActionAndMenu("Reset","Clears the diag flag immediately",ActResetDiag);
 }
 
-Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const std::vector<string> &)
+Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const std::vector<std::string> &)
 {
 	switch (iAct)
 	{

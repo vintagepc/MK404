@@ -38,7 +38,7 @@ HD44780::HD44780(uint8_t width, uint8_t height):Scriptable("LCD"),m_uiHeight(hei
 {
 	m_lineOffsets[2] += width;
 	m_lineOffsets[3] += width;
-	string strBlnk;
+	std::string strBlnk;
 	strBlnk.assign(width,' ');
 	for (int i=0; i<height; i++)
 	{
@@ -88,7 +88,7 @@ avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t *,avr_cycle_count_t)
 	return 0;
 }
 
-Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const std::vector<string> &vArgs)
+Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const std::vector<std::string> &vArgs)
 {
 	switch (iAction)
 	{
@@ -100,7 +100,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const std::v
 			int iAddr = stoi(vArgs.at(1));
 			if (iAddr<0 || iAddr>63)
 			{
-				return IssueLineError(string("ADDR") + std::to_string(iAddr) + " is out of range [0,63]");
+				return IssueLineError(std::string("ADDR") + std::to_string(iAddr) + " is out of range [0,63]");
 			}
 			if (m_cgRam[iAddr] == stoi(vArgs.at(0)))
 			{
@@ -121,7 +121,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const std::v
 
 			if (iLine>=m_uiHeight || iLine<-1)
 			{
-				return IssueLineError(string("Line index ") + std::to_string(iLine) + " is out of range [-1," + std::to_string (m_uiHeight) + "]");
+				return IssueLineError(std::string("Line index ") + std::to_string(iLine) + " is out of range [-1," + std::to_string (m_uiHeight) + "]");
 			}
 
 			bool bResult = false;
@@ -129,13 +129,13 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const std::v
 			{
 				for (int i=0; i<m_uiHeight; i++)
 				{
-					bResult |= m_vLines.at(i).find(vArgs.at(0))!=string::npos;
+					bResult |= m_vLines.at(i).find(vArgs.at(0))!=std::string::npos;
 					if (bResult) break;
 				}
 			}
 			else
 			{
-				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=string::npos;
+				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=std::string::npos;
 			}
 			m_uiLineChg^= iLine<0 ? 0xFF : 1U<<gsl::narrow<uint8_t>(iLine); // Reset line change tracking.
 			return bResult ? LineStatus::Finished : LineStatus::Waiting;
@@ -235,7 +235,7 @@ uint32_t HD44780::OnDataReady()
 			if (m_uiCursor>= m_lineOffsets.at(i) && m_uiCursor< (m_lineOffsets.at(i) + m_uiWidth))
 			{
 				int iPos =m_uiCursor - m_lineOffsets.at(i);
-				string &line = m_vLines[i];
+				std::string &line = m_vLines[i];
 				line[iPos] = m_uiDataPins;
 				m_uiLineChg |= 1U<<i;
 			}

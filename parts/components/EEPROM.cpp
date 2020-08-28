@@ -31,7 +31,7 @@
 using std::ifstream;
 using std::ofstream;
 
-void EEPROM::Load(struct avr_t *avr, const string &strFile)
+void EEPROM::Load(struct avr_t *avr, const std::string &strFile)
 {
 	m_strFile = strFile;
 	m_pAVR = avr;
@@ -102,7 +102,7 @@ void EEPROM::Save()
 	fsOut.close();
 }
 
-Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const std::vector<string> &vArgs)
+Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs)
 {
 	switch (uiAct)
 	{
@@ -112,7 +112,7 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const std::vect
 			uint8_t uiVal = stoi(vArgs.at(1));
 			if (uiAddr>=m_uiSize)
 			{
-				return IssueLineError(string("Address ") + std::to_string(uiAddr) + " is out of range [0," + std::to_string(m_uiSize-1) + "]");
+				return IssueLineError(std::string("Address ") + std::to_string(uiAddr) + " is out of range [0," + std::to_string(m_uiSize-1) + "]");
 			}
 			else
 			{

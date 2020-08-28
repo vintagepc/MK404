@@ -309,7 +309,7 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 	m_status_register.byte = 0b00000000; //SREG default values}
 };
 
-Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
+Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -353,7 +353,7 @@ Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const std::vec
 	}
 }
 
-void w25x20cl::Load(const string &path)
+void w25x20cl::Load(const std::string &path)
 {
 		m_filepath = path;
 		Load();

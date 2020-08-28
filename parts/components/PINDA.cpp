@@ -68,7 +68,7 @@ void PINDA::CheckTriggerNoSheet()
 	}
 }
 
-Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const std::vector<string> &vArgs)
+Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -78,13 +78,13 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const std::vecto
 		case ActSetPos:
 		{
 			uint32_t uiVal;
-			float fIn = stof(vArgs.at(0));
+			float fIn = std::stof(vArgs.at(0));
 			std::memcpy(&uiVal, &fIn,4);
 			RaiseIRQ(X_POS_IN, uiVal);
-			fIn = stof(vArgs.at(1));
+			fIn = std::stof(vArgs.at(1));
 			std::memcpy(&uiVal, &fIn,4);
 			RaiseIRQ(Y_POS_IN, uiVal);
-			fIn = stof(vArgs.at(2));
+			fIn = std::stof(vArgs.at(2));
 			std::memcpy(&uiVal, &fIn,4);
 			RaiseIRQ(Z_POS_IN, uiVal);
 			return LineStatus::Finished;
@@ -94,7 +94,7 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const std::vecto
 			int iVal = stoi(vArgs.at(0));
 			if (iVal<0 || iVal > 48)
 			{
-				return IssueLineError(string("Index ") + std::to_string(iVal) + " is out of range [0,48]");
+				return IssueLineError(std::string("Index ") + std::to_string(iVal) + " is out of range [0,48]");
 			}
 			float fVal = stof(vArgs.at(1));
 			gsl::at(m_mesh.points,iVal) = fVal;
@@ -105,7 +105,7 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const std::vecto
 			int iVal = stoi(vArgs.at(0));
 			if ((iVal<0) | (iVal>3))
 			{
-				return IssueLineError(string("Index ") + std::to_string(iVal) + " is out of range [0,3]");
+				return IssueLineError(std::string("Index ") + std::to_string(iVal) + " is out of range [0,3]");
 			}
 			float fX = stof(vArgs.at(1)), fY = stof(vArgs.at(2));
 			gsl::at(_bed_calibration_points,2*iVal) = fX;

@@ -57,7 +57,7 @@ IRSensor::IRSensor():VoltageSrc()
 	RegisterMenu("Set Unknown", ActSetUnknown);
 }
 
-Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
+Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	using std::to_string;
 	switch (iAct)
@@ -70,7 +70,7 @@ Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const std::vec
 			int iVal = stoi(vArgs.at(0));
 			if (iVal<=IR_MIN || iVal >= IR_MAX)
 			{
-				return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [" + to_string(IR_MIN+1) + "," + to_string(IR_MAX-1) + "]" );
+				return IssueLineError(std::string("Set value ") + to_string(iVal) + " is out of the range [" + to_string(IR_MIN+1) + "," + to_string(IR_MAX-1) + "]" );
 			}
 			Set(static_cast<IRState>(iVal));
 			return LineStatus::Finished;

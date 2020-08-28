@@ -39,18 +39,18 @@ VoltageSrc::VoltageSrc(float fVScale,float fStart):Scriptable("VSrc"),m_fCurrent
 {
 }
 
-Scriptable::LineStatus VoltageSrc::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
+Scriptable::LineStatus VoltageSrc::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
 		case ActSet:
 		{
-			Set(stof(vArgs.at(0)));
+			Set(std::stof(vArgs.at(0)));
 			return LineStatus::Finished;
 		}
 		case ActSetScale:
 		{
-			m_fVScale =stof (vArgs.at(0));
+			m_fVScale =std::stof(vArgs.at(0));
 			return LineStatus::Finished;
 		}
 		default:

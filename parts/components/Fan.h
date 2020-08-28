@@ -66,7 +66,7 @@ public:
 
 	protected:
 
-		LineStatus ProcessAction(unsigned int ID, const std::vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs) override;
 
 		// callback for PWM change.
 		void OnPWMChange(avr_irq_t *irq, uint32_t value) override;

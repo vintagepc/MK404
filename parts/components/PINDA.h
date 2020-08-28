@@ -58,7 +58,7 @@ class PINDA:public BasePeripheral,public Scriptable{
 	};
 
 	protected:
-		LineStatus ProcessAction(unsigned int iAct, const std::vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 private:
 

@@ -149,7 +149,7 @@ void RotaryEncoder::Init(avr_t *avr)
 	pTH->AddTrace(this,OUT_B,{TC::InputPin, TC::Display});
 }
 
-Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const std::vector<string>&)
+Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const std::vector<std::string>&)
 {
 	switch (iAct)
 	{

@@ -57,7 +57,7 @@ protected:
     // ADC read trigger.
     uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
-	LineStatus ProcessAction(unsigned int iAct, const std::vector<string> &vArgs) override;
+	LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
     // Input trigger
     void OnInput(avr_irq_t *pIRQ, uint32_t value);

@@ -49,7 +49,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 
 		void Init(avr_t *avr);
 
-		inline void SetImage(const string &strFile) { m_strFile = strFile;}
+		inline void SetImage(const std::string &strFile) { m_strFile = strFile;}
 
 		// Mounts the given image file on the virtual card.
 		// If size=0, autodetect the image size.
@@ -66,7 +66,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 
         void OnCSELIn(struct avr_irq_t * irq, uint32_t value) override;
 
-		LineStatus ProcessAction(unsigned int iAct, const std::vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 
 	private:

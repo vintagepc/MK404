@@ -36,6 +36,8 @@
 #include <memory>
 
 namespace Boards {
+	using string = std::string;
+
 	void Board::CreateAVR()
 	{
 		m_pAVR = avr_make_mcu_by_name(m_wiring.GetMCUName().c_str());
@@ -136,7 +138,7 @@ namespace Boards {
 	void Board::_OnAVRInit()
 	{
 		std::string strFlash = GetStorageFileName("flash");
-		ifstream fsIn(strFlash, fsIn.binary | fsIn.ate);
+		std::ifstream fsIn(strFlash, fsIn.binary | fsIn.ate);
 		if (!fsIn.is_open() || fsIn.tellg() < m_pAVR->flashend) {
 			std::cerr << "ERROR: Could not open flash file. Flash contents will NOT persist." << '\n';
 		}
@@ -158,7 +160,7 @@ namespace Boards {
 
 	void Board::_OnAVRDeinit()
 	{
-		ofstream fsOut(GetStorageFileName("flash"),fsOut.binary | fsOut.out | fsOut.trunc);
+		std::ofstream fsOut(GetStorageFileName("flash"),fsOut.binary | fsOut.out | fsOut.trunc);
 		if (!fsOut.is_open())
 		{
 			std::cerr << "Could not open flash file for writing\n";

@@ -46,8 +46,6 @@ enum class ArgType
 	uint32
 };
 
-using std::string;
-
 class IScriptable
 {
 	friend Scriptable;

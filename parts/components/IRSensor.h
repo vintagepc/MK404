@@ -65,7 +65,7 @@ public:
 	void Auto_Input(uint32_t val);
 
 	protected:
-		LineStatus ProcessAction(unsigned int iAct, const std::vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 private:
 

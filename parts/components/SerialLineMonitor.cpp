@@ -26,7 +26,7 @@
 #include "sim_io.h"    // for avr_io_getirq
 
 
-SerialLineMonitor::SerialLineMonitor(const string &strName):Scriptable(strName)
+SerialLineMonitor::SerialLineMonitor(const std::string &strName):Scriptable(strName)
 {
 	RegisterAction("WaitForLine","Waits for the provided line to appear on the serial output.",WaitForLine, {ArgType::String});
 	RegisterAction("WaitForLineContains","Waits for the serial output to contain a line with the given string.",WaitForContains,{ArgType::String});
@@ -61,7 +61,7 @@ void SerialLineMonitor::OnXOffIn(struct avr_irq_t *, uint32_t)
 }
 
 
-Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const std::vector<string> &args)
+Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const std::vector<std::string> &args)
 {
 	if (m_type != None && m_strMatch == args.at(0)) // already in wait state for same find
 	{
@@ -144,7 +144,7 @@ void SerialLineMonitor::OnNewLine()
 			m_bMatched = (m_strLine == m_strMatch);
 			break;
 		case Contains:
-			m_bMatched = m_strLine.find(m_strMatch) != string::npos;
+			m_bMatched = m_strLine.find(m_strMatch) != std::string::npos;
 			break;
 		case None:
 			break;

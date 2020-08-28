@@ -66,7 +66,7 @@ public:
 
 	protected:
 
-		LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int ID, const std::vector<string> &vArgs) override;
 
 		// callback for PWM change.
 		void OnPWMChange(avr_irq_t *irq, uint32_t value) override;
@@ -83,7 +83,7 @@ public:
 		bool m_bPulseState = false;
 		bool m_bIsSoftPWM = false;
 
-		atomic_uint8_t m_uiPWM = {0};
+		std::atomic_uint8_t m_uiPWM = {0};
 		uint16_t m_uiMaxRPM = 2000;
 		uint16_t m_uiCurrentRPM = 0;
 		uint16_t m_uiUsecPulse = 0;

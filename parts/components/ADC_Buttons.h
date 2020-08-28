@@ -51,7 +51,7 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable
 		void Push(uint8_t uiBtn);
 
 	protected:
-			LineStatus ProcessAction(unsigned int uiAct, const vector<string> &vArgs) override;
+			LineStatus ProcessAction(unsigned int uiAct, const std::vector<string> &vArgs) override;
 	private:
 
 		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);

@@ -75,7 +75,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
         void Draw_Simple();
 
 	protected:
-		Scriptable::LineStatus ProcessAction (unsigned int iAct, const vector<string> &vArgs) override;
+		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<string> &vArgs) override;
 
     private:
 		enum Actions
@@ -105,7 +105,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
         void CheckDiagOut();
 
         bool m_bDir  = false;
-        atomic_bool m_bEnable {true}, m_bConfigured {false};
+        std::atomic_bool m_bEnable {true}, m_bConfigured {false};
 
         TMC2130_cfg_t cfg;
         // Register definitions.
@@ -203,12 +203,12 @@ class TMC2130: public SPIPeripheral, public Scriptable
 
         int32_t m_iCurStep = 0;
         int32_t m_iMaxPos = 0;
-        atomic<float> m_fCurPos = {0}, m_fEnd = {0}; // Tracks position in float for gl
+        std::atomic<float> m_fCurPos = {0}, m_fEnd = {0}; // Tracks position in float for gl
         tmc2130_cmd_t m_cmdIn;
         tmc2130_cmd_t m_cmdProc;
         tmc2130_cmd_t m_cmdOut; // the previous data for output.
         tmc2130_registers_t m_regs{};
-		atomic_char m_cAxis;
+		std::atomic_char m_cAxis;
 		bool m_bStall = false;
 
 		// Position helpers

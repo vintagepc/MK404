@@ -49,7 +49,7 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
 
 			if (m_bVerbose)
 			{
-				cout << "RotaryEncoder: CW Twist" << '\n';
+				std::cout << "RotaryEncoder: CW Twist" << '\n';
 			}
 			break;
 		case CCW_CLICK:
@@ -57,12 +57,12 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
 			 m_iPhase = (m_iPhase+3)%STATE_COUNT;
 			if (m_bVerbose)
 			{
-				cout << "RotaryEncoder: CCW twist" << '\n';
+				std::cout << "RotaryEncoder: CCW twist" << '\n';
 			}
 			break;
 
 		default:
-			cout << "Rotenc: Invalid direction.\n"; // Invalid direction
+			std::cout << "Rotenc: Invalid direction.\n"; // Invalid direction
 			break;
 	}
     RaiseIRQ(OUT_A, gsl::at(m_States, m_iPhase)>>1U);
@@ -82,7 +82,7 @@ avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
 avr_cycle_count_t RotaryEncoder::OnButtonReleaseTimer(avr_t *, avr_cycle_count_t)
 {
 	RaiseIRQ(OUT_BUTTON, 1);
-	if (m_bVerbose)	cout << "ROTENC: Button release\n";
+	if (m_bVerbose)	std::cout << "ROTENC: Button release\n";
 
 	return 0;
 }
@@ -91,7 +91,7 @@ void RotaryEncoder::_Push(uint32_t uiDuration)
 {
 	// Press down
 	if (m_bVerbose) {
-		cout << "ROTENC: Button press\n";
+		std::cout << "ROTENC: Button press\n";
 	}
 	RaiseIRQ(OUT_BUTTON, 0);
 
@@ -149,7 +149,7 @@ void RotaryEncoder::Init(avr_t *avr)
 	pTH->AddTrace(this,OUT_B,{TC::InputPin, TC::Display});
 }
 
-Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const vector<string>&)
+Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const std::vector<string>&)
 {
 	switch (iAct)
 	{

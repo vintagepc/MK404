@@ -29,7 +29,7 @@ namespace Boards
 	{
 		DisableInterruptLevelPoll(5);
 
-		AddSerialPty(m_UART,'1');
+		AddSerialPty(&m_UART,'1');
 
 		AddUARTTrace('1');
 

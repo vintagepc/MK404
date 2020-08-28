@@ -36,10 +36,10 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 
 	public:
 		Prusa_MK3SMMU2():Prusa_MK3S(){};
-		~Prusa_MK3SMMU2();
+		~Prusa_MK3SMMU2() override = default;
 
 		void Draw() override;
-		void OnVisualTypeSet(std::string type) override;
+		void OnVisualTypeSet(const std::string &type) override;
 
 		bool GetHasMMU() override {return true;}
 

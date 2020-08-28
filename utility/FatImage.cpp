@@ -60,16 +60,16 @@ const uint8_t FatImage::_DataRegion[] = { 0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x2
 											0xCD,0x50,0xCD,0x50,0x00,0x00,0x57,0x49,0xCD,0x50};
 
 
-const map<string, FatImage::Size>& FatImage::GetNameToSize()
+const std::map<string, FatImage::Size>& FatImage::GetNameToSize()
 {
-	static const map<string, FatImage::Size> m {
-		make_pair("32M",FatImage::Size::M32),
-		make_pair("64M",FatImage::Size::M64),
-		make_pair("128M",FatImage::Size::M128),
-		make_pair("256M",FatImage::Size::M256),
-		make_pair("512M",FatImage::Size::M512),
-		make_pair("1G",FatImage::Size::G1),
-		make_pair("2G",FatImage::Size::G2)
+	static const std::map<string, FatImage::Size> m {
+		{"32M",FatImage::Size::M32},
+		{"64M",FatImage::Size::M64},
+		{"128M",FatImage::Size::M128},
+		{"256M",FatImage::Size::M256},
+		{"512M",FatImage::Size::M512},
+		{"1G",FatImage::Size::G1},
+		{"2G",FatImage::Size::G2}
 	};
 	return m;
 };
@@ -83,10 +83,10 @@ bool FatImage::MakeFatImage(const string &strFile, const string &strSize)
 	ofstream fsOut(strFile, fsOut.binary);
 	if (!fsOut.is_open())
 	{
-		cerr << "Failed to open output file\n";
+		std::cerr << "Failed to open output file\n";
 		return false;
 	}
-	vector<uint8_t> data;
+	std::vector<uint8_t> data;
 
 	// Write main FAT block.
 	gsl::span<const uint8_t> FAT32 (_FAT32);
@@ -159,7 +159,7 @@ bool FatImage::MakeFatImage(const string &strFile, const string &strSize)
 	}
 	else
 	{
-		cout << "Wrote " << fsOut.tellp() << " bytes to SD image.";
+		std::cout << "Wrote " << fsOut.tellp() << " bytes to SD image.";
 	}
 
 

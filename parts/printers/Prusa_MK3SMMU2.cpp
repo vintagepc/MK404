@@ -32,8 +32,6 @@
 #include <iostream>                // for printf
 #include <memory>                 // for unique_ptr
 
-Prusa_MK3SMMU2::~Prusa_MK3SMMU2() = default;
-
 void Prusa_MK3SMMU2::SetupHardware()
 {
 	Prusa_MK3S::SetupHardware();
@@ -47,7 +45,7 @@ void Prusa_MK3SMMU2::SetupHardware()
 	m_pipe.reset(new SerialPipe(UART2.GetSlaveName(), m_MMU.GetSerialPort())); //NOLINT suggestion is c++14 and higher
 }
 
-void Prusa_MK3SMMU2::OnVisualTypeSet(string type)
+void Prusa_MK3SMMU2::OnVisualTypeSet(const string &type)
 {
 	if (type=="none")
 	{
@@ -94,14 +92,14 @@ void Prusa_MK3SMMU2::OnKeyPress(unsigned char key, int x, int y)
 	switch (key) {
 		case 'F':
 		{
-			cout << "FINDA toggled (in manual control)\n";
+			std::cout << "FINDA toggled (in manual control)\n";
 			m_MMU.SetFINDAAuto(false);
 			m_MMU.ToggleFINDA();
 		}
 		break;
 		case 'a':
 		{
-			cout << "FINDA in Auto control\n";
+			std::cout << "FINDA in Auto control\n";
 			m_MMU.SetFINDAAuto(true);
 			FSensorResumeAuto(); // Also restore IR auto handling.
 			break;

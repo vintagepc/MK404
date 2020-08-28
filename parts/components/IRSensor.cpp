@@ -57,8 +57,9 @@ IRSensor::IRSensor():VoltageSrc()
 	RegisterMenu("Set Unknown", ActSetUnknown);
 }
 
-Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
 {
+	using std::to_string;
 	switch (iAct)
 	{
 		case ActToggle:
@@ -101,17 +102,17 @@ void IRSensor::Toggle()
 {
 	if (m_eCurrent == IR_AUTO)
 	{
-		cout << "NOTE: Overriding IR Auto setting!" << '\n';
+		std::cout << "NOTE: Overriding IR Auto setting!" << '\n';
 	}
 	if (m_eCurrent == IR_v4_NO_FILAMENT ||
 		m_eCurrent == IR_v3_NO_FILAMENT)
 	{
-		cout << "IRSensor: Filament present!" << '\n';
+		std::cout << "IRSensor: Filament present!" << '\n';
 		m_eCurrent = (m_eCurrent == IR_v4_NO_FILAMENT ? IR_v4_FILAMENT_PRESENT : IR_v3_FILAMENT_PRESENT);
 	}
 	else
 	{
-		cout << "IRSensor: No filament present!" << '\n';
+		std::cout << "IRSensor: No filament present!" << '\n';
 		m_eCurrent = (m_eCurrent == IR_v3_FILAMENT_PRESENT ? IR_v3_NO_FILAMENT : IR_v4_NO_FILAMENT);
 	}
 }

@@ -39,7 +39,7 @@ VoltageSrc::VoltageSrc(float fVScale,float fStart):Scriptable("VSrc"),m_fCurrent
 {
 }
 
-Scriptable::LineStatus VoltageSrc::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus VoltageSrc::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
 {
 	switch (iAct)
 	{

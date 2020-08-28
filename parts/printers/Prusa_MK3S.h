@@ -21,11 +21,11 @@
 #pragma once
 
 #include "EinsyRambo.h"     // for EinsyRambo
+#include "IRSensor.h"
+#include "MK3SGL.h"
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "sim_avr.h"        // for avr_t
 #include "sim_avr_types.h"  // for avr_io_addr_t
-#include "IRSensor.h"
-#include "MK3SGL.h"
 #include <atomic>           // for atomic_int
 #include <cstdint>
 #include <memory>           // for unique_ptr
@@ -39,13 +39,13 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 	public:
 		Prusa_MK3S():EinsyRambo(),Printer(){};
 
-		~Prusa_MK3S(){};
+		~Prusa_MK3S() override = default;
 
 		void Draw() override;
-		virtual void OnKeyPress(unsigned char key, int x, int y) override;
+		void OnKeyPress(unsigned char key, int x, int y) override;
 		void OnMousePress(int button, int action, int x, int y) override;
 		void OnMouseMove(int x,int y) override;
-		void OnVisualTypeSet(std::string type) override;
+		void OnVisualTypeSet(const std::string &type) override;
 
 		std::pair<int,int> GetWindowSize() override;
 

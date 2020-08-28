@@ -88,12 +88,12 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 		{
 			if (m_rxCnt >= m_cmdIn.size())
 			{
-				cout << "w25x20cl_t: error: command too long: ";
+				std::cout << "w25x20cl_t: error: command too long: ";
 				for (auto i : m_cmdIn)
 				{
-					cout << std::hex << i << " ";
+					std::cout << std::hex << i << " ";
 				}
-				cout << '\n';
+				std::cout << '\n';
 				break;
 			}
 			m_cmdIn[m_rxCnt] = value;
@@ -159,12 +159,12 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 
 				default:
 				{
-				cout  << "w25x20cl_t: error: unknown command: ";
+				std::cout  << "w25x20cl_t: error: unknown command: ";
 				for (auto i = 0; i < m_rxCnt; i++)
 				{
-					cout << hex << m_cmdIn[i];
+					std::cout << std::hex << m_cmdIn[i];
 				}
-				cout << '\n';
+				std::cout << '\n';
 				} break;
 			}
 
@@ -309,7 +309,7 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 	m_status_register.byte = 0b00000000; //SREG default values}
 };
 
-Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -363,19 +363,19 @@ void w25x20cl::Load()
 {
 	auto *path = m_filepath.c_str();
 	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
-	ifstream fsIn(path, fsIn.binary | fsIn.ate);
+	std::ifstream fsIn(path, fsIn.binary | fsIn.ate);
 	m_filepath = path;
 
 	if (!fsIn.is_open() || fsIn.tellg() < W25X20CL_TOTAL_SIZE) {
-		cerr << "ERROR: Could not open SPI flash file. Flash contents were NOT restored" << '\n';
+		std::cerr << "ERROR: Could not open SPI flash file. Flash contents were NOT restored" << '\n';
 	}
 	else
 	{
-		cout << "Loading " <<  W25X20CL_TOTAL_SIZE  <<" bytes of xflash\n";
+		std::cout << "Loading " <<  W25X20CL_TOTAL_SIZE  <<" bytes of xflash\n";
 		fsIn.seekg(fsIn.beg);
 		fsIn.read(reinterpret_cast<char*>(m_flash.data()), W25X20CL_TOTAL_SIZE + 1); // NOLINT no choice but to cast...
 		if (fsIn.fail() || fsIn.gcount() != W25X20CL_TOTAL_SIZE + 1 ) {
-			cerr << "Unable to load w25x20cl\n";
+			std::cerr << "Unable to load w25x20cl\n";
 			exit(1);
 		}
 		bool bEmpty = true;
@@ -398,16 +398,16 @@ void w25x20cl::Save()
 {
 	// Also write out the xflash contents. Note  you can save snapshots anytime you like.
 		// Write out the EEPROM contents:
-	ofstream fsOut(m_filepath, fsOut.binary);
+	std::ofstream fsOut(m_filepath, fsOut.binary);
 	if (!fsOut.is_open())
 	{
-		cerr << "Failed to open xflash output file\n";
+		std::cerr << "Failed to open xflash output file\n";
 		return;
 	}
 	fsOut.write(reinterpret_cast<char*>(m_flash.data()),W25X20CL_TOTAL_SIZE+1); //NOLINT no choice but to cast...
-	cout << "Wrote "<< fsOut.tellp() <<" bytes of xflash to " << m_filepath <<'\n';
+	std::cout << "Wrote "<< fsOut.tellp() <<" bytes of xflash to " << m_filepath <<'\n';
 	if (fsOut.tellp() != W25X20CL_TOTAL_SIZE + 1) {
-		cerr << "Unable to write xflash memory\n";
+		std::cerr << "Unable to write xflash memory\n";
 	}
 	fsOut.close();
 }

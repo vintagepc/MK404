@@ -42,7 +42,7 @@ namespace Boards
 	{
 		DisableInterruptLevelPoll(8);
 
-		AddSerialPty(UART2,'2');
+		AddSerialPty(&UART2,'2');
 		AddHardware(UART0);
 
 		AddHardware(m_Mon0,'0');
@@ -63,7 +63,7 @@ namespace Boards
 		int mount_error = sd_card.Mount();
 
 		if (mount_error != 0) {
-			cerr << "SD card image (" << strSD << ") could not be mounted (error " << mount_error << " ).\n";
+			std::cerr << "SD card image (" << strSD << ") could not be mounted (error " << mount_error << " ).\n";
 		}
 
 		// Heaters
@@ -106,7 +106,7 @@ namespace Boards
 
 		AddHardware(lcd);
 		// D4-D7,
-		vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
+		std::vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
 		for (int i = 0; i < 4; i++) {
 			TryConnect(vePins.at(i),lcd, HD44780::D4+i);
 			TryConnect(lcd, HD44780::D4+i,vePins.at(i));
@@ -194,7 +194,7 @@ namespace Boards
 	// Convenience function for debug printing a particular pin.
 	void EinsyRambo::DebugPin(avr_irq_t *, uint32_t value)
 	{
-		cout << "Pin DBG: change to " << value << '\n';
+		std::cout << "Pin DBG: change to " << value << '\n';
 	}
 
 	void EinsyRambo::OnAVRInit()
@@ -211,7 +211,7 @@ namespace Boards
 
 	void EinsyRambo::OnAVRReset()
 	{
-		cout << "RESET\n";
+		std::cout << "RESET\n";
 		DisableInterruptLevelPoll(8);
 
 		// Restore powerpanic to high

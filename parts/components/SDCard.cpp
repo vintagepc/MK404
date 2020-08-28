@@ -66,7 +66,7 @@ static uint8_t CRC7(gsl::span<uint8_t> data)
 	return crc | 0x01U;
 }
 
-Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -196,7 +196,7 @@ SDCard::State SDCard::ProcessCommand()
 			blocklen = m_CmdIn.bits.address;
 			if (blocklen !=512)
 			{
-				cerr << "Tried to change blocklen to " << blocklen << " but only 512 is supported.\n";
+				std::cerr << "Tried to change blocklen to " << blocklen << " but only 512 is supported.\n";
 			}
 			Expects (blocklen == 512);
 			/* TODO: only 512B blocks are supported at the moment. */
@@ -270,7 +270,7 @@ SDCard::State SDCard::ProcessCommand()
 		default:
 			/* Illegal command. */
 			COMMAND_RESPONSE_R1 (R1_ILLEGAL_COMMAND);
-			cerr << m_pAVR->cycle << ": sdcard: Unknown SD card command ‘" << m_CmdIn.bits.cmd << "’.\n";
+			std::cerr << m_pAVR->cycle << ": sdcard: Unknown SD card command ‘" << m_CmdIn.bits.cmd << "’.\n";
 			break;
 	}
 
@@ -543,10 +543,10 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 		image_size = stat_buf.st_size;
 		if (image_size==0)
 		{
-			cout << "No SD image found. Aborting mount.\n";
+			std::cout << "No SD image found. Aborting mount.\n";
 			return OnError(-1,true);
 		}
-		cout << "Autodetected SD image size as " << image_size/(1024*1024) << " Mb\n";
+		std::cout << "Autodetected SD image size as " << image_size/(1024*1024) << " Mb\n";
 	}
 	else if (stat_buf.st_size < image_size)
 	{

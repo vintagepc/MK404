@@ -45,7 +45,8 @@ class ADCPeripheral: public BasePeripheral
 
             avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, ADC_IRQ_OUT_TRIGGER);
             avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_ADC_GETIRQ, uiADC);
-            if (src && dst) {
+            if (src && dst)
+			{
                 ConnectFrom(src, C::ADC_TRIGGER_IN);
                 ConnectTo(C::ADC_VALUE_OUT, dst);
             }
@@ -61,10 +62,14 @@ class ADCPeripheral: public BasePeripheral
             avr_adc_mux_t v = u.v;
 
             if (v.src != m_uiMux)
+			{
                 return;
+			}
             uint32_t uiVal = OnADCRead(irq,value);
             if (uiVal == m_uiLast)
+			{
                 return;
+			}
             RaiseIRQ(C::ADC_VALUE_OUT,uiVal);
             _SyncDigitalIRQ<C>(uiVal);
             m_uiLast = uiVal;
@@ -74,11 +79,17 @@ class ADCPeripheral: public BasePeripheral
         void _SyncDigitalIRQ(uint32_t uiVOut)
         {
             if (uiVOut>2200) // 2.2V, logic H
+			{
                 RaiseIRQ(C::DIGITAL_OUT,1);
+			}
             else if (uiVOut < 800) // 0.8v. L
+			{
                 RaiseIRQ(C::DIGITAL_OUT,0);
+			}
             else
-                RaiseIRQFloat(C::DIGITAL_OUT,(m_pIrq + C::DIGITAL_OUT)->flags | IRQ_FLAG_FLOATING);
+			{
+                RaiseIRQFloat(C::DIGITAL_OUT,(m_pIrq.begin() + C::DIGITAL_OUT)->flags | IRQ_FLAG_FLOATING);
+			}
         };
 
         uint8_t m_uiMux = 0;

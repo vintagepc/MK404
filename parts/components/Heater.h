@@ -62,7 +62,7 @@ public:
 	void Draw();
 
 	protected:
-		Scriptable::LineStatus ProcessAction (unsigned int iAct, const vector<string> &vArgs) override;
+		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<string> &vArgs) override;
 
 
     private:
@@ -84,17 +84,16 @@ public:
         avr_cycle_count_t OnTempTick(avr_t * avr, avr_cycle_count_t when);
 
         avr_cycle_timer_t m_fcnTempTick = MAKE_C_TIMER_CALLBACK(Heater,OnTempTick);
-
         bool m_bAuto = true;
         float m_fThermalMass = 1.0;
         float m_fAmbientTemp = 25.0;
         float m_fCurrentTemp {25.0};
-		atomic_int16_t m_iDrawTemp = {0};
+		std::atomic_int16_t m_iDrawTemp = {0};
         bool m_bIsBed = false;
         char m_chrLabel;
         float m_fColdTemp;
         float m_fHotTemp;
-        atomic_uint16_t m_uiPWM = {0};
+        std::atomic_uint16_t m_uiPWM = {0};
 		bool m_bStopTicking = false;
 	    static constexpr Color3fv m_colColdTemp = {0, 1, 1};
 	    static constexpr Color3fv m_colHotTemp = {1, 0, 0};

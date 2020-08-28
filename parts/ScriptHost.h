@@ -34,8 +34,6 @@
 #include <utility>        // for pair
 #include <vector>         // for vector
 
-using namespace std;
-
 class ScriptHost: public IScriptable
 {
     public:
@@ -52,7 +50,7 @@ class ScriptHost: public IScriptable
 		{
 			if (g_pHost!=nullptr)
 			{
-				fprintf(stderr,"ERROR: Duplicate initialization attempt for scripthost!\n");
+				std::cerr << "ERROR: Duplicate initialization attempt for scripthost!\n";
 				return false;
 			}
 			g_pHost.reset(new ScriptHost());
@@ -63,7 +61,9 @@ class ScriptHost: public IScriptable
 		{
 			m_uiAVRFreq = uiFreq;
 			if (!strScript.empty())
+			{
 				LoadScript(strScript);
+			}
 			return ValidateScript();
 		}
 
@@ -98,10 +98,19 @@ class ScriptHost: public IScriptable
 		static inline State GetState(){ return m_state;}
 
     private:
+
+		using LineParts_t = struct
+		{
+			bool isValid {false};
+			std::string strCtxt {""};
+			std::string strAct {""};
+			std::vector<std::string> vArgs {};
+		};
+
 		static bool ValidateScript();
 		static void LoadScript(const std::string &strScript);
 		static void ParseLine(unsigned int iLine);
-		static bool GetLineParts(const std::string &strLine, std::string &strCtxt, std::string& strAct, std::vector<std::string>&vArgs);
+		static LineParts_t GetLineParts(const std::string &strLine);
 		static bool CheckArg(const ArgType &type, const std::string &val);
 
 		static void AddSubmenu(IScriptable *src);
@@ -117,16 +126,14 @@ class ScriptHost: public IScriptable
 		}
 
 
-		typedef struct linestate_t{
-			linestate_t(){strCtxt = ""; iActID =  0; vArgs = {}; iLine = 0; pClient = nullptr; isValid = false; };
-			void dump() { std::cout << strCtxt << iActID <<iLine << pClient << isValid << "\n";}
-			std::string strCtxt;
-			unsigned int iActID;
-			std::vector<std::string> vArgs;
-			unsigned int iLine;
-			IScriptable *pClient;
-			bool isValid;
-		}linestate_t;
+		using linestate_t = struct{
+			std::string strCtxt {""};
+			unsigned int iActID {0};
+			std::vector<std::string> vArgs {};
+			unsigned int iLine {0};
+			IScriptable *pClient {nullptr};
+			bool isValid {false};
+		};
 
 		inline static linestate_t& GetLineState()
 		{

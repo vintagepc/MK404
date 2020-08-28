@@ -65,7 +65,7 @@ class OBJCollection
 			if (m_mObjs.count(type)==0)
 				return;
 
-			vector<GLObj*> vObj = m_mObjs.at(type);
+			std::vector<GLObj*> vObj = m_mObjs.at(type);
 			for (auto it = vObj.begin(); it!=vObj.end(); it++)
 				(*it)->Draw();
 		};
@@ -119,7 +119,7 @@ class OBJCollection
 		GLObj* m_pBaseObj = nullptr;
 
 		inline void SetName(string strName) { m_strName = strName; }
-		map<ObjClass,vector<GLObj*>> m_mObjs = {};
+		map<ObjClass,std::vector<GLObj*>> m_mObjs = {};
 
 	private:
 

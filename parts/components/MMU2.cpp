@@ -48,7 +48,7 @@ MMU2::MMU2():MM_Control_01()
 {
 	if (g_pMMU)
 	{
-		cerr << "Error: Cannot have multiple MMU instances due to freeglut limitations\n";
+		std::cerr << "Error: Cannot have multiple MMU instances due to freeglut limitations\n";
 		exit(1);
 	}
 	g_pMMU = this;
@@ -149,7 +149,7 @@ void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)
 void MMU2::ToggleFINDA()
 {
 		m_bFINDAManual = !m_bFINDAManual;
-		cout << "FINDA (manual) toggled: " << (m_bFINDAManual?1U:0U) << '\n';
+		std::cout << "FINDA (manual) toggled: " << (m_bFINDAManual?1U:0U) << '\n';
 		SetPin(FINDA_PIN, m_bFINDAManual? 1:0);
 		RaiseIRQ(FINDA_OUT,m_bFINDAManual? 1 : 0);
 }

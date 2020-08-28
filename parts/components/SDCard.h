@@ -66,7 +66,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 
         void OnCSELIn(struct avr_irq_t * irq, uint32_t value) override;
 
-		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<string> &vArgs) override;
 
 
 	private:
@@ -114,6 +114,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 		static const unsigned int BLOCK_SIZE = (1U<<READ_BL_LEN); // Bytes
 		static inline bool IsBlockAligned(int iBlock){ return ((iBlock % BLOCK_SIZE) == 0);};
 
+		//NOLINTNEXTLINE - fix this someday,,, intermediate promotion to int is annoying.
 		inline void CRC_ADD(const uint8_t data) {m_CRC = m_crctab[(m_CRC >> 8u ^ data) & 0XFFu] ^ (m_CRC << 8u); }
 
 		/* TODO: See diskio.c */

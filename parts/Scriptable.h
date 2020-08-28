@@ -22,18 +22,18 @@
 
 #pragma once
 
-#include <stdlib.h>
-#include <string>
-#include <map>
-#include <vector>
-#include "ScriptHost.h"
 #include "IScriptable.h"
+#include "ScriptHost.h"
+#include <cstdlib>
+#include <map>
+#include <string>
+#include <vector>
 
 class Scriptable: public IScriptable
 {
 	friend ScriptHost;
     public:
-		Scriptable(const std::string &strName="Unnamed"):IScriptable(strName){};
+		explicit Scriptable(const std::string &strName="Unnamed"):IScriptable(strName){};
 
     protected:
 		// Registers a new no-argument Scriptable action with the given function, description, and an ID that will be
@@ -48,7 +48,9 @@ class Scriptable: public IScriptable
 				return true;
 			}
 			else
+			{
 				return false;
+			}
 		}
 
 		// Convenience wrapper that also adds the action as a context menu entry.

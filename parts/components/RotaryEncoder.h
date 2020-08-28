@@ -65,7 +65,7 @@ class RotaryEncoder:public BasePeripheral,public Scriptable
         // Release event for mouse push.
         void Release();
 	protected:
-		LineStatus ProcessAction(unsigned int action, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int action, const std::vector<string> &vArgs) override;
 
     private:
 

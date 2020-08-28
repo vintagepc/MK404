@@ -42,7 +42,7 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 {
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
 	{
-		cerr << "Failed to init SDL_Audio" << '\n';
+		std::cerr << "Failed to init SDL_Audio" << '\n';
 	}
 
     m_specWant.freq = m_uiSampleRate; // number of samples per second
@@ -58,19 +58,19 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 
     if(SDL_OpenAudio(&m_specWant, &m_specHave) != 0)
 	{
-		cerr << "Failed to open audio: " << SDL_GetError() << '\n';
+		std::cerr << "Failed to open audio: " << SDL_GetError() << '\n';
 		return;
 	}
     if(m_specWant.format != m_specHave.format)
 	{
-		cerr << "Failed to get the desired AudioSpec" << '\n';
+		std::cerr << "Failed to get the desired AudioSpec" << '\n';
 		return;
 	}
 	m_bAudioAvail = true;
 
 }
 
-Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const vector<string>&)
+Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const std::vector<string>&)
 {
 	switch (iAct)
 	{

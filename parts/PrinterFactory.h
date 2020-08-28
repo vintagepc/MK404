@@ -57,9 +57,9 @@ class PrinterFactory
 				return p;
 		};
 
-		static vector<string> GetModels()
+		static std::vector<string> GetModels()
 		{
-			vector<string> strModels;
+			std::vector<string> strModels;
 			for(auto it = m_Models.begin(); it != m_Models.end(); ++it)
 				strModels.push_back(it->first);
 			return strModels;
@@ -91,7 +91,7 @@ class PrinterFactory
 		template<class P>
 		static void* _CreatePrinter(Boards::Board *&pBoard, Printer *&pPrinter)
 		{
-			P* p = new P();
+			auto p = new P();
 			pPrinter = p;
 			pBoard = p;
 			return p;
@@ -100,7 +100,7 @@ class PrinterFactory
 		template<class P>
 		static void _DestroyPrinter(void *p)
 		{
-			P* printer = (P*)p;
+			auto printer = (P*)p;
 			printer->StopAVR();
 			printer->~P();
 		};
@@ -113,7 +113,7 @@ class PrinterFactory
 		static map<string,pair<Ctor,Dtor>> m_Models;
 };
 
-map<string,pair<PrinterFactory::Ctor,PrinterFactory::Dtor>>  PrinterFactory::m_Models  = {
+std::map<string,pair<PrinterFactory::Ctor,PrinterFactory::Dtor>>  PrinterFactory::m_Models  = {
 	std::make_pair("Prusa_MK3",			make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3>	, &PrinterFactory::_DestroyPrinter<Prusa_MK3>)),
 	std::make_pair("Prusa_MK3S",		make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3S>	, &PrinterFactory::_DestroyPrinter<Prusa_MK3S>)),
 	std::make_pair("Prusa_MK3SMMU2",	make_pair(&PrinterFactory::_CreatePrinter<Prusa_MK3SMMU2>, &PrinterFactory::_DestroyPrinter<Prusa_MK3SMMU2>)),

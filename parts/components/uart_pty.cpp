@@ -92,7 +92,7 @@ void uart_pty::FlushData()
 		TRACE(printf("uart_pty_flush_incoming send r %03d:%02x\n", r, byte);)
 		if (m_chrLast == '\n' && byte == '\n')
 		{
-			cout << "Swallowing repeated newlines\n";
+			std::cout << "Swallowing repeated newlines\n";
 		}
 		else
 		{
@@ -125,7 +125,7 @@ void uart_pty::FlushData()
 			uart_pty_fifo_write(&tap.in, byte);
 			if (m_chrLast == '\n' && byte == '\n')
 			{
-				cout << "2Swallowing repeated newlines\n";
+				std::cout << "2Swallowing repeated newlines\n";
 			}
 			else
 			{
@@ -297,7 +297,7 @@ void uart_pty::Init(struct avr_t * avr)
 		gsl::at(port,ti).s = m;
 		gsl::at(port,ti).tap = ti != 0;
 		gsl::at(port,ti).crlf = ti != 0;
-		cout << "uart_pty_init " << (ti == 0 ? "bridge" : "tap") << " on port *** " << static_cast<char*>(gsl::at(port,ti).slavename) << " ***\n";
+		std::cout << "uart_pty_init " << (ti == 0 ? "bridge" : "tap") << " on port *** " << static_cast<char*>(gsl::at(port,ti).slavename) << " ***\n";
 	}
 
 	auto fRunCB =[](void * param) { auto p = static_cast<uart_pty*>(param); return p->Run();};
@@ -312,7 +312,7 @@ uart_pty::~uart_pty()
 	{
 		return;
 	}
-	cout << static_cast<const char*>(__func__) << '\n';
+	std::cout << static_cast<const char*>(__func__) << '\n';
 	m_bQuit = true; // Signal thread it's time to quit.
 	for (auto &p: port)
 	{
@@ -355,11 +355,11 @@ void uart_pty::Connect(char uart)
 			unlink(strLnk.c_str());
 			if (symlink(static_cast<char*>(port[0].slavename), strLnk.c_str()) != 0)
 			{
-				cerr << "WARN: Can't create " << strLnk << " " << strerror(errno);
+				std::cerr << "WARN: Can't create " << strLnk << " " << strerror(errno);
 			}
 			else
 			{
-				cout << strLnk << " now points to: " << static_cast<char*>(port[0].slavename);
+				std::cout << strLnk << " now points to: " << static_cast<char*>(port[0].slavename);
 			}
 		}
 	if (getenv("SIMAVR_UART_XTERM") && stoi(getenv("SIMAVR_UART_XTERM")))
@@ -369,11 +369,11 @@ void uart_pty::Connect(char uart)
 		strCmd += " >/dev/null 2>&1 &";
 		if (system(strCmd.c_str())<0) //NOLINT - no user-alterable params inside...
 		{
-			cout << "Could not launch xterm\n";
+			std::cout << "Could not launch xterm\n";
 		}
 	}
 	else
 	{
-		cout << "note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal\n";
+		std::cout << "note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal\n";
 	}
 }

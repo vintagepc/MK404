@@ -22,28 +22,28 @@
 
 #pragma once
 
-#include "ScriptHost.h"     // for ScriptHost
-#include "Scriptable.h"     // for Scriptable
-#include "avr_extint.h"     // for avr_extint_set_strict_lvl_trig
 #include "EEPROM.h"         // for EEPROM
 #include "IScriptable.h"    // for ArgType, IScriptable::LineStatus, IScript...
 #include "PinNames.h"       // for Pin
+#include "ScriptHost.h"     // for ScriptHost
+#include "Scriptable.h"     // for Scriptable
 #include "Wiring.h"         // for Wiring
+#include "avr_extint.h"     // for avr_extint_set_strict_lvl_trig
 #include "sim_avr.h"        // for avr_t, avr_flashaddr_t, avr_reset, avr_run
 #include "sim_avr_types.h"  // for avr_regbit_t
 #include "sim_irq.h"        // for avr_connect_irq, avr_irq_t, avr_raise_irq
 #include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_set
 #include <atomic>
-#include <cstdio>          // for printf, fprintf, NULL, stderr
+#include <cstdint>         // for uint32_t, uint8_t, int8_t
+#include <iostream>          // for printf, fprintf, NULL, stderr
 #include <pthread.h>        // for pthread_join, pthread_t
 #include <string>           // for string, basic_string, stoi
-#include <cstdint>         // for uint32_t, uint8_t, int8_t
 #include <vector>           // for vector
 #include <uart_pty.h>       // for uart_pty
 #include <unistd.h>         // for usleep
 
 using namespace PinNames;
-using namespace Wirings;
+//using namespace Wirings;
 using namespace std;
 namespace Boards
 {
@@ -52,10 +52,10 @@ namespace Boards
 		public:
 			// Making a type so that this is easy to update
 			// down the road if we need more values than this can provide.
-			typedef signed char MCUPin;
+			using MCUPin = signed char;
 
 			// Creates a new board with the given pinspec, firmware file, frequency, and (optional) bootloader hex
-			Board(const Wiring &wiring,uint32_t uiFreqHz):Scriptable("Board"),m_wiring(wiring),m_uiFreq(uiFreqHz)
+			Board(const Wirings::Wiring &wiring,uint32_t uiFreqHz):Scriptable("Board"),m_wiring(wiring),m_uiFreq(uiFreqHz)
 			{
 				RegisterActionAndMenu("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
 				RegisterActionAndMenu("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
@@ -64,9 +64,9 @@ namespace Boards
 				RegisterAction("WaitMs","Waits the specified number of milliseconds (in AVR-clock time)", ScriptAction::Wait,{ArgType::Int});
 			};
 
-			virtual ~Board(){ if (m_thread) fprintf(stderr, "PROGRAMMING ERROR: %s THREAD NOT STOPPED BEFORE DESTRUCTION.\n",m_strBoard.c_str());};
+			~Board() override { if (m_thread) std::cerr << "PROGRAMMING ERROR: " << m_strBoard << " THREAD NOT STOPPED BEFORE DESTRUCTION.\n"; }
 
-			void CreateBoard(const string &strFW, uint8_t uiVerbose, bool bGDB, uint32_t uiVCDRate, const string &strBoot = "stk500boot_v2_mega2560.hex");
+			void CreateBoard(const std::string &strFW, uint8_t uiVerbose, bool bGDB, uint32_t uiVCDRate, const std::string &strBoot = "stk500boot_v2_mega2560.hex");
 			void StartAVR();
 			void StopAVR();
 
@@ -82,7 +82,9 @@ namespace Boards
 					return true;
 				}
 				else
+				{
 					return _PinNotConnectedMsg(ePin);
+				}
 			};
 
 			template <class HW>
@@ -94,7 +96,9 @@ namespace Boards
 					return true;
 				}
 				else
+				{
 					return _PinNotConnectedMsg(ePin);
+				}
 			};
 
 			inline bool TryConnect(avr_irq_t *src, PinNames::Pin ePin)
@@ -110,13 +114,13 @@ namespace Boards
 			// Start the bootloader first boot instead of jumping right into the main FW.
 			inline void SetStartBootloader() {m_pAVR->pc = m_pAVR->reset_pc;}
 
-			inline void WaitForFinish() {pthread_join(m_thread,NULL);}
+			inline void WaitForFinish() {pthread_join(m_thread,nullptr);}
 
 			inline void SetDisableWorkarounds(bool bVal){m_bNoHacks =bVal;}
 			inline bool GetDisableWorkarounds(){return m_bNoHacks;}
 
-			inline void SetSDCardFile(string strFile){m_strSDFile = strFile;}
-			inline string GetSDCardFile(){return m_strSDFile.empty()?GetStorageFileName("SDcard"):m_strSDFile;}
+			inline void SetSDCardFile(std::string strFile){m_strSDFile = std::move(strFile);}
+			inline std::string GetSDCardFile(){return m_strSDFile.empty()?GetStorageFileName("SDcard"):m_strSDFile;}
 
 			inline void SetResetFlag(){m_bReset = true;}
 			inline void SetQuitFlag(){m_bQuit = true;}
@@ -145,7 +149,7 @@ namespace Boards
 			// within the context of the AVR run thread.
 			virtual void OnAVRCycle(){};
 
-			virtual LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override
+			LineStatus ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs) override
 			{
 				switch (ID)
 				{
@@ -157,10 +161,16 @@ namespace Boards
 						return LineStatus::Finished;
 					case Wait:
 						if (m_uiWtCycleCount >0)
+						{
 							if (--m_uiWtCycleCount==0)
+							{
 								return LineStatus::Finished;
+							}
 							else
+							{
 								return LineStatus::Waiting;
+							}
+						}
 						else
 						{
 							m_uiWtCycleCount = (m_uiFreq/1000)*stoi(vArgs.at(0));
@@ -168,7 +178,7 @@ namespace Boards
 						}
 						break;
 					case Pause:
-						printf("Pause\n");
+						std::cout << "Pause\n";
 						m_bPaused.store(true);
 						return LineStatus::Finished;
 					case Unpause:
@@ -183,12 +193,14 @@ namespace Boards
 				avr_regbit_t MCUSR = m_pAVR->reset_flags.porf;
 				MCUSR.mask =0xFF;
 				MCUSR.bit = 0;
-				printf("Starting %s execution...\n", m_wiring.GetMCUName().c_str());
+				std::cout << "Starting " << m_wiring.GetMCUName() << " execution...\n";
 				int state = cpu_Running;
 				while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){
 							// Re init the special workarounds we need after a reset.
 					if (m_bIsPrimary) // Only one board should be scripting.
+					{
 						ScriptHost::DispatchMenuCB();
+					}
 					if (m_bPaused)
 					{
 						usleep(100000);
@@ -197,25 +209,28 @@ namespace Boards
 					int8_t uiMCUSR = avr_regbit_get(m_pAVR,MCUSR);
 					if (uiMCUSR != m_uiLastMCUSR)
 					{
-						printf("MCUSR: %02x\n",m_uiLastMCUSR = uiMCUSR);
+						std::cout << "MCUSR: " << std::hex << (m_uiLastMCUSR = uiMCUSR) << '\n';
 						if (uiMCUSR) // only run on change and not changed to 0
+						{
 							OnAVRReset();
+						}
 					}
 					OnAVRCycle();
 
 					if (m_bIsPrimary && ScriptHost::IsInitialized())
+					{
 						ScriptHost::OnAVRCycle();
-
+					}
 
 					if (m_bReset)
 					{
-						m_bReset = 0;
+						m_bReset = false;
 						avr_reset(m_pAVR);
 						avr_regbit_set(m_pAVR, m_pAVR->reset_flags.extrf);
 					}
 					state = avr_run(m_pAVR);
 				}
-				printf("%s finished (%d).\n",m_wiring.GetMCUName().c_str(),state);
+				std::cout << m_wiring.GetMCUName() << "finished (" << state << ").\n";
 				avr_terminate(m_pAVR);
 				return nullptr;
 			};
@@ -227,14 +242,16 @@ namespace Boards
 			void DisableInterruptLevelPoll(uint8_t uiNumIntLins)
 			{
 				for (int i=0; i<uiNumIntLins; i++)
+				{
 					avr_extint_set_strict_lvl_trig(m_pAVR,i,false);
+				}
 
 			}
 
-			inline void AddSerialPty(uart_pty &UART, const char chrNum)
+			inline void AddSerialPty(uart_pty *UART, const char chrNum)
 			{
-				UART.Init(m_pAVR);
-				UART.Connect(chrNum);
+				UART->Init(m_pAVR);
+				UART->Connect(chrNum);
 			}
 
 			void AddUARTTrace(const char chrUART);
@@ -247,11 +264,13 @@ namespace Boards
 			inline avr_irq_t* GetDIRQ(PinNames::Pin ePin)
 			{
 				if (m_wiring.IsPin(ePin))
+				{
 					return m_wiring.DIRQLU(m_pAVR,ePin);
+				}
 				return nullptr;
 			}
 
-			inline std::string GetStorageFileName(std::string strType)
+			inline std::string GetStorageFileName(const std::string &strType)
 			{
 				std::string strFN = m_strBoard;
 				strFN.append("_").append(m_wiring.GetMCUName()).append("_").append(strType).append(".bin");
@@ -261,14 +280,18 @@ namespace Boards
 			inline MCUPin GetPinNumber(PinNames::Pin ePin)
 			{
 				if (m_wiring.IsPin(ePin))
+				{
 					return m_wiring.GetPin(ePin);
+				}
 				return -1;
 			}
 
 			inline avr_irq_t* GetPWMIRQ(PinNames::Pin ePin)
 			{
 				if (m_wiring.IsPin(ePin))
+				{
 					return m_wiring.DPWMLU(m_pAVR,ePin);
+				}
 				return nullptr;
 			}
 
@@ -278,7 +301,7 @@ namespace Boards
 				hw.Init(m_pAVR, args... );
 			}
 
-			inline void SetBoardName(std::string strName){m_strBoard = strName;}
+			inline void SetBoardName(std::string strName){m_strBoard = std::move(strName);}
 
 			struct avr_t* m_pAVR = nullptr;
 
@@ -291,9 +314,9 @@ namespace Boards
 
 			void _OnAVRDeinit();
 
-			inline bool _PinNotConnectedMsg(Pin ePin)
+			inline bool _PinNotConnectedMsg(PinNames::Pin ePin)
 			{
-				printf("Requested connection w/ Digital pin %d on %s, but it is not defined!\n",ePin,m_strBoard.c_str());
+				std:: cout << "Requested connection w/ Digital pin " << ePin << " on " << m_strBoard << ", but it is not defined!\n";;
 				return false;
 			}
 
@@ -303,7 +326,7 @@ namespace Boards
 			bool m_bIsPrimary = false;
 			bool m_bNoHacks = false;
 			pthread_t m_thread = 0;
-			const Wiring &m_wiring;
+			const Wirings::Wiring &m_wiring;
 			//std::string m_strFW, m_strBoot;
 			std::string m_strBoard;
 
@@ -328,4 +351,4 @@ namespace Boards
 
 			EEPROM m_EEPROM;
 	};
-};// Boards
+}; // namespace Boards

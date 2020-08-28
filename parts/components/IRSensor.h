@@ -65,7 +65,7 @@ public:
 	void Auto_Input(uint32_t val);
 
 	protected:
-		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<string> &vArgs) override;
 
 private:
 
@@ -85,17 +85,17 @@ private:
  	uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
 	// LUT for states to voltage readouts.
-	map<IRState,float> m_mIRVals =
+	std::map<IRState,float> m_mIRVals =
 	{
-		make_pair(IR_SHORT,0.1f),
-		make_pair(IR_v4_FILAMENT_PRESENT,0.4f),
-		make_pair(IR_v3_FILAMENT_PRESENT,0.2f),
-		make_pair(IR_UNKNOWN, 3.0f),
-		make_pair(IR_v4_NO_FILAMENT, 4.5f),
-		make_pair(IR_v3_NO_FILAMENT, 4.7f),
-		make_pair(IR_NOT_CONNECTED, 4.9)
+		{IR_SHORT,0.1f},
+		{IR_v4_FILAMENT_PRESENT,0.4f},
+		{IR_v3_FILAMENT_PRESENT,0.2f},
+		{IR_UNKNOWN, 3.0f},
+		{IR_v4_NO_FILAMENT, 4.5f},
+		{IR_v3_NO_FILAMENT, 4.7f},
+		{IR_NOT_CONNECTED, 4.9}
 	};
 
-	atomic_bool m_bExternal {false};
+	std::atomic_bool m_bExternal {false};
 	IRState m_eCurrent = IR_v4_NO_FILAMENT;
 };

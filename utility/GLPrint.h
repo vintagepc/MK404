@@ -67,14 +67,14 @@ class GLPrint
 
 		array<int,4> m_iExtrEnd = {{0,0,0,0}}, m_iExtrStart = {{0,0,0,0}};
 		array<float,4> m_fExtrEnd = {{0,0,0,0}}, m_fExtrStart = {{0,0,0,0}};
-		vector<int> m_ivStart, m_ivTStart;
-		vector<int> m_ivCount, m_ivTCount;
-		vector<float> m_fvDraw, m_fvNorms;
-		vector<float> m_fvTri;
+		std::vector<int> m_ivStart, m_ivTStart;
+		std::vector<int> m_ivCount, m_ivTCount;
+		std::vector<float> m_fvDraw, m_fvNorms;
+		std::vector<float> m_fvTri;
 		// Layer vertex tracking.
-		vector<float*> m_vpfLayer1, m_vpfLayer2;
-		// vector<float*> *m_pCurLayer = &m_vpfLayer1;   // not used
-		// vector<float*> *m_pPrevLayer = &m_vpfLayer2;  // not used
+		std::vector<float*> m_vpfLayer1, m_vpfLayer2;
+		// std::vector<float*> *m_pCurLayer = &m_vpfLayer1;   // not used
+		// std::vector<float*> *m_pPrevLayer = &m_vpfLayer2;  // not used
 		float m_fCurZ = -1;
 		// float m_fLastZ = -1;                          // not used
 		float m_fEMax = 0;

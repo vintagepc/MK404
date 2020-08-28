@@ -43,11 +43,11 @@ void UART_Logger::OnByteIn(struct avr_irq_t *, uint32_t value)
     m_fsOut.put(c);
 	if (!m_fsOut.fail())
 	{
-	    cout << "UART" << m_chrUART << ": " << std::hex << c << '\n';
+	    std::cout << "UART" << m_chrUART << ": " << std::hex << c << '\n';
 	}
 	else
 	{
-		cerr << "UART Logger: failed to write to file\n";
+		std::cerr << "UART Logger: failed to write to file\n";
 	}
 }
 
@@ -71,16 +71,16 @@ void UART_Logger::Init(struct avr_t * avr, char chrUART)
 	m_fsOut.open(m_strFile, m_fsOut.binary | m_fsOut.out | m_fsOut.trunc);
 	if (!m_fsOut.is_open())
 	{
-		cerr << "Failed to open output file for UART_Logger\n";
+		std::cerr << "Failed to open output file for UART_Logger\n";
 	}
 	else
 	{
-    	cout << "UART " << m_chrUART << " is now logging to " << m_strFile << '\n';
+    	std::cout << "UART " << m_chrUART << " is now logging to " << m_strFile << '\n';
 	}
 }
 
 UART_Logger::~UART_Logger()
 {
 	m_fsOut.close();
-	cout << "UART logger finished.\n";
+	std::cout << "UART logger finished.\n";
 }

@@ -94,7 +94,7 @@ class MK3SGL: public BasePeripheral, public Scriptable
 		void ResizeCB(int w, int h);
 
 	protected:
-		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs);
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<string> &vArgs);
 
 
     private:

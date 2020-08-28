@@ -76,7 +76,9 @@ class SPIPeripheral: public BasePeripheral
                 m_bSendReply = false;
                 uint8_t uiByteOut = OnSPIIn(irq, value);
                 if (m_bSendReply)
+				{
                     RaiseIRQ(C::SPI_BYTE_OUT,uiByteOut);
+				}
             }
         }
 };

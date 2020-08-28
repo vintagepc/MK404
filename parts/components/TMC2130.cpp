@@ -73,8 +73,8 @@ void TMC2130::Draw()
         glPushMatrix();
             glTranslatef(280,7,0);
             glScalef(0.09,-0.05,0);
-            string strPos = to_string(m_fCurPos);
-            for (int i=0; i<min(7,static_cast<int>(strPos.size())); i++)
+            string strPos = std::to_string(m_fCurPos);
+            for (int i=0; i<std::min(7,static_cast<int>(strPos.size())); i++)
 			{
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
 			}
@@ -138,8 +138,8 @@ void TMC2130::Draw_Simple()
         glPushMatrix();
             glTranslatef(30,7,0);
             glScalef(0.09,-0.05,0);
-			string strPos = to_string(m_fCurPos);
-            for (int i=0; i<min(7,static_cast<int>(strPos.size())); i++)
+			string strPos = std::to_string(m_fCurPos);
+            for (int i=0; i<std::min(7,static_cast<int>(strPos.size())); i++)
 			{
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
 			}
@@ -332,7 +332,7 @@ TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
 	RegisterActionAndMenu("Reset","Clears the diag flag immediately",ActResetDiag);
 }
 
-Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const vector<string> &)
+Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const std::vector<string> &)
 {
 	switch (iAct)
 	{

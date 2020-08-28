@@ -20,14 +20,14 @@
 
 #pragma once
 
-#include "Board.h"                 // for Board
-#include "wiring/MM_Control_01.h"  // for MM_Control_01
 #include "ADC_Buttons.h"           // for ADC_Buttons
+#include "Board.h"                 // for Board
 #include "HC595.h"                 // for HC595
 #include "LED.h"                   // for LED
 #include "MM_Control_01.h"
 #include "TMC2130.h"               // for TMC2130
 #include "uart_pty.h"              // for uart_pty
+#include "wiring/MM_Control_01.h"  // for MM_Control_01
 #include <cstdint>                // for uint32_t
 
 namespace Boards
@@ -35,10 +35,10 @@ namespace Boards
 	class MM_Control_01: public Board
 	{
 		public:
-			MM_Control_01(uint32_t uiFreq = 16000000)
+			explicit MM_Control_01(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){};
 
-			~MM_Control_01(){};
+			~MM_Control_01() override = default;
 
 		protected:
 			void SetupHardware() override;
@@ -60,4 +60,4 @@ namespace Boards
 		private:
 			const Wirings::MM_Control_01 m_wiring = Wirings::MM_Control_01();
 	};
-};
+}; // namespace Boards

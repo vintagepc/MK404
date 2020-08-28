@@ -55,7 +55,7 @@ uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t *, uint32_t)
     return iVOut;
 }
 
-Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const vector<string> &vArgs)
+Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const std::vector<string> &vArgs)
 {
 	switch (uiAct)
 	{
@@ -90,14 +90,14 @@ void ADC_Buttons::Init(struct avr_t * avr, uint8_t adc_mux_number)
 
 void ADC_Buttons::Push(uint8_t uiBtn)
 {
-	cout << "Pressing button " << uiBtn << '\n';
+	std::cout << "Pressing button " << uiBtn << '\n';
 	m_uiCurBtn = uiBtn;
 	RegisterTimerUsec(m_fcnRelease,2500000, this);
 }
 
 avr_cycle_count_t ADC_Buttons::AutoRelease(avr_t *, avr_cycle_count_t)
 {
-	cout  << GetName() << " button release\n";
+	std::cout  << GetName() << " button release\n";
 	m_uiCurBtn = 0;
 	return 0;
 };

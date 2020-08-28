@@ -19,14 +19,17 @@
 
 #pragma once
 
+#include "gsl-lite.hpp"
+#include <iostream>
 #include <string>
+
 
 class PinSpec {
 	public:
-		PinSpec(const unsigned char *pin2port, const unsigned char *pin2Mask, const unsigned char *pin2Timer,std::string strMCU):
+		PinSpec(gsl::span<const unsigned char>pin2port, gsl::span<const unsigned char>pin2Mask, gsl::span<const unsigned char>pin2Timer,const std::string &strMCU):
 			m_pDPin2Port(pin2port),m_pDPin2Mask(pin2Mask),m_pDPin2Timer(pin2Timer),m_strMCU(strMCU)
 			{
-				printf("Creating pinspec for %s\n",strMCU.c_str());
+				std::cout << "Creating pinspec for" << strMCU << '\n';
 			};
 
 		// Returns a char representation of the port, e.g. 'A'
@@ -36,10 +39,10 @@ class PinSpec {
 		inline unsigned char PIN(unsigned int n) const {return m_pDPin2Mask[n];}
 
 		// Get Char rep of the timer port.
-		inline unsigned char TIMER_CHAR(unsigned int n) const { return '0' + (m_pDPin2Timer[n]>>4); }
+		inline unsigned char TIMER_CHAR(unsigned int n) const { return '0' + (m_pDPin2Timer[n]>>4u); }
 
 		// Get index of the timer
-		inline unsigned char TIMER_IDX(unsigned int n) const { return m_pDPin2Timer[n]&0xF; }
+		inline unsigned char TIMER_IDX(unsigned int n) const { return m_pDPin2Timer[n]&0xFu; }
 
 		// Returns the MCU this spec is for. Used to designate the
 		// CPU in a board using this pinspec.
@@ -48,9 +51,9 @@ class PinSpec {
 	protected:
 		// Set these in your derived class constructor args to pointer
 		// tables, such that array[i] is the value for Pin #i.
-		const unsigned char* m_pDPin2Port = nullptr;
-		const unsigned char* m_pDPin2Mask = nullptr;
-		const unsigned char* m_pDPin2Timer = nullptr;
+		const gsl::span<const unsigned char> m_pDPin2Port;
+		const gsl::span<const unsigned char> m_pDPin2Mask;
+		const gsl::span<const unsigned char> m_pDPin2Timer;
 
 		std::string m_strMCU;
 };

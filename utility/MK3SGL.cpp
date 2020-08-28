@@ -45,7 +45,7 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 {
 	if (g_pMK3SGL)
 	{
-		cerr << "ERROR: Cannot have multiple MK3SGL instances due to freeglut limitations." << '\n';
+		std::cerr << "ERROR: Cannot have multiple MK3SGL instances due to freeglut limitations." << '\n';
 		exit(1);
 	}
 	g_pMK3SGL = this;
@@ -206,7 +206,7 @@ void MK3SGL::Init(avr_t *avr)
 }
 
 
-Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const vector<string> &)
+Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<string> &)
 {
 	switch (iAct)
 	{
@@ -264,7 +264,7 @@ void MK3SGL::OnBoolChanged(avr_irq_t *irq, uint32_t value)
 			m_bFINDAOn = bVal;
 			break;
 		default:
-		cout << "NOTE: MK3SGL: Unhandled Bool IRQ " << irq->name << '\n';
+		std::cout << "NOTE: MK3SGL: Unhandled Bool IRQ " << irq->name << '\n';
 			break;
 	}
 	m_bDirty = true;
@@ -336,7 +336,7 @@ void MK3SGL::OnPosChanged(avr_irq_t *irq, uint32_t value)
 		case IRQ::SEL_IN:
 			m_fSelPos = fPos/1000.f;
 		default:
-			cout << "NOTE: MK3SGL: Unhandled IRQ " << irq->name << '\n';
+			std::cout << "NOTE: MK3SGL: Unhandled IRQ " << irq->name << '\n';
 			break;
 	}
 	m_bDirty = true;

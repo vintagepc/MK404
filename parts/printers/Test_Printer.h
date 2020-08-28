@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "Test_Board.h"     		// for EinsyRambo
 #include "Printer.h"        // for Printer, Printer::VisualType
+#include "Test_Board.h"     		// for EinsyRambo
 
 #include <utility>          // for pair
 
@@ -31,7 +31,7 @@ class Test_Printer : public Boards::Test_Board, public Printer
 	public:
 		Test_Printer():Test_Board(),Printer(){};
 
-		~Test_Printer(){};
+		~Test_Printer() override = default;
 
 		std::pair<int,int> GetWindowSize() override {return {0,0}; };
 

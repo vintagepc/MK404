@@ -25,7 +25,7 @@
 #include <iomanip>
 #include <iostream>
 
-shared_ptr<TelemetryHost> TelemetryHost::m_pHost;
+std::shared_ptr<TelemetryHost> TelemetryHost::m_pHost;
 
 void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits)
 {
@@ -53,7 +53,7 @@ void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uin
 
 	if (bShouldAdd)
 	{
-		cout << "Telemetry: Added trace " << strName << '\n';
+		std::cout << "Telemetry: Added trace " << strName << '\n';
 		avr_vcd_add_signal(&m_trace, pIRQ, uiBits, strName.c_str());
 	}
 	if (!m_mIRQs.count(strName))
@@ -67,11 +67,11 @@ void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uin
 	}
 	else
 	{
-		cerr << "ERROR: Trying to add the same IRQ "<<  strName <<" to a VCD trace multiple times!\n";
+		std::cerr << "ERROR: Trying to add the same IRQ "<<  strName <<" to a VCD trace multiple times!\n";
 	}
 }
 
-void TelemetryHost::SetCategories(const vector<string> &vsCats)
+void TelemetryHost::SetCategories(const std::vector<string> &vsCats)
 {
 	for (auto &sCat : vsCats)
 	{
@@ -86,7 +86,7 @@ void TelemetryHost::SetCategories(const vector<string> &vsCats)
 	}
 }
 
-Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -149,22 +149,22 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vec
 
 void TelemetryHost::PrintTelemetry(bool bMarkdown)
 {
-	cout << (bMarkdown?"## ":"") << "Avaliable telemetry streams:\n";
+	std::cout << (bMarkdown?"## ":"") << "Avaliable telemetry streams:\n";
 	if (bMarkdown)
 	{
-		cout << "- [By name](#by-name)\n";
-		cout << "- [By category](#by-category)\n";
-		cout << "### ";
+		std::cout << "- [By name](#by-name)\n";
+		std::cout << "- [By category](#by-category)\n";
+		std::cout << "### ";
 	}
 	else
 	{
-		cout << '\t';
+		std::cout << '\t';
 	}
-	cout << "By Name:\n";
+	std::cout << "By Name:\n";
 	if (bMarkdown)
 	{
-		cout << "Name | Categories\n";
-		cout << "-----|-----------\n";
+		std::cout << "Name | Categories\n";
+		std::cout << "-----|-----------\n";
 	}
 	for (auto &it : m_mCatsByName)
 	{
@@ -175,30 +175,30 @@ void TelemetryHost::PrintTelemetry(bool bMarkdown)
 		}
 		if (bMarkdown)
 		{
-			cout << it.first << strCats << '\n';
+			std::cout << it.first << strCats << '\n';
 		}
 		else
 		{
-			cout << '\t' << std::setw(40) << std::left << it.first << strCats << '\n';
+			std::cout << '\t' << std::setw(40) << std::left << it.first << strCats << '\n';
 		}
 
 	}
-	cout << (bMarkdown? "### " : "\t") << "By Category\n";
+	std::cout << (bMarkdown? "### " : "\t") << "By Category\n";
 
 	for (auto &cat : m_mNamesByCat)
 	{
-		cout << (bMarkdown?"#### ":"\t\t") << m_mCat2Str.at(cat.first) << '\n';
+		std::cout << (bMarkdown?"#### ":"\t\t") << m_mCat2Str.at(cat.first) << '\n';
 		for (auto &name : cat.second)
 		{
 			if (bMarkdown)
 			{
-				cout << " - ";
+				std::cout << " - ";
 			}
 			else
 			{
-				cout << "\t\t\t";
+				std::cout << "\t\t\t";
 			}
-			cout << name << '\n';
+			std::cout << name << '\n';
 		}
 	}
 }

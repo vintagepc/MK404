@@ -72,9 +72,9 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		void Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)
 		{
 			_Init(pAVR, pSDA, pSCL, this);
-			cout << "\n\n--------- Your attention please! ----------\n";
-			cout << "NOTE: PAT9125 is minimally functional. If you encounter issues or need advanced functionality \n feel free to contribute or open an issue.\n";
-			cout << "--------- Your attention please! ----------\n\n\n";
+			std::cout << "\n\n--------- Your attention please! ----------\n";
+			std::cout << "NOTE: PAT9125 is minimally functional. If you encounter issues or need advanced functionality \n feel free to contribute or open an issue.\n";
+			std::cout << "--------- Your attention please! ----------\n\n\n";
 			RegisterNotify(E_IN, MAKE_C_CALLBACK(PAT9125,OnEMotion),this);
 			RegisterNotify(P_IN, MAKE_C_CALLBACK(PAT9125,OnPMotion),this);
 		}
@@ -95,7 +95,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			{
 				m_state = FS_JAM;
 			}
-			cout << "PAT9125 Jam: " << (m_state == FS_JAM) << '\n';
+			std::cout << "PAT9125 Jam: " << (m_state == FS_JAM) << '\n';
 
 		}
 
@@ -104,7 +104,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			switch (m_state)
 			{
 			case FS_AUTO:
-				cout << "Leaving PAT9125 Auto mode\n";
+				std::cout << "Leaving PAT9125 Auto mode\n";
 				m_state = m_bFilament ? FS_FILAMENT_PRESENT : FS_NO_FILAMENT;
 				/* FALLTHRU */  // Deliberate fallthrough - will toggle from current.
 			case FS_NO_FILAMENT:
@@ -132,7 +132,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			{
 				m_bFilament = m_state == FS_FILAMENT_PRESENT || m_state == FS_JAM;
 			}
-			cout << "Filament Present: " << m_bFilament << '\n';
+			std::cout << "Filament Present: " << m_bFilament << '\n';
 			RaiseIRQ(LED_OUT,!m_bFilament); // LED is inverted.
 			if (m_bFilament)
 			{
@@ -250,7 +250,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 		{
 			if (!(m_uiRW  & (1u<<uiAddr)))
 			{
-				cerr << "PAT9125: tried to write Read-only register\n";
+				std::cerr << "PAT9125: tried to write Read-only register\n";
 				return false; // RO register.
 			}
 			gsl::at(m_regs.raw,uiAddr) = gsl::narrow<uint8_t>(uiData);

@@ -28,7 +28,7 @@
 #include <cmath>              // for sqrtf
 #include <cstring>            // for memcpy
 #include <functional>
-#include <iostream>           // for operator<<, endl, basic_ostream, cerr
+#include <iostream>           // for operator<<, endl, basic_ostream, std::cerr
 #include <limits>             // for numeric_limits
 #include <map>                // for map, _Rb_tree_iterator
 #include <scoped_allocator>   // for allocator_traits<>::value_type
@@ -58,7 +58,7 @@ void GLObj::Load()
 	m_bLoaded = LoadObjAndConvert(m_strFile.c_str());
 	if (!m_bLoaded)
 	{
-		cout << "Failed to load obj\n";
+		std::cout << "Failed to load obj\n";
 	}
 
 	m_fMaxExtent = 0.5f * (m_extMax[0] - m_extMin[0]);
@@ -101,7 +101,7 @@ void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 	}
 	else
 	{
-		cout << "GLObj: Tried to set invalid material or object.\n";
+		std::cout << "GLObj: Tried to set invalid material or object.\n";
 	}
 }
 
@@ -231,12 +231,12 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 		vert *= m_fScale;
 	}
 
-	cout << "##### " << filename <<" #####\n";
-	cout << "# of vertices  = " << (attrib.vertices.size()) / 3 << '\n';
-	cout << "# of normals   = " << (attrib.normals.size()) / 3 << '\n';
-	cout << "# of texcoords = " << (attrib.texcoords.size()) / 2 << '\n';
-	cout << "# of materials = " << m_materials.size() << '\n';
-	cout << "# of shapes    = " << shapes.size() << '\n';
+	std::cout << "##### " << filename <<" #####\n";
+	std::cout << "# of vertices  = " << (attrib.vertices.size()) / 3 << '\n';
+	std::cout << "# of normals   = " << (attrib.normals.size()) / 3 << '\n';
+	std::cout << "# of texcoords = " << (attrib.texcoords.size()) / 2 << '\n';
+	std::cout << "# of materials = " << m_materials.size() << '\n';
+	std::cout << "# of shapes    = " << shapes.size() << '\n';
 
 	// Append `default` material
 	m_materials.push_back(tinyobj::material_t());
@@ -447,7 +447,7 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 	return true;
 }
 
-void GLObj::AddObject(const vector<float> &vb, int iMatlId)
+void GLObj::AddObject(const std::vector<float> &vb, int iMatlId)
 {
 	DrawObject obj {};
 	obj.vb = 0;

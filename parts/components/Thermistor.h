@@ -55,7 +55,7 @@ class Thermistor: public ADCPeripheral, public Scriptable
 		// Set the temperature explicitly.
 		void Set(float fTemp);
 	protected:
-		LineStatus ProcessAction(unsigned int iAction, const vector<string> &args) override;
+		LineStatus ProcessAction(unsigned int iAction, const std::vector<string> &args) override;
 
 	private:
 

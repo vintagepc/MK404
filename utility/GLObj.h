@@ -89,9 +89,9 @@ class GLObj
         float _m_extMin[3] = {0,0,0}, _m_extMax[3] = {0,0,0};
 		gsl::span<float> m_extMin {_m_extMin}, m_extMax {_m_extMax};
         bool m_bLoaded = false, m_bNoNewNormals = false;
-        vector<tinyobj::material_t> m_materials;
+        std::vector<tinyobj::material_t> m_materials;
         map<std::string, GLuint> m_textures;
-        vector<DrawObject> m_DrawObjects;
+        std::vector<DrawObject> m_DrawObjects;
 
 		GLenum m_matMode = GL_DIFFUSE;
 
@@ -106,5 +106,5 @@ class GLObj
         // Load helper from the tinyobjloader example.
         bool LoadObjAndConvert(const char* filename);
 
-		void AddObject(const vector<float> &vb, int iMatlId);
+		void AddObject(const std::vector<float> &vb, int iMatlId);
 };

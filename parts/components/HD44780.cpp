@@ -88,7 +88,7 @@ avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t *,avr_cycle_count_t)
 	return 0;
 }
 
-Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector<string> &vArgs)
+Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const std::vector<string> &vArgs)
 {
 	switch (iAction)
 	{
@@ -100,7 +100,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 			int iAddr = stoi(vArgs.at(1));
 			if (iAddr<0 || iAddr>63)
 			{
-				return IssueLineError(string("ADDR") + to_string(iAddr) + " is out of range [0,63]");
+				return IssueLineError(string("ADDR") + std::to_string(iAddr) + " is out of range [0,63]");
 			}
 			if (m_cgRam[iAddr] == stoi(vArgs.at(0)))
 			{
@@ -121,7 +121,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 
 			if (iLine>=m_uiHeight || iLine<-1)
 			{
-				return IssueLineError(string("Line index ") + to_string(iLine) + " is out of range [-1," + to_string (m_uiHeight) + "]");
+				return IssueLineError(string("Line index ") + std::to_string(iLine) + " is out of range [-1," + std::to_string (m_uiHeight) + "]");
 			}
 
 			bool bResult = false;
@@ -242,7 +242,7 @@ uint32_t HD44780::OnDataReady()
 		}
 		TRACE(printf("hd44780_write_data %02x (%c) to %02x\n", m_uiDataPins, m_uiDataPins, m_uiCursor));
 		if (GetFlag(HD44780_FLAG_S_C)) {	// display shift ?
-			cout << "Display shift requested. Not implemented, sorry!\n";
+			std::cout << "Display shift requested. Not implemented, sorry!\n";
 		} else {
 			IncrementCursor();
 		}
@@ -291,7 +291,7 @@ uint32_t HD44780::OnCmdReady()
 			SetFlag(HD44780_FLAG_N, m_uiDataPins & 8U);
 			SetFlag(HD44780_FLAG_F, m_uiDataPins & 4U);
 			if (!four && !GetFlag(HD44780_FLAG_D_L)) {
-				cout << static_cast<const char*>(__FUNCTION__) << "activating 4-bit mode" << '\n';
+				std::cout << static_cast<const char*>(__FUNCTION__) << "activating 4-bit mode" << '\n';
 				SetFlag(HD44780_FLAG_LOWNIBBLE, 0);
 			}
 		}
@@ -362,7 +362,7 @@ uint32_t HD44780::ProcessWrite()
 	{
 		if (GetFlag(HD44780_FLAG_BUSY))
 		{
-			cout << static_cast<const char*>(__FUNCTION__) << " command " << m_uiDataPins << "write when still BUSY" << '\n';
+			std::cout << static_cast<const char*>(__FUNCTION__) << " command " << m_uiDataPins << "write when still BUSY" << '\n';
 		}
 		if (m_uiPinState & (1U << RS))	// write data
 		{

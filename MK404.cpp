@@ -67,7 +67,7 @@ bool m_bTestMode = false;
 void OnSigINT(int) {
 	if (!m_bStopping)
 	{
-		cout << "Caught SIGINT... stopping..." << '\n';
+		std::cout << "Caught SIGINT... stopping..." << '\n';
 		m_bStopping = true;
 		if (m_bTestMode)
 		{
@@ -80,7 +80,7 @@ void OnSigINT(int) {
 	}
 	else
 	{
-		cout << "OK, OK! I get the message!" << '\n';
+		std::cout << "OK, OK! I get the message!" << '\n';
 		exit(2);
 	}
 }
@@ -95,12 +95,12 @@ extern "C" {
 				const GLchar* message,
 				const void*) // userparam )
 	{
-		cerr <<  "GL:";
+		std::cerr <<  "GL:";
 		if (type == GL_DEBUG_TYPE_ERROR)
 		{
-			cerr << "** GL ERROR **";
+			std::cerr << "** GL ERROR **";
 		}
-		cerr << "ID:" << id << " type = " << type << " sev = " << severity << " message = " << message << '\n';
+		std::cerr << "ID:" << id << " type = " << type << " sev = " << severity << " message = " << message << '\n';
 	}
 }
 
@@ -156,11 +156,11 @@ void keyCB(unsigned char key, int x, int y)	/* called on key press */
 	{
 		case '+':
 			TelemetryHost::GetHost()->StartTrace();
-			cout << "Enabled VCD trace." << '\n';
+			std::cout << "Enabled VCD trace." << '\n';
 			break;
 		case '-':
 			TelemetryHost::GetHost()->StopTrace();
-			cout << "Stopped VCD trace" << '\n';
+			std::cout << "Stopped VCD trace" << '\n';
 			break;
 		default:
 			printer->OnKeyPress(key,x,y);
@@ -277,13 +277,13 @@ int main(int argc, char *argv[])
 	cmd.add(argMute);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
 	cmd.add(argLoad);
-	vector<string> vstrSizes = FatImage::GetSizes();
+	std::vector<string> vstrSizes = FatImage::GetSizes();
 	ValuesConstraint<string> vcSizes(vstrSizes);
 	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes);
 	cmd.add(argImgSize);
 	SwitchArg argGDB("","gdb","Enable SimAVR's GDB support");
 	cmd.add(argGDB);
-	vector<string> vstrGfx = {"none","lite","fancy", "bear"};
+	std::vector<string> vstrGfx = {"none","lite","fancy", "bear"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
 	cmd.add(argGfx);
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
 	cmd.add(argBootloader);
 	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown");
 	cmd.add(argMD);
-	vector<string> vstrPrinters = PrinterFactory::GetModels();
+	std::vector<string> vstrPrinters = PrinterFactory::GetModels();
 	ValuesConstraint<string> vcAllowed(vstrPrinters);
 
 	TCLAP::UnlabeledValueArg<string> argModel("printer","Model name of the printer to run",false,"Prusa_MK3S",&vcAllowed);
@@ -303,11 +303,11 @@ int main(int argc, char *argv[])
 
 	if (version::IS_DEV_VERSION)
 	{
-		cout << "***************************************" << '\n';
-		cout << "* " << setw(35) << version::VERSION_STRING << " *" << '\n';
-		cout << "* This is a DEV version. Features may *" << '\n';
-		cout << "* behave unexpectedly, or not at all. *" << '\n';
-		cout << "***************************************" << '\n';
+		std::cout << "***************************************" << '\n';
+		std::cout << "* " << setw(35) << version::VERSION_STRING << " *" << '\n';
+		std::cout << "* This is a DEV version. Features may *" << '\n';
+		std::cout << "* behave unexpectedly, or not at all. *" << '\n';
+		std::cout << "***************************************" << '\n';
 	}
 
 	cmd.parse(argc,argv);
@@ -317,12 +317,12 @@ int main(int argc, char *argv[])
 	{
 		if(!argSD.isSet())
 		{
-			cerr << "Cannot create an SD image without a filename." << '\n';
+			std::cerr << "Cannot create an SD image without a filename." << '\n';
 			exit(1);
 		}
 		if (FatImage::MakeFatImage(argSD.getValue(), argImgSize.getValue()))
 		{
-			cout << "Wrote " << argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << '\n';
+			std::cout << "Wrote " << argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << '\n';
 		}
 		return 0;
 	}
@@ -371,10 +371,10 @@ int main(int argc, char *argv[])
 		window = glutCreateWindow(strTitle.c_str());	/* create window */
 
 		glewInit();
-		cout << "GL_VERSION   : " << glGetString(GL_VERSION) << '\n';
-		cout << "GL_VENDOR    : " << glGetString(GL_VENDOR) << '\n';
-		cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << '\n';
-		cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << '\n';
+		std::cout << "GL_VERSION   : " << glGetString(GL_VERSION) << '\n';
+		std::cout << "GL_VENDOR    : " << glGetString(GL_VENDOR) << '\n';
+		std::cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << '\n';
+		std::cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << '\n';
 		//cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
 #if !defined(__APPLE__)
 		glDebugMessageCallback( GLErrorCB, nullptr );
@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot
 	if (argWait.isSet())
 	{
-		cout << "Paused - press any key to resume execution" << '\n';
+		std::cout << "Paused - press any key to resume execution" << '\n';
 		getchar();
 	}
 
@@ -446,7 +446,7 @@ int main(int argc, char *argv[])
 		glutMainLoop();
 	}
 
-	cout << "Waiting for board to finish..." << '\n';
+	std::cout << "Waiting for board to finish..." << '\n';
 	if (!m_bTestMode)
 	{
 		pBoard->SetQuitFlag();
@@ -455,7 +455,7 @@ int main(int argc, char *argv[])
 
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);
 
-	cout << "Done" << '\n';
+	std::cout << "Done" << '\n';
 	if (argScript.isSet())
 	{
 		return static_cast<int>(ScriptHost::GetState());

@@ -26,21 +26,21 @@
 #include "Button.h"                              // for Button
 #include "Fan.h"                                 // for Fan
 #include "GCodeSniffer.h"
+#include "HC595.h"
 #include "HD44780.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
 // #include "LED.h"                                 // for LED
-#include "PINDA.h"                               // for PINDA
-#include "PAT9125.h"
-#include "HC595.h"
 #include "IRSensor.h"                          // for IRSensor
+#include "PAT9125.h"
+#include "PINDA.h"                               // for PINDA
 #include "RotaryEncoder.h"                       // for RotaryEncoder
 #include "SDCard.h"                              // for SDCard
 #include "SerialLineMonitor.h"                   // for SerialLineMonitor
 #include "TMC2130.h"                             // for TMC2130
 #include "Thermistor.h"                          // for Thermistor
-#include "sim_irq.h"                             // for avr_irq_t
-//#include "uart_pty.h"                            // for uart_pty
 #include "VoltageSrc.h"
+//#include "uart_pty.h"                            // for uart_pty
+#include "sim_irq.h"                             // for avr_irq_t
 #include "w25x20cl.h"                            // for w25x20cl
 #include "wiring/Test_Wiring.h"                   // for Einsy_1_1a
 #include <cstdint>                              // for uint32_t
@@ -51,7 +51,7 @@ namespace Boards
 	class Test_Board: public Board
 	{
 		public:
-			Test_Board(uint32_t uiFreq = 16000000)
+			explicit Test_Board(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){ SetBoardName("Test_Board");};
 
 		protected:
@@ -103,4 +103,4 @@ namespace Boards
 
 			const Wirings::Test_Wiring m_wiring = Wirings::Test_Wiring();
 	};
-};
+}; // namespace Boards

@@ -50,7 +50,7 @@ SerialPipe::~SerialPipe()
 	m_bQuit = true;
 	pthread_cancel(m_thread);
 	pthread_join(m_thread,nullptr);
-	cout << "Serial pipe finished\n";
+	std::cout << "Serial pipe finished\n";
 }
 
 void* SerialPipe::Run()
@@ -63,13 +63,13 @@ void* SerialPipe::Run()
 	int iLastFd = 0, iReadyRead, iChrRd;
 	if ((fdPort[0]=open(m_strPty0.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC)) == -1) // NOLINT - no select alternative that uses iostream.
 	{
-		cerr << "Could not open "  << m_strPty0 << '\n';
+		std::cerr << "Could not open "  << m_strPty0 << '\n';
 		perror(m_strPty0.c_str());
 		m_bQuit = true;
 	}
 	if ((fdPort[1]=open(m_strPty1.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC)) == -1) // NOLINT - no select alternative that uses iostream.
 	{
-		cerr << "Could not open "  << m_strPty1 << '\n';
+		std::cerr << "Could not open "  << m_strPty1 << '\n';
 		perror(m_strPty1.c_str());
 		m_bQuit = true;
 	}
@@ -92,7 +92,7 @@ void* SerialPipe::Run()
 		FD_SET(fdPort.at(1), &fdsErr); //NOLINT
 		if ((iReadyRead = select(iLastFd+1,&fdsIn, nullptr, &fdsErr,nullptr))<0)
 		{
-			cout << "Select ERR.\n";
+			std::cout << "Select ERR.\n";
 			m_bQuit = true;
 			break;
 		}
@@ -103,7 +103,7 @@ void* SerialPipe::Run()
 			{
 				if(write(fdPort[1],&chrIn,1)!=1)
 				{
-					cerr << "Failed to write byte across serial pipe 0.\n";
+					std::cerr << "Failed to write byte across serial pipe 0.\n";
 				}
 
 			}
@@ -119,7 +119,7 @@ void* SerialPipe::Run()
 			{
 				if(write(fdPort[0],&chrIn,1) !=1)
 				{
-					cerr << "Failed to write byte across serial pipe 0.\n";
+					std::cerr << "Failed to write byte across serial pipe 0.\n";
 				}
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
@@ -130,7 +130,7 @@ void* SerialPipe::Run()
 		}
 		if (FD_ISSET(fdPort[0], &fdsErr) || FD_ISSET(fdPort[1], &fdsErr)) //NOLINT
 		{
-			cerr << "Exception reading PTY. Quit.\n";
+			std::cerr << "Exception reading PTY. Quit.\n";
 			m_bQuit = true;
 			break;
 		}

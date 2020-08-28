@@ -61,7 +61,7 @@ void SerialLineMonitor::OnXOffIn(struct avr_irq_t *, uint32_t)
 }
 
 
-Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const vector<string> &args)
+Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const std::vector<string> &args)
 {
 	if (m_type != None && m_strMatch == args.at(0)) // already in wait state for same find
 	{

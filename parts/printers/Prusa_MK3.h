@@ -20,10 +20,10 @@
 
 #pragma once
 
-#include <stdio.h>
-#include "sim_irq.h"
-#include "Prusa_MK3S.h"     // for Prusa_MK3S
 #include "PAT9125.h"
+#include "Prusa_MK3S.h"     // for Prusa_MK3S
+#include "sim_irq.h"
+#include <iostream>
 
 class MK3SGL;
 
@@ -33,7 +33,7 @@ class Prusa_MK3: public Prusa_MK3S
 		void SetupIR() override
 		{
 			avr_raise_irq(GetDIRQ(IR_SENSOR_PIN),1);
-			printf("MK3 - adding laser sensor\n");
+			std::cout << "MK3 - adding laser sensor\n";
 			AddHardware(LaserSensor, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
 			lIR.ConnectFrom(LaserSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 
@@ -41,9 +41,9 @@ class Prusa_MK3: public Prusa_MK3S
 			LaserSensor.Set(PAT9125::FS_NO_FILAMENT); // No filament - but this just updates the LED.
 		}; // Overridde to setup the PAT.
 
-		inline virtual void ToggleFSensor() override { LaserSensor.Toggle(); };
+		inline void ToggleFSensor() override { LaserSensor.Toggle(); };
 
-		inline virtual void FSensorJam() override { LaserSensor.ToggleJam();};
+		inline void FSensorJam() override { LaserSensor.ToggleJam();};
 
 		PAT9125 LaserSensor;
 };

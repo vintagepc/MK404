@@ -42,7 +42,7 @@ namespace Boards {
 
 		if (!m_pAVR)
 		{
-			cerr << "FATAL: Failed to create board " << m_wiring.GetMCUName() << '\n';
+			std::cerr << "FATAL: Failed to create board " << m_wiring.GetMCUName() << '\n';
 			exit(1);
 		}
 		m_pAVR->custom.init = [](avr_t *p, void *param){auto *board =   static_cast<Board*>(param); board->_OnAVRInit();};
@@ -62,7 +62,7 @@ namespace Boards {
 		}
 		else
 		{
-			cout << "NOTE: No firmware load requested, Executing purely from flash memory: " << m_strBoard << '\n';
+			std::cout << "NOTE: No firmware load requested, Executing purely from flash memory: " << m_strBoard << '\n';
 		}
 
 		if (!strBoot.empty())
@@ -72,7 +72,7 @@ namespace Boards {
 		}
 		string strVCD = GetStorageFileName("VCD");
 		strVCD.replace(strVCD.end()-3,strVCD.end(), "vcd");
-		cout << "Initialized VCD file " << strVCD << '\n';
+		std::cout << "Initialized VCD file " << strVCD << '\n';
 
 		m_pAVR->frequency = m_uiFreq;
 		m_pAVR->vcc = 5000;
@@ -113,7 +113,7 @@ namespace Boards {
 	{
 		if (m_thread!=0)
 		{
-			cout << "Attempted to start an already running " << m_wiring.GetMCUName() << '\n';
+			std::cout << "Attempted to start an already running " << m_wiring.GetMCUName() << '\n';
 			return;
 		}
 		auto fRunCB =[](void * param) { auto p = static_cast<Board*>(param); return p->RunAVR();};
@@ -122,7 +122,7 @@ namespace Boards {
 
 	void Board::StopAVR()
 	{
-		cout << "Stopping " << m_strBoard << "_" << m_wiring.GetMCUName() << '\n';
+		std::cout << "Stopping " << m_strBoard << "_" << m_wiring.GetMCUName() << '\n';
 		if (m_thread==0)
 		{
 			return;
@@ -130,7 +130,7 @@ namespace Boards {
 		m_bQuit = true;
 		pthread_join(m_thread,nullptr);
 		m_thread = 0;
-		cout << "Done\n";
+		std::cout << "Done\n";
 	}
 
 	void Board::_OnAVRInit()
@@ -138,16 +138,16 @@ namespace Boards {
 		std::string strFlash = GetStorageFileName("flash");
 		ifstream fsIn(strFlash, fsIn.binary | fsIn.ate);
 		if (!fsIn.is_open() || fsIn.tellg() < m_pAVR->flashend) {
-			cerr << "ERROR: Could not open flash file. Flash contents will NOT persist." << '\n';
+			std::cerr << "ERROR: Could not open flash file. Flash contents will NOT persist." << '\n';
 		}
 		else
 		{
 			fsIn.seekg(fsIn.beg);
 			fsIn.read(reinterpret_cast<char*>(m_pAVR->flash), m_pAVR->flashend+1); //NOLINT maybe if fstream supported unsigned chars...
-			cout << strFlash << ": Read " << fsIn.gcount() << " bytes.\n";
+			std::cout << strFlash << ": Read " << fsIn.gcount() << " bytes.\n";
 			if (fsIn.fail() || fsIn.gcount() != m_pAVR->flashend+1)
 			{
-				cerr << "Unable to load flash memory.\n";
+				std::cerr << "Unable to load flash memory.\n";
 				exit(1);
 			}
 		}
@@ -161,17 +161,17 @@ namespace Boards {
 		ofstream fsOut(GetStorageFileName("flash"),fsOut.binary | fsOut.out | fsOut.trunc);
 		if (!fsOut.is_open())
 		{
-			cerr << "Could not open flash file for writing\n";
+			std::cerr << "Could not open flash file for writing\n";
 		}
 		else
 		{
 			fsOut.write(reinterpret_cast<char*>(m_pAVR->flash),m_pAVR->flashend+1); //NOLINT maybe if fstream supported unsigned chars...
 			if ( fsOut.fail() || fsOut.tellp() != m_pAVR->flashend+1) {
-				cerr <<  "Unable to write flash memory for " << m_strBoard << '\n';
+				std::cerr <<  "Unable to write flash memory for " << m_strBoard << '\n';
 			}
 			else
 			{
-				cout << "Wrote " << fsOut.tellp() << " bytes of flash\n";
+				std::cout << "Wrote " << fsOut.tellp() << " bytes of flash\n";
 			}
 			fsOut.close();
 		}
@@ -189,11 +189,11 @@ namespace Boards {
 				gsl::unique_ptr<uint8_t> puiBytes {read_ihex_file(strFW.c_str(),&uiFWSize, &uiFWStart) };
 				if (!puiBytes)
 				{
-					cout << "WARN: Could not load " << strFW << ". MCU will execute existing flash." << '\n';
+					std::cout << "WARN: Could not load " << strFW << ". MCU will execute existing flash." << '\n';
 				}
 				else
 				{
-					cout << "Loaded "  << uiFWSize << " bytes from HEX file: " << strFW << '\n';
+					std::cout << "Loaded "  << uiFWSize << " bytes from HEX file: " << strFW << '\n';
 					gsl::span<uint8_t> flash {m_pAVR->flash, m_pAVR->flashend};
 					memcpy(flash.begin() + uiFWStart, puiBytes.get(), uiFWSize);
 				}
@@ -206,7 +206,7 @@ namespace Boards {
 				elf_firmware_t fw = {};
 				elf_read_firmware(strFW.c_str(), &fw);
 				avr_load_firmware(m_pAVR, &fw);
-				cout << "Loaded "  << fw.flashsize << " bytes from ELF file: " << strFW << '\n';
+				std::cout << "Loaded "  << fw.flashsize << " bytes from ELF file: " << strFW << '\n';
 				return fw.flashbase;
 			}
 		}

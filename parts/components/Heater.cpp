@@ -129,7 +129,7 @@ Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 	RegisterActionAndMenu("StopHeating","Stops heating, as if a thermal runaway is happening due to loose heater or thermistor",ActStopHeating);
 }
 
-Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const std::vector<string> &vArgs)
 {
 	switch (iAct)
 	{

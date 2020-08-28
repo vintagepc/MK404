@@ -98,14 +98,14 @@ class HD44780:public BasePeripheral, public Scriptable
 
     protected:
     // The GL draw accesses these:
-		atomic_uint8_t m_uiHeight = {4};				// width and height of the LCD
-        atomic_uint8_t	m_uiWidth = {20};
+		std::atomic_uint8_t m_uiHeight = {4};				// width and height of the LCD
+        std::atomic_uint8_t	m_uiWidth = {20};
 		uint8_t _m_vRam[104] {' '};
         uint8_t _m_cgRam[64] {' '};
 		gsl::span<uint8_t> m_vRam {_m_vRam};
 		gsl::span<uint8_t> m_cgRam {_m_cgRam};
 
-		LineStatus ProcessAction(unsigned int iAction, const vector<string> &args) override;
+		LineStatus ProcessAction(unsigned int iAction, const std::vector<string> &args) override;
 
 		inline void ToggleFlag(uint16_t bit)
 		{
@@ -149,7 +149,7 @@ class HD44780:public BasePeripheral, public Scriptable
 
 		std::vector<uint8_t> m_lineOffsets = {0, 0x40, 0, 0x40};
 
-		mutex m_lock; // Needed for GL thread access to v/cgRAM
+		std::mutex m_lock; // Needed for GL thread access to v/cgRAM
 
 	private:
 		enum Actions
@@ -188,7 +188,7 @@ class HD44780:public BasePeripheral, public Scriptable
         uint8_t  m_uiReadPins = 0;
         volatile uint16_t m_flags = 0;				// LCD flags ( HD44780_FLAG_*)
 
-		vector<string> m_vLines;
+		std::vector<string> m_vLines;
 
 		uint8_t m_uiLineChg = 0;
 

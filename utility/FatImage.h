@@ -48,9 +48,9 @@ class FatImage
 
 		static bool MakeFatImage(const string &strFile, const string &strSize);
 
-		static vector<string> GetSizes()
+		static std::vector<string> GetSizes()
 		{
-			vector<string> strSize;
+			std::vector<string> strSize;
 			for(auto &c : GetNameToSize())
 				strSize.push_back(c.first);
 			return strSize;
@@ -92,7 +92,7 @@ class FatImage
 			return 0;
 		};
 
-		static const map<string, Size>& GetNameToSize();
+		static const std::map<string, Size>& GetNameToSize();
 
 		static const uint8_t _FAT32[];
 		static const uint8_t _FATHeader[];

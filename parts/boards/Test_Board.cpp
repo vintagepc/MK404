@@ -88,7 +88,7 @@ namespace Boards
 		TryConnect(m_pinda, PINDA::TRIGGER_OUT, Z_MIN_PIN);
 
 		AddHardware(m_lcd);
-		vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
+		std::vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
 		for (int i = 0; i < 4; i++) {
 			TryConnect(vePins.at(i),m_lcd, HD44780::D4+i);
 		}
@@ -109,7 +109,7 @@ namespace Boards
 	// Convenience function for debug printing a particular pin.
 	void Test_Board::DebugPin(avr_irq_t *, uint32_t value)
 	{
-		cout << "Pin DBG: change to " << hex << value << '\n';
+		std::cout << "Pin DBG: change to " << hex << value << '\n';
 	}
 
 	void Test_Board::OnAVRInit()

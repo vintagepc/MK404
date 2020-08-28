@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include <cstdint>                              // for uint32_t
 #include "Beeper.h"                              // for Beeper
 #include "Board.h"                               // for Board
 #include "Button.h"                              // for Button
@@ -28,6 +27,7 @@
 #include "HD44780GL.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
 #include "LED.h"                                 // for LED
+#include "Macros.h"
 #include "PINDA.h"                               // for PINDA
 #include "RotaryEncoder.h"                       // for RotaryEncoder
 #include "SDCard.h"                              // for SDCard
@@ -39,6 +39,7 @@
 #include "uart_pty.h"                            // for uart_pty
 #include "w25x20cl.h"                            // for w25x20cl
 #include "wiring/Einsy_1_1a.h"                   // for Einsy_1_1a
+#include <cstdint>                              // for uint32_t
 
 extern "C"
 {
@@ -51,7 +52,7 @@ namespace Boards
 	class EinsyRambo: public Board
 	{
 		public:
-			EinsyRambo(uint32_t uiFreq = 16000000)
+			explicit EinsyRambo(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){ SetBoardName("Einsy");};
 
 		protected:
@@ -85,7 +86,7 @@ namespace Boards
 				E {'E'};
 			VoltageSrc vMain = VoltageSrc(fScale24v, 24.f),
 				vBed = VoltageSrc(fScale24v,23.9);
-			PINDA pinda {(float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER};
+			PINDA pinda { FL(X_PROBE_OFFSET_FROM_EXTRUDER), FL(Y_PROBE_OFFSET_FROM_EXTRUDER)};
 			//MMU2 *mmu = nullptr;
 			LED lPINDA {0xFF0000FF,'P',true},
 				lIR {0xFFCC00FF,'I',true},
@@ -97,4 +98,4 @@ namespace Boards
 
 			const Wirings::Einsy_1_1a m_wiring = Wirings::Einsy_1_1a();
 	};
-};
+}; // namespace Boards

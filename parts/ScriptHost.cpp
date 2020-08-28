@@ -37,7 +37,7 @@ std::map<std::string, int> ScriptHost::m_mMenuIDs;
 std::map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
 std::map<std::string, unsigned> ScriptHost::m_mClient2MenuBase;
 std::map<std::string, std::vector<std::pair<std::string,int>>> ScriptHost::m_mClientEntries;
-std::shared_ptr<ScriptHost> ScriptHost::g_pHost;
+std::unique_ptr<ScriptHost> ScriptHost::g_pHost;
 ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
 bool ScriptHost::m_bQuitOnTimeout = false;

@@ -51,9 +51,11 @@ namespace Wirings
 			virtual ~Wiring() = default;
 
 			// Shorthand to get IRQ for a digital IO port.
+			//NOLINTNEXTLINE - complaint in external macro
 			inline struct avr_irq_t* IOIRQ(struct avr_t* avr,uint8_t port,uint8_t number) const { return avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ(port),number); }
 
 			// Timer PWM shorthand function
+			//NOLINTNEXTLINE - complaint in external macro
 			inline struct avr_irq_t* TIMERIRQ(struct avr_t* avr,uint8_t timer,uint8_t number) const {return avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ(timer), _TimerPWMID(number)); }
 
 			// Looks up a digital IRQ based on the arduino convenience pin number.

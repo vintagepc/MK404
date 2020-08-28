@@ -51,8 +51,8 @@ class SPIPeripheral: public BasePeripheral
 
             RegisterNotify(C::SPI_BYTE_IN, MAKE_C_CALLBACK(SPIPeripheral,_OnSPIIn<C>), this);
 
-            ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT), C::SPI_BYTE_IN);
-            ConnectTo(C::SPI_BYTE_OUT,avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0), SPI_IRQ_INPUT));
+            ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT), C::SPI_BYTE_IN); //NOLINT - complaint in external macro
+            ConnectTo(C::SPI_BYTE_OUT,avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0), SPI_IRQ_INPUT)); //NOLINT - complaint in external macro
 
             RegisterNotify(C::SPI_CSEL, MAKE_C_CALLBACK(SPIPeripheral,_OnCSELIn), this);
         }

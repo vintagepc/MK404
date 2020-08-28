@@ -37,10 +37,10 @@
 class ScriptHost: public IScriptable
 {
     public:
-		static std::shared_ptr<ScriptHost> Get()
-		{
-			return g_pHost;
-		}
+		// static std::shared_ptr<ScriptHost> Get()
+		// {
+		// 	return g_pHost;
+		// }
 
 		inline static bool IsInitialized()
 		{
@@ -141,7 +141,7 @@ class ScriptHost: public IScriptable
 			return state;
 		}
 
-		static std::shared_ptr<ScriptHost> g_pHost;
+		static std::unique_ptr<ScriptHost> g_pHost;
 		static std::map<std::string, IScriptable*> m_clients;
 		static std::map<std::string, int> m_mMenuIDs;
 		static std::map<std::string, unsigned> m_mClient2MenuBase;

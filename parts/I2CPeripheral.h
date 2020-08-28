@@ -43,8 +43,8 @@ class I2CPeripheral: public BasePeripheral
 
 			std::cerr << "WARNING: UNIMPLEMENTED FEATURE - HARDWARE I2C\n";
             RegisterNotify(C::TX_IN, MAKE_C_CALLBACK(I2CPeripheral,_OnI2CTx<C>), this);
-            ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0),TWI_IRQ_OUTPUT), C::TX_IN);
-            ConnectTo(C::TX_REPLY,avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT));
+            ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0),TWI_IRQ_OUTPUT), C::TX_IN); //NOLINT - complaint in external macro
+            ConnectTo(C::TX_REPLY,avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT)); //NOLINT - complaint in external macro
         }
 
 		// For bitbanged I2C connections. They are routed through standard TX/REPLY irqs so
@@ -67,7 +67,7 @@ class I2CPeripheral: public BasePeripheral
     private:
 		using I2CMsg_t = union {
 			void I2CMsg_t(uint32_t uiRaw = 0){raw = uiRaw;}; // Convenience constructor
-			void I2CMsg_t(const uint8_t &uiMsg, const uint8_t &uiAddr, const uint8_t &uiData){ raw = uiMsg<<16 | uiAddr << 8 | uiData;}
+			void I2CMsg_t(const unsigned int &uiMsg, const unsigned &uiAddr, const unsigned &uiData){ raw = uiMsg<<16u | uiAddr << 8u | uiData;}
 			uint32_t raw :24;
 			uint8_t bytes[3] {0};
 			struct {
@@ -163,7 +163,7 @@ class I2CPeripheral: public BasePeripheral
 						else
 						{
 							m_uiByte <<= 1; // Shift up.
-							m_uiByte |= (m_pSDA->value & 1);
+							m_uiByte |= (m_pSDA->value & 1u);
 							m_uiBitCt++;
 						}
 					}
@@ -184,7 +184,7 @@ class I2CPeripheral: public BasePeripheral
 								m_uiByte = GetRegVal(msgIn.writeRegAddr);
 								//printf("Sending %02x\n",m_uiByte);
 							}
-							avr_raise_irq(m_pSDA, m_uiByte>>(--m_uiBitCt) &1);
+							avr_raise_irq(m_pSDA, m_uiByte>>(--m_uiBitCt) &1u);
 						}
 						else
 						{

@@ -133,7 +133,7 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 		// that's going to be disposable once this changes to a geometry or normal shader instead of the current implemetnation
 		// so I'm going to leave it as is for now.
 		std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
-		auto itPrev = m_fvNorms.end()-2;
+		auto itPrev = m_fvNorms.end()-3;
 		std::transform(itPrev, itPrev+3, vfPos.data(), fA.data(), std::minus<float>()); // Length from p->curr
 		CrossProduct(fA,fB,{fCross.data(),3});
 		Normalize({fCross.data(),3});
@@ -212,7 +212,7 @@ void GLPrint::Draw()
 			{
 				glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fY.data());
 				glBegin(GL_LINES);
-					glVertex3fv(&*(m_fvDraw.end()-2));
+					glVertex3fv(&*(m_fvDraw.end()-3));
 					glVertex3fv(m_fExtrEnd.data());
 				glEnd();
 			}

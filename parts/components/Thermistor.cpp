@@ -26,7 +26,6 @@
 #include "TelemetryHost.h"
 #include <iostream>
 #include <iterator>
-#include <memory>
 
 Thermistor::Thermistor(float fStartTemp):Scriptable("Thermistor"),m_fCurrentTemp(fStartTemp)
 {

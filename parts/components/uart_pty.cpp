@@ -46,6 +46,7 @@ int
 #endif
 #include <string>
 #include <sys/select.h>                 // for select, FD_ISSET, FD_SET, FD_...
+// IWYU pragma: no_include <bits/types/struct_timeval.h>
 #include <sys/time.h>                   // IWYU pragma: keep
 #include <termios.h>                    // for cfmakeraw, tcgetattr, tcsetattr
 #include <unistd.h>                     // for close, read, symlink, unlink

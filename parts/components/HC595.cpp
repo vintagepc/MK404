@@ -22,9 +22,7 @@
  */
 
 #include "HC595.h"
-
 #include "TelemetryHost.h"
-#include <memory>
 
 /*
  * called when a SPI byte is sent

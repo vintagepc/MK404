@@ -28,7 +28,6 @@
 #include <cstring>     // for memset, memcpy, strncpy
 #include <fstream>		// IWYU pragma: keep
 #include <iostream>
-#include <memory>
 #include <string>
 
 //#define TRACE(_w) _w

@@ -31,7 +31,6 @@
 #endif
 #include <algorithm>          // for min
 #include <cstring>           // for memset
-#include <memory>
 
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (m_cAxis=='S' || m_cAxis=='I') _w

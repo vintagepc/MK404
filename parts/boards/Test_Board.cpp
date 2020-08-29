@@ -24,6 +24,7 @@
 #include "RotaryEncoder.h"           // for HD44780
 
 #include <iostream>
+#include <string>
 #include <vector>
 
 

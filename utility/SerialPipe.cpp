@@ -28,7 +28,6 @@
 #include <sys/select.h>  // for FD_ISSET, FD_SET, select, FD_ZERO, fd_set
 #include <unistd.h>      // for read, write, close
 #include <utility>
-#include <vector>
 
 using std::cout;
 using std::cerr;

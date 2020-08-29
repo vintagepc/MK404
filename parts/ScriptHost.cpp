@@ -23,8 +23,9 @@
 #include "ScriptHost.h"
 #include "gsl-lite.hpp"
 #include <GL/freeglut_std.h> // glut menus
+#include <cstddef>
 #include <exception>    // for exception
-#include <fstream>      // IWYU pragma: keep for basic_istream, char_traits, ifstream, istring...
+#include <fstream>      // IWYU pragma: keep
 #include <iostream>
 #include <sstream>		// IWYU pragma: keep
 #include <utility>      // for make_pair, pair

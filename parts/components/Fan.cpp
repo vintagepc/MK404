@@ -27,7 +27,6 @@
 # include <GL/gl.h>           // for glVertex2f, glTranslatef, glBegin, glCo..
 #endif
 #include <iostream>
-#include <memory>
 
 //#define TRACE(_w)_w
 #ifndef TRACE
@@ -139,7 +138,7 @@ void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr
     RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnPWMChange), this);
     RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalInSPWM), this);
 
-	auto &TH = TelemetryHost::GetHost();
+	auto TH = TelemetryHost::GetHost();
 	TH.AddTrace(this, PWM_IN,{TC::PWM, TC::Fan},8);
 	TH.AddTrace(this, DIGITAL_IN, {TC::Fan, TC::OutputPin});
 	TH.AddTrace(this, TACH_OUT, {TC::Fan, TC::InputPin});

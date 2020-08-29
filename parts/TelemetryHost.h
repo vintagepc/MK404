@@ -28,13 +28,12 @@
 #include "sim_irq.h"         // for avr_irq_t
 #include "sim_vcd_file.h"    // for avr_vcd_init, avr_vcd_start, avr_vcd_stop
 #include <cstdint>          // for uint32_t, uint8_t
-#include <cstdlib>          // for exit
 #include <cstring>          // for memset
+#ifdef __CYGWIN__
 #include <iostream>
+#endif
 #include <map>               // for map
 #include <string>            // for string
-#include <type_traits>       // for __decay_and_strip<>::__type
-#include <utility>           // for make_pair, pair
 #include <vector>            // for vector
 
 #define TCENTRIES \
@@ -129,7 +128,7 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 		{
 			memset(&m_trace, 0, sizeof(m_trace));
 #ifdef __CYGWIN__
-            printf("Cygwin detected - skipping TelHost action registration...\n");
+            std::cout << "Cygwin detected - skipping TelHost action registration...\n";
 #else
             // Sorry, this segfaults on win32 for some reason...
 			RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::uint32});

@@ -25,9 +25,8 @@
 #include "gsl-lite.hpp"
 #include <cstdint>      // for perror
 #include <cstring>
-#include <fstream> //IWYU pragma: keep
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
-#include <type_traits>  // for __decay_and_strip<>::__type
 #include <vector>       // for vector
 
 // const map<FatImage::Size, uint32_t>FatImage::SectorsPerFat =

@@ -36,7 +36,6 @@
 #include <cstring>
 #include <iostream>
 #include <iterator>
-#include <memory>
 
 Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 {

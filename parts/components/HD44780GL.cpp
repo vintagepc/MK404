@@ -31,6 +31,7 @@
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
 #include "Macros.h"
 #include "Util.h"             // for hexColor_t, hexColor_t::(anonymous)
+#include "gsl-lite.hpp"
 #include "hd44780_charROM.h"  // for (anonymous), hd44780_ROM_AOO
 #include "sim_avr_types.h"    // for avr_regbit_t
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT

@@ -29,8 +29,6 @@
 #include <cstdint>       // for uint32_t
 #include <map>            // for map
 #include <string>         // for string
-#include <type_traits>    // for __decay_and_strip<>::__type
-#include <utility>        // for make_pair, pair
 #include <vector>         // for vector
 
 

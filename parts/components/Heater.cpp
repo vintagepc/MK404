@@ -31,7 +31,6 @@
 # include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glColor3fv
 #endif
 #include <cmath>             // for pow
-#include <memory>
 
 #define TRACE(_w)
 #ifndef TRACE

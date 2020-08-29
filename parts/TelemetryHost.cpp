@@ -24,6 +24,7 @@
 #include <algorithm>       // for find
 #include <iomanip>
 #include <iostream>
+#include <utility>
 
 void TelemetryHost::AddTrace(avr_irq_t *pIRQ, std::string strName, TelCats vCats, uint8_t uiBits)
 {

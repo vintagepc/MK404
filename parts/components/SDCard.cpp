@@ -30,7 +30,6 @@
 #include <cstring>    // for memset
 #include <fcntl.h>     // for open, O_CLOEXEC, O_CREAT, O_RDWR
 #include <iostream>
-#include <memory>
 #include <sys/file.h>  // for flock, LOCK_UN, LOCK_EX
 #include <sys/mman.h>  // for mmap, msync, munmap, MAP_FAILED, MAP_SHARED
 #include <sys/stat.h>  // for fstat, stat, S_IRUSR, S_IWUSR

@@ -80,3 +80,60 @@ jobs:
       run: |
         grep -v "jobserver unavailable" ${{ runner.workspace }}/MK404/build/tidy.txt > ${{ runner.workspace }}/MK404/build/tidy2.txt
         ! grep -q "warning:" ${{ runner.workspace }}/MK404/build/tidy2.txt
+
+  iwyu:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: Checkout ${{ github.event.pull_request.head.ref }}
+      uses: actions/checkout@v2.2.0
+      if: ${{ github.event.pull_request }}
+      with:
+        repository: vintagepc/MK404.git
+        ref: ${{ github.event.pull_request.head.sha }}
+        submodules: true
+
+    - name: Checkout ${{ github.event.ref }}
+      uses: actions/checkout@v2.2.0
+      if: ${{ !github.event.pull_request }}
+      with:
+        repository: vintagepc/MK404.git
+        ref: ${{ github.event.ref }}
+        submodules: true
+
+    - name: Cache packages
+      uses: actions/cache@v1.0.3
+      id: cache-pkgs
+      with:
+          path: "packages"
+          key: "pkgs-1_0_6-iwyu"
+    - name: Setup cache dir
+      if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
+      run: mkdir -p packages/partial
+
+    - name: Install packages
+      run: |
+        sudo apt-get update
+        sudo apt-get purge clang-*
+        sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install clang-5.0
+        sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
+    - name: Cache permissions
+      run: sudo chmod -R 744 packages
+
+    - name: Prepare CMake build
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_CXX_COMPILER=/usr/bin/g++-7 -DENABLE_IWYU=1 ..
+
+    - name: Run IWYU
+      continue-on-error: true
+      run: |
+          cd ${{ runner.workspace }}/MK404/build && make -j2 |& tee IWYU.txt
+          ! grep -q "include-what-you-use reported diagnostics" IWYU.txt
+
+    - name: Upload IWYU log
+      uses: actions/upload-artifact@v2
+      with:
+        name: IWYU
+        path: ${{ runner.workspace }}/MK404/build/IWYU.txt

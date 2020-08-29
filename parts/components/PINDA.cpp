@@ -25,7 +25,6 @@
 #include <cmath>    // for pow, floor, round, sqrt
 #include <cstring>
 #include <iostream>
-#include <memory>
 
 //#define TRACE(_w)_w
 #ifndef TRACE

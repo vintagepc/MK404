@@ -40,6 +40,7 @@
 #include <string>           // for string, basic_string, stoi
 #include <uart_pty.h>       // for uart_pty
 #include <unistd.h>         // for usleep
+#include <utility>
 #include <vector>           // for vector
 
 using namespace PinNames; //NOLINT - because proper using declarations don't support enums.

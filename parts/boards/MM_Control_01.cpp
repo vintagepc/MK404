@@ -39,7 +39,7 @@ namespace Boards
 		TryConnect(SHIFT_CLOCK,m_shift,HC595::IN_CLOCK);
 
 		TMC2130::TMC2130_cfg_t cfg;
-		cfg.uiStepsPerMM = 25;
+		cfg.uiFullStepsPerMM = 280*8;
 		cfg.fStartPos = 0;
 		cfg.bHasNoEndStops = true;
 
@@ -52,7 +52,7 @@ namespace Boards
 		m_Extr.ConnectFrom(m_shift.GetIRQ(HC595::BIT0),	TMC2130::DIR_IN);
 		m_Extr.ConnectFrom(m_shift.GetIRQ(HC595::BIT1),	TMC2130::ENABLE_IN);
 
-		cfg.uiStepsPerMM = 50;
+		cfg.uiFullStepsPerMM = 400*16;
 		cfg.iMaxMM = 70;
 		cfg.bInverted = true;
 		cfg.bHasNoEndStops = false;
@@ -65,7 +65,7 @@ namespace Boards
 		m_Sel.ConnectFrom(m_shift.GetIRQ(HC595::BIT2), TMC2130::DIR_IN);
 		m_Sel.ConnectFrom(m_shift.GetIRQ(HC595::BIT3), TMC2130::ENABLE_IN);
 
-		cfg.uiStepsPerMM = 8;
+		cfg.uiFullStepsPerMM = 8*16;
 		cfg.iMaxMM = 200;
 		m_Idl.SetConfig(cfg);
 		AddHardware(m_Idl);

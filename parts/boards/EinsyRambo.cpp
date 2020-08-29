@@ -133,7 +133,7 @@ namespace Boards
 		TryConnect(X_ENABLE_PIN,	X, TMC2130::ENABLE_IN);
 		TryConnect(X,TMC2130::DIAG_OUT, X_TMC2130_DIAG);
 
-		cfg.uiStepsPerMM = 400;
+		cfg.uiFullStepsPerMM = 400*16;
 		cfg.iMaxMM = 219;
 
 		Z.SetConfig(cfg);
@@ -145,7 +145,7 @@ namespace Boards
 		TryConnect(Z, TMC2130::DIAG_OUT, Z_TMC2130_DIAG);
 
 		cfg.bInverted = true;
-		cfg.uiStepsPerMM = 100;
+		cfg.uiFullStepsPerMM = 100*16;
 		cfg.iMaxMM = 220;
 
 		Y.SetConfig(cfg);
@@ -158,7 +158,7 @@ namespace Boards
 
 		cfg.bHasNoEndStops = true;
 		cfg.fStartPos = 0;
-		cfg.uiStepsPerMM = 280;
+		cfg.uiFullStepsPerMM = 280*8;
 
 		E.SetConfig(cfg);
 		AddHardware(E);

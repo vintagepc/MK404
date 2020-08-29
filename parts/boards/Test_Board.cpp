@@ -61,7 +61,7 @@ namespace Boards
 
 		TMC2130::TMC2130_cfg_t cfg;
 		cfg.iMaxMM = 20;
-		cfg.uiStepsPerMM=1;
+		cfg.uiFullStepsPerMM=16;
 
 		m_TMC.SetConfig(cfg);
 		AddHardware(m_TMC);

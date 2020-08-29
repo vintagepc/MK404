@@ -147,7 +147,7 @@ jobs:
         uses: actions/cache@v1
         id: cyg_cache
         with:
-          path: C:\tools\cygwin
+          path: C:\tools\cygwin.tar.gz
           key: ${{ runner.os }}-cygwin-1_0_0
         
       - name: Cygwin package cache
@@ -156,13 +156,20 @@ jobs:
           path: C:\tools\cygpkgs
           key: ${{ runner.os }}-cygwinpkgs-1_0_2
           restore-keys: |
-            ${{ runner.os }}-cygwinkgs-
+            ${{ runner.os }}-cygwinpkgs-
       - name: Install cygwin
         if: steps.cyg_cache.outputs.cache-hit != 'true'
         run: |
           choco config get cacheLocation
           choco install --no-progress cygwin
-
+    
+      - name: Extract cygwin
+        if: steps.cyg_cache.outputs.cache-hit == 'true'
+        run: |
+          cd C:\tools
+          C:\windows\System32\tar.exe -xz -f cygwin.tar.gz
+        shell: cmd
+    
       - name: Install cygwin dependencies
         if: steps.cyg_cache.outputs.cache-hit != 'true'
         run: |
@@ -200,6 +207,13 @@ jobs:
           pwd
           set PATH=C:\tools\cygwin\bin;C:\tools\cygwin\usr\bin
           bash.exe -c "make -j2"
+        shell: cmd
+        
+      - name: Compress cygwin
+        run: |
+          cd C:\tools\
+          set PATH=C:\tools\cygwin\bin;C:\tools\cygwin\usr\bin
+          bash.exe -c "tar -zcvf cygwin.tar.gz cygwin"
         shell: cmd
 
       - name: Upload Cygwin artifact

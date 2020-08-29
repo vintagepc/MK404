@@ -407,11 +407,14 @@ void ScriptHost::OnAVRCycle()
 				std::cout << "ScriptHost: Unhandled action, considering this an error.\n";
 				/* FALLTHRU */
 			case LS::Error:
+			{
 				std::cout << "ScriptHost: Script FAILED on line " << m_iLine << '\n';
-				m_iLine = m_script.size(); // Error, end scripting.
 				m_state = State::Error;
+				int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
+				m_clients.at("Board")->ProcessAction(ID,{});
+				m_iLine = m_script.size(); // Error, end scripting.
 				return;
-
+			}
 			case LS::Waiting:
 			{
 				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount<=m_iTimeoutCycles)

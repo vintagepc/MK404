@@ -145,6 +145,6 @@ class MK3S_Lite: public OBJCollection
 
 	protected:
 
-		GLObj *m_pKnob = nullptr, *m_pEFan = nullptr, *m_pPFan = nullptr, *m_pEVis = nullptr;
+		std::shared_ptr<GLObj> m_pKnob = nullptr, m_pEFan = nullptr, m_pPFan = nullptr, m_pEVis = nullptr;
 
 };

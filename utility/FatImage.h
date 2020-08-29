@@ -57,18 +57,18 @@ class FatImage
 		}
 
 	private:
-		static inline constexpr uint32_t Sector2Bytes(uint32_t val) { return val<<9; } // <<9 = 512 bytes/sector.
-		static inline constexpr uint32_t Byte2Sector(uint32_t val) { return val>>9; } // <<9 = 512 bytes/sector.
+		static inline constexpr uint32_t Sector2Bytes(uint32_t val) { return val<<9u; } // <<9 = 512 bytes/sector.
+		static inline constexpr uint32_t Byte2Sector(uint32_t val) { return val>>9u; } // <<9 = 512 bytes/sector.
 
 		static constexpr uint32_t FirstFATAddr = 0x4000;
 
 		static inline uint8_t GetSectorsPerCluster(Size imgSize) { return imgSize>Size::M256 ? 8 : 1; }
 
-		static uint32_t GetSizeInBytes(Size imgSize) { return static_cast<uint32_t>(imgSize)<<20; } // 20 = 1024*1024
+		static uint32_t GetSizeInBytes(Size imgSize) { return static_cast<uint32_t>(imgSize)<<20u; } // 20 = 1024*1024
 
 		static uint32_t GetSecondFatAddr(Size imgSize) {return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize)));}
 
-		static uint32_t GetDataStartAddr(Size imgSize) { return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize))<<1); } // <<10 = 2*512, 2*bytespersector.
+		static uint32_t GetDataStartAddr(Size imgSize) { return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize))<<1u); } // <<10 = 2*512, 2*bytespersector.
 
 		static uint32_t SectorsPerFat(Size size)
 		{

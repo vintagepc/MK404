@@ -24,6 +24,7 @@
 
 #include "GLObj.h"
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -69,8 +70,7 @@ class OBJCollection
 				return;
 			}
 
-			std::vector<GLObj*> vObj = m_mObjs.at(type);
-			for (auto &obj : vObj)
+			for (auto &obj : m_mObjs.at(type))
 			{
 				obj->Draw();
 			}
@@ -105,10 +105,10 @@ class OBJCollection
 		inline const std::string GetName() { return m_strName;}
 
 	protected:
-		template<typename... Args>GLObj* AddObject(const ObjClass type, Args... args)
+		template<typename... Args>std::shared_ptr<GLObj> AddObject(const ObjClass type, Args... args)
 		{
 			//printf("Added file: %s\n",strFile.c_str());
-			auto obj = new GLObj(args...);
+			std::shared_ptr<GLObj> obj(new GLObj(args...));
 			m_mObjs[type].push_back(obj);
 			return obj;
 		};
@@ -127,10 +127,10 @@ class OBJCollection
 			}
 		};
 
-		GLObj* m_pBaseObj = nullptr;
+		std::shared_ptr<GLObj> m_pBaseObj = nullptr;
 
 		inline void SetName(std::string strName) { m_strName = std::move(strName); }
-		std::map<ObjClass,std::vector<GLObj*>> m_mObjs = {};
+		std::map<ObjClass,std::vector<std::shared_ptr<GLObj>>> m_mObjs = {};
 
 	private:
 

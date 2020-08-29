@@ -148,6 +148,6 @@ class MK3S_Bear: public OBJCollection
 		 	m_pEVis->Draw();
 		}
 
-		GLObj *m_pKnob = nullptr, *m_pFan = nullptr, *m_pEVis = nullptr, *m_pPFan = nullptr, *m_pE = nullptr, *m_pPFS = nullptr;
+		std::shared_ptr<GLObj> m_pKnob = nullptr, m_pFan = nullptr, m_pEVis = nullptr, m_pPFan = nullptr, m_pE = nullptr, m_pPFS = nullptr;
 
 };

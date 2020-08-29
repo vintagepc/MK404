@@ -24,13 +24,11 @@
 #include "GLObj.h"
 #include "OBJCollection.h"
 
-using namespace std;
-
 
 class MK3S_Bear: public OBJCollection
 {
 	public:
-		MK3S_Bear(bool bMMU):OBJCollection("Bear")
+		explicit MK3S_Bear(bool /*bMMU*/):OBJCollection("Bear")
 		{
 			AddObject(ObjClass::Z, "assets/bear21_mk3s_simulator_x-axis.obj",0,-.127,0,CM_TO_M)->SetSwapMode(GLObj::SwapMode::YMINUSZ);
 			m_pE = AddObject(ObjClass::X, "assets/bear21_mk3s_simulator_e-axis_w-hotend-fan.obj",-0.130-0.182000, 0.318000, -0.186000,CM_TO_M);
@@ -55,10 +53,10 @@ class MK3S_Bear: public OBJCollection
 			float fWhite[] = {1,1,1,1};
 
 			float fPos[] = {2,-2,-2,0};
-			glLightfv(GL_LIGHT0,GL_AMBIENT, fNone);
-			glLightfv(GL_LIGHT0,GL_SPECULAR, fWhite);
-			glLightfv(GL_LIGHT0,GL_DIFFUSE, fWhite);
-			glLightfv(GL_LIGHT0,GL_POSITION, fPos);
+			glLightfv(GL_LIGHT0,GL_AMBIENT, 	static_cast<float*>(fNone));
+			glLightfv(GL_LIGHT0,GL_SPECULAR, 	static_cast<float*>(fWhite));
+			glLightfv(GL_LIGHT0,GL_DIFFUSE, 	static_cast<float*>(fWhite));
+			glLightfv(GL_LIGHT0,GL_POSITION, 	static_cast<float*>(fPos));
 		}
 
 		inline bool SupportsMMU() override { return false; }
@@ -79,7 +77,7 @@ class MK3S_Bear: public OBJCollection
 
 		inline void SetNozzleCam(bool bOn) override { m_pE->SetSubobjectVisible(89,!bOn); }
 
-		virtual void GetBaseCenter(float fTrans[3]) override
+		void GetBaseCenter(gsl::span<float> fTrans) override
 		{
 			m_pBaseObj->GetCenteringTransform(fTrans);
 			float fTmp = fTrans[1];
@@ -87,7 +85,7 @@ class MK3S_Bear: public OBJCollection
 			fTrans[2] = -fTmp;
 		};
 
-		virtual void GetNozzleCamPos(float fPos[3]) override
+		void GetNozzleCamPos(gsl::span<float> fPos) override
 		{
 			fPos[0] = -0.131f;
 			fPos[1] = -0.11f;
@@ -95,33 +93,35 @@ class MK3S_Bear: public OBJCollection
 		}
 
 
-		virtual void DrawKnob(int iRotation) override
+		void DrawKnob(int iRotation) override
 		{
 			if (m_pKnob == nullptr)
+			{
 				return;
+			}
 			glPushMatrix();
 				glTranslatef(0.060,0.197,0.054);
 				glRotatef(-45.f,1,0,0);
 				glPushMatrix();
-					glRotatef((float)iRotation,0,0,1);
+					glRotatef(static_cast<float>(iRotation),0,0,1);
 					m_pKnob->Draw();
 				glPopMatrix();
 			glPopMatrix();
 		}
 
-		virtual void DrawEFan(int iRotation) override
+		void DrawEFan(int iRotation) override
 		{
 			glTranslatef(-0.153000, 0.252000, -0.150000);
 			glRotatef(90,0,1,0);
 			float fTransform[3];
 			m_pFan->GetCenteringTransform(fTransform);
 			glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
-			glRotatef((float)iRotation,0,0,1);
+			glRotatef(static_cast<float>(iRotation),0,0,1);
 			glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 			m_pFan->Draw();
 		}
 
-		virtual void DrawPFan(int iRotation) override
+		void DrawPFan(int iRotation) override
 		{
 			glTranslatef(-0.11100, 0.2710, -0.148000);
 			glPushMatrix();
@@ -131,12 +131,12 @@ class MK3S_Bear: public OBJCollection
 			glPopMatrix();
 			glRotatef(90,1,0,0);
 			glPushMatrix();
-				glRotatef((float)iRotation,0,1,0);
+				glRotatef(static_cast<float>(iRotation),0,1,0);
 				m_pPFan->Draw();
 			glPopMatrix();
 		}
 
-		virtual void DrawEVis(float fEPos) override
+		void DrawEVis(float fEPos) override
 		{
 			glTranslatef(-0.201000, -0.053000, -0.451998);
 			float fTransform[3];

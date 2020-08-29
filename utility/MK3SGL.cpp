@@ -41,7 +41,7 @@
 
 MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
 
-MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("3DVisuals"),m_bMMU(bMMU),m_pParent(pParent)
+MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scriptable("3DVisuals"),m_bMMU(bMMU),m_pParent(pParent)
 {
 	if (g_pMK3SGL)
 	{
@@ -71,7 +71,7 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 	glutSetOption(GLUT_MULTISAMPLE,4);
 	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH) | US(GLUT_MULTISAMPLE)) ;
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
-	string strTitle = string("Fancy Graphics: ") + m_Objs->GetName();
+	std::string strTitle = std::string("Fancy Graphics: ") + m_Objs->GetName();
 	m_iWindow = glutCreateWindow(strTitle.c_str());	/* create window */
 
 	auto fcnDraw = []() { g_pMK3SGL->Draw();};
@@ -206,7 +206,7 @@ void MK3SGL::Init(avr_t *avr)
 }
 
 
-Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<string> &)
+Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<std::string> &)
 {
 	switch (iAct)
 	{
@@ -404,14 +404,16 @@ void MK3SGL::Draw()
 
 		glScalef(1.0f / fExtent, 1.0f / fExtent, 1.0f / fExtent);
 
-		std::vector<float> fTransform = {0,0,0};
-		m_Objs->GetBaseCenter(fTransform.data());
+		float _fTransform[3] = {0,0,0};
+		gsl::span<float> fTransform {_fTransform};
+		m_Objs->GetBaseCenter(fTransform);
 		// Centerize object.
 		glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 		if (m_bFollowNozzle)
 		{
-				std::vector<float> fLook = {0,0,0};
-				m_Objs->GetNozzleCamPos(fLook.data());
+				float _fLook[3] = {0,0,0};
+				gsl::span<float> fLook {_fLook};
+				m_Objs->GetNozzleCamPos(fLook);
 				fLook[0]+=fTransform[0]=m_fXPos;
 				fLook[1]+=m_fZPos;
 				gluLookAt(fLook[0]+.001, fLook[1]+.003 ,fLook[2]+.08, fLook[0],fLook[1],fLook[2] ,0,1,0);
@@ -547,16 +549,17 @@ void MK3SGL::DrawLED(float r, float g, float b)
 
 void MK3SGL::DrawMMU()
 {
-		std::vector<float> fTransform = {0,0,0};
+		float _fTransform[3] {0,0,0};
+		gsl::span<float> fTransform = {_fTransform};
 		glPushMatrix();
-			m_MMUBase.GetCenteringTransform(fTransform.data());
+			m_MMUBase.GetCenteringTransform(fTransform);
 			glTranslatef(0,0.3185,0.0425);
 			glTranslatef(-fTransform[0], -fTransform[1], -fTransform[2]);
 			glRotatef(-45,1,0,0);
 			glTranslatef(0.13+fTransform[0],fTransform[1],fTransform[2]);
 			m_MMUBase.Draw();
 			glPushMatrix();
-				m_MMUSel.GetCenteringTransform(fTransform.data());
+				m_MMUSel.GetCenteringTransform(fTransform);
 				glPushMatrix();
 					glTranslatef(m_fSelPos - m_fSelCorr,0.062,0.123);
 					if (m_bFINDAOn)
@@ -575,7 +578,7 @@ void MK3SGL::DrawMMU()
 				glPushMatrix();
 					glTranslatef(0.051, -0.299, -0.165);
 					glScalef(fMM2M,fMM2M,fMM2M);
-					m_EVis.GetCenteringTransform(fTransform.data());
+					m_EVis.GetCenteringTransform(fTransform);
 					fTransform[1] +=1.5f;
 					glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
 					glRotatef(90,0,1,0);
@@ -586,7 +589,7 @@ void MK3SGL::DrawMMU()
 			glPopMatrix();
 
 			glPushMatrix();
-				m_MMUIdl.GetCenteringTransform(fTransform.data());
+				m_MMUIdl.GetCenteringTransform(fTransform);
 				glTranslatef(-0.03,0.028,0.025);
 				fTransform[1]=-0.071;
 				fTransform[2]=-0.0929;
@@ -600,7 +603,7 @@ void MK3SGL::DrawMMU()
 				glPushMatrix();
 					glTranslatef(-0.117, -0.300, -0.238);
 					glScalef(fMM2M,fMM2M,fMM2M);
-					m_EVis.GetCenteringTransform(fTransform.data());
+					m_EVis.GetCenteringTransform(fTransform);
 					fTransform[1] +=1.5f;
 					glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
 					glRotatef(270,0,1,0);
@@ -615,7 +618,7 @@ void MK3SGL::DrawMMU()
 			glPushMatrix();
 				glTranslatef(0.061, -0.296, -0.212);
 				glScalef(fMM2M,fMM2M,fMM2M);
-				m_EVis.GetCenteringTransform(fTransform.data());
+				m_EVis.GetCenteringTransform(fTransform);
 				fTransform[1] +=1.5f;
 				glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
 				glRotatef(90,0,1,0);

@@ -24,18 +24,21 @@
 
 #include <cstring>
 
-typedef struct hexColor_t{
-	hexColor_t(const uint32_t &val){ memcpy(this, &val, 4);} // Helper constructor
-	hexColor_t(const uint32_t &val, const float &fScale)
+struct _hexColor_t{
+	//NOLINTNEXTLINE - we want the implicit conversion...
+	_hexColor_t(const uint32_t &val){ memcpy(this, &val, 4);} // Helper constructor
+	_hexColor_t(const uint32_t &val, const float &fScale)
 	{
 		memcpy(this, &val, 4);
-		alpha = (float)alpha/fScale;
-		red = (float)red/fScale;
-		green = (float)green/fScale;
-		blue = (float)blue/fScale;
+		alpha = static_cast<float>(alpha)/fScale;
+		red = 	static_cast<float>(red)/fScale;
+		green = static_cast<float>(green)/fScale;
+		blue = 	static_cast<float>(blue)/fScale;
 	} // Helper constructor
-	uint8_t alpha;
-	uint8_t blue;
-	uint8_t green;
-	uint8_t red;
-} hexColor_t;
+	uint8_t alpha{0};
+	uint8_t blue {0};
+	uint8_t green {0};
+	uint8_t red {0};
+};
+
+using hexColor_t = _hexColor_t;

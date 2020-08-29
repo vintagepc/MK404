@@ -74,7 +74,7 @@ void GLObj::Load()
 
 void GLObj::SetAllVisible(bool bVisible)
 {
-	lock_guard<mutex> lock(m_lock);
+	std::lock_guard<std::mutex> lock(m_lock);
 	for (auto &obj : m_DrawObjects)
 	{
 		obj.bDraw = bVisible;
@@ -83,7 +83,7 @@ void GLObj::SetAllVisible(bool bVisible)
 
 void GLObj::SetSubobjectVisible(unsigned iObj, bool bVisible)
 {
-	lock_guard<mutex> lock(m_lock);
+	std::lock_guard<std::mutex> lock(m_lock);
 	if (iObj<m_DrawObjects.size())
 	{
 		m_DrawObjects[iObj].bDraw = bVisible;
@@ -95,7 +95,7 @@ void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 {
 	if (iObj<m_DrawObjects.size() && iMat < m_materials.size())
 	{
-		lock_guard<mutex> lock(m_lock);
+		std::lock_guard<std::mutex> lock(m_lock);
 		//printf("Changed obj %d to %d\n",iObj,iMat);
 		m_DrawObjects[iObj].material_id = iMat;
 	}
@@ -126,9 +126,11 @@ void GLObj::Draw() {
 	{
 		glRotatef(-90,1,0,0);
 	}
-	lock_guard<mutex> lock(m_lock);
-	for (auto o : m_DrawObjects) {
-		if (o.vb < 1 || !o.bDraw) {
+	std::lock_guard<std::mutex> lock(m_lock);
+	for (auto o : m_DrawObjects)
+	{
+		if (o.vb < 1 || !o.bDraw)
+		{
 			continue;
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, o.vb);

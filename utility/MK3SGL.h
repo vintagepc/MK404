@@ -20,20 +20,20 @@
  */
 #pragma once
 
-#include <GL/glew.h>         // for glTranslatef
-#include <GLPrint.h>         // for GLPrint
-#include <cstdint>          // for uint32_t
-#include <Camera.hpp>        // for Camera
-#include <atomic>            // for atomic, atomic_bool, atomic_int
-#include <string>            // for string
-#include <vector>            // for vector
 #include "BasePeripheral.h"  // for BasePeripheral
+#include "Camera.hpp"        // for Camera
 #include "GLObj.h"           // for GLObj
 #include "HD44780.h"         // for _IRQ
 #include "IScriptable.h"     // for IScriptable::LineStatus
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include <GL/glew.h>         // for glTranslatef
+#include <GLPrint.h>         // for GLPrint
+#include <atomic>            // for atomic, atomic_bool, atomic_int
+#include <cstdint>          // for uint32_t
+#include <string>            // for string
+#include <vector>            // for vector
 
 class HD44780GL;
 class OBJCollection;
@@ -51,9 +51,9 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
 
         // Creates new MK3SGL object, with lite graphics (or full) and an MMU (or not)
-        MK3SGL(const string &strModel, bool bMMU, Printer *pParent = nullptr);
+        MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent = nullptr);
 
-		~MK3SGL()
+		~MK3SGL() override
 		{
 			g_pMK3SGL = nullptr;
 			m_pParent = nullptr;
@@ -94,18 +94,18 @@ class MK3SGL: public BasePeripheral, public Scriptable
 		void ResizeCB(int w, int h);
 
 	protected:
-		LineStatus ProcessAction(unsigned int iAct, const std::vector<string> &vArgs);
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 
     private:
-        GLObj m_EVis = {"assets/Triangles.obj"};
-        GLObj m_MMUBase = {"assets/MMU_stationary.obj"};
-        GLObj m_MMUSel = {"assets/MMU_Selector.obj"};
-        GLObj m_MMUIdl = {"assets/Idler_moving.obj"};
+        GLObj m_EVis {"assets/Triangles.obj"};
+        GLObj m_MMUBase {"assets/MMU_stationary.obj"};
+        GLObj m_MMUSel {"assets/MMU_Selector.obj"};
+        GLObj m_MMUIdl {"assets/Idler_moving.obj"};
 
 		OBJCollection *m_Objs = nullptr;
 
-		atomic_int m_iCurTool = {0};
+		std::atomic_int m_iCurTool = {0};
         GLPrint m_Print = {0.8,0,0}, m_T1 = {0,0.8,0}, m_T2 = {0,0,0.8}, m_T3 = {0.8,0.4,0}, m_T4 = {0.8,0,0.8};
 
 		std::vector<GLPrint*> m_vPrints = {&m_Print, &m_T1, &m_T2, &m_T3, &m_T4};
@@ -116,8 +116,8 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
         HD44780GL *m_pLCD = nullptr;
 
-        atomic_bool m_bFollowNozzle = {false}; // Camera follows nozzle.
-		atomic_bool m_bClearPrints = {false};
+        std::atomic_bool m_bFollowNozzle = {false}; // Camera follows nozzle.
+		std::atomic_bool m_bClearPrints = {false};
 
         // MMU draw subfunction.
         void DrawMMU();
@@ -135,18 +135,18 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
 
         // Correction parameters to get the model at 0,0,0 and aligned with the simulated starting positions.
-        atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01}, m_fPPos = {0.f};
+        std::atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01}, m_fPPos = {0.f};
 
         float m_fSelCorr = 0.025f;
-		atomic<float> m_fSelPos = {0.0f};
+		std::atomic<float> m_fSelPos = {0.0f};
 
         // This is going to be in degrees rotation instead of mm
         float m_fIdlCorr = 120.00f;
-		atomic<float> m_fIdlPos = {0.0f};
+		std::atomic<float> m_fIdlPos = {0.0f};
 
-        atomic_int m_iKnobPos {0}, m_iFanPos = {0}, m_iPFanPos = {0}, m_iIdlPos = {0};
+        std::atomic_int m_iKnobPos {0}, m_iFanPos = {0}, m_iPFanPos = {0}, m_iIdlPos = {0};
 
-        atomic_bool m_bDirty = {false},
+        std::atomic_bool m_bDirty = {false},
 			m_bFanOn = {false},
 			m_bMMU = {false},
 			m_bBedOn = {false},
@@ -163,8 +163,8 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
 		inline void DebugTx(){glTranslatef(m_flDbg,m_flDbg2,m_flDbg3);}
 
-		atomic<float> m_flDbg = {0.0f}, m_flDbg2 = {0.0f}, m_flDbg3 = {0.0f};
-		atomic_int m_iDbg = {0};
+		std::atomic<float> m_flDbg = {0.0f}, m_flDbg2 = {0.0f}, m_flDbg3 = {0.0f};
+		std::atomic_int m_iDbg = {0};
 
 		enum Actions
 		{

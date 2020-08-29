@@ -56,7 +56,7 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 
 		MMU2 m_MMU;
 		GCodeSniffer m_sniffer = GCodeSniffer('T');
-		unique_ptr<SerialPipe> m_pipe {nullptr};
+		std::unique_ptr<SerialPipe> m_pipe {nullptr};
 
 	private:
 

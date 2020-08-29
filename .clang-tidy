@@ -1,4 +1,4 @@
 {
 	Checks: '*,-modernize-use-emplace,-hicpp-use-emplace,-readability*,-cppcoreguidelines-pro-type-union-access,-hicpp-braces*,-fuchsia*,-llvm-header-guard,-cppcoreguidelines-special-member-functions,-hicpp-special-member-functions'
-	HeaderFilterRegex: 'parts'
+	HeaderFilterRegex: 'parts|utility'
 }

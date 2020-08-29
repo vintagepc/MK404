@@ -92,7 +92,7 @@ std::pair<int,int> Prusa_MK3S::GetWindowSize(){
 	return prSize;
 }
 
-void Prusa_MK3S::OnVisualTypeSet(const string &type)
+void Prusa_MK3S::OnVisualTypeSet(const std::string &type)
 {
 	if (type=="none")
 	{

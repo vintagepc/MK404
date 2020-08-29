@@ -18,11 +18,11 @@
 	along with MK404. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "3rdParty/MK3/thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 #include "EinsyRambo.h"
 #include "Einsy_1_1a.h"        // for Einsy_1_1a
 #include "HD44780.h"           // for HD44780
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
-#include "thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 #include <iostream>             // for fprintf, printf, stderr
 #include <vector>
 

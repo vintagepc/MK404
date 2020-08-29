@@ -23,24 +23,26 @@
 #pragma once
 
 #include "GLObj.h"
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-
-using namespace std;
 
 class OBJCollection
 {
 	public:
 
-		OBJCollection(string strName):m_strName(strName){};
-		~OBJCollection(){};
+		explicit OBJCollection(std::string strName):m_strName(std::move(strName)){};
+		~OBJCollection() = default;
 
 		void Load()
 		{
-			for (auto it = m_mObjs.begin(); it!=m_mObjs.end(); it++)
-				for (auto it2 = it->second.begin(); it2!=it->second.end(); it2++)
-					(*it2)->Load();
+			for (auto &sets : m_mObjs)
+			{
+				for (auto &obj : sets.second)
+				{
+					obj->Load();
+				}
+			}
 			OnLoadComplete();
 		};
 
@@ -63,14 +65,19 @@ class OBJCollection
 		inline void Draw(const ObjClass type)
 		{
 			if (m_mObjs.count(type)==0)
+			{
 				return;
+			}
 
 			std::vector<GLObj*> vObj = m_mObjs.at(type);
-			for (auto it = vObj.begin(); it!=vObj.end(); it++)
-				(*it)->Draw();
+			for (auto &obj : vObj)
+			{
+				obj->Draw();
+			}
+
 		};
 
-		virtual void GetBaseCenter(float fTrans[3])
+		virtual void GetBaseCenter(gsl::span<float> fTrans)
 		{
 			m_pBaseObj->GetCenteringTransform(fTrans);
 		};
@@ -84,18 +91,18 @@ class OBJCollection
 
 		virtual float GetScaleFactor(){return 1.f;};
 
-		virtual inline void SetNozzleCam(bool bOn) {};
+		virtual inline void SetNozzleCam(bool /*bOn*/) {};
 
-		virtual void GetNozzleCamPos(float fPos[3]) = 0;
+		virtual void GetNozzleCamPos(gsl::span<float> fPos) = 0;
 
 		virtual void DrawKnob(int iRotation) = 0;
-		virtual void DrawEFan(int iRotation){};
-		virtual void DrawPFan(int iRotation){};
-		virtual void DrawEVis(float fEPos){};
+		virtual void DrawEFan(int /*iRotation*/){};
+		virtual void DrawPFan(int /*iRotation*/){};
+		virtual void DrawEVis(float /*fEPos*/){};
 
 		virtual bool SupportsMMU() { return false; }
 
-		inline const string GetName() { return m_strName;}
+		inline const std::string GetName() { return m_strName;}
 
 	protected:
 		template<typename... Args>GLObj* AddObject(const ObjClass type, Args... args)
@@ -111,19 +118,23 @@ class OBJCollection
 
 		void SetMaterialMode(GLenum type)
 		{
-			for (auto key = m_mObjs.begin(); key != m_mObjs.end(); key++)
-				for (auto it = key->second.begin(); it!=key->second.end(); it++)
-					(*it)->SetMaterialMode(type);
+			for (auto &sets : m_mObjs)
+			{
+				for (auto &obj : sets.second)
+				{
+					obj->SetMaterialMode(type);
+				}
+			}
 		};
 
 		GLObj* m_pBaseObj = nullptr;
 
-		inline void SetName(string strName) { m_strName = strName; }
-		map<ObjClass,std::vector<GLObj*>> m_mObjs = {};
+		inline void SetName(std::string strName) { m_strName = std::move(strName); }
+		std::map<ObjClass,std::vector<GLObj*>> m_mObjs = {};
 
 	private:
 
-		string m_strName; // Collection name.
+		std::string m_strName; // Collection name.
 
 
 };

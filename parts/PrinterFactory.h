@@ -42,7 +42,7 @@ class PrinterFactory
 	public:
 
 		template<typename ...Args>
-		static void* CreatePrinter(const std::string &strPrinter, Boards::Board *&pBoard, Printer *&pPrinter, bool bBL, bool bNoHacks, bool bSerial, const string &strSD, Args...args)//NOLINT
+		static void* CreatePrinter(const std::string &strPrinter, Boards::Board *&pBoard, Printer *&pPrinter, bool bBL, bool bNoHacks, bool bSerial, const std::string &strSD, Args...args)//NOLINT
 		{
 				void* p = (GetPrinterByName(strPrinter,pBoard,pPrinter));
 				if(p != nullptr)
@@ -56,9 +56,9 @@ class PrinterFactory
 				return p;
 		};
 
-		static std::vector<string> GetModels()
+		static std::vector<std::string> GetModels()
 		{
-			std::vector<string> strModels;
+			std::vector<std::string> strModels;
 			for(auto &models: GetModelMap())
 			{
 				strModels.push_back(models.first);
@@ -66,7 +66,7 @@ class PrinterFactory
 			return strModels;
 		}
 
-		static void* GetPrinterByName(const string &strModel,Boards::Board *&pBoard, Printer *&pPrinter) //NOLINT
+		static void* GetPrinterByName(const std::string &strModel,Boards::Board *&pBoard, Printer *&pPrinter) //NOLINT
 		{
 			if (!GetModelMap().count(strModel))
 			{
@@ -79,7 +79,7 @@ class PrinterFactory
 			return fnCreate(pBoard,pPrinter);
 		}
 
-		static void DestroyPrinterByName(const string &strModel, void* p)
+		static void DestroyPrinterByName(const std::string &strModel, void* p)
 		{
 			if (!GetModelMap().count(strModel))
 			{
@@ -111,9 +111,9 @@ class PrinterFactory
 		using Dtor = void(*)(void* p);
 
 		// Someday: maybe a way to have printer classes register dynamically instead of needing to add them to the map?
-		static map<string,pair<Ctor,Dtor>>& GetModelMap()
+		static std::map<std::string,std::pair<Ctor,Dtor>>& GetModelMap()
 		{
-			static std::map<string,pair<PrinterFactory::Ctor,PrinterFactory::Dtor>> m_Models  = {
+			static std::map<std::string,std::pair<PrinterFactory::Ctor,PrinterFactory::Dtor>> m_Models  = {
 				{"Prusa_MK3",			{&PrinterFactory::_CreatePrinter<Prusa_MK3>	, 		&PrinterFactory::_DestroyPrinter<Prusa_MK3>}},
 				{"Prusa_MK3S",			{&PrinterFactory::_CreatePrinter<Prusa_MK3S>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3S>}},
 				{"Prusa_MK3SMMU2",		{&PrinterFactory::_CreatePrinter<Prusa_MK3SMMU2>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3SMMU2>}},

@@ -21,7 +21,7 @@
 
 #include "gsl-lite.hpp"
 
-typedef float Color3fv[3];
+using Color3fv = float[3];
 
 // Interpolate between 2 RGB colors
 void colorLerp(gsl::span<const float> a, gsl::span<const float> b, float v, gsl::span<float> c);

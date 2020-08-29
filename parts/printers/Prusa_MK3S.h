@@ -63,7 +63,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 
 		virtual bool GetHasMMU() {return false;}
 
-		std::unique_ptr<MK3SGL> m_pVis;
+		std::unique_ptr<MK3SGL> m_pVis {nullptr};
 
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);

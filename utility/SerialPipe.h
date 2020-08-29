@@ -21,9 +21,9 @@
 
 #pragma once
 
+#include <atomic>
 #include <pthread.h>  // for pthread_t
 #include <string>     // for string
-#include <atomic>
 
 class SerialPipe
 {

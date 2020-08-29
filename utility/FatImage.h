@@ -29,8 +29,6 @@
 #include <utility>   // for pair
 #include <vector>    // for vector
 
-using namespace std;
-
 class FatImage
 {
 	public:
@@ -46,13 +44,15 @@ class FatImage
 			G2 = 2048
 		};
 
-		static bool MakeFatImage(const string &strFile, const string &strSize);
+		static bool MakeFatImage(const std::string &strFile, const std::string &strSize);
 
-		static std::vector<string> GetSizes()
+		static std::vector<std::string> GetSizes()
 		{
-			std::vector<string> strSize;
+			std::vector<std::string> strSize;
 			for(auto &c : GetNameToSize())
+			{
 				strSize.push_back(c.first);
+			}
 			return strSize;
 		}
 
@@ -64,7 +64,7 @@ class FatImage
 
 		static inline uint8_t GetSectorsPerCluster(Size imgSize) { return imgSize>Size::M256 ? 8 : 1; }
 
-		static uint32_t GetSizeInBytes(Size imgSize) { return ((uint32_t)imgSize)<<20; } // 20 = 1024*1024
+		static uint32_t GetSizeInBytes(Size imgSize) { return static_cast<uint32_t>(imgSize)<<20; } // 20 = 1024*1024
 
 		static uint32_t GetSecondFatAddr(Size imgSize) {return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize)));}
 
@@ -92,7 +92,7 @@ class FatImage
 			return 0;
 		};
 
-		static const std::map<string, Size>& GetNameToSize();
+		static const std::map<std::string, Size>& GetNameToSize();
 
 		static const uint8_t _FAT32[];
 		static const uint8_t _FATHeader[];

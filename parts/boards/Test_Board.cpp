@@ -19,9 +19,9 @@
  */
 
 #include "Test_Board.h"
+#include "3rdParty/MK3/thermistortables.h"
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
 #include "RotaryEncoder.h"           // for HD44780
-#include "thermistortables.h"
 
 #include <iostream>
 #include <vector>

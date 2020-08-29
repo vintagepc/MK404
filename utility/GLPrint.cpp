@@ -99,8 +99,8 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 			// Add a temporary normal vertex
 			std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
 			std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA.data(), std::minus<float>());
-			CrossProduct(fA.data(),fB.data(),fCross.data());
-			Normalize(fCross.data());
+			CrossProduct(fA,fB,{fCross.data(),3});
+			Normalize({fCross.data(),3});
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 			for (int i=0; i<4; i++)
 			{
@@ -135,8 +135,8 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 		std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
 		auto itPrev = m_fvNorms.end()-2;
 		std::transform(itPrev, itPrev+3, vfPos.data(), fA.data(), std::minus<float>()); // Length from p->curr
-		CrossProduct(fA.data(),fB.data(),fCross.data());
-		Normalize(fCross.data());
+		CrossProduct(fA,fB,{fCross.data(),3});
+		Normalize({fCross.data(),3});
 		auto itCross = fCross.begin();
 		for (int i=0; i<3; i++)
 		{
@@ -150,8 +150,8 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 		// pfPrev[0]/=2.f; pfPrev[1]/=2.f; pfPrev[2]/=2.f;
 		// And then append the new temporary end one.
 		std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA.data(), std::minus<float>());
-		CrossProduct(fA.data(),fB.data(),fCross.data());
-		Normalize(fCross.data());
+		CrossProduct(fA,fB,{fCross.data(),3});
+		Normalize({fCross.data(),3});
 				// New segment, push it onto the vertex list and update the segment count
 		//printf("New segment: %d\n",m_vCoords.size());
 		{

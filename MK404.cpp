@@ -54,7 +54,7 @@
 
 int window = 0;
 
-atomic_int iWinH{0}, iWinW{0};
+std::atomic_int iWinH{0}, iWinW{0};
 
 Printer *printer = nullptr;
 Boards::Board *pBoard = nullptr;
@@ -104,7 +104,7 @@ extern "C" {
 	}
 }
 
-atomic_bool bIsQuitting {false};
+std::atomic_bool bIsQuitting {false};
 
 void displayCB()		/* function called whenever redisplay needed */
 {
@@ -122,7 +122,7 @@ void displayCB()		/* function called whenever redisplay needed */
 
 	if (pBoard->IsStopped() || pBoard->IsPaused())
 	{
-		string strState = pBoard->IsStopped() ? "Stopped" : "Paused";
+		std::string strState = pBoard->IsStopped() ? "Stopped" : "Paused";
 		glColor4f(.5,.5,.5,0.5);
 		glBegin(GL_QUADS);
 			glVertex2f(0,0);
@@ -199,7 +199,7 @@ void ResizeCB(int w, int h)
 	std::pair<int,int> winSize = printer->GetWindowSize();
 	float fWS = static_cast<float>(w)/static_cast<float>(winSize.first*4);
 	float fHS = static_cast<float>(h)/static_cast<float>(winSize.second*4);
-	float fScale = max(fWS,fHS);
+	float fScale = std::max(fWS,fHS);
 	int iW = 4.f*static_cast<float>(winSize.first)*fScale;
 	int iH = 4.f*static_cast<float>(winSize.second)*fScale;
 	if (iW!=w || iH !=h)
@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
 	using TCLAP::ValueArg;
 	using TCLAP::MultiArg;
 	using TCLAP::ValuesConstraint;
-	using std::string;
+	using string = std::string;
 	using std::vector;
 	signal(SIGINT, OnSigINT);
 
@@ -304,7 +304,7 @@ int main(int argc, char *argv[])
 	if (version::IS_DEV_VERSION)
 	{
 		std::cout << "***************************************" << '\n';
-		std::cout << "* " << setw(35) << version::VERSION_STRING << " *" << '\n';
+		std::cout << "* " << std::setw(35) << version::VERSION_STRING << " *" << '\n';
 		std::cout << "* This is a DEV version. Features may *" << '\n';
 		std::cout << "* behave unexpectedly, or not at all. *" << '\n';
 		std::cout << "***************************************" << '\n';
@@ -336,7 +336,7 @@ int main(int argc, char *argv[])
 
 	ScriptHost::Init();
 
-	string strFW;
+	std::string strFW;
 	if (!argLoad.isSet() && !argFW.isSet())
 	{
 		strFW = ""; // No firmware and no load directive.

@@ -60,9 +60,9 @@ const uint8_t FatImage::_DataRegion[] = { 0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x2
 											0xCD,0x50,0xCD,0x50,0x00,0x00,0x57,0x49,0xCD,0x50};
 
 
-const std::map<string, FatImage::Size>& FatImage::GetNameToSize()
+const std::map<std::string, FatImage::Size>& FatImage::GetNameToSize()
 {
-	static const std::map<string, FatImage::Size> m {
+	static const std::map<std::string, FatImage::Size> m {
 		{"32M",FatImage::Size::M32},
 		{"64M",FatImage::Size::M64},
 		{"128M",FatImage::Size::M128},
@@ -75,12 +75,12 @@ const std::map<string, FatImage::Size>& FatImage::GetNameToSize()
 };
 
 
-bool FatImage::MakeFatImage(const string &strFile, const string &strSize)
+bool FatImage::MakeFatImage(const std::string &strFile, const std::string &strSize)
 {
 	FatImage::Size size = GetNameToSize().at(strSize);
 	uint32_t uiSize = GetSizeInBytes(size);
 
-	ofstream fsOut(strFile, fsOut.binary);
+	std::ofstream fsOut(strFile, fsOut.binary);
 	if (!fsOut.is_open())
 	{
 		std::cerr << "Failed to open output file\n";

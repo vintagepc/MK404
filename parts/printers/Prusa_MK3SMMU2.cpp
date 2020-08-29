@@ -45,7 +45,7 @@ void Prusa_MK3SMMU2::SetupHardware()
 	m_pipe.reset(new SerialPipe(UART2.GetSlaveName(), m_MMU.GetSerialPort())); //NOLINT suggestion is c++14 and higher
 }
 
-void Prusa_MK3SMMU2::OnVisualTypeSet(const string &type)
+void Prusa_MK3SMMU2::OnVisualTypeSet(const std::string &type)
 {
 	if (type=="none")
 	{

@@ -24,14 +24,16 @@
 
 #pragma once
 
-#include <stdint.h>         // for uint32_t, uint8_t
-#include <string>           // for string
-#include <vector>           // for vector
 #include "ADCPeripheral.h"  // for ADCPeripheral
 #include "IScriptable.h"    // for IScriptable::LineStatus
 #include "Scriptable.h"     // for Scriptable
+#include "gsl-lite.hpp"
 #include "sim_avr.h"        // for avr_t
 #include "sim_irq.h"        // for avr_irq_t
+#include <cstdint>         // for uint32_t, uint8_t
+#include <string>           // for string
+#include <utility>
+#include <vector>           // for vector
 
 class Thermistor: public ADCPeripheral, public Scriptable
 {
@@ -42,22 +44,22 @@ class Thermistor: public ADCPeripheral, public Scriptable
 		#include "IRQHelper.h"
 
 		// Creates a new thermistor with given starting/ambient temperature.
-		Thermistor(float fStartTemp = 25);
+		explicit Thermistor(float fStartTemp = 25);
 
 		// Registers with SimAVR on the given mux,
 		void Init(avr_t *avr, uint8_t adc_mux_number);
 
 		// Sets the thermistor table. You can feed this a marlin table def.
-		void SetTable(short *pTable, unsigned int uiEntries, int oversampling);
+		void SetTable(const gsl::span<const int16_t> table, int oversampling);
 
 		// Set the temperature explicitly.
 		void Set(float fTemp);
 	protected:
-		LineStatus ProcessAction(unsigned int iAction, const vector<string> &args);
+		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &args) override;
 
 	private:
 
-		uint32_t OnADCRead(avr_irq_t *irq, uint32_t value);
+		uint32_t OnADCRead(avr_irq_t *irq, uint32_t value) override;
 
 		enum Actions
 		{
@@ -69,8 +71,7 @@ class Thermistor: public ADCPeripheral, public Scriptable
 
 		void OnTempIn(avr_irq_t *irq, uint32_t value);
 
-		short * m_pTable = nullptr;
-		unsigned int m_uiTableEntries = 0;
+		std::vector<std::pair<int16_t, int16_t>> m_vTable;
 		int 		m_iOversampling = 16;
 		float	m_fCurrentTemp = 25;
 		Actions m_eState = Connected;

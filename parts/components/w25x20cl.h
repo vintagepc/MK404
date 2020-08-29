@@ -23,14 +23,17 @@
 
 #pragma once
 
-#include <stdint.h>         // for uint8_t, uint32_t, uint64_t
+#include "IScriptable.h"
 #include "SPIPeripheral.h"  // for SPIPeripheral
 #include "Scriptable.h"
+#include "gsl-lite.hpp"
 #include "sim_irq.h"        // for avr_irq_t
+#include <cstdint>         // for uint8_t, uint32_t, uint64_t
 #include <string>
+#include <vector>
 
 #define W25X20CL_TOTAL_SIZE 262144
-#define W25X20CL_PAGE_SIZE 256
+#define W25X20CL_PAGE_SIZE 256U
 #define W25X20CL_SECTOR_SIZE 4096
 #define W25X20CL_BLOCK32_SIZE 32768
 #define W25X20CL_BLOCK64_SIZE 65536
@@ -44,22 +47,16 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 		_IRQ(SPI_CSEL,          "1<w25x20cl.cs_in")
 		#include "IRQHelper.h"
 
-	w25x20cl():Scriptable("SPIFlash")
-	{
-		RegisterAction("Load","Reloads the last used file",ActLoad);
-		RegisterAction("Save","Saves the file",ActSave);
-		RegisterAction("Clear","Resets the flash memory to empty (0xFF)",ActClear);
-		RegisterAction("Fill","Fills the flash memory with the given value",ActFill,{ArgType::Int});
-	};
+	w25x20cl();
 
 	// Destructor. Closes flash file.
-	~w25x20cl();
+	~w25x20cl() override;
 
 	// Initializes an SPI flash on "avr" with a CSEL irq "irqCS"
 	void Init(struct avr_t * avr, avr_irq_t *irqCS);
 
 	// Loads the flash contents from file. (creates "path" if it does not exit)
-	void Load(const char* path);
+	void Load(const std::string &path);
 
 	// Reloads the current file.
 	void Load();
@@ -69,7 +66,7 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 
 	protected:
 
-		Scriptable::LineStatus ProcessAction (unsigned int iAct, const vector<string> &vArgs) override;
+		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 		enum w25x20cl_states{
 			STATE_IDLE = 0, //when CS is HIGH
@@ -88,14 +85,16 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 		uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;
         void OnCSELIn(avr_irq_t *irq, uint32_t value) override;
 
-		int m_fdFlash = 0;
-		uint8_t m_flash[W25X20CL_TOTAL_SIZE+1];
-		uint8_t m_pageBuffer[W25X20CL_PAGE_SIZE];
-		uint8_t m_cmdIn[5];
-		uint8_t m_rxCnt;
-		uint8_t m_cmdOut;
-		uint8_t m_command;
-		uint32_t m_address;
+		uint8_t _m_flash[W25X20CL_TOTAL_SIZE] = {0xFF};
+		uint8_t _m_pageBuffer[W25X20CL_PAGE_SIZE] = {0xFF};
+		uint8_t _m_cmdIn[5] = {0};
+		gsl::span<uint8_t> m_flash {_m_flash};
+		gsl::span<uint8_t> m_pageBuffer {_m_pageBuffer};
+		gsl::span<uint8_t> m_cmdIn {_m_cmdIn};
+		uint8_t m_rxCnt = 0;
+		uint8_t m_cmdOut = 0;
+		uint8_t m_command = 0;
+		uint32_t m_address = 0;
 		uint64_t m_UID = 0xDEADBEEFDEADBEEF;
 		union
 		{
@@ -110,7 +109,7 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 				uint8_t RES6 :1;
 				uint8_t SRP :1;
 			} bits;
-		} m_status_register;
+		} m_status_register {.byte = 0};
 		w25x20cl_states m_state = STATE_IDLE;
 		std::string m_filepath;
 

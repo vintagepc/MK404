@@ -20,16 +20,21 @@
  */
 
 #include "IRSensor.h"
-#include <stdio.h>  // for printf
+#include "Scriptable.h"
+#include <iostream>  // for printf
 
 // ADC read trigger.
-uint32_t IRSensor::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+uint32_t IRSensor::OnADCRead(struct avr_irq_t *, uint32_t)
 {
     float fVal;
     if (m_eCurrent != IR_AUTO)
+	{
         fVal = m_mIRVals[m_eCurrent];
+	}
     else if (m_bExternal)
+	{
         fVal = m_mIRVals[IR_v4_FILAMENT_PRESENT];
+	}
     else
 	{
         fVal = m_mIRVals[IR_v4_NO_FILAMENT];
@@ -52,8 +57,9 @@ IRSensor::IRSensor():VoltageSrc()
 	RegisterMenu("Set Unknown", ActSetUnknown);
 }
 
-Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
+	using std::to_string;
 	switch (iAct)
 	{
 		case ActToggle:
@@ -63,8 +69,10 @@ Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<s
 		{
 			int iVal = stoi(vArgs.at(0));
 			if (iVal<=IR_MIN || iVal >= IR_MAX)
-				return IssueLineError(string("Set value ") + to_string(iVal) + " is out of the range [" + to_string(IR_MIN+1) + "," + to_string(IR_MAX-1) + "]" );
-			Set((IRState)iVal);
+			{
+				return IssueLineError(std::string("Set value ") + to_string(iVal) + " is out of the range [" + to_string(IR_MIN+1) + "," + to_string(IR_MAX-1) + "]" );
+			}
+			Set(static_cast<IRState>(iVal));
 			return LineStatus::Finished;
 		}
 		case ActSetV3Filament:
@@ -93,17 +101,18 @@ Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const vector<s
 void IRSensor::Toggle()
 {
 	if (m_eCurrent == IR_AUTO)
-		printf("NOTE: Overriding IR Auto setting!\n");
-
+	{
+		std::cout << "NOTE: Overriding IR Auto setting!" << '\n';
+	}
 	if (m_eCurrent == IR_v4_NO_FILAMENT ||
 		m_eCurrent == IR_v3_NO_FILAMENT)
 	{
-		printf("IRSensor: Filament present!\n");
+		std::cout << "IRSensor: Filament present!" << '\n';
 		m_eCurrent = (m_eCurrent == IR_v4_NO_FILAMENT ? IR_v4_FILAMENT_PRESENT : IR_v3_FILAMENT_PRESENT);
 	}
 	else
 	{
-		printf("IRSensor: No filament present!\n");
+		std::cout << "IRSensor: No filament present!" << '\n';
 		m_eCurrent = (m_eCurrent == IR_v3_FILAMENT_PRESENT ? IR_v3_NO_FILAMENT : IR_v4_NO_FILAMENT);
 	}
 }

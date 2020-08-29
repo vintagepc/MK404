@@ -24,13 +24,10 @@
 #include "GLObj.h"
 #include "OBJCollection.h"
 
-using namespace std;
-
-
 class MK3S_Lite: public OBJCollection
 {
 	public:
-		MK3S_Lite(bool bMMU):OBJCollection("Lite")
+		explicit MK3S_Lite(bool /*bMMU*/):OBJCollection("Lite")
 		{
 			AddObject(ObjClass::Y, "assets/Y_AXIS.obj", 0, 0, -0.141);
 			AddObject(ObjClass::PrintSurface, "assets/SSSheet.obj", 0.025,0.083,0.431 + -0.141);
@@ -63,10 +60,10 @@ class MK3S_Lite: public OBJCollection
 			float fSpec[] = {.4,.4,.4,.5};
 			float fDiff[] = {1.5,1.5,1.5,1};
 			float fPos[] = {2,2,2,0};
-			glLightfv(GL_LIGHT0,GL_AMBIENT, fAmb);
-			glLightfv(GL_LIGHT0,GL_SPECULAR, fSpec);
-			glLightfv(GL_LIGHT0,GL_DIFFUSE, fDiff);
-			glLightfv(GL_LIGHT0,GL_POSITION, fPos);
+			glLightfv(GL_LIGHT0,GL_AMBIENT, 	static_cast<float*>(fAmb));
+			glLightfv(GL_LIGHT0,GL_SPECULAR, 	static_cast<float*>(fSpec));
+			glLightfv(GL_LIGHT0,GL_DIFFUSE, 	static_cast<float*>(fDiff));
+			glLightfv(GL_LIGHT0,GL_POSITION, 	static_cast<float*>(fPos));
 		}
 
 		inline bool SupportsMMU() override { return true; }
@@ -79,7 +76,7 @@ class MK3S_Lite: public OBJCollection
 
 		inline void ApplyPrintTransform() override { glTranslatef(0.024,0.084,-0.281); };
 
-		virtual void GetBaseCenter(float fTrans[3]) override
+		void GetBaseCenter(gsl::span<float> fTrans) override
 		{
 			// Values stolen from the full model so we don't have to load the frame:
 			fTrans[0] = -0.154;
@@ -89,28 +86,30 @@ class MK3S_Lite: public OBJCollection
 
 		float GetScaleFactor() override { return 0.210874f; }
 
-		virtual void DrawKnob(int iRotation) override
+		void DrawKnob(int iRotation) override
 		{
 			if (m_pKnob == nullptr)
+			{
 				return;
+			}
 			glPushMatrix();
 				glTranslatef(0.215,0.051,0.501);
 				glRotatef(-45.f,1,0,0);
 				glPushMatrix();
-					glRotatef((float)iRotation,0,0,1);
+					glRotatef(static_cast<float>(iRotation),0,0,1);
 					m_pKnob->Draw();
 				glPopMatrix();
 			glPopMatrix();
 		}
 
-		inline void GetNozzleCamPos(float fPos[3]) override
+		inline void GetNozzleCamPos(gsl::span<float> fPos) override
 		{
 			fPos[0] = -.135f;
 			fPos[1] = -0.13f;
 			fPos[2] = -0.04f;
 		}
 
-		virtual void DrawEVis(float fEPos) override
+		void DrawEVis(float fEPos) override
 		{
 			float fTransform[3];
 			glTranslatef(-0.044,-0.210,0.f);
@@ -122,23 +121,23 @@ class MK3S_Lite: public OBJCollection
 			m_pEVis->Draw();
 		}
 
-		virtual void DrawEFan(int iRotation) override
+		void DrawEFan(int iRotation) override
 		{
 			glTranslatef(-0.044,-0.210,0.f);
 			float fTransform[3];
 			m_pEFan->GetCenteringTransform(fTransform);
 			glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
-			glRotatef((float)iRotation,1,0,0);
+			glRotatef(static_cast<float>(iRotation),1,0,0);
 			glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 			m_pEFan->Draw();
 		}
 
-		virtual void DrawPFan(int iRotation) override
+		void DrawPFan(int iRotation) override
 		{
 			glTranslatef(0.042,0.118,0.314);
 			glRotatef(180-45.0,1,0,0);
 			glPushMatrix();
-				glRotatef((float)iRotation,0,1,0);
+				glRotatef(static_cast<float>(iRotation),0,1,0);
 				m_pPFan->Draw();
 			glPopMatrix();
 		}
@@ -146,6 +145,6 @@ class MK3S_Lite: public OBJCollection
 
 	protected:
 
-		GLObj *m_pKnob = nullptr, *m_pEFan = nullptr, *m_pPFan = nullptr, *m_pEVis = nullptr;
+		std::shared_ptr<GLObj> m_pKnob = nullptr, m_pEFan = nullptr, m_pPFan = nullptr, m_pEVis = nullptr;
 
 };

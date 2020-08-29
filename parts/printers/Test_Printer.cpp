@@ -19,8 +19,6 @@
  */
 
 #include "Test_Printer.h"
-#include "PinNames.h"         // for Pin::IR_SENSOR_PIN, Pin::VOLT_IR_PIN
-#include "RotaryEncoder.h"    // for RotaryEncoder, RotaryEncoder::::CCW_CLICK
 
 
 void Test_Printer::SetupHardware()

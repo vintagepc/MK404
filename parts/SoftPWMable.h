@@ -27,7 +27,7 @@ class SoftPWMable : public BasePeripheral
 {
 	public:
 		template<class C>
-		SoftPWMable(bool bEnabled, C *p, uint16_t uiPrescale = 1000, uint32_t uiTimeoutMs = 17):m_bIsSoftPWM(bEnabled),m_uiPrescale(uiPrescale)
+		SoftPWMable(bool bEnabled, C */*p*/, uint16_t uiPrescale = 1000, uint32_t uiTimeoutMs = 17):m_bIsSoftPWM(bEnabled),m_uiPrescale(uiPrescale)
 		{
 			m_uiSoftTimeoutUs = 1000*uiTimeoutMs;
 			m_fcnSoftTimeout = MAKE_C_TIMER_CALLBACK(SoftPWMable,OnSoftPWMChangeTimeout<C>);
@@ -36,13 +36,13 @@ class SoftPWMable : public BasePeripheral
 	protected:
 
 		// You will receive soft PWM values here.
-		virtual void OnPWMChange(avr_irq_t *irq, uint32_t value){};
+		virtual void OnPWMChange(avr_irq_t */*irq*/, uint32_t /*value*/){};
 
 		// Override this with your normal method for a digital change when NOT soft-PWMed
-		virtual void OnDigitalChange(avr_irq_t *irq, uint32_t value){};
+		virtual void OnDigitalChange(avr_irq_t */*irq*/, uint32_t /*value*/){};
 
 		// Called when the frequency changes.
-		virtual void OnWaveformChange(uint32_t uiTOn, uint32_t uiTTotal) {};
+		virtual void OnWaveformChange(uint32_t /*uiTOn*/, uint32_t /*uiTTotal*/) {};
 
 		// Binding for soft PWM digital input register notify.
 		inline void OnDigitalInSPWM(avr_irq_t *irq, uint32_t value)
@@ -75,7 +75,7 @@ class SoftPWMable : public BasePeripheral
 
 		// Callback for handling full on/off states with softPWM tracking.
 		template<class C>
-		avr_cycle_count_t OnSoftPWMChangeTimeout(avr_t *avr, avr_cycle_count_t when)
+		avr_cycle_count_t OnSoftPWMChangeTimeout(avr_t */*avr*/, avr_cycle_count_t /*when*/)
 		{
 			//printf("Timeout\n");
 			OnPWMChange(GetIRQ(C::DIGITAL_IN), (GetIRQ(C::DIGITAL_IN)->value)*255);

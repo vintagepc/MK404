@@ -20,12 +20,9 @@
  */
 
 #include "UART_Logger.h"
-#include <fcntl.h>     // for open, O_CREAT, O_RDWR
-#include <stdio.h>     // for printf, perror
-#include <stdlib.h>    // for exit
-#include <unistd.h>    // for close, ftruncate, write
 #include "avr_uart.h"  // for ::AVR_UART_FLAG_STDIO, ::UART_IRQ_OUTPUT, AVR_...
 #include "sim_io.h"    // for avr_ioctl, avr_io_getirq
+#include <iostream>     // for printf, perror
 
 
 //#define TRACE(_w) _w
@@ -33,14 +30,25 @@
 #define TRACE(_w)
 #endif
 
+using std::cerr;
+using std::cout;
 
-void UART_Logger::OnByteIn(struct avr_irq_t * irq, uint32_t value)
+void UART_Logger::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
+	if (!m_fsOut.is_open())
+	{
+		return;
+	}
     uint8_t c = value;
-    if (write(m_fdOut,&c,1))
-	    printf("UART%c: 0x%02x\n",m_chrUART,c);
+    m_fsOut.put(c);
+	if (!m_fsOut.fail())
+	{
+	    std::cout << "UART" << m_chrUART << ": " << std::hex << c << '\n';
+	}
 	else
-		printf("UART Logger: failed to write to FD\n");
+	{
+		std::cerr << "UART Logger: failed to write to file\n";
+	}
 }
 
 void UART_Logger::Init(struct avr_t * avr, char chrUART)
@@ -50,33 +58,29 @@ void UART_Logger::Init(struct avr_t * avr, char chrUART)
 	RegisterNotify(BYTE_IN, MAKE_C_CALLBACK(UART_Logger, OnByteIn),this);
 		// disable the stdio dump, as we're pritning in hex.
 	uint32_t f = 0;
-	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(chrUART), &f);
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(chrUART), &f); //NOLINT - complaint is external macro
 	f &= ~AVR_UART_FLAG_STDIO;
-	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(chrUART), &f);
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(chrUART), &f); //NOLINT - complaint is external macro
 
-	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT);
-	if (src)
-		ConnectFrom(src, BYTE_IN);
+	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT); //NOLINT - complaint is external macro
+	if (src) ConnectFrom(src, BYTE_IN);
 
     m_strFile[8] = chrUART;
 
     // open the file
-	m_fdOut = open(m_strFile.c_str(), O_RDWR|O_CREAT, 0644);
-	if (m_fdOut < 0) {
-		perror(m_strFile.c_str());
+	m_fsOut.open(m_strFile, m_fsOut.binary | m_fsOut.out | m_fsOut.trunc);
+	if (!m_fsOut.is_open())
+	{
+		std::cerr << "Failed to open output file for UART_Logger\n";
 	}
-	// Truncate the file (start new)
-	if (ftruncate(m_fdOut, 0) < 0) {
-		perror(m_strFile.c_str());
-		exit(1);
+	else
+	{
+    	std::cout << "UART " << m_chrUART << " is now logging to " << m_strFile << '\n';
 	}
-
-    printf("UART %c is now logging to %s\n",m_chrUART,m_strFile.c_str());
-
 }
 
 UART_Logger::~UART_Logger()
 {
-	close(m_fdOut);
-	printf("UART logger finished.\n");
+	m_fsOut.close();
+	std::cout << "UART logger finished.\n";
 }

@@ -22,18 +22,16 @@
 
 #pragma once
 
-#include <stdint.h>            // for uint32_t, uint8_t
-#include <stdio.h>             // for printf
-#include <atomic>              // for atomic_uint8_t, __atomic_base
-#include <string>              // for string
-#include <vector>              // for vector
 #include "ADCPeripheral.h"     // for ADCPeripheral
-#include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
 #include "IScriptable.h"       // for ArgType, ArgType::Int, IScriptable::Li...
 #include "Scriptable.h"        // for Scriptable
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include <atomic>              // for atomic_uint8_t, __atomic_base
+#include <cstdint>            // for uint32_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
 
 class ADC_Buttons:public ADCPeripheral, public Scriptable
 {
@@ -41,19 +39,19 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable
 		#define IRQPAIRS _IRQ(ADC_TRIGGER_IN,"<adc.trigger") _IRQ(ADC_VALUE_OUT,">adc.out") _IRQ(DIGITAL_OUT, ">adc.digital_out")
 		#include "IRQHelper.h"
 
-		ADC_Buttons(const std::string &strName);
+		explicit ADC_Buttons(const std::string &strName);
 
-		~ADC_Buttons();
+		~ADC_Buttons() override = default;
 
 
-		// TODO.. extend this with flexibility for any number of buttons/voltage levels.
+		// someday... extend this with flexibility for any number of buttons/voltage levels.
 		void Init(avr_t *avr, uint8_t uiMux);
 
 		// Pushes a given button: 1= left, 2 = middle, 3= right, 0 = none.
 		void Push(uint8_t uiBtn);
 
 	protected:
-			LineStatus ProcessAction(unsigned int uiAct, const vector<string> &vArgs) override;
+			LineStatus ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs) override;
 	private:
 
 		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);

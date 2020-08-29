@@ -20,26 +20,25 @@
 
 #pragma once
 
-#include <stdint.h>                // for uint32_t
-#include <string>                  // for string
-#include "Board.h"                 // for Board
-#include "wiring/MM_Control_01.h"  // for MM_Control_01
 #include "ADC_Buttons.h"           // for ADC_Buttons
+#include "Board.h"                 // for Board
 #include "HC595.h"                 // for HC595
 #include "LED.h"                   // for LED
 #include "MM_Control_01.h"
 #include "TMC2130.h"               // for TMC2130
 #include "uart_pty.h"              // for uart_pty
+#include "wiring/MM_Control_01.h"  // for MM_Control_01
+#include <cstdint>                // for uint32_t
 
 namespace Boards
 {
 	class MM_Control_01: public Board
 	{
 		public:
-			MM_Control_01(uint32_t uiFreq = 16000000)
+			explicit MM_Control_01(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){};
 
-			~MM_Control_01(){};
+			~MM_Control_01() override = default;
 
 		protected:
 			void SetupHardware() override;
@@ -50,15 +49,15 @@ namespace Boards
 
 			uart_pty m_UART;
 			HC595 m_shift;
-			TMC2130 m_Sel = {'S'},
-					m_Idl = {'I'},
-					m_Extr = {'P'};
-			LED m_lGreen[5] = {{0x00FF00FF},{0x00FF00FF},{0x00FF00FF},{0x00FF00FF},{0x00FF00FF}},
-				m_lRed[5] = {{0xFF0000FF},{0xFF0000FF},{0xFF0000FF},{0xFF0000FF},{0xFF0000FF}},
-				m_lFINDA = {0xFFCC00FF,'F'};
-			ADC_Buttons m_buttons = {"MMUButtons"};
+			TMC2130 m_Sel {'S'},
+					m_Idl {'I'},
+					m_Extr {'P'};
+			LED m_lGreen[5] {{0x00FF00FF,' '},{0x00FF00FF, ' '},{0x00FF00FF, ' '},{0x00FF00FF, ' '},{0x00FF00FF,' '}},
+				m_lRed[5] {{0xFF0000FF,' '},{0xFF0000FF,' '},{0xFF0000FF,' '},{0xFF0000FF,' '},{0xFF0000FF,' '}},
+				m_lFINDA {0xFFCC00FF,'F'};
+			ADC_Buttons m_buttons {"MMUButtons"};
 
 		private:
 			const Wirings::MM_Control_01 m_wiring = Wirings::MM_Control_01();
 	};
-};
+}; // namespace Boards

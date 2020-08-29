@@ -22,14 +22,23 @@
 
 #pragma once
 
-typedef union hexColor_t{
-	hexColor_t(const uint32_t &val){hex = val;} // Helper constructor
-	uint32_t hex;
-	struct{
-		uint8_t alpha;
-		uint8_t blue;
-		uint8_t green;
-		uint8_t red;
-	};
-	uint8_t bytes[4];
-} hexColor_t;
+#include <cstring>
+
+struct _hexColor_t{
+	//NOLINTNEXTLINE - we want the implicit conversion...
+	_hexColor_t(const uint32_t &val){ memcpy(this, &val, 4);} // Helper constructor
+	_hexColor_t(const uint32_t &val, const float &fScale)
+	{
+		memcpy(this, &val, 4);
+		alpha = static_cast<float>(alpha)/fScale;
+		red = 	static_cast<float>(red)/fScale;
+		green = static_cast<float>(green)/fScale;
+		blue = 	static_cast<float>(blue)/fScale;
+	} // Helper constructor
+	uint8_t alpha{0};
+	uint8_t blue {0};
+	uint8_t green {0};
+	uint8_t red {0};
+};
+
+using hexColor_t = _hexColor_t;

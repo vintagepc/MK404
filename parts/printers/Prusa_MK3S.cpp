@@ -19,9 +19,6 @@
  */
 
 #include "Prusa_MK3S.h"
-#include <GL/glew.h>
-#include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
-#include <stdio.h>            // for printf
 #include "Beeper.h"           // for Beeper
 #include "Button.h"           // for Button
 #include "Fan.h"              // for Fan
@@ -36,6 +33,10 @@
 #include "TMC2130.h"          // for TMC2130
 #include "sim_io.h"           // for avr_register_io_write
 #include "uart_pty.h"         // for uart_pty
+#include <GL/glew.h>		// NOLINT must come before freeglut
+#include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
+#include <cstdint>
+#include <iostream>            // for printf
 
 void Prusa_MK3S::Draw()
 {
@@ -43,10 +44,10 @@ void Prusa_MK3S::Draw()
 		glLoadIdentity(); // Start with an identity matrix
 			glScalef(4, 4, 1);
 
-			lcd.Draw(m_colors[(4*m_iScheme) + 0], /* background */
-					m_colors[(4*m_iScheme) + 1], /* character background */
-					m_colors[(4*m_iScheme) + 2], /* text */
-					m_colors[(4*m_iScheme) + 3] /* shadow */ );
+			lcd.Draw(m_colors.at((4*m_iScheme) + 0), /* background */
+					m_colors.at((4*m_iScheme) + 1), /* character background */
+					m_colors.at((4*m_iScheme) + 2), /* text */
+					m_colors.at((4*m_iScheme) + 3) /* shadow */ );
 		glPopMatrix();
 
 		// Do something for the motors...
@@ -80,8 +81,10 @@ void Prusa_MK3S::Draw()
 			glTranslatef(20,0,0);
 			lIR.Draw();
 		glPopMatrix();
-	if ((GetVisualType().compare("none")!=0) && m_pVis)
+	if ((GetVisualType()!="none") && m_pVis)
+	{
 		m_pVis->Draw();
+	}
 }
 
 std::pair<int,int> Prusa_MK3S::GetWindowSize(){
@@ -89,12 +92,14 @@ std::pair<int,int> Prusa_MK3S::GetWindowSize(){
 	return prSize;
 }
 
-void Prusa_MK3S::OnVisualTypeSet(string type)
+void Prusa_MK3S::OnVisualTypeSet(const std::string &type)
 {
-	if (type.compare("none") == 0)
+	if (type=="none")
+	{
 		return;
+	}
 
-	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this));
+	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
 
 	AddHardware(*m_pVis);
 
@@ -115,8 +120,8 @@ void Prusa_MK3S::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
 {
 	if (v==0x02)// Marlin is done setting up UCSRA0...
 	{
-		v|=(1<<5); // leave the UDRE0 alone
-		printf("Reset UDRE0 after serial config changed\n");
+		v|=(1U<<5U); // leave the UDRE0 alone
+		std::cout << "Reset UDRE0 after serial config changed\n";
 	}
 	avr_core_watch_write(avr,addr,v);
 }
@@ -124,7 +129,7 @@ void Prusa_MK3S::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
 void Prusa_MK3S::SetupIR()
 {
 	// Setup the 3S IR sensor.
-	printf("MK3S - adding IR sensor.\n");
+	std::cout << "MK3S - adding IR sensor.\n";
 	AddHardware(IR, GetPinNumber(VOLT_IR_PIN));
 	TryConnect(IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
 	TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
@@ -137,10 +142,12 @@ void Prusa_MK3S::SetupHardware()
 	SetupIR();
 
 	if (GetConnectSerial())
+	{
 		UART0.Connect('0');
+	}
 
 	auto fcnSerial = [](avr_t *avr, avr_io_addr_t addr, uint8_t v, void * param)
-	{Prusa_MK3S *p = (Prusa_MK3S*)param; p->FixSerial(avr, addr,v);};
+	{auto *p = static_cast<Prusa_MK3S*>(param); p->FixSerial(avr, addr,v);};
 
 	avr_register_io_write(m_pAVR, 0xC0, fcnSerial, this);
 
@@ -174,21 +181,21 @@ void Prusa_MK3S::OnAVRCycle()
 	{
 		switch (key) {
 			case 'w':
-				printf("<");
+				std::cout << '<';
 				encoder.Twist(RotaryEncoder::CCW_CLICK);
 				if (m_pVis) m_pVis->TwistKnob(true);
 				break;
 			case 's':
-				printf(">");
+				std::cout << '>';
 				encoder.Twist(RotaryEncoder::CW_CLICK);
 				if (m_pVis) m_pVis->TwistKnob(false);
 				break;
 			case 0xd:
-				printf("ENTER pushed\n");
+				std::cout << "ENTER pushed\n";
 				encoder.Push();
 				break;
 			case 'r':
-				printf("RESET/KILL\n");
+				std::cout << "RESET/KILL\n";
 				// RESET BUTTON
 				SetResetFlag();
 				encoder.Push(); // I dont' know why this is required to not get stuck in factory reset mode.
@@ -196,7 +203,7 @@ void Prusa_MK3S::OnAVRCycle()
 				// any avr_run cycles between them. :-/
 				break;
 			case 't':
-				printf("FACTORY_RESET\n");
+				std::cout << "FACTORY_RESET\n";
 				m_bFactoryReset =true;
 				// Hold the button during boot to get factory reset menu
 				SetResetFlag();
@@ -205,14 +212,14 @@ void Prusa_MK3S::OnAVRCycle()
 				encoder.PushAndHold();
 				break;
 			case 'm':
-				printf("Toggled Mute\n");
+				std::cout << "Toggled Mute\n";
 				m_buzzer.ToggleMute();
 				break;
 			case 'y':
 				pinda.ToggleSheet();
 				break;
 			case 'p':
-				printf("SIMULATING POWER PANIC\n");
+				std::cout << "SIMULATING POWER PANIC\n";
 				PowerPanic.Press(500);
 				break;
 			case 'f':
@@ -224,12 +231,12 @@ void Prusa_MK3S::OnAVRCycle()
 			case 'c':
 				if (!sd_card.IsMounted())
 				{
-					printf("Mounting SD image...\n");
+					std::cout << "Mounting SD image...\n";
 					sd_card.Mount(); // Remounts last image.
 				}
 				else
 				{
-					printf("SD card removed...\n");
+					std::cout << "SD card removed...\n";
 					sd_card.Unmount();
 				}
 				break;
@@ -241,12 +248,12 @@ void Prusa_MK3S::OnAVRCycle()
 	}
 }
 
-void Prusa_MK3S::OnMouseMove(int x,int y)
+void Prusa_MK3S::OnMouseMove(int,int)
 {
-	// TODO - passthrough for vis.
+	// Passthrough? May not be necessary...
 }
 
-void Prusa_MK3S::OnKeyPress(unsigned char key, int x, int y)
+void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
 {
 	switch (key) {
 		case 'q':
@@ -261,7 +268,7 @@ void Prusa_MK3S::OnKeyPress(unsigned char key, int x, int y)
 			break;
 		case 'z':
 			m_bPaused ^= true;
-			printf("Pause: %u\n",m_bPaused.load());
+			std::cout <<  "Pause: " << m_bPaused << '\n';
 			break;
 		case 'l':
 			if (m_pVis)m_pVis->ClearPrint();
@@ -285,7 +292,7 @@ void Prusa_MK3S::OnKeyPress(unsigned char key, int x, int y)
 	}
 }
 
-void Prusa_MK3S::OnMousePress(int button, int action, int x, int y)
+void Prusa_MK3S::OnMousePress(int button, int action, int, int)
 {
 	if (button == GLUT_LEFT_BUTTON || button == GLUT_RIGHT_BUTTON) {
 		if (action == GLUT_DOWN) {

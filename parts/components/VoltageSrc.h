@@ -23,10 +23,12 @@
 #pragma once
 
 #include "ADCPeripheral.h"  // for ADCPeripheral
+#include "IScriptable.h"
 #include "Scriptable.h"
-#include <stdint.h>         // for uint32_t, uint8_t
 #include "sim_irq.h"        // for avr_irq_t
+#include <cstdint>         // for uint32_t, uint8_t
 #include <string>
+#include <vector>
 
 class VoltageSrc: public ADCPeripheral, public Scriptable {
 public:
@@ -39,7 +41,7 @@ public:
     // Helper to keep pairs in sync.
 
     // Constructs a new VoltageSrc on ADC mux uiMux, with a v scale factor of fVScale and a starting reading of fStartV
-    VoltageSrc(float fVScale = 1.0f, // voltage scale factor to bring it in line with the ADC 0-5v input.
+    explicit VoltageSrc(float fVScale = 1.0f, // voltage scale factor to bring it in line with the ADC 0-5v input.
             float fStartV = 0.0f );
 
     // Initializes the source (connets it to supplied AVR's ADC)
@@ -53,9 +55,9 @@ public:
 
 protected:
     // ADC read trigger.
-    virtual uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
+    uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
-	LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+	LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
     // Input trigger
     void OnInput(avr_irq_t *pIRQ, uint32_t value);

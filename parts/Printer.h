@@ -20,7 +20,8 @@
 
 #pragma once
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <string>
 #include <utility>
 
 class Printer
@@ -33,26 +34,26 @@ class Printer
 			ADVANCED = 0x2,
 		};
 
-		Printer(){};
+		Printer() = default;
 		// GL methods, use these to render your printer visuals and
 		virtual void Draw(){};
 
 		// Passthrough for GlutKeyboardFunc
-		virtual void OnKeyPress(unsigned char key, int x, int y){};
+		virtual void OnKeyPress(unsigned char /*key*/, int /*x*/, int /*y*/){};
 
 		// Passthrough for GlutMouseFunc
-		virtual void OnMousePress(int button, int action, int x, int y){};
+		virtual void OnMousePress(int /*button*/, int /*action*/, int /*x*/, int /*y*/){};
 
 		// Passthrough for GlutMotionFunc
-		virtual void OnMouseMove(int x, int y){};
+		virtual void OnMouseMove(int /*y*/, int /*y*/){};
 
 		// Overload this if you need to setup your visuals.
-		virtual void OnVisualTypeSet(string type){};
+		virtual void OnVisualTypeSet(const std::string &/*type*/){};
 
 		virtual std::pair<int,int> GetWindowSize() = 0;
 
-		string GetVisualType() { return m_visType; }
-		void SetVisualType(string visType) {m_visType = visType; OnVisualTypeSet(visType);}
+		std::string GetVisualType() { return m_visType; }
+		void SetVisualType(const std::string &visType) {m_visType = visType; OnVisualTypeSet(visType);}
 
 		inline void SetConnectSerial(bool bVal){m_bConnectSerial = bVal;}
 
@@ -60,7 +61,7 @@ class Printer
 		bool GetConnectSerial(){return m_bConnectSerial;}
 
 	private:
-		string m_visType = "lite";
+		std::string m_visType = "lite";
 		bool m_bConnectSerial = false;
 
 };

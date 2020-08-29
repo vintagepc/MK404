@@ -20,26 +20,26 @@
 
 #pragma once
 
-#include <stdint.h>        // for uint32_t
-#include <string>          // for string
-#include <utility>         // for pair
 #include "GCodeSniffer.h"  // for GCodeSniffer
 #include "IRSensor.h"      // for IRSensor, IRSensor::IRState::IR_AUTO
 #include "MMU2.h"          // for MMU2
 #include "Prusa_MK3S.h"    // for Prusa_MK3S
+#include "SerialPipe.h"
 #include "sim_irq.h"       // for avr_irq_t
-class SerialPipe;
-
+#include <cstdint>        // for uint32_t
+#include <memory>
+#include <string>          // for string
+#include <utility>         // for pair
 
 class Prusa_MK3SMMU2 : public Prusa_MK3S
 {
 
 	public:
 		Prusa_MK3SMMU2():Prusa_MK3S(){};
-		~Prusa_MK3SMMU2();
+		~Prusa_MK3SMMU2() override = default;
 
 		void Draw() override;
-		void OnVisualTypeSet(string type) override;
+		void OnVisualTypeSet(const std::string &type) override;
 
 		bool GetHasMMU() override {return true;}
 
@@ -56,7 +56,7 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 
 		MMU2 m_MMU;
 		GCodeSniffer m_sniffer = GCodeSniffer('T');
-		SerialPipe *m_pipe = nullptr;
+		std::unique_ptr<SerialPipe> m_pipe {nullptr};
 
 	private:
 

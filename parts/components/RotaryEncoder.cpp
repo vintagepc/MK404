@@ -21,10 +21,11 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 
 #include "RotaryEncoder.h"
 #include "TelemetryHost.h"
+#include "gsl-lite.hpp"
+#include <iostream>
 
 static constexpr uint8_t  STATE_COUNT = 4;
 static constexpr uint32_t PULSE_DURATION_US = 10000UL;
@@ -38,49 +39,50 @@ static constexpr uint8_t m_States[STATE_COUNT] = {
 	0b01
 };
 
-avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t * avr,avr_cycle_count_t when)
+avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
 {
 	switch (m_eDirection) {
 		case CW_CLICK:
 			// Advance phase forwards
             m_iPhase = (m_iPhase+1)%STATE_COUNT;
 
-			if (m_bVerbose) {
-				printf("ROTENC: CW twist, pins A:%x, B:%x\n",
-					m_States[m_iPhase]>>1,
-					m_States[m_iPhase]&1);
+			if (m_bVerbose)
+			{
+				std::cout << "RotaryEncoder: CW Twist" << '\n';
 			}
 			break;
 		case CCW_CLICK:
 			// Advance phase backwards
 			 m_iPhase = (m_iPhase+3)%STATE_COUNT;
-			if (m_bVerbose) {
-				printf("ROTENC: CCW twist, pins: A:%x, B:%x\n",
-					m_States[m_iPhase]>>1,
-					m_States[m_iPhase]&1);
+			if (m_bVerbose)
+			{
+				std::cout << "RotaryEncoder: CCW twist" << '\n';
 			}
 			break;
 
 		default:
-			printf("Rotenc: Invalid direction.\n"); // Invalid direction
+			std::cout << "Rotenc: Invalid direction.\n"; // Invalid direction
 			break;
 	}
-    RaiseIRQ(OUT_A, m_States[m_iPhase]>>1);
-    RaiseIRQ(OUT_B, m_States[m_iPhase]&1);
+    RaiseIRQ(OUT_A, gsl::at(m_States, m_iPhase)>>1U);
+    RaiseIRQ(OUT_B, gsl::at(m_States, m_iPhase)&1U);
 
     if(--m_uiPulseCt >0) // Continue ticking the encoder
+	{
 		RegisterTimerUsec(m_fcnStateChange,PULSE_DURATION_US,this);
+	}
 	else
+	{
 		m_bTimerRunning = false;
+	}
 	return 0;
 }
 
-avr_cycle_count_t RotaryEncoder::OnButtonReleaseTimer(avr_t * avr, avr_cycle_count_t when)
+avr_cycle_count_t RotaryEncoder::OnButtonReleaseTimer(avr_t *, avr_cycle_count_t)
 {
 	RaiseIRQ(OUT_BUTTON, 1);
-	if (m_bVerbose) {
-		printf("ROTENC: Button release\n");
-	}
+	if (m_bVerbose)	std::cout << "ROTENC: Button release\n";
+
 	return 0;
 }
 
@@ -88,7 +90,7 @@ void RotaryEncoder::_Push(uint32_t uiDuration)
 {
 	// Press down
 	if (m_bVerbose) {
-		printf("ROTENC: Button press\n");
+		std::cout << "ROTENC: Button press\n";
 	}
 	RaiseIRQ(OUT_BUTTON, 0);
 
@@ -122,7 +124,9 @@ void RotaryEncoder::Release()
 void RotaryEncoder::Twist(Direction eDir)
 {
 	if (m_eDirection == eDir)
+	{
 		m_uiPulseCt+=4; // Just tick it more if the dir is correct.
+	}
 	else
 	{
 		m_eDirection = eDir;
@@ -138,13 +142,13 @@ void RotaryEncoder::Twist(Direction eDir)
 void RotaryEncoder::Init(avr_t *avr)
 {
 	_Init(avr, this);
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this,OUT_BUTTON,{TC::InputPin, TC::Display});
-	pTH->AddTrace(this,OUT_A,{TC::InputPin, TC::Display});
-	pTH->AddTrace(this,OUT_B,{TC::InputPin, TC::Display});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this,OUT_BUTTON,{TC::InputPin, TC::Display});
+	TH.AddTrace(this,OUT_A,{TC::InputPin, TC::Display});
+	TH.AddTrace(this,OUT_B,{TC::InputPin, TC::Display});
 }
 
-Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const std::vector<std::string>&)
 {
 	switch (iAct)
 	{

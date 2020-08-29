@@ -23,15 +23,15 @@
 
 #pragma once
 
-#include <stdint.h>            // for uint32_t
-#include <string>              // for string
-#include <vector>              // for vector
 #include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include <cstdint>            // for uint32_t
+#include <string>              // for string
+#include <vector>              // for vector
 
 class Button:public BasePeripheral, public Scriptable
 {
@@ -40,7 +40,7 @@ class Button:public BasePeripheral, public Scriptable
 	#include "IRQHelper.h"
 
 	// Creates a new button with name strName
-	Button(std::string strName = "Button");
+	explicit Button(const std::string &strName = "Button");
 
 	// Initializes the button on "avr"
 	void Init(struct avr_t * avr);
@@ -49,7 +49,7 @@ class Button:public BasePeripheral, public Scriptable
 	void Press(uint32_t uiUSec = 2000);
 
 	protected:
-		LineStatus ProcessAction(unsigned int iAction, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &vArgs) override;
 
 	private:
 		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);

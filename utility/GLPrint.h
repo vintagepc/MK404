@@ -21,13 +21,12 @@
 
 #pragma once
 
+#include "gsl-lite.hpp"
 #include <array>   // for array
-#include <cmath>   // for sqrt
-#include <vector>  // for vector
-#include <mutex>
 #include <atomic>
-
-using namespace std;
+#include <cmath>   // for sqrt
+#include <mutex>
+#include <vector>  // for vector
 
 class GLPrint
 {
@@ -47,16 +46,16 @@ class GLPrint
 
 	private:
 
-		static inline void CrossProduct(const float fA[3], const float fB[3], float fOut[3])
+		static inline void CrossProduct(const std::vector<float>&fA, const std::vector<float>&fB, gsl::span<float>fOut)
 		{
 			fOut[0] = (fA[1]*fB[2]) - (fA[2]*fB[1]);
 			fOut[1] = (fA[2]*fB[0]) - (fA[0]*fB[2]);
 			fOut[2] = (fA[0]*fB[1]) - (fA[1]*fB[0]);
 		};
 
-		static inline void Normalize(float fA[3])
+		static inline void Normalize(gsl::span<float>fA)
 		{
-			float fNorm = sqrt((fA[0]*fA[0]) + (fA[1]*fA[1]) + (fA[2]*fA[2]));
+			float fNorm = std::sqrt((fA[0]*fA[0]) + (fA[1]*fA[1]) + (fA[2]*fA[2]));
 			fA[0]/=fNorm;
 			fA[1]/=fNorm;
 			fA[2]/=fNorm;
@@ -65,21 +64,21 @@ class GLPrint
 		//void FindNearest(const float fVec[3]);
 
 
-		array<int,4> m_iExtrEnd, m_iExtrStart;
-		array<float,4> m_fExtrEnd, m_fExtrStart;
-		vector<int> m_ivStart, m_ivTStart;
-		vector<int> m_ivCount, m_ivTCount;
-		vector<float> m_fvDraw, m_fvNorms;
-		vector<float> m_fvTri;
+		std::array<int,4> m_iExtrEnd = {{0,0,0,0}}, m_iExtrStart = {{0,0,0,0}};
+		std::array<float,4> m_fExtrEnd = {{0,0,0,0}}, m_fExtrStart = {{0,0,0,0}};
+		std::vector<int> m_ivStart, m_ivTStart;
+		std::vector<int> m_ivCount, m_ivTCount;
+		std::vector<float> m_fvDraw, m_fvNorms;
+		std::vector<float> m_fvTri;
 		// Layer vertex tracking.
-		vector<float*> m_vpfLayer1, m_vpfLayer2;
-		// vector<float*> *m_pCurLayer = &m_vpfLayer1;   // not used
-		// vector<float*> *m_pPrevLayer = &m_vpfLayer2;  // not used
+		std::vector<float*> m_vpfLayer1, m_vpfLayer2;
+		// std::vector<float*> *m_pCurLayer = &m_vpfLayer1;   // not used
+		// std::vector<float*> *m_pPrevLayer = &m_vpfLayer2;  // not used
 		float m_fCurZ = -1;
 		// float m_fLastZ = -1;                          // not used
 		float m_fEMax = 0;
 		const float m_fColR, m_fColG, m_fColB;
-		atomic_bool m_bExtruding = {false};
+		std::atomic_bool m_bExtruding = {false};
 
 		std::mutex m_lock;
 };

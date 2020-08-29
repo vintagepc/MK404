@@ -21,17 +21,33 @@
  */
 
 #include "HD44780.h"
-#include <sim_time.h>        // for avr_usec_to_cycles
-#include <stdio.h>           // for printf
-#include <string.h>          // for memset
-#include <scoped_allocator>  // for allocator_traits<>::value_type
 #include "Scriptable.h"      // for Scriptable
 #include "TelemetryHost.h"
+#include "gsl-lite.hpp"
+#include <iostream>
+#include <memory>
+
 
 //#define TRACE(_w) _w
 #ifndef TRACE
 #define TRACE(_w)
 #endif
+
+		// Makes a display with the given dimensions.
+HD44780::HD44780(uint8_t width, uint8_t height):Scriptable("LCD"),m_uiHeight(height),m_uiWidth(width)
+{
+	m_lineOffsets[2] += width;
+	m_lineOffsets[3] += width;
+	std::string strBlnk;
+	strBlnk.assign(width,' ');
+	for (int i=0; i<height; i++)
+	{
+		m_vLines.push_back(strBlnk);
+	}
+	RegisterActionAndMenu("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
+	RegisterAction("WaitForText","Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
+	RegisterAction("CheckCGRAM","Checks if the CGRAM address matches the value. (value, addr)",ActCheckCGRAM,{ArgType::Int,ArgType::Int});
+};
 
 void HD44780::ResetCursor()
 {
@@ -46,12 +62,17 @@ void HD44780::ClearScreen()
 {
 	{
 		std::lock_guard<std::mutex> lock(m_lock);
-    	memset(m_vRam, ' ', sizeof(m_vRam));
+    	for (auto &c : m_vRam)
+		{
+			c = ' ';
+		}
 	}
 	SetFlag(HD44780_FLAG_DIRTY, 1);
 	RaiseIRQ(ADDR, m_uiCursor);
 	for (int i=0; i<m_uiHeight; i++)
+	{
 		m_vLines.at(i).assign(m_uiWidth,' ');
+	}
 	m_uiLineChg = 0xFF;
 }
 
@@ -60,14 +81,14 @@ void HD44780::ClearScreen()
  * without the AVR firmware 'reading' the status byte. It
  * automatically clears the BUSY flag for the next command
  */
-avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t * avr,avr_cycle_count_t when)
+avr_cycle_count_t HD44780::OnBusyTimeout(struct avr_t *,avr_cycle_count_t)
 {
 	SetFlag(HD44780_FLAG_BUSY, 0);
 	RaiseIRQ(BUSY, 0);
 	return 0;
 }
 
-Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector<string> &vArgs)
+Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const std::vector<std::string> &vArgs)
 {
 	switch (iAction)
 	{
@@ -79,7 +100,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 			int iAddr = stoi(vArgs.at(1));
 			if (iAddr<0 || iAddr>63)
 			{
-				return IssueLineError(string("ADDR") + to_string(iAddr) + " is out of range [0,63]");
+				return IssueLineError(std::string("ADDR") + std::to_string(iAddr) + " is out of range [0,63]");
 			}
 			if (m_cgRam[iAddr] == stoi(vArgs.at(0)))
 			{
@@ -92,30 +113,31 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const vector
 		}
 		case ActWaitForText:
 			int iLine = stoi(vArgs.at(1));
-			uint8_t uiLnChk = iLine<0 ? 0xFF : 1<<iLine;
+			uint8_t uiLnChk = iLine<0 ? 0xFF : 1U<<gsl::narrow<uint8_t>(iLine);
 			if (!(uiLnChk & m_uiLineChg)) // NO changes to check against.
 			{
 				return LineStatus::Waiting;
 			}
 
 			if (iLine>=m_uiHeight || iLine<-1)
-				return IssueLineError(string("Line index ") + to_string(iLine) + " is out of range [-1," + to_string (m_uiHeight) + "]");
+			{
+				return IssueLineError(std::string("Line index ") + std::to_string(iLine) + " is out of range [-1," + std::to_string (m_uiHeight) + "]");
+			}
 
 			bool bResult = false;
 			if (iLine<0)
 			{
 				for (int i=0; i<m_uiHeight; i++)
 				{
-					bResult |= m_vLines.at(i).find(vArgs.at(0))!=string::npos;
+					bResult |= m_vLines.at(i).find(vArgs.at(0))!=std::string::npos;
 					if (bResult) break;
 				}
 			}
 			else
 			{
-				printf("LN: \"%s\"\n", m_vLines.at(iLine).c_str());
-				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=string::npos;
+				bResult = m_vLines.at(iLine).find(vArgs.at(0))!=std::string::npos;
 			}
-			m_uiLineChg^= iLine<0 ? 0xFF : 1<<iLine; // Reset line change tracking.
+			m_uiLineChg^= iLine<0 ? 0xFF : 1U<<gsl::narrow<uint8_t>(iLine); // Reset line change tracking.
 			return bResult ? LineStatus::Finished : LineStatus::Waiting;
 	}
 	return LineStatus::Unhandled;
@@ -128,21 +150,33 @@ void HD44780::IncrementCursor()
 	if (GetFlag(HD44780_FLAG_I_D)) {
 		TRACE(printf("Cursor++ (%02x)\n",m_uiCursor));
 		if (m_uiCursor == 0x67) // end of display.
+		{
 			m_uiCursor = 0x00; // wrap.
+		}
 		else if (m_uiCursor == 0x27)
+		{
 			m_uiCursor = 0x40;
+		}
 		else
+		{
 			m_uiCursor++;
+		}
 	}
 	else
 	 {
 		TRACE(printf("Cursor--\n"));
 		if (m_uiCursor == 0x00)
+		{
 			m_uiCursor = 0x67;
+		}
 		else if (m_uiCursor == 0x40)
+		{
 			m_uiCursor = 0x27;
+		}
 		else
+		{
 			m_uiCursor--;
+		}
 
 		//SetFlag(HD44780_FLAG_DIRTY, 1);
 		//avr_raise_irq(b->irq + ADDR, m_uiCursor);
@@ -153,15 +187,27 @@ void HD44780::IncrementCursor()
 void HD44780::IncrementCGRAMCursor()
 {
 	if (GetFlag(HD44780_FLAG_I_D))
+	{
 		if (m_uiCGCursor==63)
+		{
 			m_uiCGCursor = 0;
+		}
 		else
+		{
 			m_uiCGCursor++;
+		}
+	}
 	else
+	{
 		if (m_uiCGCursor==0)
+		{
 			m_uiCGCursor = 63;
+		}
 		else
+		{
 			m_uiCGCursor--;
+		}
+	}
 }
 
 /*
@@ -184,18 +230,19 @@ uint32_t HD44780::OnDataReady()
 			m_vRam[m_uiCursor] = m_uiDataPins;
 		}
 
-		for (int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
-			if (m_uiCursor>= m_lineOffsets[i] && m_uiCursor< (m_lineOffsets[i] + m_uiWidth))
+		for (unsigned int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
+		{
+			if (m_uiCursor>= m_lineOffsets.at(i) && m_uiCursor< (m_lineOffsets.at(i) + m_uiWidth))
 			{
-				int iPos =m_uiCursor - m_lineOffsets[i];
-				string &line = m_vLines[i];
+				int iPos =m_uiCursor - m_lineOffsets.at(i);
+				std::string &line = m_vLines[i];
 				line[iPos] = m_uiDataPins;
-				m_uiLineChg |= 1<<i;
+				m_uiLineChg |= 1U<<i;
 			}
-
+		}
 		TRACE(printf("hd44780_write_data %02x (%c) to %02x\n", m_uiDataPins, m_uiDataPins, m_uiCursor));
 		if (GetFlag(HD44780_FLAG_S_C)) {	// display shift ?
-			printf("Display shift requested. Not implemented, sorry!\n");
+			std::cout << "Display shift requested. Not implemented, sorry!\n";
 		} else {
 			IncrementCursor();
 		}
@@ -211,53 +258,60 @@ uint32_t HD44780::OnDataReady()
 uint32_t HD44780::OnCmdReady()
 {
 	uint32_t delay = 37; // uS
-	int top = 7;	// get highest bit set'm
+	unsigned int top = 7;	// get highest bit set'm
 	while (top)
-		if (m_uiDataPins & (1 << top))
+	{
+		if (m_uiDataPins & (1U << top))
+		{
 			break;
-		else top--;
+		}
+		else
+		{
+			top--;
+		}
+	}
 	TRACE(printf("hd44780_write_command %02x (top: %u)\n", m_uiDataPins,top));
 	switch (top) {
 		// Set	DDRAM address
 		case 7:		// 1 ADD ADD ADD ADD ADD ADD ADD
-			m_uiCursor = m_uiDataPins & 0x7f;
-			m_bInCGRAM = 0;
+			m_uiCursor = m_uiDataPins & 0x7fU;
+			m_bInCGRAM = false;
 			break;
 		// Set	CGRAM address
 		case 6:		// 0 1 ADD ADD ADD ADD ADD ADD ADD
 			TRACE(printf("cgram enter\n"));
-			m_bInCGRAM = 1;
-			m_uiCGCursor = (m_uiDataPins & 0x3f);
+			m_bInCGRAM = true;
+			m_uiCGCursor = (m_uiDataPins & 0x3fU);
 			break;
 		// Function	set
 		case 5:		// 0 0 1 DL N F x x
 		{
 			int four = !GetFlag(HD44780_FLAG_D_L);
-			SetFlag(HD44780_FLAG_D_L, m_uiDataPins & 16);
-			SetFlag(HD44780_FLAG_N, m_uiDataPins & 8);
-			SetFlag(HD44780_FLAG_F, m_uiDataPins & 4);
+			SetFlag(HD44780_FLAG_D_L, m_uiDataPins & 16U);
+			SetFlag(HD44780_FLAG_N, m_uiDataPins & 8U);
+			SetFlag(HD44780_FLAG_F, m_uiDataPins & 4U);
 			if (!four && !GetFlag(HD44780_FLAG_D_L)) {
-				printf("%s activating 4 bits mode\n", __FUNCTION__);
+				std::cout << static_cast<const char*>(__FUNCTION__) << "activating 4-bit mode" << '\n';
 				SetFlag(HD44780_FLAG_LOWNIBBLE, 0);
 			}
 		}
 			break;
 		// Cursor display shift
 		case 4:		// 0 0 0 1 S/C R/L x x
-			SetFlag(HD44780_FLAG_S_C, m_uiDataPins & 8);
-			SetFlag(HD44780_FLAG_R_L, m_uiDataPins & 4);
+			SetFlag(HD44780_FLAG_R_L, m_uiDataPins & 4U);
+			SetFlag(HD44780_FLAG_S_C, m_uiDataPins & 8U);
 			break;
 		// Display on/off control
 		case 3:		// 0 0 0 0 1 D C B
-			SetFlag(HD44780_FLAG_D, m_uiDataPins & 4);
-			SetFlag(HD44780_FLAG_C, m_uiDataPins & 2);
-			SetFlag(HD44780_FLAG_B, m_uiDataPins & 1);
+			SetFlag(HD44780_FLAG_D, m_uiDataPins & 4U);
+			SetFlag(HD44780_FLAG_C, m_uiDataPins & 2U);
+			SetFlag(HD44780_FLAG_B, m_uiDataPins & 1U);
 			SetFlag(HD44780_FLAG_DIRTY, 1);
 			break;
 		// Entry mode set
 		case 2:		// 0 0 0 0 0 1 I/D S
-			SetFlag(HD44780_FLAG_I_D, m_uiDataPins & 2);
-			SetFlag(HD44780_FLAG_S, m_uiDataPins & 1);
+			SetFlag(HD44780_FLAG_I_D, m_uiDataPins & 2U);
+			SetFlag(HD44780_FLAG_S, m_uiDataPins & 1U);
 			break;
 		// Return home
 		case 1:		// 0 0 0 0 0 0 1 x
@@ -286,26 +340,38 @@ uint32_t HD44780::ProcessWrite()
 
 	if (four) { // 4 bits !
 		if (comp)
-			m_uiDataPins = (m_uiDataPins & 0xf0) | ((m_uiPinState >>  D4) & 0xf);
+		{
+			m_uiDataPins = (m_uiDataPins & 0xf0U) | (gsl::narrow<unsigned>(m_uiPinState >> gsl::narrow<uint8_t>(D4)) & 0xfU);
+		}
 		else
-			m_uiDataPins = (m_uiDataPins & 0xf) | ((m_uiPinState >>  (D4-4)) & 0xf0);
+		{
+			m_uiDataPins = (m_uiDataPins & 0xfU) | (gsl::narrow<unsigned>(m_uiPinState >> gsl::narrow<uint8_t>(D4-4U)) & 0xf0U);
+		}
 		write = comp;
 		ToggleFlag(HD44780_FLAG_LOWNIBBLE);
-	} else {	// 8 bits
-		m_uiDataPins = (m_uiPinState >>  D0) & 0xff;
+	}
+	else
+	{	// 8 bits
+		m_uiDataPins = gsl::narrow<uint8_t>(m_uiPinState >> gsl::narrow<uint8_t>(D0));
 		write++;
 	}
 	RaiseIRQ(DATA_IN, m_uiDataPins);
 
 	// write has 8 bits to process
-	if (write) {
-		if (GetFlag(HD44780_FLAG_BUSY)) {
-			printf("%s command %02x write when still BUSY\n", __FUNCTION__, m_uiDataPins);
+	if (write)
+	{
+		if (GetFlag(HD44780_FLAG_BUSY))
+		{
+			std::cout << static_cast<const char*>(__FUNCTION__) << " command " << m_uiDataPins << "write when still BUSY" << '\n';
 		}
-		if (m_uiPinState & (1 << RS))	// write data
+		if (m_uiPinState & (1U << RS))	// write data
+		{
 			delay = OnDataReady();
-		else										// write command
+		}
+		else
+		{										// write command
 			delay = OnCmdReady();
+		}
 	}
 	return delay;
 }
@@ -326,7 +392,7 @@ uint32_t HD44780::ProcessRead()
 
 	if (!done) { // new read
 
-		if (m_uiPinState & (1 << RS)) {	// read data
+		if (m_uiPinState & (1U << RS)) {	// read data
 			delay = 37;
 			{
 				std::lock_guard<std::mutex> lock(m_lock);
@@ -352,27 +418,36 @@ uint32_t HD44780::ProcessRead()
 
 		done++;
 		if (four)
+		{
 			SetFlag(HD44780_FLAG_LOWNIBBLE,1); // for next read
+		}
 	}
 
 	// now send the prepared output pins to send as IRQs
-	if (done) {
-		RaiseIRQ(ALL, m_uiReadPins >> 4);
-		for (int i = four ? 4 : 0; i < 8; i++)
-			RaiseIRQ(D0 + i, (m_uiReadPins >> i) & 1);
+	if (done)
+	{
+		RaiseIRQ(ALL, m_uiReadPins >> 4U);
+		for (unsigned int i = four ? 4 : 0; i < 8; i++)
+		{
+			RaiseIRQ(D0 + i, static_cast<unsigned int>(m_uiReadPins >> i) & 1U);
+		}
 	}
 	return delay;
 }
 
-avr_cycle_count_t HD44780::OnEPinChanged(struct avr_t * avr, avr_cycle_count_t when)
+avr_cycle_count_t HD44780::OnEPinChanged(struct avr_t *, avr_cycle_count_t)
 {
     SetFlag(HD44780_FLAG_REENTRANT, 1);
 	int delay = 0; // in uS
 
-	if (m_uiPinState & (1 << RW))	// read !?!
+	if (m_uiPinState & (1U << RW))	// read !?!
+	{
 		delay = ProcessRead();
-	else										// write
+	}
+	else
+	{										// write
 		delay = ProcessWrite();
+	}
 
 	if (delay) {
 		SetFlag(HD44780_FLAG_BUSY, 1);
@@ -393,55 +468,58 @@ void HD44780::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
 		 * This is a shortcut for firmware that respects the conventions
 		 */
 		case ALL:
-			for (int i = 0; i < 4; i++)
-				OnPinChanged(GetIRQ(D4) + i,
-						((value >> i) & 1));
-			OnPinChanged(GetIRQ(RS), (value >> 4));
-			OnPinChanged(GetIRQ(E), (value >> 5));
-			OnPinChanged(GetIRQ(RW), (value >> 6));
+			for (unsigned int i = 0; i < 4; i++)
+			{
+				OnPinChanged(GetIRQ(D4+i),
+						((value >> i) & 1U));
+			}
+			OnPinChanged(GetIRQ(RS), (value >> 4U));
+			OnPinChanged(GetIRQ(E), (value >> 5U));
+			OnPinChanged(GetIRQ(RW), (value >> 6U));
 			return; // job already done!
 		case D0 ... D7:
 			// don't update these pins in read mode
 			if (GetFlag(HD44780_FLAG_REENTRANT))
+			{
 				return;
+			}
 			break;
 	}
-	m_uiPinState = (m_uiPinState & ~(1 << irq->irq)) | (value << irq->irq);
-	int eo = old & (1 << E);
-	int e = m_uiPinState & (1 << E);
+	m_uiPinState = (m_uiPinState & ~(1U << irq->irq)) | (value << irq->irq);
+	int eo = old & (1U << E);
+	int e = m_uiPinState & (1U << E);
 	// on the E pin rising edge, do stuff otherwise just exit
 	if (!eo && e)
+	{
 		RegisterTimer(m_fcnEPinChanged,1,this);
+	}
 }
 
 void HD44780::Init(avr_t *avr)
 {
     _Init(avr,this);
-	{
-		std::lock_guard<std::mutex> lock(m_lock);
-		memset(m_cgRam, 0, sizeof(m_cgRam));
-		memset(m_vRam, 0, sizeof(m_vRam));
-	}
 	/*
 	 * Register callbacks on all our IRQs
 	 */
 
 	for (int i = 0; i < BUSY; i++)
+	{
 		RegisterNotify(ALL+i, MAKE_C_CALLBACK(HD44780,OnPinChanged), this);
+	}
 
 	ResetCursor();
     ClearScreen();
 
-	printf("LCD: %duS is %d cycles for your AVR\n",
-			37, (int)avr_usec_to_cycles(avr, 37));
-	printf("LCD: %duS is %d cycles for your AVR\n",
-			1, (int)avr_usec_to_cycles(avr, 1));
+	// printf("LCD: %duS is %d cycles for your AVR\n",
+	// 		37, (int)avr_usec_to_cycles(avr, 37));
+	// printf("LCD: %duS is %d cycles for your AVR\n",
+	// 		1, (int)avr_usec_to_cycles(avr, 1));
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, E, {TC::Display, TC::OutputPin});
-	pTH->AddTrace(this, RS, {TC::Display, TC::OutputPin});
-	pTH->AddTrace(this, RW, {TC::Display, TC::OutputPin});
-	pTH->AddTrace(this, DATA_IN, {TC::Display},8);
-	pTH->AddTrace(this, BRIGHTNESS_IN, {TC::Display, TC::OutputPin});
-	pTH->AddTrace(this, BRIGHTNESS_PWM_IN, {TC::Display, TC::PWM});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, E, {TC::Display, TC::OutputPin});
+	TH.AddTrace(this, RS, {TC::Display, TC::OutputPin});
+	TH.AddTrace(this, RW, {TC::Display, TC::OutputPin});
+	TH.AddTrace(this, DATA_IN, {TC::Display},8);
+	TH.AddTrace(this, BRIGHTNESS_IN, {TC::Display, TC::OutputPin});
+	TH.AddTrace(this, BRIGHTNESS_PWM_IN, {TC::Display, TC::PWM});
 }

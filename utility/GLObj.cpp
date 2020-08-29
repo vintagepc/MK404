@@ -21,33 +21,34 @@
 
 
 #include "GLObj.h"
+#include "gsl-lite.hpp"
+#include "tiny_obj_loader.h"  // for attrib_t, index_t, mesh_t, shape_t, Loa...
 #include <GL/glew.h>          // for glMaterialfv, GL_FRONT, glBindTexture
 #include <algorithm>          // for max, min
-#include <cassert>            // for assert
 #include <cmath>              // for sqrtf
-#include <cstdio>             // for printf, size_t
 #include <cstring>            // for memcpy
-#include <iostream>           // for operator<<, endl, basic_ostream, cerr
+#include <functional>
+#include <iostream>           // for operator<<, endl, basic_ostream, std::cerr
 #include <limits>             // for numeric_limits
 #include <map>                // for map, _Rb_tree_iterator
 #include <scoped_allocator>   // for allocator_traits<>::value_type
 #include <string>             // for string, operator<<, char_traits
+#include <utility>
 #include <vector>             // for vector
-#include "tiny_obj_loader.h"  // for attrib_t, index_t, mesh_t, shape_t, Loa...
 
 
 // This disables textures and vertex colors, not used in favor of materials anyway.
 // Also cuts GPU RAM usage in half, and probably has performance gains for not needing to set the vertex properties.
 #define TEX_VCOLOR 0
 
-GLObj::GLObj(const std::string &strFile,  float fTX, float fTY, float fTZ, float fScale):m_strFile(strFile),m_fScale(fScale),m_fCorr{fTX,fTY,fTZ}
+GLObj::GLObj(std::string strFile,  float fTX, float fTY, float fTZ, float fScale):m_strFile(std::move(strFile)),m_fScale(fScale),m_fCorr{fTX,fTY,fTZ}
 {
 }
 
-GLObj::GLObj(const std::string &strFile, float fScale):m_strFile(strFile),m_fScale(fScale)
+GLObj::GLObj(std::string strFile, float fScale):m_strFile(std::move(strFile)),m_fScale(fScale)
 {
 }
-GLObj::GLObj(const std::string &strFile):m_strFile(strFile)
+GLObj::GLObj(std::string strFile):m_strFile(std::move(strFile))
 {
 }
 
@@ -56,29 +57,37 @@ void GLObj::Load()
 {
 	m_bLoaded = LoadObjAndConvert(m_strFile.c_str());
 	if (!m_bLoaded)
-		printf("Failed to load obj\n");
+	{
+		std::cout << "Failed to load obj\n";
+	}
 
 	m_fMaxExtent = 0.5f * (m_extMax[0] - m_extMin[0]);
-	if (m_fMaxExtent < 0.5f * (m_extMax[1] - m_extMin[1])) {
+	if (m_fMaxExtent < 0.5f * (m_extMax[1] - m_extMin[1]))
+	{
 			m_fMaxExtent = 0.5f * (m_extMax[1] - m_extMin[1]);
 	}
-	if (m_fMaxExtent < 0.5f * (m_extMax[2] - m_extMin[2])) {
+	if (m_fMaxExtent < 0.5f * (m_extMax[2] - m_extMin[2]))
+	{
 			m_fMaxExtent = 0.5f * (m_extMax[2] - m_extMin[2]);
 	}
 }
 
 void GLObj::SetAllVisible(bool bVisible)
 {
-	lock_guard<mutex> lock(m_lock);
-	for (size_t i=0; i<m_DrawObjects.size(); i++)
-		m_DrawObjects[i].bDraw = bVisible;
+	std::lock_guard<std::mutex> lock(m_lock);
+	for (auto &obj : m_DrawObjects)
+	{
+		obj.bDraw = bVisible;
+	}
 }
 
 void GLObj::SetSubobjectVisible(unsigned iObj, bool bVisible)
 {
-	lock_guard<mutex> lock(m_lock);
+	std::lock_guard<std::mutex> lock(m_lock);
 	if (iObj<m_DrawObjects.size())
+	{
 		m_DrawObjects[iObj].bDraw = bVisible;
+	}
 }
 
 
@@ -86,17 +95,21 @@ void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 {
 	if (iObj<m_DrawObjects.size() && iMat < m_materials.size())
 	{
-		lock_guard<mutex> lock(m_lock);
+		std::lock_guard<std::mutex> lock(m_lock);
 		//printf("Changed obj %d to %d\n",iObj,iMat);
 		m_DrawObjects[iObj].material_id = iMat;
 	}
 	else
-		printf("GLObj: Tried to set invalid material or object.\n");
+	{
+		std::cout << "GLObj: Tried to set invalid material or object.\n";
+	}
 }
 
 void GLObj::Draw() {
 	if (!m_bLoaded)
+	{
 		return;
+	}
 
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_FILL);
@@ -110,11 +123,14 @@ void GLObj::Draw() {
 	glTranslatef(m_fCorr[0],m_fCorr[1],m_fCorr[2]);
 	//glScalef(m_fScale,m_fScale,m_fScale);
 	if (m_swapMode == SwapMode::YMINUSZ)
+	{
 		glRotatef(-90,1,0,0);
-	lock_guard<mutex> lock(m_lock);
-	for (size_t i = 0; i < m_DrawObjects.size(); i++) {
-		DrawObject o = m_DrawObjects.at(i);
-		if (o.vb < 1 || !o.bDraw) {
+	}
+	std::lock_guard<std::mutex> lock(m_lock);
+	for (auto o : m_DrawObjects)
+	{
+		if (o.vb < 1 || !o.bDraw)
+		{
 			continue;
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, o.vb);
@@ -128,24 +144,26 @@ void GLObj::Draw() {
 
 		if ((o.material_id < m_materials.size())) {
 			std::string diffuse_texname = m_materials[o.material_id].diffuse_texname;
-			if (m_textures.find(diffuse_texname) != m_textures.end()) {
+			if (m_textures.find(diffuse_texname) != m_textures.end())
+			{
 				glBindTexture(GL_TEXTURE_2D, m_textures[diffuse_texname]);
 			} else {
-				float fCopy[4] = {0,0,0,1.0f};
-				memcpy(fCopy,m_materials[o.material_id].ambient,3*(sizeof(float)));
-				glMaterialfv(GL_FRONT, GL_AMBIENT,  fCopy);
-				memcpy(fCopy,m_materials[o.material_id].diffuse,3*(sizeof(float)));
-				glMaterialfv(GL_FRONT, m_matMode, fCopy);
-				memcpy(fCopy,m_materials[o.material_id].specular,3*(sizeof(float)));
-				glMaterialfv(GL_FRONT, GL_SPECULAR, fCopy);
-				glMaterialf(GL_FRONT, GL_SHININESS, (m_materials[o.material_id].shininess/1000.f)*128.f);
-				memcpy(fCopy,m_materials[o.material_id].emission,3*(sizeof(float)));
-				glMaterialfv(GL_FRONT, GL_EMISSION, fCopy);
+				const tinyobj::material_t pMat = gsl::at(m_materials,o.material_id);
+				float _fCopy[4] = {0,0,0,pMat.dissolve};
+				gsl::span<float> fCopy {_fCopy};
+				memcpy(fCopy.data(),static_cast<const float*>(pMat.ambient),3*(sizeof(float)));
+				glMaterialfv(GL_FRONT, GL_AMBIENT,  fCopy.begin());
+				memcpy(fCopy.data(),static_cast<const float*>(pMat.diffuse),3*(sizeof(float)));
+				glMaterialfv(GL_FRONT, m_matMode, fCopy.begin());
+				memcpy(fCopy.data(),static_cast<const float*>(pMat.specular),3*(sizeof(float)));
+				glMaterialfv(GL_FRONT, GL_SPECULAR, fCopy.begin());
+				glMaterialf(GL_FRONT, GL_SHININESS, (pMat.shininess/1000.f)*128.f);
+				glMaterialfv(GL_FRONT, GL_EMISSION, static_cast<const float*>(pMat.emission));
 			}
 
 		}
-		glVertexPointer(3, GL_FLOAT, stride, (const void*)0);
-		glNormalPointer(GL_FLOAT, stride, (const void*)(sizeof(float) * 3));
+		glVertexPointer(3, GL_FLOAT, stride, nullptr);
+		glNormalPointer(GL_FLOAT, stride, (const void*)((sizeof(float) * 3))); //NOLINT it is what it is.
 #if TEX_VCOLOR
 		glColorPointer(3, GL_FLOAT, stride, (const void*)(sizeof(float) * 6));
 		glTexCoordPointer(2, GL_FLOAT, stride, (const void*)(sizeof(float) * 9));
@@ -160,20 +178,20 @@ void GLObj::Draw() {
 
 static std::string GetBaseDir(const std::string &filepath) {
 	if (filepath.find_last_of("/\\") != std::string::npos)
+	{
 		return filepath.substr(0, filepath.find_last_of("/\\"));
+	}
 	return "";
 }
 
-static void CalcNormal(float N[3], float v0[3], float v1[3], float v2[3]) {
-	float v10[3];
-	v10[0] = v1[0] - v0[0];
-	v10[1] = v1[1] - v0[1];
-	v10[2] = v1[2] - v0[2];
+static void CalcNormal(gsl::span<float> N, gsl::span<float> v0, gsl::span<float> v1, gsl::span<float>v2)
+{
+	float _v10[3];
+	float _v20[3];
+	gsl::span<float> v10(_v10), v20(_v20);
 
-	float v20[3];
-	v20[0] = v2[0] - v0[0];
-	v20[1] = v2[1] - v0[1];
-	v20[2] = v2[2] - v0[2];
+	std::transform(v1.begin(), v1.end(), v0.begin(), v10.data(),std::minus<float>());
+	std::transform(v2.begin(), v2.end(), v0.begin(), v20.data(),std::minus<float>());
 
 	N[0] = v20[1] * v10[2] - v20[2] * v10[1];
 	N[1] = v20[2] * v10[0] - v20[0] * v10[2];
@@ -203,22 +221,24 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 	bool ret =
 			tinyobj::LoadObj(&attrib, &shapes, &m_materials, &err, filename, base_dir.c_str());
 	if (!err.empty()) {
-		std::cerr << err << std::endl;
+		std::cerr << err << '\n';
 	}
 
 	if (!ret) {
-		std::cerr << "Failed to load " << filename << std::endl;
+		std::cerr << "Failed to load " << filename << '\n';
 		return false;
 	}
-	for (size_t i = 0; i<attrib.vertices.size(); i++)
-		attrib.vertices[i] *= m_fScale;
+	for (auto &vert : attrib.vertices)
+	{
+		vert *= m_fScale;
+	}
 
-	printf("##### %s #####\n",filename);
-	printf("# of vertices  = %d\n", (int)(attrib.vertices.size()) / 3);
-	printf("# of normals   = %d\n", (int)(attrib.normals.size()) / 3);
-	printf("# of texcoords = %d\n", (int)(attrib.texcoords.size()) / 2);
-	printf("# of materials = %d\n", (int)m_materials.size());
-	printf("# of shapes    = %d\n", (int)shapes.size());
+	std::cout << "##### " << filename <<" #####\n";
+	std::cout << "# of vertices  = " << (attrib.vertices.size()) / 3 << '\n';
+	std::cout << "# of normals   = " << (attrib.normals.size()) / 3 << '\n';
+	std::cout << "# of texcoords = " << (attrib.texcoords.size()) / 2 << '\n';
+	std::cout << "# of materials = " << m_materials.size() << '\n';
+	std::cout << "# of shapes    = " << shapes.size() << '\n';
 
 	// Append `default` material
 	m_materials.push_back(tinyobj::material_t());
@@ -241,14 +261,14 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 										// Append base dir.
 										texture_filename = base_dir + mp->diffuse_texname;
 										if (!FileExists(texture_filename)) {
-											std::cerr << "Unable to find file: " << mp->diffuse_texname << std::endl;
+											std::cerr << "Unable to find file: " << mp->diffuse_texname << '\n';
 											exit(1);
 										}
 									}
 
 									unsigned char* image = nullptr; //stbi_load(texture_filename.c_str(), &w, &h, &comp, STBI_default);
 									if (!image) {
-											std::cerr << "Unable to load texture: " << texture_filename << std::endl;
+											std::cerr << "Unable to load texture: " << texture_filename << '\n';
 											exit(1);
 									}
 									glGenTextures(1, &texture_id);
@@ -274,20 +294,19 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 	m_extMax[0] = m_extMax[1] = m_extMax[2] = -std::numeric_limits<float>::max();
 
 	{
-		for (size_t s = 0; s < shapes.size(); s++) {
+		for (auto &s : shapes) {
 			std::vector<float> vb;  // pos(3float), normal(3float), color(3float)
-			int iMatlId = shapes[s].mesh.material_ids[0];
-			for (size_t f = 0; f < shapes[s].mesh.indices.size() / 3; f++) {
-				tinyobj::index_t idx0 = shapes[s].mesh.indices[3 * f + 0];
-				tinyobj::index_t idx1 = shapes[s].mesh.indices[3 * f + 1];
-				tinyobj::index_t idx2 = shapes[s].mesh.indices[3 * f + 2];
+			int iMatlId = s.mesh.material_ids[0];
+			for (size_t f = 0; f < s.mesh.indices.size() / 3; f++) {
+				tinyobj::index_t idx0 = s.mesh.indices[3 * f + 0];
+				tinyobj::index_t idx1 = s.mesh.indices[3 * f + 1];
+				tinyobj::index_t idx2 = s.mesh.indices[3 * f + 2];
 
-				int current_material_id = shapes[s].mesh.material_ids[f];
+				int current_material_id = s.mesh.material_ids[f];
 
 				if (current_material_id != iMatlId)
 				{
-					printf("Submaterial in shape %s: %u\n",shapes[s].name.c_str(),current_material_id);
-					printf("sub-Object %s: is # %u\n",shapes[s].name.c_str(),(int)m_DrawObjects.size());
+					//printf("Submaterial in shape %s: %u\n",s.name.c_str(),current_material_id);
 					AddObject(vb,iMatlId);
 					vb.clear();
 				}
@@ -297,10 +316,12 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 					iMatlId = m_materials.size() - 1; // Default material is added to the last item in `m_materials`.
 				}
 				else
+				{
 					iMatlId = current_material_id;
+				}
 
 				//if (current_material_id >= m_materials.size()) {
-				//    std::cerr << "Invalid material index: " << current_material_id << std::endl;
+				//    std::cerr << "Invalid material index: " << current_material_id << '\n';
 				//}
 				//
 #if TEX_VCOLOR
@@ -312,9 +333,9 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 				float tc[3][2];
 
 				if (attrib.texcoords.size() > 0) {
-						assert(attrib.texcoords.size() > 2 * idx0.texcoord_index + 1);
-						assert(attrib.texcoords.size() > 2 * idx1.texcoord_index + 1);
-						assert(attrib.texcoords.size() > 2 * idx2.texcoord_index + 1);
+						Expects(attrib.texcoords.size() > 2 * idx0.texcoord_index + 1);
+						Expects(attrib.texcoords.size() > 2 * idx1.texcoord_index + 1);
+						Expects(attrib.texcoords.size() > 2 * idx2.texcoord_index + 1);
 						tc[0][0] = attrib.texcoords[2 * idx0.texcoord_index];
 						tc[0][1] = 1.0f - attrib.texcoords[2 * idx0.texcoord_index + 1];
 						tc[1][0] = attrib.texcoords[2 * idx1.texcoord_index];
@@ -336,19 +357,19 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 					int f0 = idx0.vertex_index;
 					int f1 = idx1.vertex_index;
 					int f2 = idx2.vertex_index;
-					assert(f0 >= 0);
-					assert(f1 >= 0);
-					assert(f2 >= 0);
+					Expects(f0 >= 0);
+					Expects(f1 >= 0);
+					Expects(f2 >= 0);
 
-					v[0][k] = attrib.vertices[3 * f0 + k];
-					v[1][k] = attrib.vertices[3 * f1 + k];
-					v[2][k] = attrib.vertices[3 * f2 + k];
-					m_extMin[k] = std::min(v[0][k], m_extMin[k]);
-					m_extMin[k] = std::min(v[1][k], m_extMin[k]);
-					m_extMin[k] = std::min(v[2][k], m_extMin[k]);
-					m_extMax[k] = std::max(v[0][k], m_extMax[k]);
-					m_extMax[k] = std::max(v[1][k], m_extMax[k]);
-					m_extMax[k] = std::max(v[2][k], m_extMax[k]);
+					gsl::at(v[0],k) = attrib.vertices[3 * f0 + k];
+					gsl::at(v[1],k) = attrib.vertices[3 * f1 + k];
+					gsl::at(v[2],k) = attrib.vertices[3 * f2 + k];
+					m_extMin[k] = std::min(gsl::at(v[0],k), m_extMin[k]);
+					m_extMin[k] = std::min(gsl::at(v[1],k), m_extMin[k]);
+					m_extMin[k] = std::min(gsl::at(v[2],k), m_extMin[k]);
+					m_extMax[k] = std::max(gsl::at(v[0],k), m_extMax[k]);
+					m_extMax[k] = std::max(gsl::at(v[1],k), m_extMax[k]);
+					m_extMax[k] = std::max(gsl::at(v[2],k), m_extMax[k]);
 				}
 
 				float n[3][3];
@@ -356,13 +377,13 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 					int f0 = idx0.normal_index;
 					int f1 = idx1.normal_index;
 					int f2 = idx2.normal_index;
-					assert(f0 >= 0);
-					assert(f1 >= 0);
-					assert(f2 >= 0);
+					Expects(f0 >= 0);
+					Expects(f1 >= 0);
+					Expects(f2 >= 0);
 					for (int k = 0; k < 3; k++) {
-						n[0][k] = attrib.normals[3 * f0 + k];
-						n[1][k] = attrib.normals[3 * f1 + k];
-						n[2][k] = attrib.normals[3 * f2 + k];
+						gsl::at(n[0],k) = attrib.normals[3 * f0 + k];
+						gsl::at(n[1],k) = attrib.normals[3 * f1 + k];
+						gsl::at(n[2],k) = attrib.normals[3 * f2 + k];
 					}
 				} else {
 					// compute geometric normal
@@ -376,12 +397,12 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 				}
 
 				for (int k = 0; k < 3; k++) {
-					vb.push_back(v[k][0]);
-					vb.push_back(v[k][1]);
-					vb.push_back(v[k][2]);
-					vb.push_back(n[k][0]);
-					vb.push_back(n[k][1]);
-					vb.push_back(n[k][2]);
+					vb.push_back(gsl::at(v,k)[0]);
+					vb.push_back(gsl::at(v,k)[1]);
+					vb.push_back(gsl::at(v,k)[2]);
+					vb.push_back(gsl::at(n,k)[0]);
+					vb.push_back(gsl::at(n,k)[1]);
+					vb.push_back(gsl::at(n,k)[2]);
 #if TEX_VCOLOR
 					// Combine normal and diffuse to get color.
 					float normal_factor = 0.2;
@@ -408,12 +429,12 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 #endif
 				}
 			}
-			printf("Object %s: is # %u\n",shapes[s].name.c_str(),(int)m_DrawObjects.size());
+			//printf("Object %s: is # %u\n",s.name.c_str(),(int)m_DrawObjects.size());
 			AddObject(vb, iMatlId);
 			// // OpenGL viewer does not support texturing with per-face material.
-			// if (shapes[s].mesh.material_ids.size() > 0 && shapes[s].mesh.material_ids.size() > s) {
+			// if (s.mesh.material_ids.size() > 0 && s.mesh.material_ids.size() > s) {
 			// 		// Base case
-			// 		o.material_id = shapes[s].mesh.material_ids[s];
+			// 		o.material_id = s.mesh.material_ids[s];
 			// } else {
 			// 		o.material_id = m_materials.size() - 1; // = ID for default material.
 			// }
@@ -428,9 +449,9 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 	return true;
 }
 
-void GLObj::AddObject(const vector<float> &vb, int iMatlId)
+void GLObj::AddObject(const std::vector<float> &vb, int iMatlId)
 {
-	DrawObject obj;
+	DrawObject obj {};
 	obj.vb = 0;
 	obj.numTriangles = 0;
 	if (vb.size() > 0) {

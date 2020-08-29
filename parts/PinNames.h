@@ -75,4 +75,4 @@ namespace PinNames {
 		__TMC2130_PIN_SET(Z)
 		PIN_COUNT
 	};
-};
+}; // namespace PinNames

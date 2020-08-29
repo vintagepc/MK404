@@ -21,15 +21,15 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint32_t
-#include <string>            // for string
-#include <vector>            // for vector
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "IScriptable.h"     // for IScriptable::LineStatus
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
 #include <atomic>
+#include <cstdint>          // for uint32_t
+#include <string>            // for string
+#include <vector>            // for vector
 
 class PINDA:public BasePeripheral,public Scriptable{
     public:
@@ -37,7 +37,7 @@ class PINDA:public BasePeripheral,public Scriptable{
         #include "IRQHelper.h"
 
     // Creates a new PINDA with X/Y nozzle offsets fX and fY
-    PINDA(float fX = 0, float fY = 0);
+    explicit PINDA(float fX = 0, float fY = 0);
 
     // Initializes the PINDA on AVR, and connects it to the X/Y/Z position IRQs
     void Init(avr_t *avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t *irqZ);
@@ -46,13 +46,19 @@ class PINDA:public BasePeripheral,public Scriptable{
     void ToggleSheet();
 
 	// so we can use initializer syntax later
-	typedef struct
+	using MBLMap_t = struct
 	{
-		float points[49];
-	} MBLMap_t;
+		float points[49] {0.04584,	0.07806,	0.10584,	0.12917,	0.14806,	0.1625, 	0.1725,
+        0.00973,	0.04031,	0.06306,	0.07797,	0.08503,	0.08426,	0.07565,
+        -0.02055,	0.00834,	0.02682,	0.03491,	0.0326,	    0.01988,	-0.00324,
+        -0.045,	    -0.01787,	-0.00287,	0,	        -0.00926,	-0.03064,	-0.06416,
+        -0.06361,	-0.0383,	-0.02602,	-0.02676,	-0.04052,	-0.06731,	-0.10713,
+        -0.07639,	-0.05296,	-0.04262,	-0.04537,	-0.0612,	-0.09012,	-0.13213,
+        -0.08333,	-0.06185,	-0.05268,	-0.05583,	-0.07129,	-0.09907,	-0.13916};
+	};
 
 	protected:
-		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs);
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 private:
 
@@ -79,8 +85,8 @@ private:
 	float m_fZTrigHeight = 1.0; // Trigger height above Z=0, i.e. the "zip tie" adjustment
     float m_fOffset[2] = {0,0}; // pinda X Y offset  from nozzle
     float m_fPos[3] = {10,10,10}; // Current position tracking.
-    MBLMap_t m_mesh;// MBL map
-    atomic_bool m_bIsSheetPresent {true}; // Is the steel sheet present? IF yes, PINDA will attempt to simulate the bed sensing point for selfcal instead.
+    MBLMap_t m_mesh = MBLMap_t();// MBL map
+    std::atomic_bool m_bIsSheetPresent {true}; // Is the steel sheet present? IF yes, PINDA will attempt to simulate the bed sensing point for selfcal instead.
 
     // pulled from mesh_bed_calibration.cpp
     float _bed_calibration_points[8] = {

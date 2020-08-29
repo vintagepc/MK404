@@ -23,33 +23,33 @@
 #include "BasePeripheral.h"  // for MAKE_C_CALLBACK
 #include "TelemetryHost.h"
 
-uint32_t VoltageSrc::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+uint32_t VoltageSrc::OnADCRead(struct avr_irq_t*, uint32_t)
 {
     uint32_t iVOut =  (m_fCurrentV*m_fVScale)*1000*5;
 	return iVOut;
 }
 
-void VoltageSrc::OnInput(struct avr_irq_t *irq, uint32_t value)
+void VoltageSrc::OnInput(struct avr_irq_t*, uint32_t value)
 {
-    m_fCurrentV = (float)value / 256.0f;
+    m_fCurrentV = static_cast<float>(value) / 256.0f;
 }
 
 VoltageSrc::VoltageSrc(float fVScale,float fStart):Scriptable("VSrc"),m_fCurrentV(fStart), m_fVScale(fVScale)
 {
 }
 
-Scriptable::LineStatus VoltageSrc::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus VoltageSrc::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
 		case ActSet:
 		{
-			Set(stof(vArgs.at(0)));
+			Set(std::stof(vArgs.at(0)));
 			return LineStatus::Finished;
 		}
 		case ActSetScale:
 		{
-			m_fVScale =stof (vArgs.at(0));
+			m_fVScale =std::stof(vArgs.at(0));
 			return LineStatus::Finished;
 		}
 		default:
@@ -65,9 +65,9 @@ void VoltageSrc::Init(struct avr_t * avr , uint8_t uiMux)
 	RegisterAction("SetV", "Sets the value the ADC reports", ActSet, {ArgType::Float});
 	RegisterAction("SetVScale", "Changes the scale factor to convert the input to the ADC input range",ActSetScale,{ArgType::Float});
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, ADC_VALUE_OUT, {TC::ADC, TC::Power},16);
-	pTH->AddTrace(this, DIGITAL_OUT,{TC::Power,TC::InputPin});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, ADC_VALUE_OUT, {TC::ADC, TC::Power},16);
+	TH.AddTrace(this, DIGITAL_OUT,{TC::Power,TC::InputPin});
 
 }
 

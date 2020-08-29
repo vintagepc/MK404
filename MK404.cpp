@@ -20,39 +20,40 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <GL/glew.h>                  // for glVertex2f, glEnable, glTranslatef
-#include <GL/freeglut_std.h>          // for glutGet, glutTimerFunc, glutCre...
-#include <GL/freeglut_ext.h>          // for glutSetOption, glutLeaveMainLoop
-#include <signal.h>                   // for signal, SIGINT
-#include <stdio.h>                    // for printf, NULL, fprintf, getchar
-#include <stdlib.h>                   // for exit
-#include <tclap/CmdLine.h>            // for CmdLine
-#include <algorithm>                  // for find
-#include <atomic>
-#include <iostream>                   // for operator<<, basic_ostream, endl
-#include <scoped_allocator>           // for allocator_traits<>::value_type
-#include <string>                     // for string, basic_string
-#include <utility>                    // for pair
-#include <vector>                     // for vector
 #include "FatImage.h"                 // for FatImage
+#include "Macros.h"
 #include "Printer.h"                  // for Printer, Printer::VisualType
 #include "PrinterFactory.h"           // for PrinterFactory
 #include "ScriptHost.h"               // for ScriptHost
 #include "TelemetryHost.h"
+#include "gitversion/version.h"
 #include "parts/Board.h"              // for Board
 #include "sim_avr.h"                  // for avr_t
+#include "tclap/CmdLine.h"            // for CmdLine
 #include "tclap/MultiArg.h"           // for MultiArg
 #include "tclap/MultiSwitchArg.h"     // for MultiSwitchArg
 #include "tclap/SwitchArg.h"          // for SwitchArg
 #include "tclap/UnlabeledValueArg.h"  // for UnlabeledValueArg
 #include "tclap/ValueArg.h"           // for ValueArg
 #include "tclap/ValuesConstraint.h"   // for ValuesConstraint
-#include <gitversion/version.h>
+// NOLINTNEXTLINE - glew has to be included before the freeglut libraries.
+#include <GL/glew.h>                  // for glVertex2f, glEnable, glTranslatef
+#include <GL/freeglut_std.h>          // for glutGet, glutTimerFunc, glutCre...
+#include <GL/freeglut_ext.h>          // for glutSetOption, glutLeaveMainLoop
+#include <algorithm>                  // for find
+#include <atomic>
+#include <csignal>                   // for signal, SIGINT
+#include <cstdio>                    // for printf, NULL, fprintf, getchar
+#include <cstdlib>                   // for exit
+#include <iomanip>
+#include <iostream>                   // for operator<<, basic_ostream, '\n'
+#include <string>                     // for string, basic_string
+#include <utility>                    // for pair
+#include <vector>                     // for vector
 
 int window = 0;
 
-atomic_int iWinH{0}, iWinW{0};
+std::atomic_int iWinH{0}, iWinW{0};
 
 Printer *printer = nullptr;
 Boards::Board *pBoard = nullptr;
@@ -62,42 +63,49 @@ bool m_bStopping = false;
 bool m_bTestMode = false;
 
 // Exit cleanly on ^C
-void OnSigINT(int iSig) {
+void OnSigINT(int) {
 	if (!m_bStopping)
 	{
-		printf("Caught SIGINT... stopping...\n");
+		std::cout << "Caught SIGINT... stopping..." << '\n';
 		m_bStopping = true;
 		if (m_bTestMode)
+		{
 			pBoard->SetQuitFlag();
+		}
 		else if (printer)
+		{
 			printer->OnKeyPress('q',0,0);
+		}
 	}
 	else
 	{
-		printf("OK, OK! I get the message!\n");
+		std::cout << "OK, OK! I get the message!" << '\n';
 		exit(2);
 	}
 }
 
 extern "C" {
-void GLAPIENTRY
-GLErrorCB( GLenum source,
-                 GLenum type,
-                 GLuint id,
-                 GLenum severity,
-                 GLsizei length,
-                 const GLchar* message,
-                 const void* userParam )
-{
-  fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
-            type, severity, message );
-}
+	void GLAPIENTRY
+	GLErrorCB( GLenum, //source,
+				GLenum type,
+				GLuint id,
+				GLenum severity,
+				GLsizei, // length
+				const GLchar* message,
+				const void*) // userparam )
+	{
+		std::cerr <<  "GL:";
+		if (type == GL_DEBUG_TYPE_ERROR)
+		{
+			std::cerr << "** GL ERROR **";
+		}
+		std::cerr << "ID:" << id << " type = " << type << " sev = " << severity << " message = " << message << '\n';
+	}
 }
 
-atomic_bool bIsQuitting {false};
+std::atomic_bool bIsQuitting {false};
 
-void displayCB(void)		/* function called whenever redisplay needed */
+void displayCB()		/* function called whenever redisplay needed */
 {
 	if (bIsQuitting || pBoard->GetQuitFlag()) // Stop drawing if shutting down.
 	{
@@ -106,14 +114,14 @@ void displayCB(void)		/* function called whenever redisplay needed */
 		return;
 	}
 	glLoadIdentity();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(US(GL_COLOR_BUFFER_BIT) | US(GL_DEPTH_BUFFER_BIT));
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
 	int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	printer->Draw();
 
 	if (pBoard->IsStopped() || pBoard->IsPaused())
 	{
-		string strState = pBoard->IsStopped() ? "Stopped" : "Paused";
+		std::string strState = pBoard->IsStopped() ? "Stopped" : "Paused";
 		glColor4f(.5,.5,.5,0.5);
 		glBegin(GL_QUADS);
 			glVertex2f(0,0);
@@ -129,8 +137,10 @@ void displayCB(void)		/* function called whenever redisplay needed */
 			glRotatef(8.f,0,0,1);
 			glPushAttrib(GL_LINE_BIT);
 				glLineWidth(5);
-				for (size_t i=0; i<strState.length(); i++)
-					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strState[i]);
+				for (auto &i : strState)
+				{
+					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,i);
+				}
 			glPopAttrib();
 		glPopMatrix();
 
@@ -144,12 +154,12 @@ void keyCB(unsigned char key, int x, int y)	/* called on key press */
 	switch(key)
 	{
 		case '+':
-			TelemetryHost::GetHost()->StartTrace();
-			printf("Enabled VCD trace.\n");
+			TelemetryHost::GetHost().StartTrace();
+			std::cout << "Enabled VCD trace." << '\n';
 			break;
 		case '-':
-			TelemetryHost::GetHost()->StopTrace();
-			printf("Stopped VCD trace\n");
+			TelemetryHost::GetHost().StopTrace();
+			std::cout << "Stopped VCD trace" << '\n';
 			break;
 		default:
 			printer->OnKeyPress(key,x,y);
@@ -170,11 +180,15 @@ void MotionCB(int x, int y)
 void timerCB(int i)
 {
 	if (bIsQuitting)
+	{
 		return;
+	}
 	glutSetWindow(window);
 	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
+	{
 		glutReshapeWindow(iWinW, iWinH);
-	glutTimerFunc(50, timerCB, i^1);
+	}
+	glutTimerFunc(50, timerCB, i);
 	glutPostRedisplay();
 }
 
@@ -182,11 +196,11 @@ void timerCB(int i)
 void ResizeCB(int w, int h)
 {
 	std::pair<int,int> winSize = printer->GetWindowSize();
-	float fWS = (float)w/(float)(winSize.first*4);
-	float fHS = (float)h/(float)(winSize.second*4);
-	float fScale = max(fWS,fHS);
-	int iW = 4.f*(float)winSize.first*fScale;
-	int iH = 4.f*(float)winSize.second*fScale;
+	float fWS = static_cast<float>(w)/static_cast<float>(winSize.first*4);
+	float fHS = static_cast<float>(h)/static_cast<float>(winSize.second*4);
+	float fScale = std::max(fWS,fHS);
+	int iW = 4.f*static_cast<float>(winSize.first)*fScale;
+	int iH = 4.f*static_cast<float>(winSize.second)*fScale;
 	if (iW!=w || iH !=h)
 	{
 		iWinH = iH;
@@ -203,7 +217,7 @@ void ResizeCB(int w, int h)
 
 }
 
-int initGL(int w, int h)
+int initGL()
 {
 	// Set up projection matrix
 	glutDisplayFunc(displayCB);		/* set window's display callback */
@@ -216,7 +230,7 @@ int initGL(int w, int h)
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
 
-	glClearColor(.5f, 0.f, 0.f, 1.0f);
+	glClearColor(.0f, 0.f, 0.f, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -225,13 +239,19 @@ int initGL(int w, int h)
 	return 1;
 }
 
-using namespace TCLAP;
-using namespace std;
+
 int main(int argc, char *argv[])
 {
+	using TCLAP::SwitchArg;
+	using TCLAP::MultiSwitchArg;
+	using TCLAP::ValueArg;
+	using TCLAP::MultiArg;
+	using TCLAP::ValuesConstraint;
+	using string = std::string;
+	using std::vector;
 	signal(SIGINT, OnSigINT);
 
-	CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',version::VERSION_STRING); // NOLINT
+	TCLAP::CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',version::VERSION_STRING); // NOLINT
 	SwitchArg argWait("w","wait","Wait after the printer (and any PTYs) are set up but before starting execution.");
 	cmd.add(argWait);
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");
@@ -256,13 +276,13 @@ int main(int argc, char *argv[])
 	cmd.add(argMute);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
 	cmd.add(argLoad);
-	vector<string> vstrSizes = FatImage::GetSizes();
+	std::vector<string> vstrSizes = FatImage::GetSizes();
 	ValuesConstraint<string> vcSizes(vstrSizes);
 	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes);
 	cmd.add(argImgSize);
 	SwitchArg argGDB("","gdb","Enable SimAVR's GDB support");
 	cmd.add(argGDB);
-	vector<string> vstrGfx = {"none","lite","fancy", "bear"};
+	std::vector<string> vstrGfx = {"none","lite","fancy", "bear"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
 	cmd.add(argGfx);
@@ -274,19 +294,19 @@ int main(int argc, char *argv[])
 	cmd.add(argBootloader);
 	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown");
 	cmd.add(argMD);
-	vector<string> vstrPrinters = PrinterFactory::GetModels();
+	std::vector<string> vstrPrinters = PrinterFactory::GetModels();
 	ValuesConstraint<string> vcAllowed(vstrPrinters);
 
-	UnlabeledValueArg<string> argModel("printer","Model name of the printer to run",false,"Prusa_MK3S",&vcAllowed);
+	TCLAP::UnlabeledValueArg<string> argModel("printer","Model name of the printer to run",false,"Prusa_MK3S",&vcAllowed);
 	cmd.add(argModel);
 
 	if (version::IS_DEV_VERSION)
 	{
-		printf("***************************************\n");
-		printf("* %-35s *\n",version::VERSION_STRING);
-		printf("* This is a DEV version. Features may *\n");
-		printf("* behave unexpectedly, or not at all. *\n");
-		printf("***************************************\n");
+		std::cout << "***************************************" << '\n';
+		std::cout << "* " << std::setw(35) << version::VERSION_STRING << " *" << '\n';
+		std::cout << "* This is a DEV version. Features may *" << '\n';
+		std::cout << "* behave unexpectedly, or not at all. *" << '\n';
+		std::cout << "***************************************" << '\n';
 	}
 
 	cmd.parse(argc,argv);
@@ -296,28 +316,34 @@ int main(int argc, char *argv[])
 	{
 		if(!argSD.isSet())
 		{
-			fprintf(stderr,"Cannot create an SD image without a filename.\n");
+			std::cerr << "Cannot create an SD image without a filename." << '\n';
 			exit(1);
 		}
-		FatImage::MakeFatImage(argSD.getValue(), argImgSize.getValue());
-		printf("Wrote %s. You can now use mcopy to copy gcode files into the image.\n",argSD.getValue().c_str());
+		if (FatImage::MakeFatImage(argSD.getValue(), argImgSize.getValue()))
+		{
+			std::cout << "Wrote " << argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << '\n';
+		}
 		return 0;
 	}
-	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue().compare("none")==0);
+	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue()=="none");
 
 	m_bTestMode =  (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
 	bNoGraphics |= m_bTestMode;
 
-	TelemetryHost::GetHost()->SetCategories(argVCD.getValue());
+	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 
 	ScriptHost::Init();
 
 	std::string strFW;
 	if (!argLoad.isSet() && !argFW.isSet())
+	{
 		strFW = ""; // No firmware and no load directive.
+	}
 	else
+	{
 		strFW = argFW.getValue();
+	}
 
 	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,
 		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),""); // this line is the CreateBoard() args.
@@ -335,7 +361,7 @@ int main(int argc, char *argv[])
 		glutSetOption(GLUT_MULTISAMPLE,2);
 		glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 		//glutInitContextVersion(1,0);
-		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
+		glutInitDisplayMode(US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_MULTISAMPLE));
 		glutInitWindowSize(iWinW, iWinH);		/* width=400pixels height=500pixels */
 		std::string strTitle = "Prusa i3 MK404 (PRINTER NOT FOUND) ";
 		strTitle += version::GIT_TAG_NAME;
@@ -344,13 +370,13 @@ int main(int argc, char *argv[])
 		window = glutCreateWindow(strTitle.c_str());	/* create window */
 
 		glewInit();
-		cout << "GL_VERSION   : " << glGetString(GL_VERSION) << endl;
-		cout << "GL_VENDOR    : " << glGetString(GL_VENDOR) << endl;
-		cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << endl;
-		cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << endl;
-		//cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+		std::cout << "GL_VERSION   : " << glGetString(GL_VERSION) << '\n';
+		std::cout << "GL_VENDOR    : " << glGetString(GL_VENDOR) << '\n';
+		std::cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << '\n';
+		std::cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << '\n';
+		//cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
 #if !defined(__APPLE__)
-		glDebugMessageCallback( GLErrorCB, 0 );
+		glDebugMessageCallback( GLErrorCB, nullptr );
 		if (argSpam.getValue()<1)
 		{
 			glDebugMessageControl(GL_DONT_CARE,
@@ -360,16 +386,18 @@ int main(int argc, char *argv[])
 		}
 		glEnable(GL_DEBUG_OUTPUT);
 #endif
-		initGL(iWinW, iWinH);
+		initGL();
 
 		if (argGfx.isSet())
+		{
 			printer->SetVisualType(argGfx.getValue());
+		}
 
 
 	}
-	if (argVCD.isSet() && argVCD.getValue().at(0).compare("?")==0)
+	if (argVCD.isSet() && argVCD.getValue().at(0)=="?")
 	{
-		TelemetryHost::GetHost()->PrintTelemetry(argMD.isSet());
+		TelemetryHost::GetHost().PrintTelemetry(argMD.isSet());
 		exit(0);
 	}
 
@@ -382,32 +410,42 @@ int main(int argc, char *argv[])
 	if (argScript.isSet())
 	{
 		if (!ScriptHost::Setup(argScript.getValue(),pBoard->GetAVR()->frequency))
+		{
 			return 1; // validate will have printed error info.
+		}
 	}
 	else
+	{
 		ScriptHost::Setup("",pBoard->GetAVR()->frequency);
+	}
 
 	if (!bNoGraphics)
+	{
 		ScriptHost::CreateRootMenu(window);
+	}
 
 	// This is a little lazy, I know. Figure it out once we have non-einsy printers.
 	if (argMute.isSet())
+	{
 		printer->OnKeyPress('m',0,0);
+	}
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can
 	// start socat (or whatever) without worrying about missing a window for something you need to do at boot
 	if (argWait.isSet())
 	{
-		printf("Paused - press any key to resume execution\n");
+		std::cout << "Paused - press any key to resume execution" << '\n';
 		getchar();
 	}
 
 	pBoard->StartAVR();
 
 	if (!bNoGraphics)
+	{
 		glutMainLoop();
+	}
 
-	printf("Waiting for board to finish...\n");
+	std::cout << "Waiting for board to finish..." << '\n';
 	if (!m_bTestMode)
 	{
 		pBoard->SetQuitFlag();
@@ -416,8 +454,10 @@ int main(int argc, char *argv[])
 
 	PrinterFactory::DestroyPrinterByName(argModel.getValue(), pRawPrinter);
 
-	printf("Done\n");
+	std::cout << "Done" << '\n';
 	if (argScript.isSet())
+	{
 		return static_cast<int>(ScriptHost::GetState());
+	}
 
 }

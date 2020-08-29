@@ -13,6 +13,7 @@ option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
 option(ENABLE_IWYU "Enables Include-what-you-use")
 option(ENABLE_TIDY "Enables Clang-tidy")
 option(ENABLE_GCOV "Enables gcov coverage")
+option(ENABLE_GPERF "Enables gperf profiling")
 
 if (ENABLE_GCOV)
 	SET(GCOV_BINARY /usr/bin/gcov-7)
@@ -25,6 +26,7 @@ set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 endif()
 
 add_subdirectory(3rdParty/tinyobjloader)
+add_subdirectory(3rdParty/gsl)
 
 add_subdirectory(scripts/tests)
 
@@ -35,7 +37,7 @@ else()
 endif()
 
 if (ENABLE_TIDY)
-	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy")
+	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy;-config=")
 else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()
@@ -110,9 +112,9 @@ set(H_FILES
 	utility/OBJCollection.h
 	utility/SerialPipe.h
 	utility/Macros.h
-	utility/thermistortables.h
-	utility/MK3/Configuration_prusa.h
-	utility/MK3/eeprom.h
+	3rdParty/MK3/thermistortables.h
+	3rdParty/MK3/Configuration_prusa.h
+	3rdParty/MK3/eeprom.h
 	utility/Util.h
 	3rdParty/arcball/Camera.hpp
 	3rdParty/arcball/Matrix.hpp
@@ -168,6 +170,10 @@ if (ENABLE_TIDY)
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${FIRMWARE})
 else()
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
+endif()
+
+if (ENABLE_GPERF)
+	target_link_libraries(MK404 -lprofiler)
 endif()
 
 target_compile_features(MK404 PRIVATE cxx_range_for)
@@ -270,6 +276,8 @@ endif()
 
 target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 endif()
+
+target_link_libraries(MK404 gsl-lite)
 
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different

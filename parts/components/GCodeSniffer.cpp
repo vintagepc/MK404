@@ -22,13 +22,13 @@
 
 #include "GCodeSniffer.h"
 #include "TelemetryHost.h"
-#include <stdio.h>     // for printf
 #include "avr_uart.h"  // for ::UART_IRQ_OUTPUT, AVR_IOCTL_UART_GETIRQ
 #include "sim_io.h"    // for avr_io_getirq
+#include <iostream>     // for printf
 
-void GCodeSniffer::OnByteIn(struct avr_irq_t * irq, uint32_t value)
+void GCodeSniffer::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
-    unsigned char c = value&0xFF;
+    unsigned char c = value & 0xFFU;
 	if (m_bNewLine && c==m_chrCode)
 	{
 		m_bCapture = true;
@@ -42,30 +42,32 @@ void GCodeSniffer::OnByteIn(struct avr_irq_t * irq, uint32_t value)
 		if (c == ' ' || m_bNewLine)
 		{
 			m_bCapture = false;
-			printf("Captured code %s\n", m_strLine.c_str());
+			std::cout << "Captured code " << m_strLine << '\n';
 			uint32_t uiOut = stoi(m_strLine);
 			RaiseIRQ(CODEVAL_OUT,uiOut);
 			m_strLine.clear();
 		}
 		else
+		{
 			m_strLine.push_back(c);
+		}
 	}
 }
 
-void GCodeSniffer::Init(struct avr_t * avr, char chrUART)
+void GCodeSniffer::Init(struct avr_t * avr, unsigned char chrUART)
 {
 	_Init(avr, this);
 	m_chrUART = chrUART;
 	RegisterNotify(BYTE_IN, MAKE_C_CALLBACK(GCodeSniffer, OnByteIn),this);
 		// disable the stdio dump, as we're pritning in hex.
 
-	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT);
+	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(chrUART), UART_IRQ_OUTPUT); //NOLINT - complaint is external macro
 	if (src)
+	{
 		ConnectFrom(src, BYTE_IN);
+	}
 
-    printf("UART %c is now being monitored for %c codes\n",m_chrUART,m_chrCode);
+    std::cout << "UART " << m_chrUART << " is now being monitored for '" << m_chrCode << "'" << '\n';
 
-	TelemetryHost *pTH = TelemetryHost::GetHost();
-
-	pTH->AddTrace(this, CODEVAL_OUT, {TC::Misc, TC::Serial},8);
+	TelemetryHost::GetHost().AddTrace(this, CODEVAL_OUT, {TC::Misc, TC::Serial},8);
 }

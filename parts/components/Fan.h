@@ -20,10 +20,6 @@
  */
 #pragma once
 
-#include <stdint.h>            // for uint16_t, uint32_t, uint8_t
-#include <string>              // for string
-#include <vector>              // for vector
-#include <atomic>
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
@@ -32,6 +28,10 @@
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <atomic>
+#include <cstdint>            // for uint16_t, uint32_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
 
 class Fan:public SoftPWMable, public Scriptable
 {
@@ -47,7 +47,7 @@ public:
     #include "IRQHelper.h"
 
 	// Constructs a new Fan with a max RPM of iMaxRPM (at PWM 255)
-	Fan(uint16_t iMaxRPM, char chrSym = ' ', bool bIsSoftPWM = false);
+	explicit Fan(uint16_t iMaxRPM, char chrSym = ' ', bool bIsSoftPWM = false);
 
 	// Draws a small fan indicator.
 	void Draw();
@@ -66,7 +66,7 @@ public:
 
 	protected:
 
-		LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs) override;
 
 		// callback for PWM change.
 		void OnPWMChange(avr_irq_t *irq, uint32_t value) override;
@@ -83,7 +83,7 @@ public:
 		bool m_bPulseState = false;
 		bool m_bIsSoftPWM = false;
 
-		atomic_uint8_t m_uiPWM = {0};
+		std::atomic_uint8_t m_uiPWM = {0};
 		uint16_t m_uiMaxRPM = 2000;
 		uint16_t m_uiCurrentRPM = 0;
 		uint16_t m_uiUsecPulse = 0;

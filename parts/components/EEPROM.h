@@ -22,14 +22,12 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint16_t, uint8_t
-#include <string>            // for string
-#include <vector>            // for vector
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "IScriptable.h"     // for ArgType, ArgType::Int, IScriptable::Line...
 #include "Scriptable.h"      // for Scriptable
-
-using namespace std;
+#include <cstdint>          // for uint16_t, uint8_t
+#include <string>            // for string
+#include <vector>            // for vector
 
 class EEPROM: public BasePeripheral, public Scriptable {
 	public:
@@ -42,12 +40,12 @@ class EEPROM: public BasePeripheral, public Scriptable {
 		RegisterActionAndMenu("Load", "Loads the last-used file again", ActLoad);
 	};
 	// Loads EEPROM from a file or initializes the file for the first time.
-	EEPROM(struct avr_t * avr, const string &strFile):EEPROM()
+	EEPROM(struct avr_t * avr, const std::string &strFile):EEPROM()
 	{
 		Load(avr, strFile);
 	};
 	// Loads the given file.
-	void Load(struct avr_t * avr, const string &strFile);
+	void Load(struct avr_t * avr, const std::string &strFile);
 
 	// Reloads last file:
 	void Load();
@@ -65,12 +63,11 @@ class EEPROM: public BasePeripheral, public Scriptable {
 	uint8_t Peek(uint16_t address);
 
 	protected:
-		LineStatus ProcessAction(unsigned int uiAct, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs) override;
 
 
 	private:
 		std::string m_strFile;
-		int m_fdEEPROM = 0;
 		uint16_t m_uiSize = 4096;
 		enum Actions {
 			ActPoke,

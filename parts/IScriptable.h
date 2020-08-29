@@ -26,11 +26,11 @@
 
 #pragma once
 
-using namespace std;
-
-#include <stdlib.h>
-#include <string>
+#include <cstdlib>
+#include <iomanip>
+#include <iostream>
 #include <map>
+#include <string>
 #include <vector>
 class Scriptable;
 class ScriptHost;
@@ -49,11 +49,13 @@ enum class ArgType
 class IScriptable
 {
 	friend Scriptable;
+
+
 	friend ScriptHost;
 	friend TelemetryHost;
     public:
-		IScriptable(const string &strName):m_strName(strName){}
-        virtual ~IScriptable() {}
+		explicit IScriptable(std::string strName):m_strName(std::move(strName)){}
+        virtual ~IScriptable() = default;
 	enum class LineStatus
 	{
 		Error,
@@ -66,13 +68,13 @@ class IScriptable
 
 
     protected:
-		inline IScriptable::LineStatus IssueLineError(const string &msg)
+		inline IScriptable::LineStatus IssueLineError(const std::string &msg)
 		{
-			fprintf(stderr,"%s ERROR: %s\n",m_strName.c_str(), msg.c_str());
+			std::cerr << m_strName << "ERROR: " << msg << '\n';
 			return LineStatus::Error;
 		}
 
-		virtual LineStatus ProcessAction(unsigned int iAction, const vector<string> &args)
+		virtual LineStatus ProcessAction(unsigned int /*iAction*/, const std::vector<std::string> &/*args*/)
 		{
 			return IssueLineError(" Has registered actions but does not have an action handler!");
 		}
@@ -85,54 +87,68 @@ class IScriptable
 			if (m_ActionArgs.count(iAction)==0 || m_ActionArgs.at(iAction).size()==0) // If no args needed or it wasn't registered, try the script handler.
 			{
 				auto LSResult = ProcessAction(iAction,{});
-				if (LSResult != LineStatus::Error || LSResult != LineStatus::Unhandled)
+				if (LSResult != LineStatus::Error && LSResult != LineStatus::Unhandled)
+				{
 					return;
+				}
 			}
-			fprintf(stderr, "Programmer error: %s has registered menu items but no valid handler!\n",m_strName.c_str());
+			std::cerr << "Programmer error: " << m_strName << " has registered menu items but no valid handler!\n";
 		}
 
-		void SetName(const string &strName)
+		void SetName(const std::string &strName)
 		{
 			if (m_bRegistered)
-				printf("ERROR: Tried to change a Scriptable object's name after it has already registered.\n");
+			{
+				std::cerr << "ERROR: Tried to change a Scriptable object's name after it has already registered.\n";
+			}
 			else
+			{
 				m_strName = strName;
+			}
 		}
 
 		// Returns the name. Used by, e.g. TelHost for consistency.
-		inline string GetName() {return m_strName;}
+		inline std::string GetName() {return m_strName;}
 
 		// Prints help text for this Scriptable
 		void PrintRegisteredActions(bool bMarkdown = false)
 		{
-			printf("%s%s::\n",bMarkdown?"### ":"\t", m_strName.c_str());
-			for (auto it=m_ActionIDs.begin();it!=m_ActionIDs.end();it++)
+			std::cout << (bMarkdown?"### ":"\t") << m_strName << "::\n";
+			for (auto &ActID: m_ActionIDs)
 			{
-				unsigned int ID = it->second;
-				string strArgFmt = it->first;
+				unsigned int ID = ActID.second;
+				std::string strArgFmt = ActID.first;
 				strArgFmt.push_back('(');
 				if (m_ActionArgs[ID].size()>0)
 				{
-					for (size_t i=0; i<m_ActionArgs[ID].size(); i++)
-						strArgFmt += m_ArgToString.at(m_ActionArgs.at(ID).at(i)) + ", ";
+					for (auto &Arg : m_ActionArgs[ID])
+					{
+						strArgFmt += GetArgTypeNames().at(Arg) + ", ";
+					}
 					strArgFmt[strArgFmt.size()-2] = ')';
 				}
 				else
+				{
 					strArgFmt.push_back(')');
+				}
 				if (bMarkdown)
-					printf(" - `%-30s` - `%s`\n",strArgFmt.c_str(), m_mHelp.at(ID).c_str());
+				{
+					std::cout << " - `" << std::setw(30) << std::left << strArgFmt << "` - `" << m_mHelp.at(ID) << "`\n";
+				}
 				else
-					printf("\t\t%-30s%s\n",strArgFmt.c_str(), m_mHelp.at(ID).c_str());
+				{
+					std::cout << "\t\t" << std::setw(30) << std::left << strArgFmt << m_mHelp.at(ID) << '\n';
+				}
 			}
 		}
 		// Registers a new no-argument Scriptable action with the given function, description, and an ID that will be
 		// provided in ProcessAction. This lets you set up an internal enum and switch() on actions
 		// instead of needing to make a string-comparison if-else conditional.
-		inline virtual bool RegisterAction(const string &strAct, const string& strDesc, unsigned int ID)
+		inline virtual bool RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID)
 		{
 			if (m_ActionIDs.count(strAct)>0)
 			{
-				fprintf(stderr,"ERROR: Attempted to register duplicate action handler %s::%s\n",m_strName.c_str(),strAct.c_str());
+				std::cerr << "ERROR: Attempted to register duplicate action handler " << m_strName << "::" << strAct;
 				return false;
 			}
 			m_ActionIDs[strAct] = ID;
@@ -143,19 +159,31 @@ class IScriptable
 
 		// Registers a scriptable action Name::strAct(), help description strDesc, internal ID, and a vector of argument types.
 		// The types are (currently) for display only but the count is used to sanity-check lines before passing them to you in ProcessAction.
-		inline void RegisterAction(const string &strAct, const string& strDesc, unsigned int ID, const vector<ArgType>& vTypes)
+		inline void RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID, const std::vector<ArgType>& vTypes)
 		{
 			if (!RegisterAction(strAct,strDesc, ID))
+			{
 				return;
+			}
 			m_ActionArgs[ID] = vTypes;
 		}
 
-    private:
-		string m_strName;
-		bool m_bRegistered = false;
-		map<unsigned int, vector<ArgType>> m_ActionArgs;
-		map<string, unsigned int> m_ActionIDs;
-		map<unsigned int,string> m_mHelp;
-		static const map<ArgType,string> m_ArgToString;
+		static const std::map<ArgType,std::string>& GetArgTypeNames()
+		{
+			static const std::map<ArgType,std::string> m {
+				{ArgType::Bool,"bool"},
+				{ArgType::Float,"float"},
+				{ArgType::Int,"int"},
+				{ArgType::String,"string"},
+				{ArgType::uint32,"uint32"}
+			};
+			return m;
+		}
 
+    private:
+		std::string m_strName;
+		bool m_bRegistered = false;
+		std::map<unsigned int, std::vector<ArgType>> m_ActionArgs;
+		std::map<std::string, unsigned int> m_ActionIDs;
+		std::map<unsigned int,std::string> m_mHelp;
 };

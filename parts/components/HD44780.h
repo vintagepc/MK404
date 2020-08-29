@@ -49,18 +49,19 @@
 
 #pragma once
 
-#include "Scriptable.h"        // for Scriptable
-#include <stdint.h>            // for uint8_t, uint16_t, uint32_t
-#include <string>              // for string
-#include <vector>              // for vector
-#include <atomic>
-#include <mutex>
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
 #include "IScriptable.h"       // for ArgType, ArgType::Int, ArgType::String
+#include "Scriptable.h"        // for Scriptable
+#include "gsl-lite.hpp"
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <atomic>
+#include <cstdint>            // for uint8_t, uint16_t, uint32_t
+#include <mutex>
+#include <string>              // for string
+#include <vector>              // for vector
 
 class HD44780:public BasePeripheral, public Scriptable
 {
@@ -86,51 +87,41 @@ class HD44780:public BasePeripheral, public Scriptable
 		#include "IRQHelper.h"
 
 		// Makes a display with the given dimensions.
-		HD44780(uint8_t width = 20, uint8_t height = 4):Scriptable("LCD"),m_uiHeight(height),m_uiWidth(width)
-		{
-			m_lineOffsets[2] += width;
-			m_lineOffsets[3] += width;
-			string strBlnk;
-			strBlnk.assign(width,' ');
-			for (int i=0; i<height; i++)
-				m_vLines.push_back(strBlnk);
-
-			RegisterActionAndMenu("Desync","Simulates data corruption by desyncing the 4-bit mode",ActDesync);
-			RegisterAction("WaitForText","Waits for a given string to appear anywhere on the specified line. A line value of -1 means any line.",ActWaitForText,{ArgType::String,ArgType::Int});
-			RegisterAction("CheckCGRAM","Checks if the CGRAM address matches the value. (value, addr)",ActCheckCGRAM,{ArgType::Int,ArgType::Int});
-		};
+		explicit HD44780(uint8_t width = 20, uint8_t height = 4);
 
 		// Registers IRQs with SimAVR.
 		void Init(avr_t *avr);
 
 		// Returns height and width.
-        uint8_t GetWidth() { return m_uiWidth;}
-        uint8_t GetHeight() { return m_uiHeight;}
+        inline uint8_t GetWidth() { return m_uiWidth;}
+        inline uint8_t GetHeight() { return m_uiHeight;}
 
     protected:
     // The GL draw accesses these:
-		atomic_uint8_t m_uiHeight = {4};				// width and height of the LCD
-        atomic_uint8_t	m_uiWidth = {20};
-        uint8_t  m_vRam[104];
-        uint8_t  m_cgRam[64];
+		std::atomic_uint8_t m_uiHeight = {4};				// width and height of the LCD
+        std::atomic_uint8_t	m_uiWidth = {20};
+		uint8_t _m_vRam[104] {' '};
+        uint8_t _m_cgRam[64] {' '};
+		gsl::span<uint8_t> m_vRam {_m_vRam};
+		gsl::span<uint8_t> m_cgRam {_m_cgRam};
 
-		virtual LineStatus ProcessAction(unsigned int iAction, const vector<string> &args) override;
+		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &args) override;
 
 		inline void ToggleFlag(uint16_t bit)
 		{
-			m_flags ^= (1<<bit);
+			m_flags ^= (1U<<bit);
 		}
 
 		inline bool SetFlag(uint16_t bit, uint8_t uiVal)
 		{
-			int old = m_flags &  (1 << bit);
-			m_flags = (m_flags & ~(1 << bit)) | (uiVal ? (1 << bit) : 0);
+			int old = m_flags &  (1U << bit);
+			m_flags = (m_flags & ~(1U << bit)) | (uiVal ? (1U << bit) : 0);
 			return old != 0;
 		}
 
 		inline bool GetFlag(uint16_t bit)
 		{
-			return (m_flags &  (1 << bit)) != 0;
+			return (m_flags &  (1U << bit)) != 0;
 		}
 
 
@@ -156,9 +147,9 @@ class HD44780:public BasePeripheral, public Scriptable
 			HD44780_FLAG_DIRTY,			// 1: needs redisplay...
 		};
 
-		uint8_t m_lineOffsets[4] = {0, 0x40, 0, 0x40};
+		std::vector<uint8_t> m_lineOffsets = {0, 0x40, 0, 0x40};
 
-		mutex m_lock; // Needed for GL thread access to v/cgRAM
+		std::mutex m_lock; // Needed for GL thread access to v/cgRAM
 
 	private:
 		enum Actions
@@ -197,7 +188,7 @@ class HD44780:public BasePeripheral, public Scriptable
         uint8_t  m_uiReadPins = 0;
         volatile uint16_t m_flags = 0;				// LCD flags ( HD44780_FLAG_*)
 
-		vector<string> m_vLines;
+		std::vector<std::string> m_vLines;
 
 		uint8_t m_uiLineChg = 0;
 

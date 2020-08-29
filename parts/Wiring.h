@@ -22,36 +22,40 @@
 
 #pragma once
 
-#include <map>
+#include "PinNames.h"
+#include "PinSpec.h"
 #include "avr_ioport.h"
 #include "avr_timer.h"
-#include <PinSpec.h>
-#include <PinNames.h>
+#include <map>
 
-using namespace PinNames;
+
 namespace Wirings
 {
+	using namespace PinNames; //NOLINT - because proper using declarations don't support enums.
 	class Wiring
 	{
 		public:
 			// Making a type so that this is easy to update
 			// down the road if we need more values than this can provide.
-			typedef signed char MCUPin;
+			using MCUPin = signed char;
+			using Pin = PinNames::Pin;
 
 			// Creates a new board with the given pinspec.
-			Wiring(const PinSpec &pSpec):m_pinSpec(pSpec){};
+			explicit Wiring(const PinSpec &pSpec):m_pinSpec(pSpec){};
 
 			// Passthrough to retrieve the MCU name
 			std::string GetMCUName() const { return m_pinSpec.GetMCUName(); }
 
 			const PinSpec& GetPinSpec() const { return m_pinSpec; }
 
-			virtual ~Wiring(){};
+			virtual ~Wiring() = default;
 
 			// Shorthand to get IRQ for a digital IO port.
+			//NOLINTNEXTLINE - complaint in external macro
 			inline struct avr_irq_t* IOIRQ(struct avr_t* avr,uint8_t port,uint8_t number) const { return avr_io_getirq(avr,AVR_IOCTL_IOPORT_GETIRQ(port),number); }
 
 			// Timer PWM shorthand function
+			//NOLINTNEXTLINE - complaint in external macro
 			inline struct avr_irq_t* TIMERIRQ(struct avr_t* avr,uint8_t timer,uint8_t number) const {return avr_io_getirq(avr,AVR_IOCTL_TIMER_GETIRQ(timer), _TimerPWMID(number)); }
 
 			// Looks up a digital IRQ based on the arduino convenience pin number.
@@ -76,4 +80,4 @@ namespace Wirings
 		private:
 			const PinSpec &m_pinSpec;
 	};
-};
+}; // namespace Wirings

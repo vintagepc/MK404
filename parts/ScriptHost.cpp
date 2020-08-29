@@ -1,5 +1,3 @@
-
-
 /*
 	ScriptHost.cpp - Core handler responsible for handling
 	scripting actions.
@@ -22,104 +20,108 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ScriptHost.h>
-#include <exception>    // for exception
-#include <fstream>      // IWYU pragma: keep for basic_istream, char_traits, ifstream, istring...
-#include <sstream>		// IWYU pragma: keep
-#include <type_traits>  // for __decay_and_strip<>::__type
-#include <utility>      // for make_pair, pair
+#include "ScriptHost.h"
+#include "gsl-lite.hpp"
 #include <GL/freeglut_std.h> // glut menus
-#include <assert.h> // assert.
+#include <cstddef>
+#include <exception>    // for exception
+#include <fstream>      // IWYU pragma: keep
+#include <iostream>
+#include <sstream>		// IWYU pragma: keep
+#include <utility>      // for make_pair, pair
 
-map<string, IScriptable*> ScriptHost::m_clients;
+std::map<std::string, IScriptable*> ScriptHost::m_clients;
 
-vector<string> ScriptHost::m_script;
+std::vector<std::string> ScriptHost::m_script;
 unsigned int ScriptHost::m_iLine, ScriptHost::m_uiAVRFreq;
-map<string, int> ScriptHost::m_mMenuIDs;
-map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
-map<string, unsigned> ScriptHost::m_mClient2MenuBase;
-map<string, vector<pair<string,int>>> ScriptHost::m_mClientEntries;
-ScriptHost::linestate_t ScriptHost::m_lnState = linestate_t();
-shared_ptr<ScriptHost> ScriptHost::g_pHost;
+std::map<std::string, int> ScriptHost::m_mMenuIDs;
+std::map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
+std::map<std::string, unsigned> ScriptHost::m_mClient2MenuBase;
+std::map<std::string, std::vector<std::pair<std::string,int>>> ScriptHost::m_mClientEntries;
 ScriptHost::State ScriptHost::m_state = ScriptHost::State::Idle;
 int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
 bool ScriptHost::m_bQuitOnTimeout = false;
 bool ScriptHost::m_bMenuCreated = false;
-
-atomic_uint ScriptHost::m_uiQueuedMenu {0};
+bool ScriptHost::m_bIsInitialized = false;
+std::atomic_uint ScriptHost::m_uiQueuedMenu {0};
 
 void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
 	if (bMarkdown)
 	{
-		printf("# Scripting options for the selected printer:\n");
-		// for (auto it=m_clients.begin();it!=m_clients.end();it++)
-		// {
-		// 	string strRef = it->second->GetName();
-		// 	strRef[0] = tolower(strRef[0]); // Yes, kludgy, I know...
-		// 	printf("- [%s](#%s)\n",it->second->GetName().c_str(),strRef.c_str());
-		// }
+		std::cout << "# Scripting options for the selected printer:\n";
 	}
 	else
-		printf("Scripting options for the current context:\n");
-	for (auto it=m_clients.begin();it!=m_clients.end();it++)
-		it->second->PrintRegisteredActions(bMarkdown);
+	{
+		std::cout << "Scripting options for the current context:\n";
+	}
+	for (auto &client : m_clients)
+	{
+		client.second->PrintRegisteredActions(bMarkdown);
+	}
 }
 
-void ScriptHost::LoadScript(const string &strFile)
+void ScriptHost::LoadScript(const std::string &strFile)
 {
-	string strLn;
-	ifstream fileIn(strFile);
+	std::string strLn;
+	std::ifstream fileIn(strFile);
 	while (getline(fileIn, strLn))
 	{
 		if (strLn.empty() || strLn[0]=='#')
+		{
 			continue;
-
+		}
 		m_script.push_back(strLn);
 	}
 	m_iLine = 0;
-	printf("ScriptHost: Loaded %zu lines from %s\n", m_script.size(), strFile.c_str());
+	std::cout << "ScriptHost: Loaded " << m_script.size() << " lines from " << strFile << '\n';
 }
 
 // Parse line in the format Context::Action(arg1, arg2,...)
-bool ScriptHost::GetLineParts(const string &strLine, string &strCtxt, string& strAct, vector<string>&vArgs)
+ScriptHost::LineParts_t ScriptHost::GetLineParts(const std::string &strLine)
 {
+	LineParts_t sParts;
 	size_t iCtxEnd = strLine.find("::");
 	size_t iArgBegin = strLine.find('(');
 	size_t iArgEnd = strLine.find(')');
-	vector<string> args;
-	if (iCtxEnd == string::npos || iArgBegin == string::npos || iArgEnd == string::npos)
-		return false;
-	strCtxt = strLine.substr(0,iCtxEnd);
-	strAct = strLine.substr(iCtxEnd+2, (iArgBegin - iCtxEnd)-2);
-	string strTmp, strArgs = strLine.substr(iArgBegin+1, (iArgEnd-iArgBegin)-1);
-	istringstream argsIn(strArgs);
+	std::vector<std::string> args;
+	if (iCtxEnd == std::string::npos || iArgBegin == std::string::npos || iArgEnd == std::string::npos)
+	{
+		return sParts;
+	}
+	sParts.strCtxt = strLine.substr(0,iCtxEnd);
+	sParts.strAct = strLine.substr(iCtxEnd+2, (iArgBegin - iCtxEnd)-2);
+	std::string strTmp, strArgs = strLine.substr(iArgBegin+1, (iArgEnd-iArgBegin)-1);
+	std::istringstream argsIn(strArgs);
 	while (getline(argsIn, strTmp,','))
+	{
 		args.push_back(strTmp);
-	vArgs = args;
-	return true;
+	}
+	sParts.vArgs = args;
+	sParts.isValid = true;
+	return sParts;
 }
 
-IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const vector<string> &vArgs)
+IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs)
 {
 	switch (ID)
 	{
 		case ActSetTimeoutMs:
 		{
-			int iTime = stoi(vArgs.at(0));
+			int iTime = std::stoi(vArgs.at(0));
 			m_iTimeoutCycles = iTime *(m_uiAVRFreq/1000);
-			printf("ScriptHost::SetTimeoutMs changed to %d (%d cycles)\n",iTime,m_iTimeoutCycles);
+			std::cout << "ScriptHost::SetTimeoutMs changed to " << iTime << " Ms (" << m_iTimeoutCycles << " cycles)\n";
 			m_iTimeoutCount = 0;
 			break;
 		}
 		case ActSetQuitOnTimeout:
 		{
-			m_bQuitOnTimeout = stoi(vArgs.at(0))!=0;
+			m_bQuitOnTimeout = std::stoi(vArgs.at(0))!=0;
 			break;
 		}
 		case ActLog:
 		{
-			printf("ScriptHost: %s\n",vArgs.at(0).c_str());
+			std::cout << "ScriptLog: " << vArgs.at(0) << '\n';
 			break;
 		}
 	}
@@ -128,15 +130,15 @@ IScriptable::LineStatus ScriptHost::ProcessAction(unsigned int ID, const vector<
 
 bool ScriptHost::ValidateScript()
 {
-	vector<string> vArgs;
-	string strCtxt, strAct;
-	printf("Validating script...\n");
+	std::string strCtxt;
+	std::cout << "Validating script...\n";
 	bool bClean = true;
-	auto fcnErr = [](const string &sMsg, const int iLine) { printf("ScriptHost: Validation failed: %s on line %d : %s\n",sMsg.c_str(), iLine, m_script.at(iLine).c_str());};
+	auto fcnErr = [](const std::string &sMsg, const int iLine) { std::cout << "ScriptHost: Validation failed: "<< sMsg <<" on line " << iLine <<":" << m_script.at(iLine) << '\n';};
 	for (size_t i=0; i<m_script.size(); i++)
 	{
-		vArgs.clear();
-		if (!ScriptHost::GetLineParts(m_script.at(i),strCtxt,strAct,vArgs))
+		LineParts_t sLine = ScriptHost::GetLineParts(m_script.at(i));
+		strCtxt = sLine.strCtxt;
+		if (!sLine.isValid)
 		{
 			bClean = false;
 			fcnErr("Parse error: Line is not of the form Context::Action([arg1,arg2,...])",i);
@@ -146,44 +148,44 @@ bool ScriptHost::ValidateScript()
 		{
 			bClean = false;
 			fcnErr("Unknown context " + strCtxt, i);
-			string strCtxts = "Available contexts:";
-			for (auto it=m_clients.begin(); it!=m_clients.end(); it++)
+			std::string strCtxts = "Available contexts:";
+			for (auto &it: m_clients)
 			{
-				strCtxts += " " + it->first + ",";
+				strCtxts += " " + it.first + ",";
 			}
 			strCtxts.pop_back();
-			printf("%s\n",strCtxts.c_str());
+			std::cout << strCtxts << '\n';
 			continue;
 		}
-		if (m_clients.at(strCtxt)->m_ActionIDs.count(strAct)==0)
+		if (m_clients.at(strCtxt)->m_ActionIDs.count(sLine.strAct)==0)
 		{
 			bClean = false;
-			fcnErr("Unknown action " + strCtxt + "::" + strAct,i);
-			printf("Available actions:\n");
+			fcnErr(std::string("Unknown action ").append(strCtxt).append("::").append(sLine.strAct),i);
+			std::cout << "Available actions:\n";
 			m_clients.at(strCtxt)->PrintRegisteredActions();
 			continue;
 		}
-		int ID = m_clients.at(strCtxt)->m_ActionIDs.at(strAct);
-		const vector<ArgType> vArgTypes = m_clients.at(strCtxt)->m_ActionArgs.at(ID);
-		if (vArgTypes.size()!=vArgs.size())
+		int ID = m_clients.at(strCtxt)->m_ActionIDs.at(sLine.strAct);
+		const std::vector<ArgType> vArgTypes = m_clients.at(strCtxt)->m_ActionArgs.at(ID);
+		if (vArgTypes.size()!=sLine.vArgs.size())
 		{
 			bClean = false;
-			fcnErr("Argument count mismatch, expected "+to_string(vArgTypes.size()),i);
+			fcnErr("Argument count mismatch, expected "+ std::to_string(vArgTypes.size()),i);
 						m_clients.at(strCtxt)->PrintRegisteredActions();
 			continue;
 		}
 		for (size_t j=0; j<vArgTypes.size(); j++)
 		{
-			if (!CheckArg(vArgTypes.at(j),vArgs.at(j)))
+			if (!CheckArg(vArgTypes.at(j),sLine.vArgs.at(j)))
 			{
 				bClean = false;
-				fcnErr("Conversion error, expected \"" + m_ArgToString.at(vArgTypes.at(j)) + "\" but could not convert \"" + vArgs.at(j) + "\"",i);
+				fcnErr("Conversion error, expected \"" + GetArgTypeNames().at(vArgTypes.at(j)) + "\" but could not convert \"" + sLine.vArgs.at(j) + "\"",i);
 				continue;
 			}
 		}
 
 	}
-	printf("Script validation finished.\n");
+	std::cout << "Script validation finished.\n";
 	return bClean;
 }
 
@@ -212,7 +214,7 @@ void ScriptHost::CreateRootMenu(int iWinID)
 	m_bMenuCreated = true;
 	if (m_mMenuIDs.count("ScriptHost")!=0)
 	{
-		fprintf(stderr,"Attempted to create a new root menu when one already exists. Ignoring...\n");
+		std::cerr << "Attempted to create a new root menu when one already exists. Ignoring...\n";
 		return;
 	}
 
@@ -226,11 +228,15 @@ void ScriptHost::CreateRootMenu(int iWinID)
 	for (auto it = m_mMenuIDs.begin(); it!=m_mMenuIDs.end(); it++)
 	{
 		if (it->second != 0)
+		{
 			continue;
+		}
 		auto str = it->first;
 		int iID = glutCreateMenu(ScriptHost::MenuCB);
 		if (m_mClientEntries.count(str)==0)
+		{
 			glutAddMenuEntry("No options",m_mClient2MenuBase.at(str));
+		}
 		else
 		{
 			while (m_mClientEntries.at(str).size()>0)
@@ -247,25 +253,25 @@ void ScriptHost::CreateRootMenu(int iWinID)
 	}
 }
 
-bool ScriptHost::CheckArg(const ArgType &type, const string &val)
+bool ScriptHost::CheckArg(const ArgType &type, const std::string &val)
 {
 	try
 	{
 		switch (type)
 		{
 			case ArgType::Int:
-				stoi(val);
+				std::stoi(val);
 				return true;
 			case ArgType::Float:
-				stof(val);
+				std::stof(val);
 				return true;
 			case ArgType::Bool:
-				stoi(val);
+				std::stoi(val);
 				return true;
 			case ArgType::String:
 				return true;
 			case ArgType::uint32:
-				stoul(val);
+				std::stoul(val);
 				return true;
 		}
 	}
@@ -279,36 +285,49 @@ bool ScriptHost::CheckArg(const ArgType &type, const string &val)
 
 void ScriptHost::ParseLine(unsigned int iLine)
 {
-	string strCtxt, strAct;
-	m_lnState.isValid = false;
-	//m_lnState.vArgs.clear();
-	if (!ScriptHost::GetLineParts(m_script.at(iLine),strCtxt,strAct,m_lnState.vArgs))
+	GetLineState().isValid = false;
+	LineParts_t sLine = ScriptHost::GetLineParts(m_script.at(iLine));
+	if (!sLine.isValid)
+	{
+		std::cout << "Failed to get parts\n";
 		return;
+	}
 
-	m_lnState.iLine = iLine;
-	if(!m_clients.count(strCtxt) || m_clients.at(strCtxt)==nullptr)
+	GetLineState().iLine = iLine;
+	if(!m_clients.count(sLine.strCtxt) || m_clients.at(sLine.strCtxt)==nullptr)
+	{
+		std::cout << "No client\n";
 		return;
+	}
 
-	m_lnState.strCtxt = strCtxt;
+	GetLineState().strCtxt = sLine.strCtxt;
+	GetLineState().vArgs = sLine.vArgs;
 
-	IScriptable *pClient = m_lnState.pClient = m_clients.at(strCtxt);
+	IScriptable *pClient = GetLineState().pClient = m_clients.at(sLine.strCtxt);
 
-	if (!m_lnState.pClient->m_ActionIDs.count(strAct))
+	if (!GetLineState().pClient->m_ActionIDs.count(sLine.strAct))
+	{
+		std::cout << "No action\n";
 		return;
+	}
 
-	int iID = m_lnState.iActID = pClient->m_ActionIDs[strAct];
+	int iID = GetLineState().iActID = pClient->m_ActionIDs[sLine.strAct];
 
-	if (m_lnState.vArgs.size()!=pClient->m_ActionArgs.at(iID).size())
+	if (GetLineState().vArgs.size()!=pClient->m_ActionArgs.at(iID).size())
+	{
+		std::cout << "Arg count mismatch\n";
 		return;
-
-	m_lnState.isValid = true;
+	}
+	GetLineState().isValid = true;
 }
 
 void ScriptHost::AddSubmenu(IScriptable *src)
 {
 	std::string strName = src->GetName();
 	if (m_bMenuCreated)
-		printf("Adding a menu entry after GLUT is up... TODO\n");
+	{
+		std::cout << "Adding a menu entry after GLUT is up... TODO\n";
+	}
 	else if (!m_mMenuIDs.count(strName)) // GLUT isn't up yet, queue it for later.
 	{
 		m_mMenuIDs[strName] = 0;
@@ -319,9 +338,9 @@ void ScriptHost::AddSubmenu(IScriptable *src)
 	}
 }
 
-void ScriptHost::AddMenuEntry(const string &strName, unsigned uiID, IScriptable* src)
+void ScriptHost::AddMenuEntry(const std::string &strName, unsigned uiID, IScriptable* src)
 {
-	assert(uiID<100);
+	Expects(uiID<100); //NOLINT - complaint is in system include file
 	auto strClient = src->GetName();
 	unsigned uiBase = m_mClient2MenuBase.at(strClient);
 	m_mClientEntries[strClient].push_back({strName, uiBase + uiID});
@@ -329,7 +348,7 @@ void ScriptHost::AddMenuEntry(const string &strName, unsigned uiID, IScriptable*
 }
 
 
-void ScriptHost::AddScriptable(string strName, IScriptable* src)
+void ScriptHost::AddScriptable(const std::string &strName, IScriptable* src)
 {
 	if (m_clients.count(strName)==0)
 	{
@@ -339,12 +358,12 @@ void ScriptHost::AddScriptable(string strName, IScriptable* src)
 	else if (m_clients.at(strName)!=src)
 	{
 		int i=0;
-		string strNew;
-		printf("ScriptHost: NOTE: Duplicate context name (%s) with different pointer. Incrementing ID...\n", strName.c_str());
+		std::string strNew;
+		std::cout << "ScriptHost: NOTE: Duplicate context name (" << strName << ") with different pointer. Incrementing ID...\n";
 		while (i<10)
 		{
 			i++;
-			strNew = strName + to_string(i);
+			strNew = strName + std::to_string(i);
 			if (m_clients.count(strNew)==0)
 			{
 				m_clients[strNew] = src;
@@ -353,9 +372,11 @@ void ScriptHost::AddScriptable(string strName, IScriptable* src)
 				return;
 			}
 			else if (m_clients.at(strNew) == src)
+			{
 				return;
+			}
 		};
-		printf("ScriptHost: More than 10 duplicate identifiers. You should do something about that.\n");
+		std::cerr << "ScriptHost: More than 10 duplicate identifiers. You should do something about that.\n";
 
 	}
 }
@@ -364,18 +385,18 @@ using LS = IScriptable::LineStatus;
 void ScriptHost::OnAVRCycle()
 {
 	if (m_iLine>=m_script.size())
+	{
 		return; // Done.
-
-	if (m_lnState.iLine != m_iLine || m_state == State::Idle)
+	}
+	if (GetLineState().iLine != m_iLine || m_state == State::Idle)
 	{
 		m_state = State::Running;
-		printf("ScriptHost: Executing #%u %s\n",m_iLine,m_script.at(m_iLine).c_str());
+		std::cout << "ScriptHost: Executing line " << m_script.at(m_iLine) << "\n";
 		ParseLine(m_iLine);
 	}
-
-	if (m_lnState.isValid)
+	if (GetLineState().isValid)
 	{
-		LS lsResult = m_lnState.pClient->ProcessAction(m_lnState.iActID,m_lnState.vArgs);
+		LS lsResult = GetLineState().pClient->ProcessAction(GetLineState().iActID,GetLineState().vArgs);
 		switch (lsResult)
 		{
 			case LS::Finished:
@@ -383,31 +404,41 @@ void ScriptHost::OnAVRCycle()
 				m_iTimeoutCount = 0;
 				break;
 			case LS::Unhandled:
-				printf("ScriptHost: Unhandled action, considering this an error.\n");
+				std::cout << "ScriptHost: Unhandled action, considering this an error.\n";
 				/* FALLTHRU */
 			case LS::Error:
-				printf("ScriptHost: Script FAILED on line %d\n",m_iLine);
-				m_iLine = m_script.size(); // Error, end scripting.
+			{
+				std::cout << "ScriptHost: Script FAILED on line " << m_iLine << '\n';
 				m_state = State::Error;
+				int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
+				m_clients.at("Board")->ProcessAction(ID,{});
+				m_iLine = m_script.size(); // Error, end scripting.
 				return;
-
+			}
 			case LS::Waiting:
+			{
 				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount<=m_iTimeoutCycles)
 				{
-					break; // Fallthrough if timed out.
+					break;
 				}
+				else
+				{
+					m_state = State::Timeout;
+				}
+			}
+			/* FALLTHRU */
 			case LS::Timeout:
 			{
 				m_state = State::Timeout;
 				if (m_bQuitOnTimeout)
 				{
-					printf("ScriptHost: Script TIMED OUT on %s. Quitting...\n",m_script.at(m_iLine).c_str());
+					std::cout << "ScriptHost: Script TIMED OUT on " << m_script.at(m_iLine) << ". Quitting...\n";
 					int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
 					m_clients.at("Board")->ProcessAction(ID,{});
 					m_iLine = m_script.size();
 					return;
 				}
-				printf("ScriptHost: Script TIMED OUT on %s\n",m_script.at(m_iLine).c_str());
+				std::cout << "ScriptHost: Script TIMED OUT on #" << m_iLine << ": " << m_script.at(m_iLine) << '\n';
 				m_iLine++;
 				m_iTimeoutCount = 0;
 			}
@@ -418,22 +449,14 @@ void ScriptHost::OnAVRCycle()
 		}
 		if (m_iLine==m_script.size())
 		{
-			printf("ScriptHost: Script FINISHED\n");
+			std::cout << "ScriptHost: Script FINISHED\n";
 			m_state = State::Finished;
 		}
 	}
 	else
 	{
-		printf("ScriptHost: ERROR: Invalid line/unrecognized command:%d %s\n",m_iLine,m_script.at(m_iLine).c_str());
+		std::cout << "ScriptHost: ERROR: Invalid line/unrecognized command: " << m_iLine << ":" << m_script.at(m_iLine) << '\n';
 		m_state = State::Error;
 		m_iLine = m_script.size();
 	}
 }
-
-const map<ArgType,string> IScriptable::m_ArgToString = {
-	make_pair(ArgType::Bool,"bool"),
-	make_pair(ArgType::Float,"float"),
-	make_pair(ArgType::Int,"int"),
-	make_pair(ArgType::String,"string"),
-	make_pair(ArgType::uint32,"uint32")
-};

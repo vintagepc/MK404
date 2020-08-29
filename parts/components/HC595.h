@@ -23,10 +23,10 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint32_t, uint8_t
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include <cstdint>          // for uint32_t, uint8_t
 #include <string>
 
 /*

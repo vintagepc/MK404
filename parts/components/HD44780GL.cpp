@@ -28,18 +28,21 @@
  */
 
 #include "HD44780GL.h"
-#include <mutex>
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
+#include "Macros.h"
 #include "Util.h"             // for hexColor_t, hexColor_t::(anonymous)
+#include "gsl-lite.hpp"
 #include "hd44780_charROM.h"  // for (anonymous), hd44780_ROM_AOO
 #include "sim_avr_types.h"    // for avr_regbit_t
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
+
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex3f, glBegin, glEnd, glMaterialfv
 #else
 # include <GL/gl.h>           // for glVertex3f, glBegin, glEnd, glMaterialfv
 #endif
-
+#include <mutex>
+#include <vector>
 
 //#define TRACE(_w) _w
 #ifndef TRACE
@@ -48,21 +51,24 @@
 
 
 static inline void
-glColorHelper(hexColor_t color, bool bMaterial = false)
+glColorHelper(const hexColor_t &color, bool bMaterial = false)
 {
 
 	if (bMaterial)
 	{
-		float fCol[4] = {	(float)(color.red)/255.0f,
-					(float)(color.green) / 255.0f,
-					(float)(color.blue) / 255.0f,
-					(float)(color.alpha) / 255.0f };
+		float fCol[4] = {
+					static_cast<float>(color.red)/255.0f,
+					static_cast<float>(color.green) / 255.0f,
+					static_cast<float>(color.blue) / 255.0f,
+					static_cast<float>(color.alpha) / 255.0f };
 		float fNone[4] = {0,0,0,1};
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, fNone);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,  fCol);
+		glMaterialfv(GL_FRONT_AND_BACK, US(GL_AMBIENT_AND_DIFFUSE) | US(GL_SPECULAR), static_cast<float*>(fNone));
+		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,  static_cast<float*>(fCol));
 	}
 	else
+	{
 		glColor4ub(color.red, color.green, color.blue, color.alpha);
+	}
 
 }
 
@@ -74,14 +80,14 @@ void HD44780GL::Init(avr_t *avr)
 	RegisterNotify(BRIGHTNESS_PWM_IN, MAKE_C_CALLBACK(HD44780GL, OnBrightnessPWM),this);
 }
 
-void HD44780GL::OnBrightnessPWM(struct avr_irq_t * irq, uint32_t value)
+void HD44780GL::OnBrightnessPWM(struct avr_irq_t *, uint32_t value)
 {
 	//printf("Brightness pin changed value: %u\n",value);
 	m_uiPWM = m_uiBrightness = value;
 	SetFlag(HD44780_FLAG_DIRTY,1);
 }
 
-void HD44780GL::OnBrightnessDigital(struct avr_irq_t * irq,	uint32_t value)
+void HD44780GL::OnBrightnessDigital(struct avr_irq_t *,	uint32_t value)
 {
 	avr_regbit_t rb = AVR_IO_REGBIT(0x90,7); // COM3A1
 	if (avr_regbit_get(m_pAVR,rb)) // Restore PWM value if being PWM-driven again after a digitalwrite
@@ -91,14 +97,18 @@ void HD44780GL::OnBrightnessDigital(struct avr_irq_t * irq,	uint32_t value)
 	}
 	//printf("Brightness digital pin changed: %02x\n",value);
 	if (value)
+	{
 		m_uiBrightness = 0xFF;
+	}
 	else
+	{
 		m_uiBrightness = 0x00;
+	}
 	SetFlag(HD44780_FLAG_DIRTY,1);
 
 }
 
-void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)
+void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -109,13 +119,15 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 		glVertex3i(0, 0, -1);
 		glVertex3i(0, 8, -1);
 	glEnd();
-	uint8_t *uiData;
+	auto uiData = hd44780_ROM_AOO.data.begin();
 	uint8_t iCols=8;
 	if (c<16)
-		uiData = &m_cgRam[(c & 7) <<3];
+	{
+		uiData = m_cgRam.begin() + ((c & 7U) <<3U);
+	}
 	else
 	{
-		uiData = (uint8_t*)&hd44780_ROM_AOO.data[c*hd44780_ROM_AOO.h];
+		uiData += c*hd44780_ROM_AOO.h;
 		iCols = 7;
 	}
 
@@ -127,13 +139,13 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 		 	(uiData[i] & 4)>1,
 		 	(uiData[i] & 8)>1,
 			(uiData[i] & 16)>1));
-		for (int j=0; j<5; j++)
+		for (uint8_t j=0; j<5; j++)
 		{
 
-			if (uiData[i] & (16>>j))
+			if (*uiData & (16U>>j))
 			{
-				float x = (float)j;
-				float y = (float)i;
+				auto x = static_cast<float>(j);
+				auto y = static_cast<float>(i);
 				float inset = 0.85;
 				if (shadow)
 				{
@@ -156,6 +168,7 @@ void HD44780GL::GLPutChar(char c, uint32_t character, uint32_t text, uint32_t sh
 				glEnd();
 			}
 		}
+		uiData++;
 	}
 }
 
@@ -169,21 +182,10 @@ void HD44780GL::Draw(
 	uint8_t iCols = m_uiWidth;
 	uint8_t iRows = m_uiHeight;
 	int border = 3;
-	hexColor_t bg(background);
-	// uint8_t* iBG = (uint8_t*)&background;
-	float fScale = (float)m_uiBrightness/255.f;
-	for (int i=1; i<4; i++)
-		bg.bytes[i] = ((float)bg.bytes[i])*fScale;
+	float fScale = static_cast<float>(m_uiBrightness)/255.f;
+	hexColor_t bg(background,fScale);
 
-	float fNone[4] = {0,0,0,1};
-	if (bMaterial)
-	{
-		float fCopy[4] = { float(bg.red)/255.f,float(bg.green)/255.f,float(bg.blue)/255.f,0.0f};
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR, fNone);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION , fCopy);
-	}
-	else
-		glColor4ub(bg.red,bg.green,bg.blue,bg.alpha);
+	glColorHelper(bg, bMaterial);
 
 	glTranslatef(border, border, 0);
 	glBegin(GL_QUADS);
@@ -197,7 +199,7 @@ void HD44780GL::Draw(
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {
 			std::lock_guard<std::mutex> lock(m_lock);
-			GLPutChar(m_vRam[m_lineOffsets[v] + i], character, text, shadow, bMaterial);
+			GLPutChar(m_vRam[m_lineOffsets.at(v) + i], character, text, shadow, bMaterial);
 			glTranslatef(6, 0, 0);
 		}
 		glPopMatrix();

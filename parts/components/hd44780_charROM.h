@@ -22,12 +22,12 @@
 
 #pragma once
 
+#include "gsl-lite.hpp"
+
 static const struct {
-  unsigned int w;
-  unsigned int h;
-  unsigned int data_size;
-  unsigned char data[1792];
-} hd44780_ROM_AOO = {5,7,1792,
+  unsigned int w {5};
+  unsigned int h {7};
+  uint8_t _data[1792]
   {
     0x00,
     0x00,
@@ -1820,5 +1820,6 @@ static const struct {
     0x1f,
     0x1f,
     0x1f,
-    0x1f}
-  };
+    0x1f};
+	gsl::span<uint8_t> data {_data};
+  } hd44780_ROM_AOO;

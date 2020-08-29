@@ -19,9 +19,11 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
+#include <atomic>
 #include <pthread.h>  // for pthread_t
 #include <string>     // for string
-#include <atomic>
 
 class SerialPipe
 {

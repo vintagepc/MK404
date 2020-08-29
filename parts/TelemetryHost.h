@@ -21,23 +21,20 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint32_t, uint8_t
-#include <stdio.h>           // for fprintf, printf, stderr
-#include <stdlib.h>          // for exit
-#include <string.h>          // for memset
-#include <map>               // for map
-#include <string>            // for string
-#include <type_traits>       // for __decay_and_strip<>::__type
-#include <utility>           // for make_pair, pair
-#include <vector>            // for vector
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "IScriptable.h"     // for ArgType, ArgType::Int, ArgType::String
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
 #include "sim_vcd_file.h"    // for avr_vcd_init, avr_vcd_start, avr_vcd_stop
-
-using namespace std;
+#include <cstdint>          // for uint32_t, uint8_t
+#include <cstring>          // for memset
+#ifdef __CYGWIN__
+#include <iostream>
+#endif
+#include <map>               // for map
+#include <string>            // for string
+#include <vector>            // for vector
 
 #define TCENTRIES \
 	_TC(Display,"Display"),\
@@ -68,9 +65,8 @@ enum class TelCategory {
 // Only items in categries specified by a command line
 // argument (or explicitly named) will be logged.
 
-
-
-typedef const vector<TelCategory>& TelCats;
+//typedef const std::vector<TelCategory>& TelCats;
+using TelCats = const std::vector<TelCategory>&;
 using TC = TelCategory;
 
 class TelemetryHost: public BasePeripheral, public Scriptable
@@ -84,17 +80,14 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 		const char *_IRQNAMES[IRQ::COUNT] = {
 		};
 
-		inline static TelemetryHost* GetHost()
+		static TelemetryHost& GetHost()
 		{
-			if (m_pHost == nullptr)
-			{
-				printf("TelemetryHost::Init\n");
-			}
-			return m_pHost;
+			static TelemetryHost h;
+			return h;
 		}
 
 		// Inits the VCD file at the specified rate (in us)
-		void Init(avr_t *pAVR, const string &strVCDFile, uint32_t uiRateUs = 100)
+		void Init(avr_t *pAVR, const std::string &strVCDFile, uint32_t uiRateUs = 100)
 		{
 			_Init(pAVR, this);
 			avr_vcd_init(m_pAVR,strVCDFile.c_str(),&m_trace,uiRateUs);
@@ -112,7 +105,7 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 
 		void PrintTelemetry(bool bMarkdown = false);
 
-		void SetCategories(const vector<string> &vsCats);
+		void SetCategories(const std::vector<std::string> &vsCats);
 
 		// Convenience wrapper for scriptable BasePeripherals
 		template<class C>
@@ -121,9 +114,9 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 			AddTrace(p->GetIRQ(eIRQ),p->GetName(), vCats, uiBits);
 		}
 
-		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
-		void AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits = 1);
+		void AddTrace(avr_irq_t *pIRQ, std::string strName, TelCats vCats, uint8_t uiBits = 1);
 
 		void Shutdown()
 		{
@@ -133,14 +126,9 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 	private:
 		TelemetryHost():Scriptable("TelHost")
 		{
-			if (m_pHost !=nullptr)
-			{
-				fprintf(stderr, "ERROR - duplicate initialization of telemetry host!\n");
-				exit(1);
-			}
 			memset(&m_trace, 0, sizeof(m_trace));
 #ifdef __CYGWIN__
-            printf("Cygwin detected - skipping TelHost action registration...\n");
+            std::cout << "Cygwin detected - skipping TelHost action registration...\n";
 #else
             // Sorry, this segfaults on win32 for some reason...
 			RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::uint32});
@@ -160,28 +148,26 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 			ActStopTrace
 		};
 
-		avr_vcd_t m_trace;
+		avr_vcd_t m_trace {};
 
-		vector<TelCategory> m_VLoglst;
-		vector<string> m_vsNames;
+		std::vector<TelCategory> m_VLoglst;
+		std::vector<std::string> m_vsNames;
 
-		static TelemetryHost *m_pHost;
-
-		map<string, avr_irq_t*>m_mIRQs;
-		map<string, vector<TC>>m_mCatsByName;
-		map<TC,vector<string>>m_mNamesByCat;
+		std::map<std::string, avr_irq_t*>m_mIRQs;
+		std::map<std::string, std::vector<TC>>m_mCatsByName;
+		std::map<TC,std::vector<std::string>>m_mNamesByCat;
 
 		avr_irq_t* m_pCurrentIRQ = nullptr;
 		uint32_t m_uiMatchVal = 0;
 
 
-		#define _TC(x,y) make_pair(y,TC::x)
-		const map<string,TC> m_mStr2Cat = {
+		#define _TC(x,y) {y,TC::x}
+		const std::map<std::string,TC> m_mStr2Cat = {
 			TCENTRIES
 		};
 		#undef _TC
-		#define _TC(x,y) make_pair(TC::x,y)
-		const map<TC,string> m_mCat2Str = {
+		#define _TC(x,y) {TC::x,y}
+		const std::map<TC,std::string> m_mCat2Str = {
 			TCENTRIES
 		};
 		#undef _TC

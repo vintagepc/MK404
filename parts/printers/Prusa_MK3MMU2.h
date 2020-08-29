@@ -20,10 +20,10 @@
 
 #pragma once
 
-#include <stdio.h>
-#include "Prusa_MK3SMMU2.h"     // for Prusa_MK3SMMU2
-#include "Prusa_MK3.h"    // for Prusa_MK3
 #include "PAT9125.h"
+#include "Prusa_MK3.h"    // for Prusa_MK3
+#include "Prusa_MK3SMMU2.h"     // for Prusa_MK3SMMU2
+#include <iostream>
 
 class SerialPipe;
 
@@ -34,7 +34,7 @@ class Prusa_MK3MMU2 : public Prusa_MK3SMMU2
 		void SetupIR() override
 		{
 			avr_raise_irq(GetDIRQ(IR_SENSOR_PIN),1);
-			printf("MK3 - adding laser sensor\n");
+			std::cout << "MK3 - adding laser sensor\n";
 			AddHardware(LaserSensor, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
 			lIR.ConnectFrom(LaserSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 
@@ -43,9 +43,9 @@ class Prusa_MK3MMU2 : public Prusa_MK3SMMU2
 			LaserSensor.Set(PAT9125::FS_AUTO); // No filament - but this just updates the LED.
 		}; // Overridde to setup the PAT.
 
-		inline virtual void ToggleFSensor() override { LaserSensor.Toggle(); };
+		inline void ToggleFSensor() override { LaserSensor.Toggle(); };
 
-		inline virtual void FSensorResumeAuto() override { LaserSensor.Set(PAT9125::FS_AUTO);};
+		inline void FSensorResumeAuto() override { LaserSensor.Set(PAT9125::FS_AUTO);};
 
 		PAT9125 LaserSensor;
 };

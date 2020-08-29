@@ -22,12 +22,12 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint32_t, uint8_t
-#include <atomic>
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "Util.h"            // for hexColor_t
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include <atomic>
+#include <cstdint>          // for uint32_t, uint8_t
 
 class LED: public BasePeripheral
 {
@@ -36,7 +36,7 @@ public:
 	#include "IRQHelper.h"
 
 	// Creates a new LED with RGBA color (A ignored) uiHexColor and char label chrLabel
-	LED(uint32_t uiHexColor = 0x00FF0000, char chrLabel = ' ', bool bInvert = false);
+	LED(uint32_t uiHexColor, char chrLabel, bool bInvert = false);
 
 	// Initializes the LED to the AVR
 	void Init(avr_t * avr);

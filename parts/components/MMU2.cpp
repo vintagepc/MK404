@@ -20,32 +20,35 @@
  */
 
 #include "MMU2.h"
+#include "HC595.h"            // for HC595, TMC2130::IRQ::POSITION_OUT, MMU2...
+#include "LED.h"              // for LED
+#include "MM_Control_01.h"    // for MM_Control_01
+#include "PinNames.h"         // for Pin::FINDA_PIN
+#include "TMC2130.h"          // for TMC2130
+#include "gsl-lite.hpp"
+#include "uart_pty.h"         // for uart_pty
 #include <GL/freeglut_std.h>          // for glutGet, glutStrokeCharacter, GLUT_STRO...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glTranslatef, glVertex3f, glColor3f
 #else
 # include <GL/gl.h>           // for glTranslatef, glVertex3f, glColor3f
 #endif
-#include <stdio.h>            // for fprintf, size_t, stderr
-#include <stdlib.h>           // for exit
-#include "HC595.h"            // for HC595, TMC2130::IRQ::POSITION_OUT, MMU2...
-#include "LED.h"              // for LED
-#include "MM_Control_01.h"    // for MM_Control_01
-#include "PinNames.h"         // for Pin::FINDA_PIN
-#include "TMC2130.h"          // for TMC2130
-#include "uart_pty.h"         // for uart_pty
+#include <cstdlib>           // for exit
+#include <cstring>
+#include <iostream>            // for fprintf, size_t, stderr
 
 
 // Yes yes, globals are bad. But we don't have any choice because freeglut calls
 // don't have parameter void pointers to retain the c++ class pointer. :-/
 MMU2 *MMU2::g_pMMU = nullptr;
-using namespace Boards;
+
+using Boards::MM_Control_01;
 
 MMU2::MMU2():MM_Control_01()
 {
 	if (g_pMMU)
 	{
-		fprintf(stderr,"Error: Cannot have multiple MMU instances due to freeglut limitations\n");
+		std::cerr << "Error: Cannot have multiple MMU instances due to freeglut limitations\n";
 		exit(1);
 	}
 	g_pMMU = this;
@@ -53,7 +56,7 @@ MMU2::MMU2():MM_Control_01()
 	CreateBoard("MM-control-01.hex",0, false, 100,"");
 }
 
-std::string MMU2::GetSerialPort()
+const std::string MMU2::GetSerialPort()
 {
 	return m_UART.GetSlaveName();
 }
@@ -73,8 +76,10 @@ void MMU2::Draw(float fY)		/* function called whenever redisplay needed */
 		glTranslatef(20,7,0);
         glColor3f(1,1,1);
 		glScalef(0.09,-0.05,0);
-		for (size_t i=0; i<m_strTitle.size(); i++)
-			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_strTitle[i]);
+		for (auto &c : m_strTitle)
+		{
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
+		}
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
@@ -102,9 +107,9 @@ void MMU2::Draw(float fY)		/* function called whenever redisplay needed */
 		glEnd();
 		for (int i=0; i<5; i++)
 		{
-			m_lRed[i].Draw();
+			gsl::at(m_lRed,i).Draw();
 			glTranslatef(20,0,0);
-			m_lGreen[i].Draw();
+			gsl::at(m_lGreen,i).Draw();
 			glTranslatef(40,0,0);
 		}
 		m_lFINDA.Draw();
@@ -132,28 +137,34 @@ void MMU2::SetupHardware()
 void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)
 {
 	if (!value && !m_bStarted)
+	{
 		StartAVR();
+	}
     else if (irq->value && !value)
+	{
         m_bReset = true;
+	}
 }
 
 void MMU2::ToggleFINDA()
 {
 		m_bFINDAManual = !m_bFINDAManual;
-		printf("FINDA (manual) toggled: %u\n",m_bFINDAManual?1U:0U);
+		std::cout << "FINDA (manual) toggled: " << (m_bFINDAManual?1U:0U) << '\n';
 		SetPin(FINDA_PIN, m_bFINDAManual? 1:0);
 		RaiseIRQ(FINDA_OUT,m_bFINDAManual? 1 : 0);
 }
 
-void MMU2::OnPulleyFeedIn(struct avr_irq_t * irq,uint32_t value)
+void MMU2::OnPulleyFeedIn(struct avr_irq_t * ,uint32_t value)
 {
-	float* posOut = (float*)(&value);
+	float posOut;
+	std::memcpy(&posOut, &value,4);
+
 	if (m_bAutoFINDA)
 	{
-   		SetPin(FINDA_PIN,posOut[0]>24.0f);
+   		SetPin(FINDA_PIN,posOut>24.0f);
 		// Reflect the distance out for IR sensor triggering.
 		RaiseIRQ(FEED_DISTANCE, value);
-		RaiseIRQ(FINDA_OUT,posOut[0]>24.f);
+		RaiseIRQ(FINDA_OUT,posOut>24.f);
 	}
 	else
 	{
@@ -163,10 +174,12 @@ void MMU2::OnPulleyFeedIn(struct avr_irq_t * irq,uint32_t value)
 
 }
 
-void MMU2::LEDHandler(avr_irq_t *irq, uint32_t value)
+void MMU2::LEDHandler(avr_irq_t *, uint32_t value)
 {
 	uint32_t valOut = 0;
-	valOut = (value >>6) & 0b1111111111; // Just the LEDs.
+	valOut = (value >>6U) & 0b1111111111U; // Just the LEDs.
 	if (GetIRQ(LEDS_OUT)->value != valOut)
+	{
 		RaiseIRQ(LEDS_OUT,valOut);
+	}
 }

@@ -19,11 +19,12 @@
 
 #include "Color.h"
 
+#include "gsl-lite.hpp"
 #include <algorithm>
 #include <cmath>
 
 
-void rgb2hsv(const Color3fv rgb, Color3fv hsv)
+void rgb2hsv(gsl::span<const float> rgb, gsl::span<float> hsv)
 {
 	float r = rgb[0];
 	float g = rgb[1];
@@ -43,11 +44,17 @@ void rgb2hsv(const Color3fv rgb, Color3fv hsv)
 	else
 	{
 		if (max == r)
+		{
 			h = fmod(((g - b) / c), 6);
+		}
 		else if (max == g)
+		{
 			h = (b - r) / c + 2;
+		}
 		else
+		{
 			h = (r - g) / c + 4;
+		}
 		s = c / max;
 	}
 
@@ -57,7 +64,7 @@ void rgb2hsv(const Color3fv rgb, Color3fv hsv)
 }
 
 
-void hsv2rgb(const Color3fv hsv, Color3fv rgb)
+void hsv2rgb(gsl::span<const float> hsv, gsl::span<float> rgb)
 {
 	float h = hsv[0];
 	float s = hsv[1];
@@ -112,14 +119,18 @@ void hsv2rgb(const Color3fv hsv, Color3fv rgb)
 }
 
 
-void colorLerp(const Color3fv a, const Color3fv b, float v, Color3fv c)
+void colorLerp(gsl::span<const float> a, gsl::span<const float> b, float v, gsl::span<float> c)
 {
 	Color3fv hsv_a, hsv_b, hsv_c;
 
 	if (v > 1)
+	{
 		v = 1;
+	}
 	else if (v < 0)
+	{
 		v = 0;
+	}
 
 	rgb2hsv(a, hsv_a);
 	rgb2hsv(b, hsv_b);

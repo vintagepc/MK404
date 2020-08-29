@@ -20,8 +20,9 @@
 
 #pragma once
 
-#include "Wiring.h"
 #include "PinSpec_32u4.h"
+#include "Wiring.h"
+
 namespace Wirings
 {
 	class MM_Control_01 : public Wiring
@@ -34,7 +35,7 @@ namespace Wirings
 			};
 
 		protected:
-			virtual std::map<Pin,MCUPin> GetPinMap() override
+			std::map<Pin,MCUPin> GetPinMap()
 			{
 				return {
 					{BTN_ARRAY,2},
@@ -57,4 +58,4 @@ namespace Wirings
 		private:
 			PinSpec_32u4 m_pSpec = PinSpec_32u4();
 	};
-};
+}; // namespace Wirings

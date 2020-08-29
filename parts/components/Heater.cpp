@@ -22,15 +22,15 @@
  */
 
 #include "Heater.h"
+#include "TelemetryHost.h"
+#include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex2f, glBegin, glColor3f, glColor3fv
 #else
 # include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glColor3fv
 #endif
-#include <math.h>             // for pow
-#include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
-#include "TelemetryHost.h"
+#include <cmath>             // for pow
 
 #define TRACE(_w)
 #ifndef TRACE
@@ -39,14 +39,16 @@
 #endif
 
 
-avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
+avr_cycle_count_t Heater::OnTempTick(avr_t *, avr_cycle_count_t)
 {
 	if (m_bStopTicking)
+	{
 		return 0;
+	}
 
     if (m_uiPWM>0)
     {
-        float fDelta = (m_fThermalMass*((float)(m_uiPWM)/255.0f))*0.3;
+        float fDelta = (m_fThermalMass*(static_cast<float>(m_uiPWM)/255.0f))*0.3f;
         m_fCurrentTemp += fDelta;
     }
     else // Cooling - do a little exponential decay
@@ -57,28 +59,36 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * avr, avr_cycle_count_t when)
 	m_iDrawTemp = m_fCurrentTemp;
 
     TRACE(printf("New temp value: %.02f\n",m_fCurrentTemp));
-    RaiseIRQ(TEMP_OUT,(int)m_fCurrentTemp*256);
+    RaiseIRQ(TEMP_OUT,static_cast<int>(m_fCurrentTemp*256.f));
 
     if (m_uiPWM>0 || m_fCurrentTemp>m_fAmbientTemp+0.3)
+	{
         RegisterTimerUsec(m_fcnTempTick,300000,this);
+	}
     else
     {
         m_fCurrentTemp = m_fAmbientTemp;
-        RaiseIRQ(TEMP_OUT,(int)m_fCurrentTemp*256);
+        RaiseIRQ(TEMP_OUT,static_cast<int>(m_fCurrentTemp*256.f));
     }
     return 0;
 }
 
 
-void Heater::OnPWMChanged(struct avr_irq_t * irq,uint32_t value)
+void Heater::OnPWMChanged(struct avr_irq_t *,uint32_t value)
 {
     if (m_bAuto) // Only update if auto (pwm-controlled). Else user supplied RPM.
+	{
         m_uiPWM = value;
-
+	}
+	TRACE(printf("New PWM: %02x\n",value));
     if (m_uiPWM > 0)
+	{
         RegisterTimerUsec(m_fcnTempTick, 100000, this);
-    if ((m_pIrq + ON_OUT)->value != (m_uiPWM>0))
+	}
+    if (GetIRQ(ON_OUT)->value != (m_uiPWM>0))
+	{
         RaiseIRQ(ON_OUT,m_uiPWM>0);
+	}
 }
 
 //TCCR0A  _SFR_IO8(0x24)
@@ -91,18 +101,20 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
     {
         avr_regbit_t inv = AVR_IO_REGBIT(0x24 + 32,4);
         uint8_t COM0B0 = avr_regbit_get(m_pAVR, inv);
-        value = COM0B0^1;
+        value = COM0B0^1U;
     }
 
     if (value==1)
+	{
         value = 255;
+	}
 
     OnPWMChanged(irq,value);
 }
 
 Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 			   char chrLabel, float fColdTemp, float fHotTemp):
-			   								Scriptable(string("Heater_") + chrLabel),
+			   								Scriptable(std::string("Heater_") + chrLabel),
                                             m_fThermalMass(fThermalMass),
                                             m_fAmbientTemp(fAmbientTemp),
                                             m_fCurrentTemp(fAmbientTemp),
@@ -116,7 +128,7 @@ Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 	RegisterActionAndMenu("StopHeating","Stops heating, as if a thermal runaway is happening due to loose heater or thermistor",ActStopHeating);
 }
 
-Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus Heater::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -147,10 +159,13 @@ void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)
     RegisterNotify(DIGITAL_IN, MAKE_C_CALLBACK(Heater,OnDigitalChanged),this);
 
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, PWM_IN, {TC::Heater,TC::PWM},8);
-	pTH->AddTrace(this, DIGITAL_IN, {TC::Heater});
-	pTH->AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, PWM_IN, {TC::Heater,TC::PWM},8);
+	TH.AddTrace(this, DIGITAL_IN, {TC::Heater});
+	TH.AddTrace(this, ON_OUT, {TC::Heater,TC::Misc});
+	TH.AddTrace(this, TEMP_OUT, {TC::Heater});
+
+  	RaiseIRQ(TEMP_OUT,static_cast<int>(m_fCurrentTemp*256.f));
 }
 
 void Heater::Set(uint8_t uiPWM)
@@ -164,6 +179,7 @@ void Heater::Resume_Auto()
 {
     m_bAuto = true;
 	m_bStopTicking = false;
+	RaiseIRQ(PWM_IN,m_uiPWM);
 }
 
 
@@ -179,7 +195,7 @@ void Heater::Draw()
 	colorLerp(m_colColdTemp, m_colHotTemp, v, colFill);
 
     glPushMatrix();
-	    glColor3fv(colFill);
+	    glColor3fv(static_cast<float*>(colFill));
         glBegin(GL_QUADS);
             glVertex2f(0,10);
             glVertex2f(20,10);

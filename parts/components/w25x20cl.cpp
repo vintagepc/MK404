@@ -22,12 +22,13 @@
 */
 
 #include "w25x20cl.h"
-#include <fcntl.h>      // for open, O_CREAT, O_RDWR, SEEK_SET
-#include <stdio.h>      // for printf, perror, fprintf, stderr, size_t
-#include <stdlib.h>     // for exit, free, malloc
-#include <string.h>     // for memset, memcpy, strncpy
-#include <unistd.h>     // for close, ftruncate, lseek, read, write, ssize_t
 #include "TelemetryHost.h"
+
+#include <cstdlib>     // for exit, free, malloc
+#include <cstring>     // for memset, memcpy, strncpy
+#include <fstream>		// IWYU pragma: keep
+#include <iostream>
+#include <string>
 
 //#define TRACE(_w) _w
 #ifndef TRACE
@@ -60,30 +61,38 @@
 // #define _CMD_JEDEC_ID      0x9f
 #define _CMD_RD_UID        0x4b
 
-
-w25x20cl::~w25x20cl()
+w25x20cl::w25x20cl():Scriptable("SPIFlash")
 {
-	if (m_fdFlash)
-		close(m_fdFlash);
-}
+	// Verify register packing/bounds/alignment.
+	Expects(sizeof(m_status_register) == sizeof(m_status_register.byte));
+
+
+	RegisterAction("Load","Reloads the last used file",ActLoad);
+	RegisterAction("Save","Saves the file",ActSave);
+	RegisterAction("Clear","Resets the flash memory to empty (0xFF)",ActClear);
+	RegisterAction("Fill","Fills the flash memory with the given value",ActFill,{ArgType::Int});
+};
+
+
+w25x20cl::~w25x20cl() = default;
 
 /*
  * called when a SPI byte is sent
  */
-uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
+uint8_t w25x20cl::OnSPIIn(struct avr_irq_t *, uint32_t value)
 {
 	switch (m_state)
 	{
 		case STATE_LOADING:
 		{
-			if (m_rxCnt >= sizeof(m_cmdIn))
+			if (m_rxCnt >= m_cmdIn.size())
 			{
-				printf("w25x20cl_t: error: command too long: ");
-				for (size_t i = 0; i < sizeof(m_cmdIn); i++)
+				std::cout << "w25x20cl_t: error: command too long: ";
+				for (auto i : m_cmdIn)
 				{
-					printf("%02x, ", m_cmdIn[i]);
+					std::cout << std::hex << i << " ";
 				}
-				printf("\n");
+				std::cout << '\n';
 				break;
 			}
 			m_cmdIn[m_rxCnt] = value;
@@ -124,7 +133,7 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 							m_address |= m_cmdIn[i + 1];
 						}
 						m_address %= W25X20CL_TOTAL_SIZE;
-						memcpy(m_pageBuffer, m_flash + (m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE, W25X20CL_PAGE_SIZE);
+						memcpy(m_pageBuffer.data(), m_flash.begin() + (m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE, W25X20CL_PAGE_SIZE);
 						m_state = STATE_RUNNING;
 					}
 				} break;
@@ -149,12 +158,12 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 
 				default:
 				{
-				printf("w25x20cl_t: error: unknown command: ");
-				for (int i = 0; i < m_rxCnt; i++)
+				std::cout  << "w25x20cl_t: error: unknown command: ";
+				for (auto i = 0; i < m_rxCnt; i++)
 				{
-					printf("%02x, ", m_cmdIn[i]);
+					std::cout << std::hex << m_cmdIn[i];
 				}
-				printf("\n");
+				std::cout << '\n';
 				} break;
 			}
 
@@ -187,15 +196,15 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 				{
 					if (m_address)
 					{
-						m_cmdOut = (m_UID >> 8*(m_address - 1)) & 0xFF;
+						m_cmdOut = (m_UID >> 8U*(m_address - 1)) & 0xFFU;
 						SetSendReplyFlag();
 						m_address--;
 					}
 				} break;
 				case _CMD_PAGE_PROGRAM:
 				{
-					m_pageBuffer[m_address & 0xFF] = value;
-					m_address = ((m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE) + ((m_address + 1) & 0xFF);
+					m_pageBuffer[m_address & 0xFFU] = value;
+					m_address = ((m_address / W25X20CL_PAGE_SIZE) * W25X20CL_PAGE_SIZE) + (((m_address) + 1U) & 0xFFU);
 				} break;
 			}
 			break;
@@ -212,13 +221,13 @@ uint8_t w25x20cl::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
 }
 
 // Called when CSEL changes.
-void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
+void w25x20cl::OnCSELIn(struct avr_irq_t *, uint32_t value)
 {
 	TRACE(printf("w25x20cl_t: CSEL changed to %02x\n",value));
 	if (value == 0)
 	{
 		m_state = STATE_LOADING;
-		memset(m_cmdIn, 0, sizeof(m_cmdIn));
+		memset(m_cmdIn.data(), 0, m_cmdIn.size_bytes());
 		m_rxCnt = 0;
 		m_cmdOut = 0;
 		m_command = 0;
@@ -243,15 +252,17 @@ void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 					if(!m_status_register.bits.WEL) break;
 					m_address /= W25X20CL_PAGE_SIZE;
 					m_address *= W25X20CL_PAGE_SIZE;
-					for (unsigned int i = 0; i < sizeof(m_pageBuffer); i++)
+					for (unsigned int i = 0; i < m_pageBuffer.size(); i++)
+					{
 						m_flash[m_address + i] &= m_pageBuffer[i];
+					}
 					m_status_register.bits.WEL = 0;
 				} break;
 				case _CMD_CHIP_ERASE:
 				case _CMD_CHIP_ERASE2:
 				{
 					if(!m_status_register.bits.WEL) break;
-					memset(m_flash, 0xFF, sizeof(m_flash));
+					memset(m_flash.data(), 0xFF, m_flash.size_bytes());
 					m_status_register.bits.WEL = 0;
 				} break;
 				case _CMD_SECTOR_ERASE:
@@ -259,7 +270,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 					if(!m_status_register.bits.WEL) break;
 					m_address /= W25X20CL_SECTOR_SIZE;
 					m_address *= W25X20CL_SECTOR_SIZE;
-					memset(m_flash + m_address, 0xFF, W25X20CL_SECTOR_SIZE);
+					memset(m_flash.begin() + m_address, 0xFF, W25X20CL_SECTOR_SIZE);
 					m_status_register.bits.WEL = 0;
 				} break;
 				case _CMD_BLOCK32_ERASE:
@@ -267,7 +278,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 					if(!m_status_register.bits.WEL) break;
 					m_address /= W25X20CL_BLOCK32_SIZE;
 					m_address *= W25X20CL_BLOCK32_SIZE;
-					memset(m_flash + m_address, 0xFF, W25X20CL_BLOCK32_SIZE);
+					memset(m_flash.begin() + m_address, 0xFF, W25X20CL_BLOCK32_SIZE);
 					m_status_register.bits.WEL = 0;
 				} break;
 				case _CMD_BLOCK64_ERASE:
@@ -275,7 +286,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 					if(!m_status_register.bits.WEL) break;
 					m_address /= W25X20CL_BLOCK64_SIZE;
 					m_address *= W25X20CL_BLOCK64_SIZE;
-					memset(m_flash + m_address, 0xFF, W25X20CL_BLOCK64_SIZE);
+					memset(m_flash.begin() + m_address, 0xFF, W25X20CL_BLOCK64_SIZE);
 					m_status_register.bits.WEL = 0;
 				} break;
 			}
@@ -289,55 +300,113 @@ void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 	_Init(avr,this);
 	ConnectFrom(irqCS, SPI_CSEL);
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
-	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
-	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
+	TH.AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
+	TH.AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
 
 	m_status_register.byte = 0b00000000; //SREG default values}
 };
 
-void w25x20cl::Load(const char* path)
+Scriptable::LineStatus w25x20cl::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
-	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
-	m_fdFlash = open(path, O_RDWR | O_CREAT, 0644);
-	if (m_fdFlash < 0) {
-		perror(path);
-		exit(1);
+	switch (iAct)
+	{
+		case ActClear:
+		{
+			memset(m_flash.data(),0xFF,m_flash.size_bytes());
+			return LineStatus::Finished;
+		}
+		case ActFill:
+		{
+			memset(m_flash.data(),gsl::narrow<uint8_t>(stoi(vArgs.at(0))) & 0xFFU,m_flash.size_bytes());
+			return LineStatus::Finished;
+		}
+		case ActLoad:
+		{
+			if (!m_filepath.empty())
+			{
+				Load();
+				return LineStatus::Finished;
+			}
+			else
+			{
+				return LineStatus::Error;
+			}
+
+		}
+		case ActSave:
+		{
+			if (!m_filepath.empty())
+			{
+				Save();
+				return LineStatus::Finished;
+			}
+			else
+			{
+				return LineStatus::Error;
+			}
+		}
+		default:
+			return LineStatus::Unhandled;
 	}
+}
+
+void w25x20cl::Load(const std::string &path)
+{
+		m_filepath = path;
+		Load();
+}
+
+void w25x20cl::Load()
+{
+	auto *path = m_filepath.c_str();
+	// Now deal with the external flash. Can't do this in special_init, it's not allocated yet then.
+	std::ifstream fsIn(path, fsIn.binary | fsIn.ate);
 	m_filepath = path;
 
-	printf("Loading %u bytes of XFLASH\n", W25X20CL_TOTAL_SIZE);
-	if (ftruncate(m_fdFlash, W25X20CL_TOTAL_SIZE + 1) < 0) {
-		perror(path);
-		exit(1);
+	if (!fsIn.is_open() || fsIn.tellg() < W25X20CL_TOTAL_SIZE) {
+		std::cerr << "ERROR: Could not open SPI flash file. Flash contents were NOT restored" << '\n';
 	}
-	uint8_t *buffer = (uint8_t*)malloc(W25X20CL_TOTAL_SIZE + 1);
-	ssize_t r = read(m_fdFlash, buffer, W25X20CL_TOTAL_SIZE + 1);
-	printf("Read %d bytes\n", (int)r);
-	if (r !=  W25X20CL_TOTAL_SIZE + 1) {
-		fprintf(stderr, "unable to load XFLASH\n");
-		perror(path);
-		exit(1);
-	}
-	uint8_t bEmpty = 1;
-	for (int i = 0; i < W25X20CL_TOTAL_SIZE + 1; i++)
+	else
 	{
-		bEmpty &= buffer[i] == 0;
+		std::cout << "Loading " <<  W25X20CL_TOTAL_SIZE  <<" bytes of xflash\n";
+		fsIn.seekg(fsIn.beg);
+		fsIn.read(reinterpret_cast<char*>(m_flash.data()), W25X20CL_TOTAL_SIZE + 1); // NOLINT no choice but to cast...
+		if (fsIn.fail() || fsIn.gcount() != W25X20CL_TOTAL_SIZE + 1 ) {
+			std::cerr << "Unable to load w25x20cl\n";
+			exit(1);
+		}
+		bool bEmpty = true;
+		for (auto &b : m_flash)
+		{
+			bEmpty &= b==0;
+		}
+		if (bEmpty)
+		{
+			for (auto &c : m_flash)
+			{
+				c = 0xFF;
+			}
+		}
 	}
-	if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
-		memcpy(m_flash, buffer, W25X20CL_TOTAL_SIZE + 1);
-
-	free(buffer);
+	fsIn.close();
 }
 
 void w25x20cl::Save()
 {
-	// Also write out the xflash contents. Note we don't close it so you can save snapshots anytime you like.
-	lseek(m_fdFlash, SEEK_SET, 0);
-	ssize_t r = write(m_fdFlash, m_flash, W25X20CL_TOTAL_SIZE + 1);
-	if (r != W25X20CL_TOTAL_SIZE + 1) {
-		fprintf(stderr, "unable to write xflash memory\n");
-		perror(m_filepath.c_str());
+	// Also write out the xflash contents. Note  you can save snapshots anytime you like.
+		// Write out the EEPROM contents:
+	std::ofstream fsOut(m_filepath, fsOut.binary);
+	if (!fsOut.is_open())
+	{
+		std::cerr << "Failed to open xflash output file\n";
+		return;
 	}
+	fsOut.write(reinterpret_cast<char*>(m_flash.data()),W25X20CL_TOTAL_SIZE+1); //NOLINT no choice but to cast...
+	std::cout << "Wrote "<< fsOut.tellp() <<" bytes of xflash to " << m_filepath <<'\n';
+	if (fsOut.tellp() != W25X20CL_TOTAL_SIZE + 1) {
+		std::cerr << "Unable to write xflash memory\n";
+	}
+	fsOut.close();
 }

@@ -27,22 +27,24 @@
 /*
  * called when a SPI byte is sent
  */
-void HC595::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
+void HC595::OnSPIIn(struct avr_irq_t*, uint32_t value)
 {
 	// send "old value" to any chained one..
 	RaiseIRQ(SPI_BYTE_OUT,m_uiValue);
-	m_uiValue = m_uiValue<<8 | (value & 0xFF);
+	m_uiValue = m_uiValue<<8U | (value & 0xFFU);
 }
 
-void HC595::OnDataIn(struct avr_irq_t * irq, uint32_t value)
+void HC595::OnDataIn(struct avr_irq_t*, uint32_t value)
 {
-	m_uiCurBit = value&1;
+	m_uiCurBit = value&1U;
 }
 
 void HC595::OnClockIn(struct avr_irq_t * irq, uint32_t value)
 {
 	if (irq->value && !value)
-		m_uiValue = m_uiValue<<1 | (m_uiCurBit);
+	{
+		m_uiValue = m_uiValue<<1U | (m_uiCurBit);
+	}
 }
 
 /*
@@ -50,14 +52,15 @@ void HC595::OnClockIn(struct avr_irq_t * irq, uint32_t value)
  */
 void HC595::OnLatchIn(struct avr_irq_t * irq, uint32_t value)
 {
-	if (!irq->value && value) {	// rising edge
+	if (!irq->value && value)
+	{	// rising edge
 		uint32_t uiChanged = m_uiLatch ^ m_uiValue; // Grab the bits that have changed since last latch.
 		m_uiLatch = m_uiValue;
 		RaiseIRQ(OUT, m_uiLatch);
-		for (int i=0; i<32; i++)
-			if (uiChanged & (1U<<i))
-				RaiseIRQ(BIT0+i,(m_uiLatch>>i) & 1);
-
+		for (unsigned int i=0; i<32; i++)
+		{
+			if (uiChanged & (1U<<i)) RaiseIRQ(BIT0+i,(m_uiLatch>>i) & 1U);
+		}
 	}
 }
 
@@ -67,7 +70,14 @@ void HC595::OnLatchIn(struct avr_irq_t * irq, uint32_t value)
 void HC595::OnResetIn(struct avr_irq_t * irq, uint32_t value)
 {
 	if (irq->value && !value) 	// falling edge
+	{
 		m_uiLatch = m_uiValue = 0;
+		RaiseIRQ(OUT, m_uiLatch);
+		for (int i=0; i<32; i++)
+		{
+				RaiseIRQ(BIT0+i,0);
+		}
+	}
 }
 
 void HC595::Init(struct avr_t * avr)
@@ -79,10 +89,10 @@ void HC595::Init(struct avr_t * avr)
 	RegisterNotify(IN_CLOCK, 	MAKE_C_CALLBACK(HC595,OnClockIn), 	this);
 	RegisterNotify(IN_DATA, 	MAKE_C_CALLBACK(HC595,OnDataIn), 	this);
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, IN_LATCH,{TC::OutputPin, TC::Misc});
-	pTH->AddTrace(this, IN_RESET,{TC::OutputPin, TC::Misc});
-	pTH->AddTrace(this, IN_CLOCK,{TC::OutputPin, TC::Misc});
-	pTH->AddTrace(this, IN_DATA,{TC::OutputPin, TC::Misc});
-	pTH->AddTrace(this, OUT,{TC::Misc},32);
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, IN_LATCH,{TC::OutputPin, TC::Misc});
+	TH.AddTrace(this, IN_RESET,{TC::OutputPin, TC::Misc});
+	TH.AddTrace(this, IN_CLOCK,{TC::OutputPin, TC::Misc});
+	TH.AddTrace(this, IN_DATA,{TC::OutputPin, TC::Misc});
+	TH.AddTrace(this, OUT,{TC::Misc},32);
 }

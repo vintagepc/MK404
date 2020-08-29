@@ -20,8 +20,6 @@
 
 
 #include "Prusa_MK3SMMU2.h"
-#include <stdio.h>                // for printf
-#include <memory>                 // for unique_ptr
 #include "BasePeripheral.h"       // for MAKE_C_CALLBACK
 #include "IRSensor.h"             // for IRSensor, IRSensor::IRState::IR_AUTO
 #include "MK3SGL.h"               // for MK3SGL
@@ -29,11 +27,10 @@
 #include "SerialPipe.h"           // for SerialPipe
 #include "printers/Prusa_MK3S.h"  // for Prusa_MK3S
 #include "uart_pty.h"             // for uart_pty
-
-Prusa_MK3SMMU2::~Prusa_MK3SMMU2()
-{
-	delete m_pipe;
-}
+#include <GL/glew.h>
+#include <cstring>
+#include <iostream>                // for printf
+#include <memory>                 // for unique_ptr
 
 void Prusa_MK3SMMU2::SetupHardware()
 {
@@ -45,13 +42,15 @@ void Prusa_MK3SMMU2::SetupHardware()
 	// Note we can't directly connect the MMU or you'll get serial flow issues/lost bytes.
 	// The serial_pipe thread lets us reuse the UART_PTY code and its internal xon/xoff/buffers
 	// rather than having to roll our own internal FIFO. As an added bonus you can tap the ports for debugging.
-	m_pipe = new SerialPipe(UART2.GetSlaveName(), m_MMU.GetSerialPort());
+	m_pipe.reset(new SerialPipe(UART2.GetSlaveName(), m_MMU.GetSerialPort())); //NOLINT suggestion is c++14 and higher
 }
 
-void Prusa_MK3SMMU2::OnVisualTypeSet(string type)
+void Prusa_MK3SMMU2::OnVisualTypeSet(const std::string &type)
 {
-	if (type.compare("none") == 0)
+	if (type=="none")
+	{
 		return;
+	}
 	Prusa_MK3S::OnVisualTypeSet(type);
 	// Wire up the additional MMU stuff.
 
@@ -75,15 +74,16 @@ void Prusa_MK3SMMU2::Draw()
 {
 	glPushMatrix();
 		Prusa_MK3S::Draw();
-		m_MMU.Draw((float)GetWindowSize().second);
+		m_MMU.Draw(static_cast<float>(GetWindowSize().second));
 	glPopMatrix();
 }
 
 // Helper for MMU IR sensor triggering.
-void Prusa_MK3SMMU2::OnMMUFeed(struct avr_irq_t * irq, uint32_t value)
+void Prusa_MK3SMMU2::OnMMUFeed(struct avr_irq_t *, uint32_t value)
 {
-	float *fVal = (float*)&value;
-	IR.Auto_Input(fVal[0]>400); // Trigger IR if MMU P pos > 400mm
+	float fVal;
+	std::memcpy(&fVal,&value,4);
+	IR.Auto_Input(fVal>400.f); // Trigger IR if MMU P pos > 400mm
 }
 
 
@@ -92,14 +92,14 @@ void Prusa_MK3SMMU2::OnKeyPress(unsigned char key, int x, int y)
 	switch (key) {
 		case 'F':
 		{
-			printf("FINDA toggled (in manual control)\n");
+			std::cout << "FINDA toggled (in manual control)\n";
 			m_MMU.SetFINDAAuto(false);
 			m_MMU.ToggleFINDA();
 		}
 		break;
 		case 'a':
 		{
-			printf("FINDA in Auto control\n");
+			std::cout << "FINDA in Auto control\n";
 			m_MMU.SetFINDAAuto(true);
 			FSensorResumeAuto(); // Also restore IR auto handling.
 			break;

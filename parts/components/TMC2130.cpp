@@ -20,16 +20,17 @@
  */
 
 #include "TMC2130.h"
+#include "TelemetryHost.h"
+#include "gsl-lite.hpp"
+
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex3f, glColor3f, glBegin, glEnd
 #else
 # include <GL/gl.h>           // for glVertex3f, glColor3f, glBegin, glEnd
 #endif
-#include <stdio.h>            // for printf
-#include <string.h>           // for memset
 #include <algorithm>          // for min
-#include "TelemetryHost.h"
+#include <cstring>           // for memset
 
 //#define TRACE(_w) _w
 #define TRACE2(_w) if (m_cAxis=='S' || m_cAxis=='I') _w
@@ -37,11 +38,22 @@
 #define TRACE(_w)
 #endif
 
-
 void TMC2130::Draw()
 {
+	_Draw(false);
+}
+
+void TMC2130::Draw_Simple()
+{
+	_Draw(true);
+}
+
+void TMC2130::_Draw(bool bIsSimple)
+{
         if (!m_bConfigured)
+		{
             return; // Motors not ready yet.
+		}
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -67,13 +79,18 @@ void TMC2130::Draw()
         glPopMatrix();
         glColor3f(1,1,1);
         glPushMatrix();
-            glTranslatef(280,7,0);
+            glTranslatef(  bIsSimple? 30 : 280 ,7,0);
             glScalef(0.09,-0.05,0);
-            string strPos = to_string(m_fCurPos);
-            for (int i=0; i<min(7,(int)strPos.size()); i++)
+            std::string strPos = std::to_string(m_fCurPos);
+            for (int i=0; i<std::min(7,static_cast<int>(strPos.size())); i++)
+			{
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
-
+			}
         glPopMatrix();
+		if (bIsSimple)
+		{
+			return;
+		}
 		glPushMatrix();
 			glTranslatef(20,0,0);
 			glColor3f(1,0,0);
@@ -99,56 +116,22 @@ void TMC2130::Draw()
 		glPopMatrix();
 }
 
-
-void TMC2130::Draw_Simple()
-{
-        if (!m_bConfigured)
-            return; // Motors not ready yet.
-        glColor3f(0,0,0);
-	    glBegin(GL_QUADS);
-			glVertex3f(0,0,0);
-			glVertex3f(350,0,0);
-			glVertex3f(350,10,0);
-			glVertex3f(0,10,0);
-		glEnd();
-        glColor3f(1,1,1);
-         if (m_bEnable)
-        {
-            glBegin(GL_QUADS);
-                glVertex3f(3,8,0);
-                glVertex3f(13,8,0);
-                glVertex3f(13,1,0);
-                glVertex3f(3,1,0);
-            glEnd();
-            glColor3f(0,0,0);
-        }
-        glPushMatrix();
-            glTranslatef(3,7,0);
-            glScalef(0.09,-0.05,0);
-            glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_cAxis);
-        glPopMatrix();
-        glColor3f(1,1,1);
-        glPushMatrix();
-            glTranslatef(30,7,0);
-            glScalef(0.09,-0.05,0);
-			string strPos = to_string(m_fCurPos);
-            for (int i=0; i<min(7,(int)strPos.size()); i++)
-                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
-        glPopMatrix();
-}
-
 void TMC2130::CreateReply()
 {
     m_cmdOut.all = 0x00; // Copy over.
     if (m_cmdProc.bitsIn.RW == 0) // Last in was a read.
     {
-        m_cmdOut.bitsOut.data = m_regs.raw[m_cmdProc.bitsIn.address];
+        m_cmdOut.bitsOut.data = gsl::at(m_regs.raw,m_cmdProc.bitsIn.address);
         if (m_cmdProc.bitsIn.address == 0x01)
+		{
             m_regs.raw[0x01] = 0; // GSTAT is cleared after read.
-        TRACE(printf("Reading out %x (%10lx)", m_cmdProc.bitsIn.address, m_cmdOut.bitsOut.data));
+		}
+        TRACE(printf("Reading out %02x (%10lx)\n", m_cmdProc.bitsIn.address, m_cmdOut.bitsOut.data));
     }
     else
+	{
         m_cmdOut.bitsOut.data = m_cmdProc.bitsOut.data;
+	}
     // If the last was a write, the old data is left intact.
 
     // Set the status bits on the reply:
@@ -162,10 +145,10 @@ void TMC2130::CreateReply()
 // Called when a full command is ready to process.
 void TMC2130::ProcessCommand()
 {
-    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08x\n",m_cAxis, m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
+    TRACE(printf("tmc2130 %c cmd: w: %x a: %02x  d: %08lx\n",m_cAxis.load(), m_cmdProc.bitsIn.RW, m_cmdProc.bitsIn.address, m_cmdProc.bitsIn.data));
     if (m_cmdProc.bitsIn.RW)
     {
-        m_regs.raw[m_cmdProc.bitsIn.address] = m_cmdProc.bitsIn.data;
+        gsl::at(m_regs.raw,m_cmdProc.bitsIn.address) = m_cmdProc.bitsIn.data;
         //printf("REG %c %02x set to: %010x\n", m_cAxis, m_cmdIn.bitsIn.address, m_cmdIn.bitsIn.data);
 
 		if(m_cmdProc.bitsIn.address == 0x6C) // CHOPCONF
@@ -186,15 +169,15 @@ void TMC2130::ProcessCommand()
 /*
  * called when a SPI byte is received. It's guarded by the SPIPeripheral CSEL check.
  */
-uint8_t TMC2130::OnSPIIn(struct avr_irq_t * irq, uint32_t value)
+uint8_t TMC2130::OnSPIIn(struct avr_irq_t *, uint32_t value)
 {
     m_cmdIn.all<<=8; // Shift bits up
     m_cmdIn.bytes[0] = value;
-    TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",m_cAxis,value, m_cmdIn.all));
+    TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",m_cAxis.load(),value, m_cmdIn.all));
     // Clock out a reply byte, MSB first
     uint8_t byte = m_cmdOut.bytes[4];
     m_cmdOut.all<<=8;
-    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",m_cAxis,m_cmdOut.all,byte));
+    TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",m_cAxis.load(),m_cmdOut.all,byte));
     SetSendReplyFlag();
     return byte; // SPIPeripheral takes care of the reply.
 }
@@ -204,13 +187,15 @@ void TMC2130::CheckDiagOut()
     bool bDiag = m_regs.defs.DRV_STATUS.stallGuard && m_regs.defs.GCONF.diag0_stall;
     //printf("Diag: %01x\n",bDiag);
     if (bDiag)
+	{
         RaiseIRQ(DIAG_OUT, bDiag^ m_regs.defs.GCONF.diag0_int_pushpull);
+	}
 }
 
 // Called when CSEL changes.
-void TMC2130::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
+void TMC2130::OnCSELIn(struct avr_irq_t *, uint32_t value)
 {
-	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",m_cAxis,value));
+	TRACE(printf("TMC2130 %c: CSEL changed to %02x\n",m_cAxis.load(),value));
     if (value == 1) // Just finished a CSEL
     {
         m_cmdProc = m_cmdIn;
@@ -219,15 +204,13 @@ void TMC2130::OnCSELIn(struct avr_irq_t * irq, uint32_t value)
 }
 
 // Called when DIR pin changes.
-void TMC2130::OnDirIn(struct avr_irq_t * irq, uint32_t value)
+void TMC2130::OnDirIn(struct avr_irq_t * , uint32_t value)
 {
-    if (irq->value == value)
-        return;
-    TRACE(printf("TMC2130 %c: DIR changed to %02x\n",m_cAxis,value));
+    TRACE(printf("TMC2130 %c: DIR changed to %02x\n",m_cAxis.load(),value));
     m_bDir = value^cfg.bInverted; // XOR
 }
 
-avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *avr, avr_cycle_count_t when)
+avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *, avr_cycle_count_t)
 {
     m_regs.defs.DRV_STATUS.stst = true;
     return 0;
@@ -250,9 +233,13 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     CancelTimer(m_fcnStandstill,this);
 	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",m_cAxis,value));
     if (m_bDir)
+	{
         m_iCurStep--;
+	}
     else
+	{
         m_iCurStep++;
+	}
     bool bStall = false;
     if (!cfg.bHasNoEndStops)
     {
@@ -269,8 +256,9 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     }
 
     m_fCurPos = StepToPos(m_iCurStep);
-    uint32_t* posOut = (uint32_t*)(&m_fCurPos); // both 32 bits, just mangle it for sending over the wire.
-    RaiseIRQ(POSITION_OUT, posOut[0]);
+    uint32_t posOut;
+	std::memcpy (&posOut, &m_fCurPos, 4);
+    RaiseIRQ(POSITION_OUT, posOut);
     TRACE(printf("cur pos: %f (%u)\n",m_fCurPos,m_iCurStep));
 	bStall |= m_bStall;
     if (bStall)
@@ -286,21 +274,26 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     m_regs.defs.DRV_STATUS.stallGuard = bStall;
     m_regs.defs.DRV_STATUS.stst = false;
     // 2^20 comes from the datasheet.
-    RegisterTimer(m_fcnStandstill,2^20,this);
+    RegisterTimer(m_fcnStandstill,1U<<20U,this);
 }
 
 // Called when DRV_EN is triggered.
-void TMC2130::OnEnableIn(struct avr_irq_t * irq, uint32_t value)
+void TMC2130::OnEnableIn(struct avr_irq_t *, uint32_t value)
 {
-    if (irq->value == value && m_bEnable == (value==0))
-        return;
-	TRACE2(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis.load(),value));
+	TRACE(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis.load(),value));
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
-TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
+TMC2130::TMC2130(char cAxis):Scriptable(std::string("") + cAxis),m_cAxis(cAxis)
 {
+		// Check register packing/sizes:
+	Expects(sizeof(m_regs) == sizeof(m_regs.raw));
+	Expects(
+		sizeof(m_cmdIn.bitsIn)==sizeof(m_cmdIn.bytes) &&
+		sizeof(m_cmdIn.bitsOut) == sizeof(m_cmdIn.bytes)
+	);
     memset(&m_regs.raw, 0, sizeof(m_regs.raw));
+
     m_regs.defs.DRV_STATUS.stst = true;
     m_regs.defs.DRV_STATUS.SG_RESULT = 250;
     m_regs.defs.GSTAT.reset = 1; // signal reset
@@ -309,7 +302,7 @@ TMC2130::TMC2130(char cAxis):Scriptable(string("") + cAxis),m_cAxis(cAxis)
 	RegisterActionAndMenu("Reset","Clears the diag flag immediately",ActResetDiag);
 }
 
-Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const std::vector<std::string> &)
 {
 	switch (iAct)
 	{
@@ -344,22 +337,25 @@ void TMC2130::Init(struct avr_t * avr)
     RegisterNotify(STEP_IN,     MAKE_C_CALLBACK(TMC2130,OnStepIn), this);
     RegisterNotify(ENABLE_IN,   MAKE_C_CALLBACK(TMC2130,OnEnableIn), this);
 
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Stepper},8);
-	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Stepper},8);
-	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Stepper, TC::OutputPin});
-	pTH->AddTrace(this, STEP_IN,{TC::OutputPin, TC::Stepper});
-	pTH->AddTrace(this, DIR_IN,{TC::OutputPin, TC::Stepper});
-	pTH->AddTrace(this, ENABLE_IN,{TC::OutputPin, TC::Stepper});
-	pTH->AddTrace(this, DIAG_OUT,{TC::InputPin, TC::Stepper});
+	GetIRQ(DIR_IN)->flags |= IRQ_FLAG_FILTERED;
+	GetIRQ(ENABLE_IN)->flags |= IRQ_FLAG_FILTERED;
+
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Stepper},8);
+	TH.AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Stepper},8);
+	TH.AddTrace(this, SPI_CSEL, {TC::SPI, TC::Stepper, TC::OutputPin});
+	TH.AddTrace(this, STEP_IN,{TC::OutputPin, TC::Stepper});
+	TH.AddTrace(this, DIR_IN,{TC::OutputPin, TC::Stepper});
+	TH.AddTrace(this, ENABLE_IN,{TC::OutputPin, TC::Stepper});
+	TH.AddTrace(this, DIAG_OUT,{TC::InputPin, TC::Stepper});
 }
 
 float TMC2130::StepToPos(int32_t step)
 {
-	return (float)step/16*(float)(1u<<m_regs.defs.CHOPCONF.mres)/(float)cfg.uiStepsPerMM;
+	return static_cast<float>(step)/16*static_cast<float>(1u<<m_regs.defs.CHOPCONF.mres)/static_cast<float>(cfg.uiStepsPerMM);
 }
 
 int32_t TMC2130::PosToStep(float pos)
 {
-	return pos*16/(float)(1u<<m_regs.defs.CHOPCONF.mres)*(float)cfg.uiStepsPerMM;
+	return pos*16/static_cast<float>(1u<<m_regs.defs.CHOPCONF.mres)*static_cast<float>(cfg.uiStepsPerMM);
 }

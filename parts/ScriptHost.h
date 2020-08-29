@@ -24,53 +24,43 @@
 #pragma once
 
 
-#include <stdio.h>        // for fprintf, stderr
-#include <atomic>         // for atomic_uint
-#include <map>            // for map
-#include <memory>         // for operator!=, shared_ptr
-#include <string>         // for string
-#include <utility>        // for pair
-#include <vector>         // for vector
 #include "IScriptable.h"  // for ArgType, ArgType::Bool, ArgType::Int, IScri...
 
-using namespace std;
+#include <atomic>         // for atomic_uint
+#include <map>            // for map
+#include <string>         // for std::string
+#include <utility>        // for pair
+#include <vector>         // for vector
 
 class ScriptHost: public IScriptable
 {
     public:
-		static shared_ptr<ScriptHost> Get()
-		{
-			return g_pHost;
-		}
-
 		inline static bool IsInitialized()
 		{
-			return g_pHost!=nullptr;
+			return m_bIsInitialized;
 		}
 		static bool Init()
 		{
-			if (g_pHost!=nullptr)
-			{
-				fprintf(stderr,"ERROR: Duplicate initialization attempt for scripthost!\n");
-				return false;
-			}
-			g_pHost.reset(new ScriptHost());
+			GetHost()._Init();
+			m_bIsInitialized = true;
 			return true;
 		}
 
-		static bool Setup(const string &strScript,unsigned uiFreq)
+		static bool Setup(const std::string &strScript,unsigned uiFreq)
 		{
 			m_uiAVRFreq = uiFreq;
 			if (!strScript.empty())
+			{
 				LoadScript(strScript);
+			}
 			return ValidateScript();
 		}
 
-		static void AddScriptable(string strName, IScriptable* src);
+		static void AddScriptable(const std::string &strName, IScriptable* src);
 
-		static void AddMenuEntry(const string &strName, unsigned uiID, IScriptable* src);
+		static void AddMenuEntry(const std::string &strName, unsigned uiID, IScriptable* src);
 
-		static inline bool IsRegistered(string strName)
+		static inline bool IsRegistered(const std::string &strName)
 		{
 			return m_clients.count(strName)!=0;
 		}
@@ -97,58 +87,86 @@ class ScriptHost: public IScriptable
 		static inline State GetState(){ return m_state;}
 
     private:
+
+		using LineParts_t = struct
+		{
+			bool isValid {false};
+			std::string strCtxt {""};
+			std::string strAct {""};
+			std::vector<std::string> vArgs {};
+		};
+
 		static bool ValidateScript();
-		static void LoadScript(const string &strScript);
+		static void LoadScript(const std::string &strScript);
 		static void ParseLine(unsigned int iLine);
-		static bool GetLineParts(const string &strLine, string &strCtxt, string& strAct, vector<string>&vArgs);
-		static bool CheckArg(const ArgType &type, const string &val);
+		static LineParts_t GetLineParts(const std::string &strLine);
+		static bool CheckArg(const ArgType &type, const std::string &val);
 
 		static void AddSubmenu(IScriptable *src);
 
 		//We can't register ourselves as a scriptable so just fake it with a processing func.
-		LineStatus ProcessAction(unsigned int ID, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs) override;
 
 		ScriptHost():IScriptable("ScriptHost"){
+		}
+
+		void _Init()
+		{
 			RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{ArgType::Int});
 			RegisterAction("SetQuitOnTimeout","If 1, quits when a timeout occurs. Exit code will be non-zero.",ActSetQuitOnTimeout,{ArgType::Bool});
+			RegisterAction("Log","Print the std::string to stdout",ActLog,{ArgType::String});
 			m_clients[m_strName] = this;
 		}
-		static shared_ptr<ScriptHost> g_pHost;
-		static map<string, IScriptable*> m_clients;
-		static map<string, int> m_mMenuIDs;
-		static map<string, unsigned> m_mClient2MenuBase;
-		static map<unsigned, IScriptable*> m_mMenuBase2Client;
-		static map<string, vector<pair<string,int>>> m_mClientEntries; // Stores client entries for when GLUT is ready.
-		static vector<string> m_script;
+
+		static ScriptHost& GetHost()
+		{
+			static ScriptHost h;
+			return h;
+		}
+
+
+		using linestate_t = struct{
+			std::string strCtxt {""};
+			unsigned int iActID {0};
+			std::vector<std::string> vArgs {};
+			unsigned int iLine {0};
+			IScriptable *pClient {nullptr};
+			bool isValid {false};
+		};
+
+		inline static linestate_t& GetLineState()
+		{
+			static linestate_t state;
+			return state;
+		}
+
+		static std::map<std::string, IScriptable*> m_clients;
+		static std::map<std::string, int> m_mMenuIDs;
+		static std::map<std::string, unsigned> m_mClient2MenuBase;
+		static std::map<unsigned, IScriptable*> m_mMenuBase2Client;
+		static std::map<std::string, std::vector<std::pair<std::string,int>>> m_mClientEntries; // Stores client entries for when GLUT is ready.
+		static std::vector<std::string> m_script;
 		static unsigned int m_iLine, m_uiAVRFreq;
 		static ScriptHost::State m_state;
 		static bool m_bQuitOnTimeout;
 		static bool m_bMenuCreated;
+		static bool m_bIsInitialized;
 
-		static atomic_uint m_uiQueuedMenu;
+		static std::atomic_uint m_uiQueuedMenu;
 
 
 
-		typedef struct linestate_t{
-			linestate_t(){strCtxt = "", iActID = 0, vArgs = {""}, iLine = 0, pClient = nullptr, isValid = false;};
-			string strCtxt;
-			unsigned int iActID;
-			vector<string> vArgs;
-			unsigned int iLine;
-			IScriptable *pClient;
-			bool isValid;
-		}linestate_t;
+
 
 		enum Actions
 		{
 			ActSetTimeoutMs,
-			ActSetQuitOnTimeout
+			ActSetQuitOnTimeout,
+			ActLog
 		};
 
 
 
 		static int m_iTimeoutCycles, m_iTimeoutCount;
-
-		static linestate_t m_lnState;
 
 };

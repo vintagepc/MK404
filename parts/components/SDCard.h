@@ -25,14 +25,15 @@
 
 #pragma once
 
-#include <stdint.h>         // for uint8_t, uint32_t, uint16_t, uint64_t
-#include <sys/types.h>      // for off_t
-#include <string>           // for string
-#include <vector>           // for vector
 #include "IScriptable.h"    // for ArgType, ArgType::String, IScriptable::Li...
 #include "SPIPeripheral.h"  // for SPIPeripheral
 #include "Scriptable.h"     // for Scriptable
+#include "gsl-lite.hpp"
 #include "sim_avr.h"        // for avr_t
+#include <cstdint>         // for uint8_t, uint32_t, uint16_t, uint64_t
+#include <string>           // for string
+#include <sys/types.h>      // for off_t
+#include <vector>           // for vector
 
 class SDCard:public SPIPeripheral, public Scriptable
 {
@@ -44,16 +45,11 @@ class SDCard:public SPIPeripheral, public Scriptable
 			_IRQ(CARD_PRESENT,		">SD.card_present")
 		#include "IRQHelper.h"
 
-		SDCard(const std::string &strFile = "SDCard.bin"):Scriptable("SDCard"),m_strFile(strFile)
-		{
-			RegisterActionAndMenu("Unmount", "Unmounts the currently mounted file, if any.", Actions::ActUnmount);
-			RegisterActionAndMenu("Remount", "Remounts the last mounted file, if any.", Actions::ActMountLast);
-			RegisterAction("Mount", "Mounts the specified file on the SD card.",ActMountFile,{ArgType::String});
-		};
+		explicit SDCard(std::string strFile = "SDCard.bin");
 
 		void Init(avr_t *avr);
 
-		inline void SetImage(const string &strFile) { m_strFile = strFile;}
+		inline void SetImage(const std::string &strFile) { m_strFile = strFile;}
 
 		// Mounts the given image file on the virtual card.
 		// If size=0, autodetect the image size.
@@ -66,11 +62,11 @@ class SDCard:public SPIPeripheral, public Scriptable
 		inline bool IsMounted(){return m_bMounted; }
 
 	protected:
-		virtual uint8_t OnSPIIn(struct avr_irq_t * irq, uint32_t value) override;
+		uint8_t OnSPIIn(struct avr_irq_t * irq, uint32_t value) override;
 
-        virtual void OnCSELIn(struct avr_irq_t * irq, uint32_t value) override;
+        void OnCSELIn(struct avr_irq_t * irq, uint32_t value) override;
 
-		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 
 	private:
@@ -106,19 +102,20 @@ class SDCard:public SPIPeripheral, public Scriptable
 		static inline off_t AddressToDataIdx (off_t input_address){ return input_address * BLOCK_SIZE;}
 
 		/* Bit fields for R1 responses. Reference: JESD84-A44, Section 7.13. */
-		static const uint8_t R1_ADDRESS_OUT_OF_RANGE = (1 << 6);
-		static const uint8_t R1_ADDRESS_MISALIGN = (1 << 5);
-		static const uint8_t R1_ERASE_SEQ_ERROR = (1 << 4);
-		static const uint8_t R1_COM_CRC_ERROR = (1 << 3);
-		static const uint8_t R1_ILLEGAL_COMMAND = (1 << 2);
-		static const uint8_t R1_ERASE_RESET = (1 << 1);
-		static const uint8_t R1_IN_IDLE_STATE = (1 << 0);
+		static const uint8_t R1_ADDRESS_OUT_OF_RANGE = 0x40; // (1u << 6);
+		static const uint8_t R1_ADDRESS_MISALIGN = 0x20; // (1u << 5);
+		static const uint8_t R1_ERASE_SEQ_ERROR = 0x10; //(1u << 4);
+		static const uint8_t R1_COM_CRC_ERROR = 0x08; //(1u << 3);
+		static const uint8_t R1_ILLEGAL_COMMAND = 0x04; // (1u << 2);
+		static const uint8_t R1_ERASE_RESET = 0x02; //(1u << 1);
+		static const uint8_t R1_IN_IDLE_STATE = 0x01; //(1u << 0);
 
-		static const int READ_BL_LEN = 9;
-		static const int BLOCK_SIZE = (1<<READ_BL_LEN); // Bytes
+		static const uint8_t READ_BL_LEN = 9;
+		static const unsigned int BLOCK_SIZE = (1U<<READ_BL_LEN); // Bytes
 		static inline bool IsBlockAligned(int iBlock){ return ((iBlock % BLOCK_SIZE) == 0);};
 
-		inline void CRC_ADD(const uint8_t data) {m_CRC = m_crctab[(m_CRC >> 8 ^ data) & 0XFF] ^ (m_CRC << 8); }
+		//NOLINTNEXTLINE - fix this someday,,, intermediate promotion to int is annoying.
+		inline void CRC_ADD(const uint8_t data) {m_CRC = m_crctab[(m_CRC >> 8u ^ data) & 0XFFu] ^ (m_CRC << 8u); }
 
 		/* TODO: See diskio.c */
 		enum Command {
@@ -157,9 +154,17 @@ class SDCard:public SPIPeripheral, public Scriptable
 		struct {
 			uint8_t data[5];
 			uint8_t length; /* number of bytes of data which are valid */
-		} m_command_response;
+		} m_command_response {{0}, 0};
 
 		bool m_bSelected = false, m_bMounted = false;
+
+		struct m_currOp
+		{
+			inline void SetData(const gsl::span<uint8_t> &in){data = in; pos = in.begin();};
+			inline bool IsFinsihed(){ return pos==data.end(); }
+			gsl::span<uint8_t> data;
+			gsl::span<uint8_t>::iterator pos {nullptr};
+		}m_currOp;
 
 		union {
 			/* Ongoing read operations. */
@@ -177,12 +182,14 @@ class SDCard:public SPIPeripheral, public Scriptable
 
 		/* Internal registers. */
 		uint32_t m_ocr = 0; /* operation conditions register (OCR) */
-		uint8_t m_csd[16]; /* card-specific data (CSD) register */
+		uint8_t _m_csd[16] = {0}; /* card-specific data (CSD) register */
+		gsl::span<uint8_t> m_csd;
 
-		uint16_t m_CRC;
+		uint16_t m_CRC = 0;
+		uint8_t _m_ByteCRC[2] = {0,0};
+		gsl::span<uint8_t> m_byteCRC {_m_ByteCRC};
 
 		/* Card data. */
-		uint8_t *m_data = nullptr; /* mmap()ed data */
-		off_t m_data_length = 0;
+		gsl::span<uint8_t> m_data; /* mmap()ed data */
 		int m_data_fd = -1;
 };

@@ -29,11 +29,11 @@
 
 #pragma once
 
-#include <stdint.h>   // for uint32_t, uint8_t
-#include <atomic>
 #include "HD44780.h"  // for HD44780
 #include "sim_avr.h"  // for avr_t
 #include "sim_irq.h"  // for avr_irq_t
+#include <atomic>
+#include <cstdint>   // for uint32_t, uint8_t
 
 class HD44780GL:public HD44780
 {
@@ -50,7 +50,7 @@ class HD44780GL:public HD44780
 
 	private:
 		// Char draw helper.
-		void GLPutChar(char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial = false);
+		void GLPutChar(unsigned char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial = false);
 
 		void OnBrightnessPWM(avr_irq_t *irq, uint32_t value);
 		void OnBrightnessDigital(avr_irq_t *irq, uint32_t value);

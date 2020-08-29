@@ -21,23 +21,22 @@
 
 #pragma once
 
-#include <GL/glew.h>          // for GLuint
-#include <stddef.h>           // for size_t
+#include "gsl-lite.hpp"
 #include "tiny_obj_loader.h"  // for material_t
+#include <GL/glew.h>          // for GLuint
+#include <cstddef>           // for size_t
 #include <map>                // for map
+#include <mutex>
 #include <string>             // for string
 #include <vector>             // for vector
-#include <mutex>
-
-using namespace std;
 
 class GLObj
 {
     public:
         // Creates a new GLObj for the given .obj file
-		GLObj(const std::string &strFile);
-		GLObj(const std::string &strFile, float fScale);
-        GLObj(const std::string &strFile, float fTX, float fTY, float fTZ,  float fScale = 1.f);
+		explicit GLObj(std::string strFile);
+		GLObj(std::string strFile, float fScale);
+        GLObj(std::string strFile, float fTX, float fTY, float fTZ,  float fScale = 1.f);
 
 		enum class SwapMode
 		{
@@ -73,36 +72,37 @@ class GLObj
         float GetScaleFactor() { return m_fMaxExtent; };
 
         // Gets the transform float you need to center the obj at 0,0,0.
-        void GetCenteringTransform(float fTrans[3]) { for (int i=0; i<3; i++) fTrans[i] = -0.5f * ((m_extMin[i] + m_extMax[i]));}
+        void GetCenteringTransform(gsl::span<float> fTrans) { for (int i=0; i<3; i++) fTrans[i] = -0.5f * ((m_extMin[i] + m_extMax[i]));}
 
 
     private:
 
-        typedef struct {
+        using DrawObject = struct {
             GLuint vb;  // vertex buffer
             int numTriangles;
             size_t material_id; // Atomic to allow for cross thread
             bool bDraw;
-        } DrawObject;
-        float m_fMaxExtent;
-        float m_extMin[3], m_extMax[3];
+        };
+        float m_fMaxExtent = 1.f;
+        float _m_extMin[3] = {0,0,0}, _m_extMax[3] = {0,0,0};
+		gsl::span<float> m_extMin {_m_extMin}, m_extMax {_m_extMax};
         bool m_bLoaded = false, m_bNoNewNormals = false;
-        vector<tinyobj::material_t> m_materials;
-        map<std::string, GLuint> m_textures;
-        vector<DrawObject> m_DrawObjects;
+        std::vector<tinyobj::material_t> m_materials;
+        std::map<std::string, GLuint> m_textures;
+        std::vector<DrawObject> m_DrawObjects;
 
 		GLenum m_matMode = GL_DIFFUSE;
 
-        string m_strFile;
+        std::string m_strFile;
 		float m_fScale = 1.f;
 		float m_fCorr[3] = {0,0,0};
 
 		SwapMode m_swapMode = SwapMode::NONE;
 
-		mutex m_lock;
+		std::mutex m_lock;
 
         // Load helper from the tinyobjloader example.
         bool LoadObjAndConvert(const char* filename);
 
-		void AddObject(const vector<float> &vb, int iMatlId);
+		void AddObject(const std::vector<float> &vb, int iMatlId);
 };

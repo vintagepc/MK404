@@ -20,6 +20,9 @@
  */
 
 #include "Beeper.h"
+#include "BasePeripheral.h"   // for MAKE_C_CALLBACK
+#include "TelemetryHost.h"
+#include "gsl-lite.hpp"
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex2f, glPopMatrix, glPushMatrix
@@ -30,14 +33,16 @@
 #include <SDL_audio.h>        // for SDL_PauseAudio, SDL_AudioSpec, SDL_Clos...
 #include <SDL_error.h>        // for SDL_GetError
 #include <SDL_stdinc.h>       // for Sint16
-#include <stdio.h>            // for fprintf, printf, stderr
-#include "BasePeripheral.h"   // for MAKE_C_CALLBACK
-#include "TelemetryHost.h"
+#include <cstring>
+#include <iostream>
+#include <iterator>
 
 Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 {
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
-		fprintf(stderr,"Failed to init SDL_Audio\n");
+	{
+		std::cerr << "Failed to init SDL_Audio" << '\n';
+	}
 
     m_specWant.freq = m_uiSampleRate; // number of samples per second
     m_specWant.format = AUDIO_S16SYS; // sample type (here: signed short i.e. 16 bit)
@@ -52,19 +57,19 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 
     if(SDL_OpenAudio(&m_specWant, &m_specHave) != 0)
 	{
-		fprintf(stderr, "Failed to open audio: %s\n", SDL_GetError());
+		std::cerr << "Failed to open audio: " << SDL_GetError() << '\n';
 		return;
 	}
     if(m_specWant.format != m_specHave.format)
 	{
-		printf("Failed to get the desired AudioSpec\n");
+		std::cerr << "Failed to get the desired AudioSpec" << '\n';
 		return;
 	}
 	m_bAudioAvail = true;
 
 }
 
-Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const std::vector<std::string>&)
 {
 	switch (iAct)
 	{
@@ -86,22 +91,32 @@ Beeper::~Beeper()
 
 void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)
 {
-    Sint16 *buffer = (Sint16*)raw_buffer;
-    for(int i = 0; i < bytes/2; i++, m_uiCounter--)
+
+	Sint16 in = m_bState? 12000 : -12000;
+	uint8_t data[2];
+	std::memcpy(&data,&in,2);
+
+	gsl::span<uint8_t> buffer(raw_buffer,bytes);
+    for(auto it = buffer.begin(); it != buffer.end(); it+=2, m_uiCounter--)
     {
 		if (m_uiCounter==0)
 		{
 			m_bState ^=1;
+			in = m_bState? 12000 : -12000;
+			std::memcpy(&data,&in,2);
 			m_uiCounter = m_uiSampleRate/ (m_bState? m_uiCtOn : m_uiCtOff );
 		}
-        buffer[i] = m_bState? 12000 : -12000;
+        *it = data[0];
+		*(std::next(it)) = data[1];
     }
 }
 
 void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 {
 	if (m_bMuted)
+	{
 		return;
+	}
 	//printf("Beeper debug: %u on, %u total\n", uiTOn,uiTTotal);
 	if (uiTOn == 0)
 	{
@@ -114,10 +129,14 @@ void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 		m_uiCtOff = m_pAVR->frequency/(uiTTotal-uiTOn);
 		//printf("Beep @ %u Hz, duty cycle %u %\n",m_pAVR->frequency/uiTTotal, (100*uiTOn)/uiTTotal);
 		if (m_uiCtOn == 0)
+		{
 			return;
+		}
 		{
 			if (m_bPlaying && m_bAudioAvail)
+			{
 				SDL_PauseAudio(1);
+			}
 			m_uiCounter = m_uiSampleRate/m_uiCtOn;
 			m_bPlaying = true;
 			if (m_bAudioAvail) SDL_PauseAudio(0);
@@ -131,7 +150,7 @@ void Beeper::Init(avr_t *avr)
     _Init(avr, this);
 	Beeper::RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Beeper,OnDigitalInSPWM), this);
 
-	TelemetryHost::GetHost()->AddTrace(this, DIGITAL_IN, {TC::OutputPin, TC::Misc},8);
+	TelemetryHost::GetHost().AddTrace(this, DIGITAL_IN, {TC::OutputPin, TC::Misc},8);
 }
 
 void Beeper::Draw()
@@ -139,9 +158,13 @@ void Beeper::Draw()
 	uint16_t uiBrt = 255;//((m_uiFreq*9)/10)+25;
     glPushMatrix();
         if (m_bPlaying)
+		{
             glColor3us(255*uiBrt, 128*uiBrt, 0);
+		}
         else
+		{
             glColor3ub(25,12,0);
+		}
 
         glBegin(GL_QUADS);
             glVertex2f(0,10);
@@ -156,6 +179,8 @@ void Beeper::Draw()
         	glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'T');
 		glPopMatrix();
 		if (m_bMuted)
+		{
 			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'X');
+		}
     glPopMatrix();
 }

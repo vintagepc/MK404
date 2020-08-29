@@ -20,8 +20,9 @@
 
 #pragma once
 
-#include "Wiring.h"
 #include "PinSpec_2560.h"
+#include "Wiring.h"
+
 namespace Wirings
 {
 	class Einsy_1_0a : public Wiring
@@ -33,7 +34,7 @@ namespace Wirings
 			};
 
 		protected:
-			virtual std::map<Pin,MCUPin> GetPinMap() override
+			std::map<Pin,MCUPin> GetPinMap()
 			{
 				return {
 					{BEEPER,84},
@@ -89,4 +90,4 @@ namespace Wirings
 		private:
 			const PinSpec_2560 m_EinsyPins = PinSpec_2560();
 	};
-};
+}; // namespace Wirings

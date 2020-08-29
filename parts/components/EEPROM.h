@@ -22,14 +22,12 @@
 
 #pragma once
 
-#include <stdint.h>          // for uint16_t, uint8_t
-#include <string>            // for string
-#include <vector>            // for vector
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "IScriptable.h"     // for ArgType, ArgType::Int, IScriptable::Line...
 #include "Scriptable.h"      // for Scriptable
-
-using namespace std;
+#include <cstdint>          // for uint16_t, uint8_t
+#include <string>            // for string
+#include <vector>            // for vector
 
 class EEPROM: public BasePeripheral, public Scriptable {
 	public:
@@ -37,17 +35,26 @@ class EEPROM: public BasePeripheral, public Scriptable {
 	EEPROM():Scriptable("EEPROM")
 	{
 		RegisterAction("Poke","Pokes a value into the EEPROM. Args are (address,value)", ActPoke, {ArgType::Int, ArgType::Int});
+		RegisterActionAndMenu("Save", "Saves EEPROM contents to disk.", ActSave);
+		RegisterActionAndMenu("Clear", "Clears EEPROM to 0xFF", ActClear);
+		RegisterActionAndMenu("Load", "Loads the last-used file again", ActLoad);
 	};
 	// Loads EEPROM from a file or initializes the file for the first time.
-	EEPROM(struct avr_t * avr, const string &strFile):Scriptable("EEPROM")
+	EEPROM(struct avr_t * avr, const std::string &strFile):EEPROM()
 	{
-		EEPROM();
 		Load(avr, strFile);
 	};
+	// Loads the given file.
+	void Load(struct avr_t * avr, const std::string &strFile);
 
-	void Load(struct avr_t * avr, const string &strFile);
+	// Reloads last file:
+	void Load();
+
 	// Saves EEPROM to the file
 	void Save();
+
+	// Clears the contents to 0xFF
+	void Clear();
 
 	// Pokes something into the EEPROM.
 	void Poke(uint16_t address,	uint8_t value);
@@ -56,15 +63,17 @@ class EEPROM: public BasePeripheral, public Scriptable {
 	uint8_t Peek(uint16_t address);
 
 	protected:
-		LineStatus ProcessAction(unsigned int uiAct, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs) override;
 
 
 	private:
 		std::string m_strFile;
-		int m_fdEEPROM = 0;
 		uint16_t m_uiSize = 4096;
 		enum Actions {
-			ActPoke
+			ActPoke,
+			ActSave,
+			ActLoad,
+			ActClear
 		};
 
 };

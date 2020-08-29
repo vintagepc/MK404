@@ -4,26 +4,28 @@
 
  	This file is part of MK404
 
-	MK404is free software: you can redistribute it and/or modify
+	MK404 is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
 	(at your option) any later version.
 
-	MK404is distributed in the hope that it will be useful,
+	MK404 is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with MK404  If not, see <http://www.gnu.org/licenses/>.
+	along with MK404. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "3rdParty/MK3/thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 #include "EinsyRambo.h"
-#include <stdio.h>             // for fprintf, printf, stderr
-#include "thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 #include "Einsy_1_1a.h"        // for Einsy_1_1a
 #include "HD44780.h"           // for HD44780
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
+#include <iostream>             // for fprintf, printf, stderr
+#include <string>
+#include <vector>
 
 #define TEMP_SENSOR_0 5
 #define TEMP_SENSOR_BED 1
@@ -41,13 +43,13 @@ namespace Boards
 	{
 		DisableInterruptLevelPoll(8);
 
-		AddSerialPty(UART2,'2');
+		AddSerialPty(&UART2,'2');
 		AddHardware(UART0);
 
 		AddHardware(m_Mon0,'0');
 
 		// SD card
-		string strSD = GetSDCardFile();
+		std::string strSD = GetSDCardFile();
 		sd_card.SetImage(strSD);
 		AddHardware(sd_card);
 		TryConnect(PinNames::Pin::SDSS, sd_card, SDCard::SPI_CSEL);
@@ -62,29 +64,33 @@ namespace Boards
 		int mount_error = sd_card.Mount();
 
 		if (mount_error != 0) {
-			fprintf (stderr, "SD card image ‘%s’ could not be mounted (error %i).\n", strSD.c_str(), mount_error);
+			std::cerr << "SD card image (" << strSD << ") could not be mounted (error " << mount_error << " ).\n";
 		}
 
 		// Heaters
 		AddHardware(tExtruder,GetPinNumber(TEMP_0_PIN));
-		tExtruder.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_0),
-								sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(short) / 2,
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
+		tExtruder.SetTable({(int16_t*)TERMISTOR_TABLE(TEMP_SENSOR_0),
+								sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(int16_t)},
 								OVERSAMPLENR);
 
 		AddHardware(tBed,GetPinNumber(TEMP_BED_PIN));
-		tBed.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
-							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
+		tBed.SetTable({(int16_t*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
+							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(int16_t)},
 							OVERSAMPLENR);
 
 		// same table as bed.
 		AddHardware(tPinda, GetPinNumber(TEMP_PINDA_PIN));
-		tPinda.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
-							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
+		tPinda.SetTable({(int16_t*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
+							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(int16_t)},
 							OVERSAMPLENR);
 
 		AddHardware(tAmbient,  GetPinNumber(TEMP_AMBIENT_PIN));
-		tAmbient.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
-		 						sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
+		tAmbient.SetTable({(int16_t*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
+		 						sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(int16_t)},
 		 						OVERSAMPLENR);
 
 		AddHardware(fExtruder, GetDIRQ(TACH_0), GetDIRQ(E0_FAN), GetPWMIRQ(E0_FAN));
@@ -101,10 +107,10 @@ namespace Boards
 
 		AddHardware(lcd);
 		// D4-D7,
-		PinNames::Pin ePins[4] = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
+		std::vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
 		for (int i = 0; i < 4; i++) {
-			TryConnect(ePins[i],lcd, HD44780::D4+i);
-			TryConnect(lcd, HD44780::D4+i,ePins[i]);
+			TryConnect(vePins.at(i),lcd, HD44780::D4+i);
+			TryConnect(lcd, HD44780::D4+i,vePins.at(i));
 		}
 		TryConnect(LCD_PINS_RS,lcd, HD44780::RS);
 		TryConnect(LCD_PINS_ENABLE, lcd,HD44780::E);
@@ -175,7 +181,9 @@ namespace Boards
 		TryConnect(PowerPanic, Button::BUTTON_OUT, UVLO_PIN);
 
 		if (m_wiring.IsPin(W25X20CL_PIN_CS))
+		{
 			AddHardware(spiFlash,GetDIRQ(W25X20CL_PIN_CS));
+		}
 
 		AddUARTTrace('0'); // External
 		AddUARTTrace('2'); // MMU/internal/P3
@@ -185,9 +193,9 @@ namespace Boards
 	}
 
 	// Convenience function for debug printing a particular pin.
-	void EinsyRambo::DebugPin(avr_irq_t *irq, uint32_t value)
+	void EinsyRambo::DebugPin(avr_irq_t *, uint32_t value)
 	{
-		printf("Pin DBG: change to %8x\n",value);
+		std::cout << "Pin DBG: change to " << value << '\n';
 	}
 
 	void EinsyRambo::OnAVRInit()
@@ -204,7 +212,7 @@ namespace Boards
 
 	void EinsyRambo::OnAVRReset()
 	{
-		printf("RESET\n");
+		std::cout << "RESET\n";
 		DisableInterruptLevelPoll(8);
 
 		// Restore powerpanic to high
@@ -214,9 +222,13 @@ namespace Boards
 
 		//depress encoder knob
 		if (!m_bFactoryReset)
+		{
 			SetPin(BTN_ENC,1);
+		}
 		else
+		{
 			SetPin(BTN_ENC,0);
+		}
 
 		m_bFactoryReset = false;
 
@@ -237,6 +249,4 @@ namespace Boards
 		SetPin(E0_TMC2130_CS,1);
 	}
 
-
-
-};
+}; // namespace Boards

@@ -20,10 +20,10 @@
  */
 
 #include "GLPrint.h"
-#include <stdlib.h>    // for abs
-#include <algorithm>   // for transform
-#include <functional>  // for minus
 #include <GL/glew.h>   // for glMaterialfv, GL_FRONT_AND_BACK, glDisableClie...
+#include <algorithm>   // for transform
+#include <cstdlib>    // for abs
+#include <functional>  // for minus
 
 static constexpr int iPrintRes = 100000; //0.1mm (meters/this)
 
@@ -68,10 +68,14 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 	// Trailing 0.0002 is fudge factor for LA/retraction threshold to avoid gaps at E end.
 
 	if ((bSamePos && !bExtruding) || (bSamePos && (iZ == m_iExtrEnd[1]))) //SamePos doesn't inculde Z so we don't get inf/zero slopes on hops.
+	{
 		return;
+	}
 
 	if (fE>m_fEMax)
+	{
 		m_fEMax = fE;
+	}
 	else if (!m_bExtruding && !bExtruding)
 	{
 		// Just update segment end if we are mid non-extrusion (travel)
@@ -93,10 +97,10 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 			}
 			//printf("New extrusion %u at index %u\n",m_ivStart.size(),m_ivStart.back());
 			// Add a temporary normal vertex
-			float fCross[3], fA[3],fB[3]= {0,-0.002,0};
-			std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA, std::minus<float>());
-			CrossProduct(fA,fB,fCross);
-			Normalize(fCross);
+			std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
+			std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA.data(), std::minus<float>());
+			CrossProduct(fA,fB,{fCross.data(),3});
+			Normalize({fCross.data(),3});
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 			for (int i=0; i<4; i++)
 			{
@@ -105,7 +109,7 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 			}
 			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
 			m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
-			m_fvNorms.insert(m_fvNorms.end(), fCross, fCross+3);
+			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
 
 		}
 		// m_fvTri.push_back(m_fExtrEnd[0]);
@@ -125,26 +129,35 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 	else if (!bColinear)
 	{
 		// First, update the previous normal with the new vertex info.
-		// TODO: fB really should be pointing at the nearest vertex on the layer below, but that's a lot of coordinate
+		// TODO(#114): fB really should be pointing at the nearest vertex on the layer below, but that's a lot of coordinate
 		// that's going to be disposable once this changes to a geometry or normal shader instead of the current implemetnation
 		// so I'm going to leave it as is for now.
-		float fCross[3], fA[3],fB[3]  = {0,-0.002,0};
-		float *pfPrev = (&m_fvNorms.back()) - 2;
-		std::transform(pfPrev, pfPrev+3, vfPos.data(), fA, std::minus<float>()); // Length from p->curr
-		CrossProduct(fA,fB,fCross);
-		Normalize(fCross);
-		pfPrev[0] +=fCross[0]; pfPrev[1] += fCross[1]; pfPrev[2] += fCross[2];
-		pfPrev[0]/=2.f; pfPrev[1]/=2.f; pfPrev[2]/=2.f;
+		std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
+		auto itPrev = m_fvNorms.end()-2;
+		std::transform(itPrev, itPrev+3, vfPos.data(), fA.data(), std::minus<float>()); // Length from p->curr
+		CrossProduct(fA,fB,{fCross.data(),3});
+		Normalize({fCross.data(),3});
+		auto itCross = fCross.begin();
+		for (int i=0; i<3; i++)
+		{
+			*itPrev += *itCross;
+			*itPrev/=2.f;
+			itPrev++;
+			itCross++;
+		}
+		// pfPrev[1] += fCross[1];
+		// pfPrev[2] += fCross[2];
+		// pfPrev[0]/=2.f; pfPrev[1]/=2.f; pfPrev[2]/=2.f;
 		// And then append the new temporary end one.
-		std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA, std::minus<float>());
-		CrossProduct(fA,fB,fCross);
-		Normalize(fCross);
+		std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA.data(), std::minus<float>());
+		CrossProduct(fA,fB,{fCross.data(),3});
+		Normalize({fCross.data(),3});
 				// New segment, push it onto the vertex list and update the segment count
 		//printf("New segment: %d\n",m_vCoords.size());
 		{
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 			m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
-			m_fvNorms.insert(m_fvNorms.end(), fCross, fCross+3);
+			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
 			m_iExtrStart = m_iExtrEnd;
 			m_fExtrStart = m_fExtrEnd;
 		}
@@ -167,37 +180,39 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 
 void GLPrint::Draw()
 {
-	float fColor[4] = {m_fColR,m_fColG,m_fColB,1};
-	//float fG[4] = {0,0.5,0,1};
-	float fY[4] = {1,1,0,1};
-	float fK[4] = {0,0,0,1};
-	float fSpec[4] = {1,1,1,1};
+	std::vector<float> fColor = {m_fColR,m_fColG,m_fColB,1};
+	//std::vector<float> fG[4] = {0,0.5,0,1};
+	std::vector<float> fY = {1,1,0,1};
+	std::vector<float> fK = {0,0,0,1};
+	std::vector<float> fSpec = {1,1,1,1};
 	glLineWidth(1.0);
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,fSpec);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,fSpec.data());
 	glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,64);
 	//glEnable(GL_AUTO_NORMAL);
 	//glEnable(GL_NORMALIZE);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fK);
+		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fK.data());
 		//glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
 		// glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
 		//glNormal3f(0,1,0);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor);
+		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
 		{
 			std::lock_guard<std::mutex> lock(m_lock);
 			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
 			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
 			glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
-			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec);
+			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());
 			if (m_ivCount.size()>0)
+			{
 				glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),((m_fvDraw.size()/3)-m_ivStart.back())-1);
+			}
 			if (m_bExtruding && m_fvDraw.size() >0)
 			{
-				glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fY);
+				glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fY.data());
 				glBegin(GL_LINES);
-					glVertex3fv((&m_fvDraw.back())-2);
+					glVertex3fv(&*(m_fvDraw.end()-2));
 					glVertex3fv(m_fExtrEnd.data());
 				glEnd();
 			}

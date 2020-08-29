@@ -24,15 +24,15 @@
 
 #pragma once
 
-#include <stdint.h>            // for uint32_t, uint8_t
-#include <string>              // for string
-#include <vector>              // for vector
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include <cstdint>            // for uint32_t, uint8_t
+#include <string>              // for string
+#include <vector>              // for vector
 
 class RotaryEncoder:public BasePeripheral,public Scriptable
 {
@@ -40,10 +40,10 @@ class RotaryEncoder:public BasePeripheral,public Scriptable
         #define IRQPAIRS _IRQ(OUT_A,">encoder.a") _IRQ(OUT_B,">encoder.b") _IRQ(OUT_BUTTON,">encoder.button")
         #include "IRQHelper.h"
 
-        typedef enum {
+        using Direction = enum {
             CW_CLICK = 0,
             CCW_CLICK
-        } Direction;
+        };
 
 		RotaryEncoder();
 
@@ -65,7 +65,7 @@ class RotaryEncoder:public BasePeripheral,public Scriptable
         // Release event for mouse push.
         void Release();
 	protected:
-		LineStatus ProcessAction(unsigned int action, const vector<string> &vArgs);
+		LineStatus ProcessAction(unsigned int action, const std::vector<std::string> &vArgs) override;
 
     private:
 

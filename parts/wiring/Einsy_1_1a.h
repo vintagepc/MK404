@@ -32,7 +32,7 @@ namespace Wirings
 			};
 
 		protected:
-			std::map<Pin, MCUPin> GetPinMap() override {
+			std::map<Pin, MCUPin> GetPinMap() {
 				auto baseMap = Einsy_1_0a::GetPinMap();
 				baseMap[IR_SENSOR_PIN] = 62;
 				baseMap.erase(KILL_PIN);
@@ -49,4 +49,4 @@ namespace Wirings
 				return baseMap;
 			};
 	};
-};
+}; // namespace Wirings

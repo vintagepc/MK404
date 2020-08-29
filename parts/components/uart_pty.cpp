@@ -23,8 +23,15 @@
 
 
 #include "uart_pty.h"
-#include <sys/time.h>                   // IWYU pragma: keep
-#include <errno.h>                      // for errno
+#include "avr_uart.h"                   // for AVR_IOCTL_UART_GETIRQ, ::AVR_...
+#include "gsl-lite.hpp"
+#include "sim_io.h"                     // for avr_io_getirq, avr_ioctl
+#include "sim_time.h"                   // for avr_hz_to_cycles
+
+#include <cerrno>                      // for errno
+#include <cstdlib>                     // for getenv, atoi, system
+#include <cstring>                     // for memset, strerror
+#include <iostream>                      // for printf, NULL, fprintf, sprintf
 #include <pthread.h>                    // for pthread_create, pthread_join
 #if defined(__APPLE__)
 // utils/Util.h clashes with this system file.
@@ -37,29 +44,30 @@ int
 #else
 # include <pty.h>                       // for openpty
 #endif
-#include <stdio.h>                      // for printf, NULL, fprintf, sprintf
-#include <stdlib.h>                     // for getenv, atoi, system
-#include <string.h>                     // for memset, strerror
+#include <string>
 #include <sys/select.h>                 // for select, FD_ISSET, FD_SET, FD_...
+// IWYU pragma: no_include <bits/types/struct_timeval.h>
+#include <sys/time.h>                   // IWYU pragma: keep
 #include <termios.h>                    // for cfmakeraw, tcgetattr, tcsetattr
 #include <unistd.h>                     // for close, read, symlink, unlink
-#include "avr_uart.h"                   // for AVR_IOCTL_UART_GETIRQ, ::AVR_...
-#include "sim_io.h"                     // for avr_io_getirq, avr_ioctl
-#include "sim_time.h"                   // for avr_hz_to_cycles
 
 //#define TRACE(_w) _w
 #ifndef TRACE
 #define TRACE(_w)
 #endif
 
+using std::cout;
+using std::cerr;
+using std::stoi;
+
 extern "C" {
-DEFINE_FIFO(uint8_t,uart_pty_fifo);
+	DEFINE_FIFO(uint8_t,uart_pty_fifo); //NOLINT - 3rd party file.
 }
 
 /*
  * called when a byte is send via the uart on the AVR
  */
-void uart_pty::OnByteIn(struct avr_irq_t * irq, uint32_t value)
+void uart_pty::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
 	TRACE(printf("uart_pty_in_hook %02x\n", value);)
 	std::lock_guard<std::mutex> lock(m_lock);
@@ -67,7 +75,9 @@ void uart_pty::OnByteIn(struct avr_irq_t * irq, uint32_t value)
 
 	if (tap.s) {
 		if (tap.crlf && value == '\n')
+		{
 			uart_pty_fifo_write(&tap.in, '\r');
+		}
 		uart_pty_fifo_write(&tap.in, value);
 	}
 }
@@ -82,18 +92,24 @@ void uart_pty::FlushData()
 		uint8_t byte = uart_pty_fifo_read(&pty.out);
 		TRACE(printf("uart_pty_flush_incoming send r %03d:%02x\n", r, byte);)
 		if (m_chrLast == '\n' && byte == '\n')
-			printf("Swallowing repeated newlines\n");
+		{
+			std::cout << "Swallowing repeated newlines\n";
+		}
 		else
 		{
 			if (byte !='\n')
+			{
 				m_chrLast = byte;
+			}
 			RaiseIRQ(BYTE_OUT, byte);
 
 		}
 
 		if (tap.s) {
 			if (tap.crlf && byte == '\n')
+			{
 				uart_pty_fifo_write(&tap.in, '\r');
+			}
 			uart_pty_fifo_write(&tap.in, byte);
 		}
 	}
@@ -104,22 +120,28 @@ void uart_pty::FlushData()
 				uart_pty_fifo_write(&tap.in, '\n');
 			}
 			if (byte == '\n')
+			{
 				continue;
+			}
 			uart_pty_fifo_write(&tap.in, byte);
 			if (m_chrLast == '\n' && byte == '\n')
-				printf("2Swallowing repeated newlines\n");
+			{
+				std::cout << "2Swallowing repeated newlines\n";
+			}
 			else
 			{
 				if (byte !='\n')
+				{
 					m_chrLast = byte;
+				}
 				RaiseIRQ(BYTE_OUT, byte);
 
 			}
-			}
+		}
 	}
 }
 
-avr_cycle_count_t uart_pty::OnFlushTimer(struct avr_t * avr, avr_cycle_count_t when)
+avr_cycle_count_t uart_pty::OnFlushTimer(struct avr_t *, avr_cycle_count_t when)
 {
 	FlushData();
 	/* always return a cycle NUMBER not a cycle count */
@@ -130,7 +152,7 @@ avr_cycle_count_t uart_pty::OnFlushTimer(struct avr_t * avr, avr_cycle_count_t w
  * Called when the uart has room in it's input buffer. This is called repeateadly
  * if necessary, while the xoff is called only when the uart fifo is FULL
  */
-void uart_pty::OnXOnIn(struct avr_irq_t * irq,uint32_t value)
+void uart_pty::OnXOnIn(struct avr_irq_t * ,uint32_t)
 {
 	TRACE(if (!m_bXOn) printf("uart_pty_xon_hook\n");)
 	m_bXOn = true;
@@ -138,21 +160,20 @@ void uart_pty::OnXOnIn(struct avr_irq_t * irq,uint32_t value)
 	FlushData();
 
 	// if the buffer is not flushed, try to do it later
-	if (m_bXOn)
-			RegisterTimer(m_fcnFlush,avr_hz_to_cycles(m_pAVR, 1000),this);
+	if (m_bXOn)	RegisterTimer(m_fcnFlush,avr_hz_to_cycles(m_pAVR, 1000),this);
 }
 
 /*
  * Called when the uart ran out of room in it's input buffer
  */
-void uart_pty::OnXOffIn(struct avr_irq_t * irq, uint32_t value)
+void uart_pty::OnXOffIn(struct avr_irq_t *, uint32_t)
 {
 	TRACE(if (m_bXOn) printf("uart_pty_xoff_hook\n");)
 	m_bXOn = false;
 	CancelTimer(m_fcnFlush,this);
 }
 
-uart_pty::uart_pty()
+uart_pty::uart_pty():pty({}),tap({})
 {
 	memset(&port[0], 0, sizeof(port[0]));
 	memset(&port[1], 0, sizeof(port[1]));
@@ -161,72 +182,89 @@ uart_pty::uart_pty()
 void* uart_pty::Run()
 {
 	while (!m_bQuit) {
-		fd_set read_set, write_set;
+		fd_set read_set {}, write_set {};
 		int max = 0;
-		FD_ZERO(&read_set);
-		FD_ZERO(&write_set);
+		FD_ZERO(&read_set); //NOLINT - system library
+		FD_ZERO(&write_set); //NOLINT
 
-		for (int ti = 0; ti < 2; ti++) if (port[ti].s) {
-			// read more only if buffer was flushed
-			std::lock_guard<std::mutex> lock(m_lock);
-			if (port[ti].buffer_len == port[ti].buffer_done) {
-				FD_SET(port[ti].s, &read_set);
-				max = port[ti].s > max ? port[ti].s : max;
-			}
-			if (!uart_pty_fifo_isempty(&port[ti].in)) {
-				FD_SET(port[ti].s, &write_set);
-				max = port[ti].s > max ? port[ti].s : max;
+		for (auto &p : port)
+		{
+			if (p.s) {
+				// read more only if buffer was flushed
+				std::lock_guard<std::mutex> lock(m_lock);
+				if (p.buffer_len == p.buffer_done) {
+					FD_SET(p.s, &read_set); //NOLINT - system library
+					max = p.s > max ? p.s : max;
+				}
+				if (!uart_pty_fifo_isempty(&p.in)) {
+					FD_SET(p.s, &write_set); //NOLINT - system library
+					max = p.s > max ? p.s : max;
+				}
 			}
 		}
 
 		// short, but not too short interval
 		struct timeval timo = { 0, 500 };
-		int ret = select(max+1, &read_set, &write_set, NULL, &timo);
+		int ret = select(max+1, &read_set, &write_set, nullptr, &timo);
 
 		if (ret < 0)
+		{
 			break;
+		}
 
-		for (int ti = 0; ti < 2; ti++) if (port[ti].s) {
-			if (FD_ISSET(port[ti].s, &read_set)) {
-				std::lock_guard<std::mutex> lock(m_lock);
-				ssize_t r = read(port[ti].s, port[ti].buffer,
-									sizeof(port[ti].buffer)-1);
-				port[ti].buffer_len = r;
-				port[ti].buffer_done = 0;
-				TRACE(if (!port[ti].tap)
-						hdump("pty recv", port[ti].buffer, r);)
-			}
-			if (port[ti].buffer_done < port[ti].buffer_len) {
-				// write them in fifo
-				std::lock_guard<std::mutex> lock(m_lock);
-				while (port[ti].buffer_done < port[ti].buffer_len &&
-						!uart_pty_fifo_isfull(&port[ti].out)) {
-					int index = port[ti].buffer_done++;
-					TRACE(int wi = port[ti].out.write;)
-					uart_pty_fifo_write(&port[ti].out,
-							port[ti].buffer[index]);
-					TRACE(printf("w %3d:%02x (%d/%d) %s\n",
-								wi, port[ti].buffer[index],
-								port[ti].out.read,
-								port[ti].out.write,
-								m_bXOn ? "XON" : "XOFF");)
+		for (auto &p : port)
+		{
+			if (p.s)
+			{
+				if (FD_ISSET(p.s, &read_set)) //NOLINT - system library
+				{
+					std::lock_guard<std::mutex> lock(m_lock);
+					ssize_t r = read(p.s, p.buffer,
+										sizeof(p.buffer)-1);
+					p.buffer_len = r;
+					p.buffer_done = 0;
+					TRACE(if (!p.tap)
+							hdump("pty recv", p.buffer, r);)
 				}
-			}
-			if (FD_ISSET(port[ti].s, &write_set)) {
-				std::lock_guard<std::mutex> lock(m_lock);
-				uint8_t buffer[512];
-				// write them in fifo
-				uint8_t * dst = buffer;
-				while (!uart_pty_fifo_isempty(&port[ti].in) &&
-						(size_t)(dst - buffer) < sizeof(buffer)) {
-					*dst = uart_pty_fifo_read(&port[ti].in);
-					dst++;
+				if (p.buffer_done < p.buffer_len)
+				{
+					// write them in fifo
+					std::lock_guard<std::mutex> lock(m_lock);
+					while (p.buffer_done < p.buffer_len &&
+							!uart_pty_fifo_isfull(&p.out))
+					{
+						int index = p.buffer_done++;
+						TRACE(int wi = p.out.write;)
+						uart_pty_fifo_write(&p.out,
+								gsl::at(p.buffer,index));
+						TRACE(printf("w %3d:%02x (%d/%d) %s\n",
+									wi, gsl::at(p.buffer,index),
+									p.out.read,
+									p.out.write,
+									m_bXOn ? "XON" : "XOFF");)
+					}
 				}
-				size_t len = dst - buffer;
-				size_t r = write(port[ti].s, buffer, len);
-				if (r!=len)
-					fprintf(stderr,"Failed to write to PTY\n");
-				TRACE(if (!port[ti].tap) hdump("pty send", buffer, r);)
+				if (FD_ISSET(p.s, &write_set)) //NOLINT - system library
+				{
+					std::lock_guard<std::mutex> lock(m_lock);
+					uint8_t _buffer[512];
+					gsl::span<uint8_t> buffer {_buffer};
+					// write them in fifo
+					auto dst = buffer.begin();
+					while (!uart_pty_fifo_isempty(&p.in) &&
+							dst !=buffer.end())
+					{
+						*dst = uart_pty_fifo_read(&p.in);
+						dst++;
+					}
+					size_t len = dst - buffer.begin();
+					size_t r = write(p.s, buffer.data(), len);
+					if (r!=len)
+					{
+						std::cerr << "Failed to write to PTY\n";
+					}
+					TRACE(if (!p.tap) hdump("pty send", buffer.data(), r);)
+				}
 			}
 		}
 		/* DO NOT call this, this create a concurency issue with the
@@ -234,7 +272,7 @@ void* uart_pty::Run()
 			uart_pty_flush_incoming(p);
 		  */
 	}
-	return NULL;
+	return nullptr;
 }
 
 void uart_pty::Init(struct avr_t * avr)
@@ -243,29 +281,28 @@ void uart_pty::Init(struct avr_t * avr)
 
 	RegisterNotify(BYTE_IN, MAKE_C_CALLBACK(uart_pty,OnByteIn), this);
 
-	int hastap = (getenv("SIMAVR_UART_TAP") && atoi(getenv("SIMAVR_UART_TAP"))) ||
-			(getenv("SIMAVR_UART_XTERM") && atoi(getenv("SIMAVR_UART_XTERM"))) ;
+	int hastap = (getenv("SIMAVR_UART_TAP") && stoi(getenv("SIMAVR_UART_TAP"))) ||
+			(getenv("SIMAVR_UART_XTERM") && stoi(getenv("SIMAVR_UART_XTERM"))) ;
 
 	for (int ti = 0; ti < 1 + hastap; ti++) {
 		int m, s;
 
-		if (openpty(&m, &s, port[ti].slavename, NULL, NULL) < 0) {
-			fprintf(stderr, "%s: Can't create pty: %s", __FUNCTION__, strerror(errno));
+		if (openpty(&m, &s, static_cast<char*>(gsl::at(port,ti).slavename), nullptr, nullptr) < 0) {
+			std::cerr <<  "uart_pty::Init: Can't create pty: " << strerror(errno);
 			return ;
 		}
-		struct termios tio;
+		struct termios tio {};
 		tcgetattr(m, &tio);
 		cfmakeraw(&tio);
 		tcsetattr(m, TCSANOW, &tio);
-		port[ti].s = m;
-		port[ti].tap = ti != 0;
-		port[ti].crlf = ti != 0;
-		printf("uart_pty_init %s on port *** %s ***\n",
-				ti == 0 ? "bridge" : "tap", port[ti].slavename);
+		gsl::at(port,ti).s = m;
+		gsl::at(port,ti).tap = ti != 0;
+		gsl::at(port,ti).crlf = ti != 0;
+		std::cout << "uart_pty_init " << (ti == 0 ? "bridge" : "tap") << " on port *** " << static_cast<char*>(gsl::at(port,ti).slavename) << " ***\n";
 	}
 
-	auto fRunCB =[](void * param) { uart_pty* p = (uart_pty*)param; return p->Run();};
-	pthread_create(&m_thread, NULL, fRunCB, this);
+	auto fRunCB =[](void * param) { auto p = static_cast<uart_pty*>(param); return p->Run();};
+	pthread_create(&m_thread, nullptr, fRunCB, this);
 
 }
 
@@ -273,53 +310,71 @@ void uart_pty::Init(struct avr_t * avr)
 uart_pty::~uart_pty()
 {
 	if (!m_thread)
+	{
 		return;
-	puts(__func__);
+	}
+	std::cout << static_cast<const char*>(__func__) << '\n';
 	m_bQuit = true; // Signal thread it's time to quit.
-	for (int ti = 0; ti < 2; ti++)
-		if (port[ti].s)
-			close(port[ti].s);
-	pthread_join(m_thread, NULL);
+	for (auto &p: port)
+	{
+		if (p.s)
+		{
+			close(p.s);
+		}
+	}
+	pthread_join(m_thread, nullptr);
 }
 
 void uart_pty::Connect(char uart)
 {
 	// disable the stdio dump, as we are sending binary there
 	uint32_t f = 0;
-	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(uart), &f);
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(uart), &f); //NOLINT - complaint in external macro
 	f &= ~AVR_UART_FLAG_STDIO;
-	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(uart), &f);
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(uart), &f); //NOLINT - complaint in external macro
 
-	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUTPUT);
-	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_INPUT);
-	avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XON);
-	avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XOFF);
-	if (src && dst) {
+	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUTPUT); //NOLINT - complaint in external macro
+	avr_irq_t * dst = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_INPUT); //NOLINT - complaint in external macro
+	avr_irq_t * xon = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XON); //NOLINT - complaint in external macro
+	avr_irq_t * xoff = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUT_XOFF); //NOLINT - complaint in external macro
+	if (src && dst)
+	{
 		ConnectFrom(src, BYTE_IN);
 		ConnectTo(BYTE_OUT, dst);
 	}
-	if (xon)
-		avr_irq_register_notify(xon, MAKE_C_CALLBACK(uart_pty,OnXOnIn), this);
-	if (xoff)
-		avr_irq_register_notify(xoff, MAKE_C_CALLBACK(uart_pty,OnXOffIn),this);
+	if (xon) avr_irq_register_notify(xon, MAKE_C_CALLBACK(uart_pty,OnXOnIn), this);
+	if (xoff) avr_irq_register_notify(xoff, MAKE_C_CALLBACK(uart_pty,OnXOffIn),this);
 
-	for (int ti = 0; ti < 1; ti++)
-		if (port[ti].s) {
-			char link[128];
-			sprintf(link, "/tmp/simavr-uart%s%c", ti == 1 ? "tap" : "", uart);
-			unlink(link);
-			if (symlink(port[ti].slavename, link) != 0) {
-				fprintf(stderr, "WARN %s: Can't create %s: %s", __func__, link, strerror(errno));
-			} else {
-				printf("%s: %s now points to %s\n", __func__, link, port[ti].slavename);
+	//for (int ti = 0; ti < 1; ti++)
+		if (port[0].s) {
+			std::string strLnk("/tmp/simavr-uart");
+			// if (ti==1)
+			// {
+			// 	strLnk +="tap";
+			// }
+			strLnk+=std::to_string(uart);
+			unlink(strLnk.c_str());
+			if (symlink(static_cast<char*>(port[0].slavename), strLnk.c_str()) != 0)
+			{
+				std::cerr << "WARN: Can't create " << strLnk << " " << strerror(errno);
+			}
+			else
+			{
+				std::cout << strLnk << " now points to: " << static_cast<char*>(port[0].slavename);
 			}
 		}
-	if (getenv("SIMAVR_UART_XTERM") && atoi(getenv("SIMAVR_UART_XTERM"))) {
-		char cmd[256];
-		sprintf(cmd, "xterm -e picocom -b 115200 %s >/dev/null 2>&1 &",
-				tap.slavename);
-		if (system(cmd)<0)
-			printf("Could not launch xterm\n");
-	} else
-		printf("note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal\n");
+	if (getenv("SIMAVR_UART_XTERM") && stoi(getenv("SIMAVR_UART_XTERM")))
+	{
+		std::string strCmd("xterm -e picocom -b 115200 ");
+		strCmd += static_cast<char*>(tap.slavename);
+		strCmd += " >/dev/null 2>&1 &";
+		if (system(strCmd.c_str())<0) //NOLINT - no user-alterable params inside...
+		{
+			std::cout << "Could not launch xterm\n";
+		}
+	}
+	else
+	{
+		std::cout << "note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal\n";
+	}
 }

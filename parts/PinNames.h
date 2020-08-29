@@ -86,4 +86,4 @@ namespace PinNames {
 		__A4982_PIN_SET(Z)
 		PIN_COUNT
 	};
-};
+}; // namespace PinNames

@@ -20,8 +20,6 @@
 
 #pragma once
 
-#include <stdint.h>                              // for uint32_t
-#include <string>                                // for string
 #include "Beeper.h"                              // for Beeper
 #include "Board.h"                               // for Board
 #include "Button.h"                              // for Button
@@ -29,6 +27,7 @@
 #include "HD44780GL.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
 #include "LED.h"                                 // for LED
+#include "Macros.h"
 #include "PINDA.h"                               // for PINDA
 #include "RotaryEncoder.h"                       // for RotaryEncoder
 #include "SDCard.h"                              // for SDCard
@@ -40,10 +39,11 @@
 #include "uart_pty.h"                            // for uart_pty
 #include "w25x20cl.h"                            // for w25x20cl
 #include "wiring/Einsy_1_1a.h"                   // for Einsy_1_1a
+#include <cstdint>                              // for uint32_t
 
 extern "C"
 {
-	#include "../utility/MK3/Configuration_prusa.h"
+	#include "../3rdParty/MK3/Configuration_prusa.h" //NOLINT
 	#undef MMU_HWRESET
 }
 
@@ -52,7 +52,7 @@ namespace Boards
 	class EinsyRambo: public Board
 	{
 		public:
-			EinsyRambo(uint32_t uiFreq = 16000000)
+			explicit EinsyRambo(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){ SetBoardName("Einsy");};
 
 		protected:
@@ -70,27 +70,27 @@ namespace Boards
 
 			HD44780GL lcd;
 			RotaryEncoder encoder;
-			Button PowerPanic = Button("Power Panic");
+			Button PowerPanic {"Power Panic"};
 			Beeper m_buzzer;
 			uart_pty UART0, UART2;
 			SerialLineMonitor m_Mon0 = SerialLineMonitor("Serial0");
 			Thermistor tExtruder, tBed, tPinda, tAmbient;
-			Fan fExtruder = {3300,'E'}, fPrint = {5000,'P',true};
+			Fan fExtruder {3300,'E'}, fPrint {5000,'P',true};
 			Heater hExtruder = {1.5,25.0,false,'H',30,250},
 				hBed = {0.25, 25, true,'B',30,100};
 			w25x20cl spiFlash;
 			SDCard sd_card = SDCard();
-			TMC2130 X = {'X'},
-				Y = {'Y'},
-				Z = {'Z'},
-				E = {'E'};
+			TMC2130 X {'X'},
+				Y {'Y'},
+				Z {'Z'},
+				E {'E'};
 			VoltageSrc vMain = VoltageSrc(fScale24v, 24.f),
 				vBed = VoltageSrc(fScale24v,23.9);
-			PINDA pinda {(float) X_PROBE_OFFSET_FROM_EXTRUDER, (float)Y_PROBE_OFFSET_FROM_EXTRUDER};
+			PINDA pinda { FL(X_PROBE_OFFSET_FROM_EXTRUDER), FL(Y_PROBE_OFFSET_FROM_EXTRUDER)};
 			//MMU2 *mmu = nullptr;
-			LED lPINDA = {0xFF0000FF,'P',true},
-				lIR = {0xFFCC00FF,'I',true},
-				lSD = {0x0000FF00,'C', true};
+			LED lPINDA {0xFF0000FF,'P',true},
+				lIR {0xFFCC00FF,'I',true},
+				lSD {0x0000FF00,'C', true};
 
 		private:
 
@@ -98,4 +98,4 @@ namespace Boards
 
 			const Wirings::Einsy_1_1a m_wiring = Wirings::Einsy_1_1a();
 	};
-};
+}; // namespace Boards

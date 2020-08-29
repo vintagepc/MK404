@@ -22,12 +22,15 @@
 
 #pragma once
 
-#include <ADCPeripheral.h>  // for ADCPeripheral
-#include <stdint.h>         // for uint32_t, uint8_t
+#include "ADCPeripheral.h"  // for ADCPeripheral
+#include "IScriptable.h"
+#include "Scriptable.h"
 #include "sim_irq.h"        // for avr_irq_t
+#include <cstdint>         // for uint32_t, uint8_t
 #include <string>
+#include <vector>
 
-class VoltageSrc: public ADCPeripheral {
+class VoltageSrc: public ADCPeripheral, public Scriptable {
 public:
     // Macro to define a set of IRQs and string names.
     #define IRQPAIRS    _IRQ(ADC_TRIGGER_IN,"8<voltage.trigger") \
@@ -38,7 +41,7 @@ public:
     // Helper to keep pairs in sync.
 
     // Constructs a new VoltageSrc on ADC mux uiMux, with a v scale factor of fVScale and a starting reading of fStartV
-    VoltageSrc(float fVScale = 1.0f, // voltage scale factor to bring it in line with the ADC 0-5v input.
+    explicit VoltageSrc(float fVScale = 1.0f, // voltage scale factor to bring it in line with the ADC 0-5v input.
             float fStartV = 0.0f );
 
     // Initializes the source (connets it to supplied AVR's ADC)
@@ -52,11 +55,20 @@ public:
 
 protected:
     // ADC read trigger.
-    virtual uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
+    uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
+
+	LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
     // Input trigger
     void OnInput(avr_irq_t *pIRQ, uint32_t value);
 
     float m_fCurrentV = 0.0f;
     float m_fVScale = 1.0f;
+
+	enum Actions
+	{
+		ActSet,
+		ActSetScale,
+		ActVS_END
+	};
 };

@@ -21,16 +21,15 @@
 
 #pragma once
 
-#include <pthread.h>               // for pthread_t
-#include <stdint.h>                // for uint32_t
-#include <uart_pty.h>              // for _IRQ
-#include <string>                  // for string
+#include "ADC_Buttons.h"
 #include "BasePeripheral.h"        // for BasePeripheral
 #include "boards/MM_Control_01.h"  // for MM_Control_01
 #include "sim_irq.h"               // for avr_irq_t
 #include <atomic>
+#include <cstdint>                // for uint32_t
+#include <pthread.h>               // for pthread_t
+#include <string>                  // for string
 
-using namespace std;
 
 class MMU2: public BasePeripheral, public Boards::MM_Control_01
 {
@@ -43,10 +42,10 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
         // Creates a new MMU2. Does all of the setup and firmware load.
         MMU2();
 
-		~MMU2(){StopAVR();}
+		~MMU2() override {StopAVR();}
 
         // Returns the name of the serial port (for the pipe thread)
-        std::string GetSerialPort();
+        const std::string GetSerialPort();
 
         void Draw(float fY);
 
@@ -68,11 +67,11 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
 
         void LEDHandler(avr_irq_t *irq, uint32_t value);
 
-        atomic_bool m_bAutoFINDA = {true};
-		atomic_bool m_bFINDAManual = {false};
-        atomic_bool m_bStarted = {false};
-        atomic_bool m_bReset ={false};
-        pthread_t m_tRun;
+        std::atomic_bool m_bAutoFINDA = {true};
+		std::atomic_bool m_bFINDAManual = {false};
+        std::atomic_bool m_bStarted = {false};
+        std::atomic_bool m_bReset ={false};
+        pthread_t m_tRun = 0;
 
         std::string m_strTitle = "Missing Material Unit 2";
 

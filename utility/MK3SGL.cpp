@@ -20,37 +20,47 @@
  */
 
 #include "MK3SGL.h"
-#include <GL/freeglut_std.h>  // for glutSetWindow, GLUT_DOWN, GLUT_UP, glut...
-#include <GL/freeglut_ext.h>  // for glutSetOption
-#include <GL/glew.h>          // for glTranslatef, glPopMatrix, glPushMatrix
-#include <stdlib.h>           // for exit
-#include <cstdio>             // for size_t, fprintf, printf, stderr
-#include <vector>             // for vector
 #include "Camera.hpp"         // for Camera
 #include "GLPrint.h"          // for GLPrint
 #include "HD44780GL.h"        // for HD44780GL
 #include "MK3S_Bear.h"        // for MK3S_Bear
 #include "MK3S_Full.h"        // for MK3S_Full
 #include "MK3S_Lite.h"        // for MK3S_Lite
+#include "Macros.h"
 #include "OBJCollection.h"    // for OBJCollection, OBJCollection::ObjClass
 #include "Printer.h"          // for Printer
+#include "gsl-lite.hpp"
+//NOLINTNEXTLINE _std must come before _ext.
+#include <GL/freeglut_std.h>  // for glutSetWindow, GLUT_DOWN, GLUT_UP, glut...
+#include <GL/freeglut_ext.h>  // for glutSetOption
+#include <GL/glew.h>          // for glTranslatef, glPopMatrix, glPushMatrix
+#include <cstdlib>           // for exit
+#include <cstring>
+#include <iostream>             // for size_t, fprintf, printf, stderr
+#include <vector>             // for vector
 
 MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
 
-MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("3DVisuals"),m_bMMU(bMMU),m_pParent(pParent)
+MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scriptable("3DVisuals"),m_bMMU(bMMU),m_pParent(pParent)
 {
 	if (g_pMK3SGL)
 	{
-		fprintf(stderr,"ERROR: Cannot have multiple MK3SGL instances due to freeglut limitations.\n");
+		std::cerr << "ERROR: Cannot have multiple MK3SGL instances due to freeglut limitations." << '\n';
 		exit(1);
 	}
 	g_pMK3SGL = this;
-	if (strModel.compare("lite")==0)
+	if (strModel == "lite")
+	{
 		m_Objs = new MK3S_Lite(bMMU);
-	else if (strModel.compare("fancy")==0)
+	}
+	else if (strModel == "fancy")
+	{
 		m_Objs = new MK3S_Full(bMMU);
-	else if (strModel.compare("bear")==0)
+	}
+	else if (strModel == "bear")
+	{
 		m_Objs = new MK3S_Bear(bMMU);
+	}
 
 	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
 	RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);
@@ -59,9 +69,9 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 	glewInit();
 
 	glutSetOption(GLUT_MULTISAMPLE,4);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE) ;
+	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH) | US(GLUT_MULTISAMPLE)) ;
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
-	string strTitle = string("Fancy Graphics: ") + m_Objs->GetName();
+	std::string strTitle = std::string("Fancy Graphics: ") + m_Objs->GetName();
 	m_iWindow = glutCreateWindow(strTitle.c_str());	/* create window */
 
 	auto fcnDraw = []() { g_pMK3SGL->Draw();};
@@ -84,19 +94,19 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 	glEnable(GL_MULTISAMPLE);
 
 	ResetCamera();
-	for(size_t i=0; i<m_vObjLite.size(); i++)
-		m_vObjLite[i]->Load();
 
 	m_Objs->Load();
 
 	if (m_bMMU)
 	{
-		for(size_t i=0; i<m_vObjMMU.size(); i++)
-			m_vObjMMU[i]->Load();
+		for(auto &o : m_vObjMMU)
+		{
+			o->Load();
+		}
 		m_MMUIdl.SetSubobjectVisible(1,false); // Screw, high triangle count
 		m_MMUBase.SetSubobjectVisible(1, false);
 
-		if (strModel.compare("lite") == 0)
+		if (strModel == "lite")
 		{
 			m_MMUIdl.SetAllVisible(false);
 			m_MMUIdl.SetSubobjectVisible(3);
@@ -106,7 +116,9 @@ MK3SGL::MK3SGL(const string &strModel, bool bMMU, Printer *pParent):Scriptable("
 			m_MMUBase.SetAllVisible(false);
 			m_MMUBase.SetSubobjectVisible(17);
 			for (size_t i=32; i<43; i++)
+			{
 				m_MMUBase.SetSubobjectVisible(i); // LEDs
+			}
 		}
 	}
 
@@ -125,7 +137,7 @@ void MK3SGL::ResizeCB(int w, int h)
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, (float)w / (float)h, 0.01f, 100.0f);
+	gluPerspective(45.0, static_cast<float>(w) / static_cast<float>(h), 0.01f, 100.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -136,59 +148,65 @@ void MK3SGL::KeyCB(unsigned char c, int x, int y)
 	// as your position translation. Then, you can move the
 	// object into place using the numpad, and just read off
 	// the correct position values to use when finished.
-	if (c =='+')
-		m_flDbg = m_flDbg+0.001f;
-	else if (c == '-')
-		m_flDbg = m_flDbg-0.001f;
-	if (c =='*')
-		m_flDbg2 = m_flDbg2+0.001f;
-	else if (c == '/')
-		m_flDbg2 = m_flDbg2-0.001f;
-	if (c =='3')
-		m_flDbg3 = m_flDbg3+0.001f;
-	else if (c == '9')
-		m_flDbg3 = m_flDbg3-0.001f;
-	else if (c == '7')
-	{
-		m_iDbg ++;
-		m_MMUBase.SetSubobjectVisible(m_iDbg,false);
-	}
-	else if (c == '8')
-	{
-		m_iDbg --;
-		m_MMUBase.SetSubobjectVisible(m_iDbg,true);
-	}
-	printf("Int: %d\n",m_iDbg.load());
-	printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
+	// if (c =='+')
+	// 	m_flDbg = m_flDbg+0.001f;
+	// else if (c == '-')
+	// 	m_flDbg = m_flDbg-0.001f;
+	// if (c =='*')
+	// 	m_flDbg2 = m_flDbg2+0.001f;
+	// else if (c == '/')
+	// 	m_flDbg2 = m_flDbg2-0.001f;
+	// if (c =='3')
+	// 	m_flDbg3 = m_flDbg3+0.001f;
+	// else if (c == '9')
+	// 	m_flDbg3 = m_flDbg3-0.001f;
+	// else if (c == '7')
+	// {
+	// 	m_iDbg ++;
+	// 	m_MMUBase.SetSubobjectVisible(m_iDbg,false);
+	// }
+	// else if (c == '8')
+	// {
+	// 	m_MMUBase.SetSubobjectVisible(m_iDbg,true);
+	// 	m_iDbg --;
+	// }
+	// printf("Int: %d\n",m_iDbg.load());
+	// printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
 	if (m_pParent)
+	{
 		m_pParent->OnKeyPress(c,x,y);
+	}
 }
 
 void MK3SGL::Init(avr_t *avr)
 {
 	_Init(avr,this);
-	RegisterNotify(X_IN,MAKE_C_CALLBACK(MK3SGL,OnXChanged),this);
-	RegisterNotify(Y_IN,MAKE_C_CALLBACK(MK3SGL,OnYChanged),this);
-	RegisterNotify(Z_IN,MAKE_C_CALLBACK(MK3SGL,OnZChanged),this);
-	RegisterNotify(E_IN,MAKE_C_CALLBACK(MK3SGL,OnEChanged),this);
-	RegisterNotify(FEED_IN,MAKE_C_CALLBACK(MK3SGL,OnPChanged),this);
-	RegisterNotify(SEL_IN,MAKE_C_CALLBACK(MK3SGL,OnSelChanged),this);
-	RegisterNotify(IDL_IN,MAKE_C_CALLBACK(MK3SGL,OnIdlChanged),this);
-	RegisterNotify(SHEET_IN, MAKE_C_CALLBACK(MK3SGL, OnSheetChanged), this);
-	RegisterNotify(EFAN_IN, MAKE_C_CALLBACK(MK3SGL, OnEFanChanged), this);
-	RegisterNotify(PFAN_IN, MAKE_C_CALLBACK(MK3SGL, OnPFanChanged), this);
-	RegisterNotify(BED_IN, MAKE_C_CALLBACK(MK3SGL, OnBedChanged), this);
-	RegisterNotify(SD_IN, MAKE_C_CALLBACK(MK3SGL,OnSDChanged),this);
-	RegisterNotify(PINDA_IN, MAKE_C_CALLBACK(MK3SGL,OnPINDAChanged),this);
-	RegisterNotify(FINDA_IN, MAKE_C_CALLBACK(MK3SGL,OnFINDAChanged),this);
-	RegisterNotify(TOOL_IN,MAKE_C_CALLBACK(MK3SGL,OnToolChanged),this);
-	RegisterNotify(MMU_LEDS_IN,MAKE_C_CALLBACK(MK3SGL,OnMMULedsChanged),this);
+	auto fcnCB = MAKE_C_CALLBACK(MK3SGL,OnPosChanged);
+	RegisterNotify(X_IN,fcnCB,this);
+	RegisterNotify(Y_IN,fcnCB,this);
+	RegisterNotify(Z_IN,fcnCB,this);
+	RegisterNotify(E_IN,fcnCB,this);
+	RegisterNotify(FEED_IN,fcnCB,this);
+	RegisterNotify(SEL_IN,fcnCB,this);
+	RegisterNotify(IDL_IN,fcnCB,this);
+
+	auto fcnBoolCB = MAKE_C_CALLBACK(MK3SGL,OnBoolChanged);
+	RegisterNotify(SHEET_IN, 	fcnBoolCB, 	this);
+	RegisterNotify(EFAN_IN, 	fcnBoolCB, 	this);
+	RegisterNotify(PFAN_IN, 	fcnBoolCB, 	this);
+	RegisterNotify(BED_IN, 		fcnBoolCB,	this);
+	RegisterNotify(SD_IN, 		fcnBoolCB,	this);
+	RegisterNotify(PINDA_IN, 	fcnBoolCB,	this);
+	RegisterNotify(FINDA_IN, 	fcnBoolCB,	this);
+
+	RegisterNotify(TOOL_IN,		MAKE_C_CALLBACK(MK3SGL,OnToolChanged),this);
+	RegisterNotify(MMU_LEDS_IN,	MAKE_C_CALLBACK(MK3SGL,OnMMULedsChanged),this);
 
 	m_bDirty = true;
 }
 
 
-Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<std::string> &)
 {
 	switch (iAct)
 	{
@@ -210,71 +228,45 @@ Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const vector<str
 void MK3SGL::TwistKnob(bool bDir)
 {
 	if (bDir)
+	{
 		m_iKnobPos = (m_iKnobPos+18)%360;
+	}
 	else
+	{
 		m_iKnobPos = (m_iKnobPos + 342)%360;
+	}
 }
 
-void MK3SGL::OnXChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnBoolChanged(avr_irq_t *irq, uint32_t value)
 {
-	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-	m_fXPos =  fPos[0]/1000.f;
-	m_bDirty = true;
-}
-
-void MK3SGL::OnSelChanged(avr_irq_t *irq, uint32_t value)
-{
-	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-	m_fSelPos =  fPos[0]/1000.f;
-	m_bDirty = true;
-}
-
-void MK3SGL::OnIdlChanged(avr_irq_t *irq, uint32_t value)
-{
-	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-	m_fIdlPos =  fPos[0];
-	m_bDirty = true;
-}
-
-void MK3SGL::OnBedChanged(avr_irq_t *irq, uint32_t value)
-{
-	m_bBedOn = value>0;
-	m_bDirty = true;
-}
-
-void MK3SGL::OnSheetChanged(avr_irq_t *irq, uint32_t value)
-{
-	m_bPrintSurface = value>0;
-	m_bDirty = true;
-}
-
-void MK3SGL::OnEFanChanged(avr_irq_t *irq, uint32_t value)
-{
-	m_bFanOn = (value>0);
-	m_bDirty = true;
-}
-
-void MK3SGL::OnPFanChanged(avr_irq_t *irq, uint32_t value)
-{
-	m_bPFanOn = (value>0);
-	m_bDirty = true;
-}
-
-void MK3SGL::OnSDChanged(avr_irq_t *irq, uint32_t value)
-{
-	m_bSDCard = value==0;
-	m_bDirty = true;
-}
-
-void MK3SGL::OnPINDAChanged(avr_irq_t *irq, uint32_t value)
-{
-	m_bPINDAOn = value;
-	m_bDirty = true;
-}
-
-void MK3SGL::OnFINDAChanged(avr_irq_t *irq, uint32_t value)
-{
-	m_bFINDAOn = value;
+	bool bVal = value>0;
+	switch(irq->irq)
+	{
+		case IRQ::BED_IN:
+			m_bBedOn = bVal;
+			break;
+		case IRQ::SHEET_IN:
+			m_bPrintSurface = bVal;
+			break;
+		case IRQ::EFAN_IN:
+			m_bFanOn = bVal;
+			break;
+		case IRQ::PFAN_IN:
+			m_bPFanOn = bVal;
+			break;
+		case IRQ::SD_IN:
+			m_bSDCard = !bVal; // CS is inverted.
+			break;
+		case IRQ::PINDA_IN:
+			m_bPINDAOn = bVal;
+			break;
+		case IRQ::FINDA_IN:
+			m_bFINDAOn = bVal;
+			break;
+		default:
+		std::cout << "NOTE: MK3SGL: Unhandled Bool IRQ " << irq->name << '\n';
+			break;
+	}
 	m_bDirty = true;
 }
 
@@ -299,51 +291,60 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 	static constexpr uint8_t iLedObj[10] = {4,4,0,0,1,1,2,2,3,3};
 	//static constexpr uint8_t iMtlOff[2] = {32, 31};
 	static constexpr uint8_t iMtlOn[2] = {38,37};
-	for (int i=0; i<10; i++)
+	for (unsigned int i=0; i<10; i++)
 	{
-		if ((bChanged>>i) &1)
+		if ((bChanged>>i) &1U)
 		{
-			if ((value>>i) & 1)
-				m_MMUBase.SetSubobjectMaterial(iLedBase[i%2]+iLedObj[i],iMtlOn[i%2]);
+			if ((value>>i) & 1U)
+			{
+				m_MMUBase.SetSubobjectMaterial(gsl::at(iLedBase,i%2)+gsl::at(iLedObj,i),gsl::at(iMtlOn,i%2));
+			}
 			else
-				m_MMUBase.SetSubobjectMaterial(iLedBase[i%2]+iLedObj[i],5);//iMtlOff[i%2]);
+			{
+				m_MMUBase.SetSubobjectMaterial(gsl::at(iLedBase,i%2)+gsl::at(iLedObj,i),5);//iMtlOff[i%2]);
+			}
 		}
 	}
 
 	m_bDirty = true;
 }
 
-void MK3SGL::OnYChanged(avr_irq_t *irq, uint32_t value)
+void MK3SGL::OnPosChanged(avr_irq_t *irq, uint32_t value)
 {
-	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-	m_fYPos = fPos[0]/1000.f;
+	float fPos;
+	std::memcpy(&fPos,&value,4);
+	switch (irq->irq)
+	{
+		case IRQ::X_IN:
+			m_fXPos = fPos/1000.f;
+			break;
+		case IRQ::Y_IN:
+			m_fYPos = fPos/1000.f;
+			break;
+		case IRQ::Z_IN:
+			m_fZPos = fPos/1000.f;
+			break;
+		case IRQ::E_IN:
+			m_fEPos = fPos/1000.f;
+			m_vPrints[m_iCurTool]->NewCoord(m_fXPos,m_fYPos,m_fZPos,m_fEPos);
+			break;
+		case IRQ::FEED_IN:
+			m_fPPos = fPos/1000.f;
+			break;
+		case IRQ::IDL_IN:
+			m_fIdlPos = fPos;
+			break;
+		case IRQ::SEL_IN:
+			m_fSelPos = fPos/1000.f;
+			break;
+		default:
+			std::cout << "NOTE: MK3SGL: Unhandled IRQ " << irq->name << '\n';
+			break;
+	}
 	m_bDirty = true;
 }
 
-void MK3SGL::OnEChanged(avr_irq_t *irq, uint32_t value)
-{
-	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-	m_fEPos = fPos[0]/1000.f;
-	m_vPrints[m_iCurTool]->NewCoord(m_fXPos,m_fYPos,m_fZPos,m_fEPos);
-	m_bDirty = true;
-}
-
-void MK3SGL::OnZChanged(avr_irq_t *irq, uint32_t value)
-{
-	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-	m_fZPos =  fPos[0]/1000.f;
-	m_bDirty = true;
-}
-
-
-void MK3SGL::OnPChanged(avr_irq_t *irq, uint32_t value)
-{
-	float* fPos = (float*)(&value); // both 32 bits, just mangle it for sending over the wire.
-	m_fPPos =  fPos[0]/1000.f;
-	m_bDirty = true;
-}
-
-void MK3SGL::OnToolChanged(avr_irq_t *irq, uint32_t iIdx)
+void MK3SGL::OnToolChanged(avr_irq_t *, uint32_t iIdx)
 {
 	// Need to stop the old tool and start the new one at the right location.
 	m_iCurTool = iIdx;
@@ -364,7 +365,7 @@ void MK3SGL::Draw()
 	glutSetWindow(m_iWindow);
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 	glClearDepth(1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear( US(GL_COLOR_BUFFER_BIT) | US(GL_DEPTH_BUFFER_BIT));
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
@@ -405,13 +406,15 @@ void MK3SGL::Draw()
 
 		glScalef(1.0f / fExtent, 1.0f / fExtent, 1.0f / fExtent);
 
-		float fTransform[3];
+		float _fTransform[3] = {0,0,0};
+		gsl::span<float> fTransform {_fTransform};
 		m_Objs->GetBaseCenter(fTransform);
 		// Centerize object.
 		glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
 		if (m_bFollowNozzle)
 		{
-				float fLook[3];
+				float _fLook[3] = {0,0,0};
+				gsl::span<float> fLook {_fLook};
 				m_Objs->GetNozzleCamPos(fLook);
 				fLook[0]+=fTransform[0]=m_fXPos;
 				fLook[1]+=m_fZPos;
@@ -433,13 +436,17 @@ void MK3SGL::Draw()
 				}
 				glPushMatrix();
 					if (m_bPFanOn)
+					{
 						m_iPFanPos = (m_iPFanPos + 5)%360;
+					}
 					m_Objs->DrawPFan(m_iPFanPos);
 				glPopMatrix();
 
 				glPushMatrix();
 					if (m_bFanOn)
+					{
 						m_iFanPos = (m_iFanPos + 339)%360;
+					}
 					m_Objs->DrawEFan(m_iFanPos);
 				glPopMatrix();
 				glPushMatrix();
@@ -452,12 +459,16 @@ void MK3SGL::Draw()
 			glTranslatef(0,0,(m_fYPos));
 			m_Objs->Draw(OBJCollection::ObjClass::Y);
 			if (m_bPrintSurface)
+			{
 				m_Objs->Draw(OBJCollection::ObjClass::PrintSurface);
+			}
 			glPushMatrix();
 				glScalef(1,1,-1);
 				m_Objs->ApplyPrintTransform();
-				for (size_t i=0; i<m_vPrints.size(); i++)
-					m_vPrints[i]->Draw();
+				for (auto &c : m_vPrints)
+				{
+					c->Draw();
+				}
 			glPopMatrix();
 			if (m_bBedOn)
 			{
@@ -487,9 +498,13 @@ void MK3SGL::Draw()
 			glPopMatrix();
 		}
 		if (m_bSDCard) //if card present
+		{
 			m_Objs->Draw(OBJCollection::ObjClass::Media); // Draw removable media (SD, USB, etc)
+		}
 		if (m_Objs->SupportsMMU() && m_bMMU)
+		{
 			DrawMMU();
+		}
 		glutSwapBuffers();
 		m_bDirty = false;
 		glutSetWindow(iOldWin);
@@ -497,10 +512,10 @@ void MK3SGL::Draw()
 
 void MK3SGL::DrawRoundLED()
 {
-	float fLED[4] = {1,0,0,1};
-	float fNone[4] = {0,0,0,1};
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
+	std::vector<float> vLED = {1,0,0,1};
+	std::vector<float> vNone = {0,0,0,1};
+	glMaterialfv(GL_FRONT_AND_BACK, US(GL_AMBIENT_AND_DIFFUSE) | US(GL_SPECULAR) ,vNone.data());
+	glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,vLED.data());
 	glPushMatrix();
 		glTranslatef(0.092,0.3355,0.274);
 		glBegin(GL_TRIANGLE_FAN);
@@ -516,31 +531,32 @@ void MK3SGL::DrawRoundLED()
 			glVertex3f(-0.003,0,0);
 		glEnd();
 	glPopMatrix();
-	glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, fNone);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,vNone.data());
 }
 
 void MK3SGL::DrawLED(float r, float g, float b)
 {
-		float fLED[4] = {r,g,b,1};
-		float fNone[4] = {0,0,0,1};
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE | GL_SPECULAR,fNone);
-				glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,fLED);
+		std::vector<float> vLED = {r,g,b,1};
+		std::vector<float> vNone = {0,0,0,1};
+		glMaterialfv(GL_FRONT_AND_BACK, US(GL_AMBIENT_AND_DIFFUSE) | US(GL_SPECULAR),vNone.data());
+				glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,vLED.data());
 				glBegin(GL_QUADS);
 					glVertex3f(0,0,0);
 					glVertex3f(0.004,0,0);
 					glVertex3f(0.004,0.003,0.003);
 					glVertex3f(0,0.003,0.003);
 				glEnd();
-				glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, fNone);
+				glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION, vNone.data());
 }
 
 void MK3SGL::DrawMMU()
 {
-		float fTransform[3];
+		float _fTransform[3] {0,0,0};
+		gsl::span<float> fTransform = {_fTransform};
 		glPushMatrix();
 			m_MMUBase.GetCenteringTransform(fTransform);
 			glTranslatef(0,0.3185,0.0425);
-			glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
+			glTranslatef(-fTransform[0], -fTransform[1], -fTransform[2]);
 			glRotatef(-45,1,0,0);
 			glTranslatef(0.13+fTransform[0],fTransform[1],fTransform[2]);
 			m_MMUBase.Draw();
@@ -617,32 +633,48 @@ void MK3SGL::DrawMMU()
 	}
 
 
-void MK3SGL::MouseCB(int button, int action, int x, int y)
+void MK3SGL::MouseCB(int button, int action, int, int)
 {
  	if (button == GLUT_LEFT_BUTTON) {
 		if (action == GLUT_DOWN)
+		{
 			m_camera.beginRotate();
+		}
 		else if (action == GLUT_UP)
+		{
 			m_camera.endRotate();
+		}
 	}
 	if (button == GLUT_RIGHT_BUTTON) {
 		if (action == GLUT_DOWN)
+		{
 			m_camera.beginPan();
+		}
 		else if (action == GLUT_UP)
+		{
 			m_camera.endPan();
+		}
 
 	}
 	if (button == GLUT_MIDDLE_BUTTON) {
 		if (action == GLUT_DOWN)
+		{
 			m_camera.beginZoom();
+		}
 		else if (action == GLUT_UP)
+		{
 			m_camera.endZoom();
+		}
 
 	}
 	if (button==3)
+	{
 		m_camera.zoom(0.5f);
+	}
 	if (button==4)
+	{
 		m_camera.zoom(-0.5f);
+	}
 
 	m_bDirty = true;
 }

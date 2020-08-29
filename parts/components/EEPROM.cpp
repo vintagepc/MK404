@@ -20,85 +20,125 @@
  */
 
 #include "EEPROM.h"
-#include <avr_eeprom.h>  // for avr_eeprom_desc_t, AVR_IOCTL_EEPROM_GET, AVR...
-#include <fcntl.h>       // for open, O_CREAT, O_RDWR, SEEK_SET
-#include <stdlib.h>      // for malloc, exit, free, size_t
-#include <sys/types.h>   // for ssize_t
-#include "assert.h"      // for assert
+#include "avr_eeprom.h"  // for avr_eeprom_desc_t, AVR_IOCTL_EEPROM_GET, AVR...
+#include "gsl-lite.hpp"
 #include "sim_avr.h"     // for avr_t
 #include "sim_io.h"      // for avr_ioctl
-#include "stdio.h"       // for perror, printf, fprintf, stderr
-#include "unistd.h"      // for close, ftruncate, lseek, read, write
+#include <cstdlib>      // for malloc, exit, free, size_t
+#include <fstream>       // IWYU pragma: keep
+#include <iostream>       // for perror, printf, fprintf, stderr
 
+using std::ifstream;
+using std::ofstream;
 
-void EEPROM::Load(struct avr_t *avr, const string &strFile)
+void EEPROM::Load(struct avr_t *avr, const std::string &strFile)
 {
-	m_pAVR = avr;
-	m_uiSize = m_pAVR->e2end + 1;
 	m_strFile = strFile;
+	m_pAVR = avr;
+	Load();
+}
 
-	m_fdEEPROM = open(m_strFile.c_str(), O_RDWR | O_CREAT, 0644);
-	if (m_fdEEPROM < 0) {
-		perror(m_strFile.c_str());
-		exit(1);
-	}
-	printf("Loading %u bytes of EEPROM\n", m_uiSize);
-	avr_eeprom_desc_t io {.ee= (uint8_t*)malloc(m_uiSize), .offset = 0, .size = m_uiSize};
+void EEPROM::Load()
+{
+	m_uiSize = m_pAVR->e2end + 1;
 
-	if (ftruncate(m_fdEEPROM, m_uiSize) < 0) {
-		perror(m_strFile.c_str());
-		exit(1);
+    ifstream fsIn(m_strFile, fsIn.binary | fsIn.ate);
+	if (!fsIn.is_open() || fsIn.tellg() < m_pAVR->e2end) {
+		std::cerr << "ERROR: Could not open flash file. Flash contents were NOT restored" << '\n';
 	}
-	ssize_t r = read(m_fdEEPROM, io.ee, m_uiSize);
-	printf("Read %d bytes\n",(int)r);
-	if (r !=  io.size) {
-		fprintf(stderr, "unable to load EEPROM\n");
-		perror(m_strFile.c_str());
-		exit(1);
-	}
-	uint8_t bEmpty = 1;
-	for (size_t i=0; i<io.size; i++)
+	else
 	{
-		bEmpty &= io.ee[i]==0;
+		std::cout << "Loading " << m_uiSize  <<" bytes of EEPROM\n";
+		std::vector<uint8_t> vEE;
+		vEE.resize(m_uiSize,0);
+		avr_eeprom_desc_t io {.ee= vEE.data(), .offset = 0, .size = m_uiSize};
+		fsIn.seekg(fsIn.beg);
+		fsIn.read(reinterpret_cast<char*>(vEE.data()), m_uiSize); //NOLINT maybe if fstream supported unsigned chars...
+		std::cout << "Read " << fsIn.tellg() << " bytes\n";
+		if (fsIn.fail() || fsIn.gcount() != m_uiSize) {
+			std::cerr << "Unable to load EEPROM\n";
+			exit(1);
+		}
+		bool bEmpty = true;
+		for (auto &b : vEE)
+		{
+			bEmpty &= b==0;
+		}
+		if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
+		{
+			avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io); //NOLINT- complaint is external macro
+		}
 	}
-	if (!bEmpty) // If the file was newly created (all null) this leaves the internal eeprom as full of 0xFFs.
-		avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io);
+	fsIn.close();
+}
 
-    free(io.ee);
+void EEPROM::Clear()
+{
+	std::vector<uint8_t> vE;
+	vE.resize(m_uiSize,0xFF);
+	avr_eeprom_desc_t io {.ee= vE.data(), .offset = 0, .size = m_uiSize};
+	avr_ioctl(m_pAVR, AVR_IOCTL_EEPROM_SET,&io); //NOLINT- complaint is external macro
 }
 
 void EEPROM::Save()
 {
 	// Write out the EEPROM contents:
-	lseek(m_fdEEPROM, SEEK_SET, 0);
-
-	avr_eeprom_desc_t io {.ee= (uint8_t*)malloc(m_uiSize), .offset = 0, .size = m_uiSize};
-	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); // Should net a pointer to eeprom[0]
-
-	ssize_t r = write(m_fdEEPROM, io.ee, m_uiSize);
-	printf("Wrote %zd bytes of EEPROM to %s\n",r, m_strFile.c_str());
-	if (r != m_uiSize) {
-		fprintf(stderr, "unable to write EEPROM memory\n");
-		perror(m_strFile.c_str());
+	ofstream fsOut(m_strFile, fsOut.binary | fsOut.out | fsOut.trunc);
+	if (!fsOut.is_open())
+	{
+		std::cerr << "Failed to open EEPROM output file\n";
+		return;
 	}
-	close(m_fdEEPROM);
-	free(io.ee);
+	std::vector<uint8_t> vEE;
+	vEE.resize(m_uiSize,0);
+	avr_eeprom_desc_t io {.ee= vEE.data(), .offset = 0, .size = m_uiSize};
+	//NOLINTNEXTLINE - complaint is external macro
+	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); // Should net a pointer to eeprom[0]
+	fsOut.write(reinterpret_cast<char*>(vEE.data()),m_uiSize); //NOLINT maybe if fstream supported unsigned chars...
+	std::cout << "Wrote "<< fsOut.tellp() <<" bytes of EEPROM to " << m_strFile <<'\n';
+	if (fsOut.tellp() != m_uiSize) {
+		std::cerr << "Unable to write EEPROM memory\n";
+	}
+	fsOut.close();
 }
 
-Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<string> &vArgs)
+Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs)
 {
 	switch (uiAct)
 	{
 		case ActPoke:
+		{
 			unsigned int uiAddr = stoi(vArgs.at(0));
 			uint8_t uiVal = stoi(vArgs.at(1));
 			if (uiAddr>=m_uiSize)
-				return IssueLineError(string("Address ") + to_string(uiAddr) + " is out of range [0," + to_string(m_uiSize-1) + "]");
+			{
+				return IssueLineError(std::string("Address ") + std::to_string(uiAddr) + " is out of range [0," + std::to_string(m_uiSize-1) + "]");
+			}
 			else
 			{
 				Poke(uiAddr, uiVal);
 				return LineStatus::Finished;
 			}
+		}
+		break;
+		case ActClear:
+		{
+			Clear();
+			return LineStatus::Finished;
+		}
+		break;
+		case ActSave:
+		{
+			Save();
+			return LineStatus::Finished;
+		}
+		break;
+		case ActLoad:
+		{
+			Load();
+			return LineStatus::Finished;
+		}
+		break;
 	}
 	return LineStatus::Unhandled;
 }
@@ -107,15 +147,15 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const vector<st
 void EEPROM::Poke(uint16_t address, uint8_t value)
 {
 	avr_eeprom_desc_t io {.ee = &value, .offset = address, .size = 1};
-	assert(address<m_uiSize);
-	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_SET,&io);
+	Expects(address<m_uiSize);
+	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_SET,&io); //NOLINT - complaint is external macro
 }
 
 uint8_t EEPROM::Peek(uint16_t address)
 {
 	uint8_t uiRet = 0;
 	avr_eeprom_desc_t io {.ee = &uiRet, .offset = address, .size = 1};
-	assert(address<m_uiSize);
-	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io);
+	Expects(address<m_uiSize);
+	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); //NOLINT - complaint is external macro
 	return uiRet;
 }

@@ -20,17 +20,18 @@
 
 #pragma once
 
-#include <stdint.h>         // for uint32_t, uint8_t
-#include <atomic>           // for atomic_int
-#include <memory>           // for unique_ptr
-#include <string>           // for string
-#include <utility>          // for pair
 #include "EinsyRambo.h"     // for EinsyRambo
+#include "IRSensor.h"
+#include "MK3SGL.h"
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "sim_avr.h"        // for avr_t
 #include "sim_avr_types.h"  // for avr_io_addr_t
-#include "IRSensor.h"
-#include "MK3SGL.h"
+#include <atomic>           // for atomic_int
+#include <cstdint>
+#include <memory>           // for unique_ptr
+#include <string>           // for string
+#include <utility>          // for pair
+#include <vector>
 
 class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 {
@@ -38,13 +39,13 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 	public:
 		Prusa_MK3S():EinsyRambo(),Printer(){};
 
-		~Prusa_MK3S(){};
+		~Prusa_MK3S() override = default;
 
 		void Draw() override;
-		virtual void OnKeyPress(unsigned char key, int x, int y) override;
+		void OnKeyPress(unsigned char key, int x, int y) override;
 		void OnMousePress(int button, int action, int x, int y) override;
 		void OnMouseMove(int x,int y) override;
-		void OnVisualTypeSet(string type) override;
+		void OnVisualTypeSet(const std::string &type) override;
 
 		std::pair<int,int> GetWindowSize() override;
 
@@ -62,7 +63,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 
 		virtual bool GetHasMMU() {return false;}
 
-		std::unique_ptr<MK3SGL> m_pVis;
+		std::unique_ptr<MK3SGL> m_pVis {nullptr};
 
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);
@@ -70,7 +71,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 		std::atomic_int m_key = {0}, m_mouseBtn = {0};
 
 		unsigned int m_iScheme = 0;
-		uint32_t m_colors[8] = {
+		std::vector<uint32_t> m_colors = {
 		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
 		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055};
 

@@ -23,33 +23,49 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "SDCard.h"
-#include <assert.h>    // for assert
-#include <errno.h>     // for errno
+#include "Macros.h"
+#include "TelemetryHost.h"
+#include "gsl-lite.hpp"
+#include <cerrno>     // for errno
+#include <cstring>    // for memset
 #include <fcntl.h>     // for open, O_CLOEXEC, O_CREAT, O_RDWR
-#include <stdio.h>     // for printf, fprintf, NULL, size_t, stderr
-#include <string.h>    // for memset
+#include <iostream>
 #include <sys/file.h>  // for flock, LOCK_UN, LOCK_EX
 #include <sys/mman.h>  // for mmap, msync, munmap, MAP_FAILED, MAP_SHARED
 #include <sys/stat.h>  // for fstat, stat, S_IRUSR, S_IWUSR
 #include <unistd.h>    // for close, off_t, ftruncate
-#include "TelemetryHost.h"
+#include <utility>
 
-static uint8_t CRC7(const uint8_t data[], size_t count)
+SDCard:: SDCard(std::string strFile):Scriptable("SDCard"),m_strFile(std::move(strFile))
+{
+	// Verify register packing/bounds/alignment.
+	Expects(sizeof(m_CmdIn.bits) == sizeof(m_CmdIn.bytes));
+
+	read_ptr = write_ptr = nullptr;
+	read_bytes_remaining = write_bytes_remaining = 0;
+	// lint complains.
+
+
+	RegisterActionAndMenu("Unmount", "Unmounts the currently mounted file, if any.", Actions::ActUnmount);
+	RegisterActionAndMenu("Remount", "Remounts the last mounted file, if any.", Actions::ActMountLast);
+	RegisterAction("Mount", "Mounts the specified file on the SD card.",ActMountFile,{ArgType::String});
+};
+
+static uint8_t CRC7(gsl::span<uint8_t> data)
 {
 	const uint8_t poly = 0b10001001;
 	uint8_t crc = 0;
-	size_t i =0;
 	int j = 0;
-	for (i = 0; i < count; i++) {
-		crc ^= data[i];
+	for (auto &c: data) {
+		crc ^= c;
 		for (j = 0; j < 8; j++) {
-			crc = (crc & 0x80u) ? ((crc << 1) ^ (poly << 1)) : (crc << 1);
+			crc = (crc & 0x80u) ? gsl::narrow_cast<uint8_t>((gsl::narrow<unsigned>(crc << 1U) ^ gsl::narrow<unsigned>(poly << 1U))) : gsl::narrow_cast<uint8_t>((crc << 1U));
 		}
 	}
-	return crc | 0x01;
+	return crc | 0x01U;
 }
 
-Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -68,16 +84,16 @@ Scriptable::LineStatus SDCard::ProcessAction(unsigned int iAct, const vector<str
 
 inline void SDCard::COMMAND_RESPONSE_R1(uint8_t status)
 {
-	m_command_response.data[0] = status & 0x7f;
+	m_command_response.data[0] = status & 0x7fU;
 	m_command_response.length = 1;
 }
 
 inline void SDCard::COMMAND_RESPONSE_R3(uint8_t status, uint32_t payload)
 {
-	m_command_response.data[0] = (status & 0x7f);
-	m_command_response.data[1] = (payload >> 24);
-	m_command_response.data[2] = (payload >> 16);
-	m_command_response.data[3] = (payload >> 8);
+	m_command_response.data[0] = (status & 0x7fU);
+	m_command_response.data[1] = (payload >> 24U);
+	m_command_response.data[2] = (payload >> 16U);
+	m_command_response.data[3] = (payload >> 8U);
 	m_command_response.data[4] = payload;
 	m_command_response.length= 5;
 }
@@ -136,7 +152,7 @@ SDCard::State SDCard::ProcessCommand()
 		case Command::CMD0:
 			/* GO_IDLE_STATE. Return that we are in the idle state if we have a disk mounted; return an error otherwise. */
 			/* TODO: checksum isn't checked */
-			if (m_data == NULL) {
+			if (m_data.empty()) {
 				COMMAND_RESPONSE_R1 (0xff);
 			} else {
 				COMMAND_RESPONSE_R1 (R1_IN_IDLE_STATE);
@@ -158,9 +174,7 @@ SDCard::State SDCard::ProcessCommand()
 			COMMAND_RESPONSE_R1 (0x00);
 
 			next_state = State::DATA_READ_TOKEN;
-			read_bytes_remaining = 16;
-			read_ptr = m_csd;
-
+			m_currOp.SetData(m_csd);
 			break;
 		case Command::CMD12:
 			m_command_response.data[0] = 0x01;
@@ -181,9 +195,9 @@ SDCard::State SDCard::ProcessCommand()
 			blocklen = m_CmdIn.bits.address;
 			if (blocklen !=512)
 			{
-				fprintf(stderr,"Tried to change blocklen to %u but only 512 is supported.\n",blocklen);
+				std::cerr << "Tried to change blocklen to " << blocklen << " but only 512 is supported.\n";
 			}
-			assert (blocklen == 512);
+			Expects (blocklen == 512);
 			/* TODO: only 512B blocks are supported at the moment. */
 
 			COMMAND_RESPONSE_R1 (0x00);
@@ -202,7 +216,7 @@ SDCard::State SDCard::ProcessCommand()
 			if (!IsBlockAligned(addr)) {
 				/* Address misaligned. */
 				COMMAND_RESPONSE_R1 (R1_ADDRESS_MISALIGN);
-			} else if (addr > m_data_length) {
+			} else if (addr >= gsl::narrow<off_t>(m_data.size())) {
 				/* Address out of range. */
 				COMMAND_RESPONSE_R1 (R1_ADDRESS_OUT_OF_RANGE);
 			} else {
@@ -210,8 +224,7 @@ SDCard::State SDCard::ProcessCommand()
 				COMMAND_RESPONSE_R1 (0x00);
 
 				next_state = State::DATA_READ_TOKEN;
-				read_ptr = m_data + addr;
-				read_bytes_remaining = BLOCK_SIZE;
+				m_currOp.SetData(m_data.subspan(addr,BLOCK_SIZE));
 			}
 
 			break;
@@ -228,7 +241,7 @@ SDCard::State SDCard::ProcessCommand()
 			if (!IsBlockAligned(addr)) {
 				/* Address misaligned. */
 				COMMAND_RESPONSE_R1 (R1_ADDRESS_MISALIGN);
-			} else if (addr > m_data_length) {
+			} else if (addr >= gsl::narrow<off_t>(m_data.size())) {
 				/* Address out of range. */
 				COMMAND_RESPONSE_R1 (R1_ADDRESS_OUT_OF_RANGE);
 			} else {
@@ -236,8 +249,7 @@ SDCard::State SDCard::ProcessCommand()
 				COMMAND_RESPONSE_R1 (0x00);
 
 				next_state = State::DATA_WRITE_TOKEN;
-				write_ptr = m_data + addr;
-				write_bytes_remaining = BLOCK_SIZE;
+				m_currOp.SetData(m_data.subspan(addr,BLOCK_SIZE));
 			}
 
 			break;
@@ -257,7 +269,7 @@ SDCard::State SDCard::ProcessCommand()
 		default:
 			/* Illegal command. */
 			COMMAND_RESPONSE_R1 (R1_ILLEGAL_COMMAND);
-			fprintf (stderr, "%lu: sdcard: Unknown SD card command ‘%u’.\n", static_cast<unsigned long>(m_pAVR->cycle), m_CmdIn.bits.cmd);
+			std::cerr << m_pAVR->cycle << ": sdcard: Unknown SD card command ‘" << m_CmdIn.bits.cmd << "’.\n";
 			break;
 	}
 
@@ -265,15 +277,17 @@ SDCard::State SDCard::ProcessCommand()
 }
 
 /* Called when the nSS IRQ is fired. */
-void SDCard::OnCSELIn (struct avr_irq_t *irq, uint32_t value)
+void SDCard::OnCSELIn (struct avr_irq_t *, uint32_t value)
 {
 	m_bSelected = value==0;
 	DEBUG ("SD card selected: %u. In state: %d", m_bSelected, m_state);
 	if (!m_bSelected)
+	{
 		m_state = State::IDLE;
+	}
 }
 
-uint8_t SDCard::OnSPIIn(struct avr_irq_t *irq, uint32_t value)
+uint8_t SDCard::OnSPIIn(struct avr_irq_t *, uint32_t value)
 {
 	DEBUG ("Received byte %x (in state %u).", value, m_state);
 	uint8_t uiReply = 0xFF;
@@ -294,7 +308,7 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *irq, uint32_t value)
 		case State::COMMAND_REQUEST:
 			/* Receive a 6-byte command header. */
 			m_CmdIn.all<<=8;
-			m_CmdIn.all |= (uint8_t)value;
+			m_CmdIn.all |= gsl::narrow<uint8_t>(value);
 
 			if (++m_CmdCount > 5) {
 				/* If we've finished receiving the packet, process it and move to the response state. */
@@ -318,7 +332,7 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *irq, uint32_t value)
 			/* Output the response stored in m_command_response. */
 			if (m_CmdCount < m_command_response.length) {
 				/* Outputting response bytes. */
-				uiReply = m_command_response.data[m_CmdCount];
+				uiReply = gsl::at(m_command_response.data,m_CmdCount);
 			}  // Else sends 0xFF
 			SetSendReplyFlag();
 
@@ -338,23 +352,24 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *irq, uint32_t value)
 			break;
 		case State::DATA_READ:
 			/* Pump out data to the microcontroller. */
-			uiReply = *(read_ptr);
-			CRC_ADD(*(read_ptr));
-			read_ptr++;
+			uiReply = *(m_currOp.pos);
+			CRC_ADD(*(m_currOp.pos));
+			m_currOp.pos++;
 			SetSendReplyFlag();
-			if (--read_bytes_remaining == 0) {
+			if (m_currOp.IsFinsihed()) {
 				/* Have we finished? */
 				m_state = State::DATA_READ_CRC;
-				read_bytes_remaining = 2;
+				std::memcpy(&_m_ByteCRC,&m_CRC,2);
+				m_currOp.data = gsl::span<uint8_t>{static_cast<uint8_t*>(_m_ByteCRC),2};
+				m_currOp.pos = m_currOp.data.end();
 			}
 
 			break;
 		case State::DATA_READ_CRC:
 			/* Output the trailing CRC for a read. */
-			uiReply = m_CRC >> (8 * (--read_bytes_remaining));
+			uiReply = *(--m_currOp.pos);
 			SetSendReplyFlag();
-
-			if (read_bytes_remaining == 0) {
+			if (m_currOp.pos == m_currOp.data.begin()) {
 				/* Have we outputted both bytes of the CRC? */
 				m_state = State::IDLE;
 			}
@@ -373,13 +388,14 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *irq, uint32_t value)
 			break;
 		case State::DATA_WRITE:
 			/* Receive data from the microcontroller. */
-			*(write_ptr++) = value;
+			*m_currOp.pos = value;
+			m_currOp.pos++;
 			SetSendReplyFlag(); // Sends 0xFF
 
-			if (--write_bytes_remaining == 0) {
+			if (m_currOp.IsFinsihed()) {
 				/* Have we finished? */
 				m_state = State::DATA_WRITE_CRC;
-				write_bytes_remaining = 2;
+				m_currOp.SetData(m_byteCRC);
 			}
 
 			break;
@@ -394,65 +410,66 @@ uint8_t SDCard::OnSPIIn(struct avr_irq_t *irq, uint32_t value)
 			// 	/* Write out our CRC status. *//* TODO: no idea what this means */
 			// 	_sd_card_miso_send_byte (self, 0x05);
 			// }
+			*(m_currOp.pos) = value;
 			SetSendReplyFlag();
+			m_currOp.pos++;
 
-			if (write_bytes_remaining-- == 0) {
+			if (m_currOp.IsFinsihed()) {
 				/* Have we received both bytes of the CRC and transmitted our response? */
 				m_state = State::IDLE;
-				write_bytes_remaining = 0;
 			}
 			break;
 		default:
 			/* Shouldn't be reached. */
-			assert (0);
+			Expects(false);
 	}
 	return uiReply;
 }
 
 void SDCard::InitCSD()
 {
-	memset(&m_csd, 0, sizeof(m_csd));
+	memset(&_m_csd, 0, sizeof(_m_csd));
 
 	const uint16_t CCC = 0x5B5;
 	const uint8_t SECTOR_SIZE = 0x7F;
 	const uint8_t WP_GRP_SIZE = 0x00;
 	const uint8_t WRITE_BL_LEN = 9;
 
-	m_csd[0] = 0b01 << 6; //CSD_STRUCTURE
-	m_csd[1] = 0x0E; //(TAAC)
-	m_csd[2] = 0x00; //(NSAC)
-	m_csd[3] = 0x32; //(TRAN_SPEED)
-	m_csd[4] = CCC >> 4; //CCC MSB
-	m_csd[5] = (CCC & 0xF) << 4; //CCC LSB
-	m_csd[5] |= READ_BL_LEN & 0xF; //(READ_BL_LEN)
-	m_csd[10] = (1 << 6); //(ERASE_BLK_EN)
-	m_csd[10] |= SECTOR_SIZE >> 1; // (SECTOR_SIZE MSB)
-	m_csd[11] = (uint8_t)(SECTOR_SIZE << 7); // (SECTOR_SIZE LSB)
-	m_csd[11] |= WP_GRP_SIZE; //(WP_GRP_SIZE)
-	m_csd[12] |= 0 << 7; //(WP_GRP_ENABLE)
-	m_csd[12] = 0x02 << 2; //(R2W_FACTOR)
-	m_csd[12] |= WRITE_BL_LEN >> 2; //(WRITE_BL_LEN MSB)
-	m_csd[13] = (uint8_t)(WRITE_BL_LEN << 6); //(WRITE_BL_LEN LSB)
-	m_csd[13] |= 0 << 5; //(WRITE_BL_PARTIAL)
-	m_csd[14] = 0 << 7; //(FILE_FORMAT_GRP)
-	m_csd[14] |= 1 << 6; //COPY
-	m_csd[14] |= 0 << 5; //PERM_WRITE_PROTECT
-	m_csd[14] |= 0 << 4; //TMP_WRITE_PROTECT
-	m_csd[14] |= 0 << 2; //(FILE_FORMAT)
-	m_csd[15] = CRC7(m_csd, sizeof(m_csd) - 1);
+	_m_csd[0] = 0b01U << 6U; //CSD_STRUCTURE
+	_m_csd[1] = 0x0E; //(TAAC)
+	_m_csd[2] = 0x00; //(NSAC)
+	_m_csd[3] = 0x32; //(TRAN_SPEED)
+	_m_csd[4] = CCC >> 4U; //CCC MSB
+	_m_csd[5] = (CCC & 0xFU) << 4U; //CCC LSB
+	_m_csd[5] |= READ_BL_LEN & 0xFU; //(READ_BL_LEN) - also, heh...
+	_m_csd[10] = (1U << 6U); //(ERASE_BLK_EN)
+	_m_csd[10] |= SECTOR_SIZE >> 1U; // (SECTOR_SIZE MSB)
+	_m_csd[11] = gsl::narrow_cast<uint8_t>(SECTOR_SIZE << 7U); // (SECTOR_SIZE LSB)
+	_m_csd[11] |= WP_GRP_SIZE; //(WP_GRP_SIZE)
+	_m_csd[12] |= 0U << 7U; //(WP_GRP_ENABLE)
+	_m_csd[12] = 0x02U << 2U; //(R2W_FACTOR)
+	_m_csd[12] |= WRITE_BL_LEN >> 2U; //(WRITE_BL_LEN MSB)
+	_m_csd[13] = gsl::narrow_cast<uint8_t>(WRITE_BL_LEN << 6U); //(WRITE_BL_LEN LSB)
+	_m_csd[13] |= 0U << 5U; //(WRITE_BL_PARTIAL)
+	_m_csd[14] = 0U << 7U; //(FILE_FORMAT_GRP)
+	_m_csd[14] |= 1U << 6U; //COPY
+	_m_csd[14] |= 0U << 5U; //PERM_WRITE_PROTECT
+	_m_csd[14] |= 0U << 4U; //TMP_WRITE_PROTECT
+	_m_csd[14] |= 0U << 2U; //(FILE_FORMAT)
+	m_csd = {static_cast<uint8_t*>(_m_csd),16};
+	_m_csd[15] = CRC7(m_csd.subspan(0,m_csd.size()-1));
 }
-
 void SDCard::SetCSDCSize(off_t c_size)
 {
-	assert((c_size % (512 * 1024)) == 0);
+	Expects((c_size % (512 * 1024)) == 0);
 
 	const uint32_t C_SIZE = c_size / (512 * 1024);
-	assert ((C_SIZE >> 16) == 0); //limit of 32GB
+	Expects ((C_SIZE >> 16U) == 0); //limit of 32GB
 
 	m_csd[9] |= (C_SIZE);
-	m_csd[8] |= (C_SIZE >> 8);
-	m_csd[7] |= (C_SIZE >> 16);
-	m_csd[15] = CRC7(m_csd, sizeof(m_csd) - 1);
+	m_csd[8] |= (C_SIZE >> 8U);
+	m_csd[7] |= (C_SIZE >> 16U);
+	m_csd[15] = CRC7(m_csd.subspan(0,m_csd.size()-1));
 #ifdef SD_CARD_DEBUG
 	printf("CSD: ");
 	for (int i = 0; i < sizeof(m_csd); i++)
@@ -467,15 +484,16 @@ void SDCard::Init(struct avr_t *avr)
 {
 	_Init(avr,this);
 
-	m_ocr |= 1 << 30; //SDHC
-	m_ocr |= 1 << 31; //Card power up status bit
+	m_ocr |= 1U << 30U; //SDHC
+	m_ocr |= 1U << 31U; //Card power up status bit
 
 	InitCSD();
-	auto pTH = TelemetryHost::GetHost();
-	pTH->AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
-	pTH->AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
-	pTH->AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
-	pTH->AddTrace(this, CARD_PRESENT, {TC::InputPin, TC::Storage});
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
+	TH.AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
+	TH.AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
+	TH.AddTrace(this, CARD_PRESENT, {TC::InputPin, TC::Storage});
+	RaiseIRQ(CARD_PRESENT,1);
 }
 
 int SDCard::Mount(const std::string &filename, off_t image_size)
@@ -493,49 +511,60 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 		return err;
 	};
 
-	struct stat stat_buf;
+	struct stat stat_buf {};
 	if (!filename.empty())
+	{
 		m_strFile = filename; // New file given.
+	}
 
 	/* Open the specified disk image. */
-	fd = open (m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR);
+	fd = open (m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR); //NOLINT - no c++ stl non vararg memmap available.
 
 	if (fd == -1)
+	{
 		return errno;
+	}
 
 	/* Lock it for exclusive access. */
 	if (flock (fd, LOCK_EX) == -1)
+	{
 		return OnError(errno);
+	}
 
 	/* Check its size. If it's smaller than the requested size, expand it. Otherwise, ignore any excess size. */
 	if (fstat (fd, &stat_buf) == -1)
+	{
 		return OnError(errno,true);
+	}
 
 	if (image_size == 0)
 	{
 		image_size = stat_buf.st_size;
 		if (image_size==0)
 		{
-			printf("No SD image found. Aborting mount.\n");
+			std::cout << "No SD image found. Aborting mount.\n";
 			return OnError(-1,true);
 		}
-		printf("Autodetected SD image size as %lu Mb\n", static_cast<unsigned long>(image_size>>20)); // >>20 = div by 1024*1024
+		std::cout << "Autodetected SD image size as " << image_size/(1024*1024) << " Mb\n";
 	}
 	else if (stat_buf.st_size < image_size)
 	{
 		if (ftruncate (fd, image_size) == -1)
+		{
 			return OnError(errno, true);
+		}
 	}
 
 	/* Map it into memory. */
-	mapped = mmap (NULL, image_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	mapped = mmap (nullptr, image_size, US(PROT_READ) | US(PROT_WRITE), MAP_SHARED, fd, 0);
 
-	if (mapped == MAP_FAILED)
+	if (mapped == MAP_FAILED) //NOLINT - complaint in system library
+	{
 		return OnError(errno,true);
+	}
 
 	/* Success. */
-	m_data = (uint8_t*)mapped;
-	m_data_length = image_size;
+	m_data = {static_cast<uint8_t*>(mapped),gsl::narrow<uint64_t>(image_size)};
 	m_data_fd = fd;
 
 	/* Update the C_SIZE field (number of sectors) in the CSD register. Reference for size calculations: JESD84-A44, Section 8.3, 'C_SIZE'. */
@@ -549,24 +578,24 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 
 int SDCard::Unmount()
 {
-	if (m_data == nullptr) {
+	if (m_data.empty()) {
 		/* No disk mounted. */
+		RaiseIRQ(CARD_PRESENT,1);
 		m_bMounted = false;
 		return 0;
 	}
 
 	/* Synchronise changes. */
-	msync (m_data, m_data_length, MS_SYNC | MS_INVALIDATE);
+	msync (m_data.data(), m_data.size(), US(MS_SYNC) | US(MS_INVALIDATE));
 
 	/* Unlock the file. */
 	flock (m_data_fd, LOCK_UN);
 
 	/* munmap() and close. */
-	munmap (m_data, m_data_length);
+	munmap (m_data.data(), m_data.size());
 	close (m_data_fd);
 
-	m_data = nullptr;
-	m_data_length = 0;
+	m_data = {};
 	m_data_fd = -1;
 
 	m_bMounted = false;

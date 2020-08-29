@@ -20,9 +20,20 @@
  */
 
 #include "ADC_Buttons.h"
+#include "BasePeripheral.h"
 #include "IScriptable.h"
+#include <iostream>
 
-uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
+ADC_Buttons::ADC_Buttons(const std::string &strName):Scriptable(strName)
+{
+	m_fcnRelease = MAKE_C_TIMER_CALLBACK(ADC_Buttons,AutoRelease);
+	RegisterAction("Press","Presses the specified button in the array",0,{ArgType::Int});
+	RegisterActionAndMenu("Push Left","Press left button",ActBtnLeft);
+	RegisterActionAndMenu("Push Middle","Press middle button",ActBtnMiddle);
+	RegisterActionAndMenu("Push Right","Press right button",ActBtnRight);
+};
+
+uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t *, uint32_t)
 {
     //if (raw < 50) return Btn::right;
 	//if (raw > 80 && raw < 100) return Btn::middle;
@@ -30,16 +41,21 @@ uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t * irq, uint32_t value)
 
 	uint32_t iVOut = 5000;
     if (m_uiCurBtn == 1)
+	{
         iVOut = 170*5000/1023;
+	}
     else if (m_uiCurBtn == 2)
+	{
         iVOut = 90*5000/1023;
+	}
     else if (m_uiCurBtn ==3)
+	{
         iVOut = 25*5000/1023;
-
+	}
     return iVOut;
 }
 
-Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const vector<string> &vArgs)
+Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs)
 {
 	switch (uiAct)
 	{
@@ -52,7 +68,9 @@ Scriptable::LineStatus ADC_Buttons::ProcessAction(unsigned int uiAct, const vect
 				return LineStatus::Finished;
 			}
 			else
+			{
 				return LineStatus::Error;
+			}
 		}
 		case ActBtnLeft:
 		case ActBtnMiddle:
@@ -72,7 +90,14 @@ void ADC_Buttons::Init(struct avr_t * avr, uint8_t adc_mux_number)
 
 void ADC_Buttons::Push(uint8_t uiBtn)
 {
-	printf("Pressing button %u\n",uiBtn);
+	std::cout << "Pressing button " << uiBtn << '\n';
 	m_uiCurBtn = uiBtn;
 	RegisterTimerUsec(m_fcnRelease,2500000, this);
 }
+
+avr_cycle_count_t ADC_Buttons::AutoRelease(avr_t *, avr_cycle_count_t)
+{
+	std::cout  << GetName() << " button release\n";
+	m_uiCurBtn = 0;
+	return 0;
+};

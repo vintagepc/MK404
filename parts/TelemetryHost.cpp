@@ -20,84 +20,117 @@
  */
 
 #include "TelemetryHost.h"
-#include <algorithm>       // for find
 #include "sim_vcd_file.h"  // for avr_vcd_add_signal
+#include <algorithm>       // for find
+#include <iomanip>
+#include <iostream>
+#include <utility>
 
-
-TelemetryHost* TelemetryHost::m_pHost = new TelemetryHost();
-
-void TelemetryHost::AddTrace(avr_irq_t *pIRQ, string strName, TelCats vCats, uint8_t uiBits)
+void TelemetryHost::AddTrace(avr_irq_t *pIRQ, std::string strName, TelCats vCats, uint8_t uiBits)
 {
 	bool bShouldAdd = false;
 	// Check categories.
-	for (auto it = vCats.begin(); it!=vCats.end(); it++)
-		if (find(m_VLoglst.begin(), m_VLoglst.end(), it[0])!=m_VLoglst.end())
+	for (auto &vCat : vCats)
+	{
+		if (find(m_VLoglst.begin(), m_VLoglst.end(), vCat)!=m_VLoglst.end())
 		{
 			bShouldAdd = true;
 			break;
 		}
-
+	}
 	strName+= "_";
 	strName.append(pIRQ->name);
 	// Check explicit names
-	for (auto it = m_vsNames.begin(); it!=m_vsNames.end(); it++)
-		if (strName.rfind(it[0],0)==0)
+	for (auto &sName : m_vsNames)
+	{
+		if (strName.rfind(sName,0)==0)
 		{
 			bShouldAdd = true;
 			break;
 		}
-
+	}
 
 	if (bShouldAdd)
 	{
-		printf("Telemetry: Added trace %s\n",strName.c_str());
+		std::cout << "Telemetry: Added trace " << strName << '\n';
 		avr_vcd_add_signal(&m_trace, pIRQ, uiBits, strName.c_str());
 	}
 	if (!m_mIRQs.count(strName))
 	{
 		m_mIRQs[strName] = pIRQ;
 		m_mCatsByName[strName] = vCats;
-		for(auto it = vCats.begin(); it!=vCats.end(); it++)
-			m_mNamesByCat[*it].push_back(strName);
+		for(auto &vCat : vCats)
+		{
+			m_mNamesByCat[vCat].push_back(strName);
+		}
 	}
 	else
-		fprintf(stderr, "ERROR: Trying to add the same IRQ (%s) to a VCD trace multiple times!\n",strName.c_str());
-}
-
-void TelemetryHost::SetCategories(const vector<string> &vsCats)
-{
-	for (auto it = vsCats.begin(); it!=vsCats.end(); it++)
 	{
-		if (!m_mStr2Cat.count(it[0]))
-			m_vsNames.push_back(it[0]); // Save non-category for name check later.
-		else if (find(m_VLoglst.begin(), m_VLoglst.end(), m_mStr2Cat.at(it[0]))==m_VLoglst.end())
-			m_VLoglst.push_back(m_mStr2Cat.at(it[0]));
+		std::cerr << "ERROR: Trying to add the same IRQ "<<  strName <<" to a VCD trace multiple times!\n";
 	}
 }
 
-Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vector<string> &vArgs)
+void TelemetryHost::SetCategories(const std::vector<std::string> &vsCats)
+{
+	for (auto &sCat : vsCats)
+	{
+		if (!m_mStr2Cat.count(sCat))
+		{
+			m_vsNames.push_back(sCat); // Save non-category for name check later.
+		}
+		else if (find(m_VLoglst.begin(), m_VLoglst.end(), m_mStr2Cat.at(sCat))==m_VLoglst.end())
+		{
+			m_VLoglst.push_back(m_mStr2Cat.at(sCat));
+		}
+	}
+}
+
+Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
 		case ActWaitFor:
+		case ActWaitForGT:
+		case ActWaitForLT:
 		{
 			if (m_pCurrentIRQ == nullptr)
 			{
 				if (!m_mIRQs.count(vArgs.at(0)))
+				{
 					return IssueLineError("Asked to wait for telemetry " + vArgs.at(0) + " but it was not found");
+				}
 				else
 				{
 					m_pCurrentIRQ = m_mIRQs[vArgs.at(0)];
+					//uint32_t tmpval = stoul(vArgs.at(1));
+//					// if (tmpval!=m_uiMatchVal)
+						// printf("WF: %08x (%u) //  %08x (%u)\n",tmpval,tmpval,m_pCurrentIRQ->value, m_pCurrentIRQ->value);
 					m_uiMatchVal = stoul(vArgs.at(1));
+
 				}
 			}
-			if (m_pCurrentIRQ->value == m_uiMatchVal)
+			bool bMatch = false;
+			if (iAct==ActWaitForLT)
+			{
+				bMatch = m_pCurrentIRQ->value < m_uiMatchVal;
+			}
+			else if (iAct == ActWaitForGT)
+			{
+				bMatch = m_pCurrentIRQ->value > m_uiMatchVal;
+			}
+			else
+			{
+				bMatch = m_pCurrentIRQ->value == m_uiMatchVal;
+			}
+			if (bMatch)
 			{
 				m_pCurrentIRQ = nullptr;
 				return LineStatus::Finished;
 			}
 			else
+			{
 				return LineStatus::Waiting;
+			}
 		}
 		case ActStartTrace:
 		{
@@ -115,34 +148,56 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const vec
 
 void TelemetryHost::PrintTelemetry(bool bMarkdown)
 {
-	printf("%sAvaliable telemetry streams:\n",bMarkdown?"## ":"");
+	std::cout << (bMarkdown?"## ":"") << "Avaliable telemetry streams:\n";
 	if (bMarkdown)
 	{
-		printf("- [By name](#by-name)\n");
-		printf("- [By category](#by-category)\n");
+		std::cout << "- [By name](#by-name)\n";
+		std::cout << "- [By category](#by-category)\n";
+		std::cout << "### ";
 	}
-	printf("%sBy Name:\n", bMarkdown?"### ":"\t");
+	else
+	{
+		std::cout << '\t';
+	}
+	std::cout << "By Name:\n";
 	if (bMarkdown)
 	{
-		printf("Name | Categories\n");
-		printf("-----|-----------\n");
+		std::cout << "Name | Categories\n";
+		std::cout << "-----|-----------\n";
 	}
-	for (auto it = m_mCatsByName.begin(); it!=m_mCatsByName.end(); it++)
+	for (auto &it : m_mCatsByName)
 	{
-		string strCats(bMarkdown?"|":"");
-		for (auto it2 = it->second.begin(); it2!=it->second.end(); it2++)
-			strCats += " `" + m_mCat2Str.at(*it2) + "`";
-
+		std::string strCats(bMarkdown?"|":"");
+		for (auto &sName : it.second)
+		{
+			strCats += " `" + m_mCat2Str.at(sName) + "`";
+		}
 		if (bMarkdown)
-			printf("%s%s\n",it->first.c_str(),strCats.c_str());
+		{
+			std::cout << it.first << strCats << '\n';
+		}
 		else
-			printf("\t%-40s%s\n",it->first.c_str(),strCats.c_str());
+		{
+			std::cout << '\t' << std::setw(40) << std::left << it.first << strCats << '\n';
+		}
+
 	}
-	printf("%sBy category\n",bMarkdown?"### ":"\t");
-	for (auto it = m_mNamesByCat.begin(); it!=m_mNamesByCat.end(); it++)
+	std::cout << (bMarkdown? "### " : "\t") << "By Category\n";
+
+	for (auto &cat : m_mNamesByCat)
 	{
-		printf("%s%s\n",bMarkdown?"#### ":"\t\t",m_mCat2Str.at(it->first).c_str());
-		for (auto it2 = it->second.begin(); it2!=it->second.end(); it2++)
-			printf("%s%s\n", bMarkdown?" - ":"\t\t\t",it2->c_str());
+		std::cout << (bMarkdown?"#### ":"\t\t") << m_mCat2Str.at(cat.first) << '\n';
+		for (auto &name : cat.second)
+		{
+			if (bMarkdown)
+			{
+				std::cout << " - ";
+			}
+			else
+			{
+				std::cout << "\t\t\t";
+			}
+			std::cout << name << '\n';
+		}
 	}
 }

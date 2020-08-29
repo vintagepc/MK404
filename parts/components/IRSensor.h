@@ -22,24 +22,21 @@
 
 #pragma once
 
-#include <stdint.h>       // for uint32_t
-#include <map>            // for map
-#include <string>         // for string
-#include <type_traits>    // for __decay_and_strip<>::__type
-#include <atomic>
-#include <utility>        // for make_pair, pair
-#include <vector>         // for vector
 #include "IScriptable.h"  // for IScriptable::LineStatus
-#include "Scriptable.h"   // for Scriptable
 #include "VoltageSrc.h"   // for VoltageSrc
 #include "sim_irq.h"      // for avr_irq_t
+#include <atomic>
+#include <cstdint>       // for uint32_t
+#include <map>            // for map
+#include <string>         // for string
+#include <vector>         // for vector
 
 
-class IRSensor: public VoltageSrc, public Scriptable
+class IRSensor: public VoltageSrc
 {
 public:
 	// Enumeration for IR sensor states.
-	typedef enum IRState {
+	using IRState = enum {
 		IR_MIN = -1,
 		IR_SHORT,
 		IR_v3_FILAMENT_PRESENT,
@@ -50,7 +47,7 @@ public:
 		IR_NOT_CONNECTED,
 		IR_AUTO, // Special state that only respects the auto value.
 		IR_MAX
-	}IRState_t;
+	};
 
 	// Constructs a new IRSensor on ADC mux uiMux
     IRSensor();
@@ -60,19 +57,19 @@ public:
 	void Toggle();
 
 	// Sets the sensor output to a given state.
-	void Set(IRState_t eVal);
+	void Set(IRState eVal);
 
 	// Consumer for external (auto) sensor hook, set 0 or 1 to signify absence or presence of filament.
 	void Auto_Input(uint32_t val);
 
 	protected:
-		LineStatus ProcessAction(unsigned int iAct, const vector<string> &vArgs) override;
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 private:
 
 	enum Actions
 	{
-		ActToggle,
+		ActToggle = VoltageSrc::ActVS_END,
 		ActSet,
 		ActSetV3NoFilament,
 		ActSetV3Filament,
@@ -86,17 +83,17 @@ private:
  	uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
 	// LUT for states to voltage readouts.
-	map<IRState_t,float> m_mIRVals =
+	std::map<IRState,float> m_mIRVals =
 	{
-		make_pair(IR_SHORT,0.1f),
-		make_pair(IR_v4_FILAMENT_PRESENT,0.4f),
-		make_pair(IR_v3_FILAMENT_PRESENT,0.2f),
-		make_pair(IR_UNKNOWN, 3.0f),
-		make_pair(IR_v4_NO_FILAMENT, 4.5f),
-		make_pair(IR_v3_NO_FILAMENT, 4.7f),
-		make_pair(IR_NOT_CONNECTED, 4.9)
+		{IR_SHORT,0.1f},
+		{IR_v4_FILAMENT_PRESENT,0.4f},
+		{IR_v3_FILAMENT_PRESENT,0.2f},
+		{IR_UNKNOWN, 3.0f},
+		{IR_v4_NO_FILAMENT, 4.5f},
+		{IR_v3_NO_FILAMENT, 4.7f},
+		{IR_NOT_CONNECTED, 4.9}
 	};
 
-	atomic_bool m_bExternal {false};
-	IRState_t m_eCurrent = IR_v4_NO_FILAMENT;
+	std::atomic_bool m_bExternal {false};
+	IRState m_eCurrent = IR_v4_NO_FILAMENT;
 };

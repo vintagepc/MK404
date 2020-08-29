@@ -30,6 +30,7 @@
 # include <GL/gl.h>           // for glVertex3f, glColor3f, glBegin, glEnd
 #endif
 #include <algorithm>          // for min
+#include <cmath>
 #include <cstring>           // for memset
 
 //#define TRACE(_w) _w
@@ -153,9 +154,7 @@ void TMC2130::ProcessCommand()
 
 		if(m_cmdProc.bitsIn.address == 0x6C) // CHOPCONF
 		{
-			// updating CHOPCONF requires updating the current limits
-			cfg.fStartPos = m_fCurPos;
-			SetConfig(cfg);
+			m_uiStepIncrement = std::pow(2,m_regs.defs.CHOPCONF.mres);
 		}
     }
     else
@@ -234,16 +233,16 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 	//TRACE2(printf("TMC2130 %c: STEP changed to %02x\n",m_cAxis,value));
     if (m_bDir)
 	{
-        m_iCurStep--;
+        m_iCurStep-=m_uiStepIncrement;
 	}
     else
 	{
-        m_iCurStep++;
+        m_iCurStep+=m_uiStepIncrement;
 	}
     bool bStall = false;
     if (!cfg.bHasNoEndStops)
     {
-        if (m_iCurStep==-1)
+        if (m_iCurStep<0)
         {
             m_iCurStep = 0;
             bStall = true;
@@ -352,10 +351,10 @@ void TMC2130::Init(struct avr_t * avr)
 
 float TMC2130::StepToPos(int32_t step)
 {
-	return static_cast<float>(step)/16*static_cast<float>(1u<<m_regs.defs.CHOPCONF.mres)/static_cast<float>(cfg.uiStepsPerMM);
+	return static_cast<float>(step)/static_cast<float>(cfg.uiFullStepsPerMM);
 }
 
 int32_t TMC2130::PosToStep(float pos)
 {
-	return pos*16/static_cast<float>(1u<<m_regs.defs.CHOPCONF.mres)*static_cast<float>(cfg.uiStepsPerMM);
+	return pos*static_cast<float>(cfg.uiFullStepsPerMM); // Convert pos to steps, we always work in the full 256 microstep workspace.
 }

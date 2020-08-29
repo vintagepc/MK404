@@ -51,9 +51,10 @@ class TMC2130: public SPIPeripheral, public Scriptable
             _IRQ(POSITION_OUT,      ">tmc2130.pos_out")
         #include "IRQHelper.h"
 
-        struct TMC2130_cfg_t {
+        using TMC2130_cfg_t = struct
+		{
             bool bInverted {false};
-            uint16_t uiStepsPerMM {100};
+            uint16_t uiFullStepsPerMM {100U*16U}; // This is FULL steps per mm, at maximum (256us) resolution.
             int16_t iMaxMM {200};
             float fStartPos{ 10.0};
             bool bHasNoEndStops {false};
@@ -212,8 +213,11 @@ class TMC2130: public SPIPeripheral, public Scriptable
         tmc2130_registers_t m_regs{};
 		std::atomic_char m_cAxis;
 		bool m_bStall = false;
+		uint32_t m_uiStepIncrement = 1;
 
 		// Position helpers
 		float StepToPos(int32_t step);
 		int32_t PosToStep(float step);
+
+		inline uint32_t GetStepDivisor() { return 256U>>m_regs.defs.CHOPCONF.mres; }
 };

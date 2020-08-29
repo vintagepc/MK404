@@ -327,6 +327,7 @@ void MK3SGL::OnPosChanged(avr_irq_t *irq, uint32_t value)
 		case IRQ::E_IN:
 			m_fEPos = fPos/1000.f;
 			m_vPrints[m_iCurTool]->NewCoord(m_fXPos,m_fYPos,m_fZPos,m_fEPos);
+			break;
 		case IRQ::FEED_IN:
 			m_fPPos = fPos/1000.f;
 			break;
@@ -335,6 +336,7 @@ void MK3SGL::OnPosChanged(avr_irq_t *irq, uint32_t value)
 			break;
 		case IRQ::SEL_IN:
 			m_fSelPos = fPos/1000.f;
+			break;
 		default:
 			std::cout << "NOTE: MK3SGL: Unhandled IRQ " << irq->name << '\n';
 			break;

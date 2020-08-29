@@ -112,9 +112,9 @@ set(H_FILES
 	utility/OBJCollection.h
 	utility/SerialPipe.h
 	utility/Macros.h
-	utility/thermistortables.h
-	utility/MK3/Configuration_prusa.h
-	utility/MK3/eeprom.h
+	3rdParty/MK3/thermistortables.h
+	3rdParty/MK3/Configuration_prusa.h
+	3rdParty/MK3/eeprom.h
 	utility/Util.h
 	3rdParty/arcball/Camera.hpp
 	3rdParty/arcball/Matrix.hpp

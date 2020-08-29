@@ -41,7 +41,7 @@ namespace Wirings
 			};
 
 		protected:
-			std::map<Pin, MCUPin> GetPinMap() override {
+			std::map<Pin, MCUPin> GetPinMap() {
 				auto baseMap = miniRAMBo_1_1b::GetPinMap();
 				baseMap[SWI2C_SCL] = 21;
 				baseMap.erase(KILL_PIN);
@@ -59,4 +59,4 @@ namespace Wirings
 				return baseMap;
 			};
 	};
-};
+}; // namespace Wirings

@@ -24,11 +24,10 @@
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "sim_avr.h"        // for avr_t
 #include "sim_avr_types.h"  // for avr_io_addr_t
-#include <cstdint>         // for uint32_t, uint8_t
 #include <atomic>           // for atomic_int
-#include <memory>           // for unique_ptr
-#include <string>           // for string
+#include <cstdint>         // for uint32_t, uint8_t
 #include <utility>          // for pair
+#include <vector>
 
 class Prusa_MK25_13 : public Boards::MiniRambo, public Printer
 {
@@ -36,10 +35,10 @@ class Prusa_MK25_13 : public Boards::MiniRambo, public Printer
 	public:
 		Prusa_MK25_13():MiniRambo(),Printer(){};
 
-		~Prusa_MK25_13(){};
+		~Prusa_MK25_13() override = default;
 
 		void Draw() override;
-		virtual void OnKeyPress(unsigned char key, int x, int y) override;
+		void OnKeyPress(unsigned char key, int x, int y) override;
 		void OnMousePress(int button, int action, int x, int y) override;
 		void OnMouseMove(int x,int y) override;
 
@@ -56,7 +55,7 @@ class Prusa_MK25_13 : public Boards::MiniRambo, public Printer
 		std::atomic_int m_key = {0}, m_mouseBtn = {0};
 
 		unsigned int m_iScheme = 0;
-		uint32_t m_colors[8] = {
+		std::vector<uint32_t> m_colors = {
 		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
 		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055};
 

@@ -19,11 +19,16 @@
  */
 
 #include "Prusa_MK25_13.h"
+#include "A4982.h"
 #include "HD44780GL.h"        // for HD44780GL
+#include "RotaryEncoder.h"
+#include "sim_io.h"
 #include "uart_pty.h"         // for uart_pty
-#include <GL/glew.h>
+#include <GL/glew.h>		//NOLINT - GLEW must come first.
 #include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
 #include <iostream>            // for printf
+
+using std::cout;
 
 void Prusa_MK25_13::Draw()
 {
@@ -73,7 +78,9 @@ void Prusa_MK25_13::SetupHardware()
 	MiniRambo::SetupHardware();
 
 	if (GetConnectSerial())
+	{
 		UART0.Connect('0');
+	}
 
 	auto fcnSerial = [](avr_t *avr, avr_io_addr_t addr, uint8_t v, void * param)
 	{auto *p = static_cast<Prusa_MK25_13*>(param); p->FixSerial(avr, addr,v);};
@@ -177,12 +184,11 @@ void Prusa_MK25_13::OnAVRCycle()
 	}
 }
 
-void Prusa_MK25_13::OnMouseMove(int x,int y)
+void Prusa_MK25_13::OnMouseMove(int /*x*/,int /*y*/)
 {
-	// TODO - passthrough for vis.
 }
 
-void Prusa_MK25_13::OnKeyPress(unsigned char key, int x, int y)
+void Prusa_MK25_13::OnKeyPress(unsigned char key, int /*x*/, int /*y*/)
 {
 	switch (key) {
 		case 'q':
@@ -213,7 +219,7 @@ void Prusa_MK25_13::OnKeyPress(unsigned char key, int x, int y)
 	}
 }
 
-void Prusa_MK25_13::OnMousePress(int button, int action, int x, int y)
+void Prusa_MK25_13::OnMousePress(int button, int action, int /*x*/, int /*y*/)
 {
 	if (button == GLUT_LEFT_BUTTON || button == GLUT_RIGHT_BUTTON) {
 		if (action == GLUT_DOWN) {

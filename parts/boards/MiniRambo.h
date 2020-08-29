@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "Board.h"                               // for Board
 #include "A4982.h"
+#include "Board.h"                               // for Board
 #include "HD44780GL.h"                           // for HD44780G
 #include "RotaryEncoder.h"
 #include "Thermistor.h"
@@ -29,17 +29,16 @@
 #include "uart_pty.h"                            // for uart_pty
 #include "wiring/miniRAMBo_1_3a.h"                   // for Einsy_1_1a
 #include <cstdint>                              // for uint32_t
-#include <string>                                // for string
 
 namespace Boards
 {
 	class MiniRambo: public Board
 	{
 		public:
-			MiniRambo(uint32_t uiFreq = 16000000)
+			explicit MiniRambo(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){ SetBoardName("miniRAMBo");};
 
-			~MiniRambo(){};
+			~MiniRambo() override = default;
 
 		protected:
 			void SetupHardware() override;
@@ -62,4 +61,4 @@ namespace Boards
 
 			const Wirings::miniRAMBo_1_3a m_wiring = Wirings::miniRAMBo_1_3a();
 	};
-};
+}; // namespace Boards

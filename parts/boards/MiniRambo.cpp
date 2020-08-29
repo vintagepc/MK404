@@ -18,21 +18,12 @@
 	along with MK404  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MiniRambo.h"
+#include "3rdParty/MK3/thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 #include "HD44780.h"           // for HD44780
+#include "MiniRambo.h"
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
-#include "thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
 #include <iostream>
-
-#define TEMP_SENSOR_0 5
-#define TEMP_SENSOR_BED 1
-#define TEMP_SENSOR_AMBIENT 2000
-
-#define _TERMISTOR_TABLE(num) \
-		temptable_##num
-#define TERMISTOR_TABLE(num) \
-		_TERMISTOR_TABLE(num)
-
+#include <vector>
 
 namespace Boards
 {
@@ -44,10 +35,10 @@ namespace Boards
 
 		AddHardware(lcd);
 		// D4-D7,
-		PinNames::Pin ePins[4] = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
+		std::vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
 		for (int i = 0; i < 4; i++) {
-			TryConnect(ePins[i],lcd, HD44780::D4+i);
-			TryConnect(lcd, HD44780::D4+i,ePins[i]);
+			TryConnect(vePins.at(i),lcd, HD44780::D4+i);
+			TryConnect(lcd, HD44780::D4+i,vePins.at(i));
 		}
 		TryConnect(LCD_PINS_RS,lcd, HD44780::RS);
 		TryConnect(LCD_PINS_ENABLE, lcd,HD44780::E);
@@ -58,19 +49,16 @@ namespace Boards
 		TryConnect(encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
 
 		AddHardware(tExtruder,GetPinNumber(TEMP_0_PIN));
-		tExtruder.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_0),
-								sizeof(TERMISTOR_TABLE(TEMP_SENSOR_0)) / sizeof(short) / 2,
-								OVERSAMPLENR);
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
+		tExtruder.SetTable({(int16_t*)temptable_5, sizeof(temptable_5)/sizeof(int16_t)}, OVERSAMPLENR);
 
 		AddHardware(tBed,GetPinNumber(TEMP_BED_PIN));
-		tBed.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_BED),
-							sizeof(TERMISTOR_TABLE(TEMP_SENSOR_BED)) / sizeof(short) / 2,
-							OVERSAMPLENR);
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
+		tBed.SetTable({(int16_t*)temptable_1, sizeof(temptable_1)/sizeof(int16_t)},OVERSAMPLENR);
 
 		AddHardware(tAmbient,  GetPinNumber(TEMP_AMBIENT_PIN));
-		tAmbient.SetTable((short*)TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT),
-		 						sizeof(TERMISTOR_TABLE(TEMP_SENSOR_AMBIENT)) / sizeof(short) / 2,
-		 						OVERSAMPLENR);
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
+		tAmbient.SetTable({(int16_t*)temptable_2000, sizeof(temptable_2000)/sizeof(int16_t)}, OVERSAMPLENR);
 
 		X.GetConfig().bInverted = true;
 		AddHardware(X);
@@ -118,9 +106,9 @@ namespace Boards
 	}
 
 	// Convenience function for debug printing a particular pin.
-	void MiniRambo::DebugPin(avr_irq_t *irq, uint32_t value)
+	void MiniRambo::DebugPin(avr_irq_t */*irq*/, uint32_t value)
 	{
-		cout << "Pin DBG: change to " << std::hex << value << '\n';
+		std::cout << "Pin DBG: change to " << std::hex << value << '\n';
 	}
 
 	void MiniRambo::OnAVRInit()
@@ -133,7 +121,7 @@ namespace Boards
 
 	void MiniRambo::OnAVRReset()
 	{
-		cout << "RESET\n";
+		std::cout << "RESET\n";
 		DisableInterruptLevelPoll(8);
 
 		SetPin(BTN_ENC,1);
@@ -143,4 +131,4 @@ namespace Boards
 
 
 
-};
+}; // namespace Boards

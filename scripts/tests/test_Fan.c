@@ -85,7 +85,6 @@ int main()
 	OCR4B = 255;
 	sbi(TCCR4B, CS40);
 	sbi(TCCR4A, WGM40);
-	sbi(TCCR4A, COM4C1);
 
 	OCR4A = 128u; // set pwm duty
 	printf("PWM50\n");

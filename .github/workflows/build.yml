@@ -148,7 +148,7 @@ jobs:
         id: cyg_cache
         with:
           path: C:\temp\choco
-          key: ${{ runner.os }}-cygwin-1_0_0
+          key: ${{ runner.os }}-choco-1_0_0
         
       - name: Cygwin package cache
         uses: actions/cache@v1

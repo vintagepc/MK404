@@ -91,6 +91,7 @@ set(H_FILES
 	parts/components/SerialLineMonitor.h
 	parts/components/HC595.h
 	parts/components/Button.h
+	parts/components/MMU1.h
 	parts/components/MMU2.h
 	parts/components/PAT9125.h
 	parts/components/GCodeSniffer.h
@@ -148,6 +149,7 @@ set(MK404_SOURCES
 	parts/components/HD44780.cpp
 	parts/components/UART_Logger.cpp
 	parts/components/SDCard.cpp
+	parts/components/MMU1.cpp
 	parts/components/MMU2.cpp
 	parts/components/PINDA.cpp
 	parts/components/TMC2130.cpp

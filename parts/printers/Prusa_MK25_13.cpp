@@ -68,8 +68,8 @@ void Prusa_MK25_13::Draw()
 			hExtruder.Draw();
 			glTranslatef(20,0,0);
 			hBed.Draw();
-			// glTranslatef(20,0,0);
-			// lSD.Draw();
+			glTranslatef(20,0,0);
+			lSD.Draw();
 			glTranslatef(20,0,0);
 			lPINDA.Draw();
 			glTranslatef(20,0,0);

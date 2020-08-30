@@ -25,6 +25,7 @@
 #include "PAT9125.h"
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
 #include <iostream>
+#include <string>
 #include <vector>
 
 namespace Boards
@@ -76,6 +77,7 @@ namespace Boards
 		lIR.ConnectFrom(m_fSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 
 		X.GetConfig().bInverted = true;
+		X.GetConfig().iMaxMM = 255;
 		AddHardware(X);
 		TryConnect(X_DIR_PIN, 		X, A4982::DIR_IN);
 		TryConnect(X_STEP_PIN, 		X, A4982::STEP_IN);
@@ -86,6 +88,7 @@ namespace Boards
 		//TryConnect(X,A4982::MAX_OUT,	X_MAX_PIN);
 
 		Y.GetConfig().bInverted = true;
+		Y.GetConfig().iMaxMM = 210;
 		AddHardware(Y);
 		TryConnect(Y_DIR_PIN, 		Y, A4982::DIR_IN);
 		TryConnect(Y_STEP_PIN, 		Y, A4982::STEP_IN);
@@ -97,6 +100,7 @@ namespace Boards
 
 		Z.GetConfig().bInverted = true;
 		Z.GetConfig().uiStepsPerMM = 400;
+		Z.GetConfig().iMaxMM = 210;
 		AddHardware(Z);
 		TryConnect(Z_DIR_PIN, 		Z, A4982::DIR_IN);
 		TryConnect(Z_STEP_PIN, 		Z, A4982::STEP_IN);
@@ -115,6 +119,25 @@ namespace Boards
 		TryConnect(E0_MS2_PIN, 		E, A4982::MS2_IN);
 
 		AddUARTTrace('0'); // External
+
+		// SD card
+		std::string strSD = GetSDCardFile();
+		sd_card.SetImage(strSD);
+		AddHardware(sd_card);
+		TryConnect(PinNames::Pin::SDSS, sd_card, SDCard::SPI_CSEL);
+
+		// wire up the SD present signal.
+		TryConnect(sd_card, SDCard::CARD_PRESENT, SDCARDDETECT);
+
+		// Add indicator first so it captures the mount IRQ
+		AddHardware(lSD);
+		TryConnect(SDCARDDETECT, lSD, LED::LED_IN);
+
+		int mount_error = sd_card.Mount();
+
+		if (mount_error != 0) {
+			std::cerr << "SD card image (" << strSD << ") could not be mounted (error " << mount_error << " ).\n";
+		}
 
 		m_fSensor.ConnectFrom(E.GetIRQ(A4982::POSITION_OUT), PAT9125::E_IN);
 		m_fSensor.Set(PAT9125::FS_NO_FILAMENT); // No filament - but this just updates the LED.

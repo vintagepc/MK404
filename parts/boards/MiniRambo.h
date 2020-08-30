@@ -29,6 +29,7 @@
 #include "PAT9125.h"
 #include "PINDA.h"
 #include "RotaryEncoder.h"
+#include "SDCard.h"
 #include "Thermistor.h"
 #include "sim_irq.h"                             // for avr_irq_t
 #include "uart_pty.h"                            // for uart_pty
@@ -67,7 +68,7 @@ namespace Boards
 			LED lPINDA {0xFF0000FF,'P',true},
 				lIR {0xFFCC00FF,'I',true},
 				lSD {0x0000FF00,'C', true};
-
+			SDCard sd_card{};
 
 
 		private:

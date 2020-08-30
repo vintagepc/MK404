@@ -20,7 +20,10 @@
 
 #include "Prusa_MK25_13.h"
 #include "A4982.h"
+#include "Fan.h"
 #include "HD44780GL.h"        // for HD44780GL
+#include "Heater.h"
+#include "LED.h"
 #include "RotaryEncoder.h"
 #include "sim_io.h"
 #include "uart_pty.h"         // for uart_pty
@@ -55,6 +58,22 @@ void Prusa_MK25_13::Draw()
 			Z.Draw();
 			glTranslatef(0,10,0);
 			E.Draw_Simple();
+			glTranslatef(190,0,0);
+			//m_buzzer.Draw();
+			glTranslatef(20,0,0);
+			fPrint.Draw();
+			glTranslatef(20,0,0);
+			fExtruder.Draw();
+			glTranslatef(20,0,0);
+			hExtruder.Draw();
+			glTranslatef(20,0,0);
+			hBed.Draw();
+			// glTranslatef(20,0,0);
+			// lSD.Draw();
+			glTranslatef(20,0,0);
+			lPINDA.Draw();
+			glTranslatef(20,0,0);
+			lIR.Draw();
 		glPopMatrix();
 }
 

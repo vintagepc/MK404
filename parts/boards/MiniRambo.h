@@ -22,7 +22,12 @@
 
 #include "A4982.h"
 #include "Board.h"                               // for Board
+#include "Fan.h"
 #include "HD44780GL.h"                           // for HD44780G
+#include "Heater.h"
+#include "LED.h"
+#include "PAT9125.h"
+#include "PINDA.h"
 #include "RotaryEncoder.h"
 #include "Thermistor.h"
 #include "sim_irq.h"                             // for avr_irq_t
@@ -54,6 +59,16 @@ namespace Boards
 			RotaryEncoder encoder;
 			A4982 X{'X'}, Y{'Y'}, Z{'Z'}, E{'E'};
 			Thermistor tExtruder, tBed, tAmbient;
+			Fan fExtruder {3300,'E'}, fPrint {5000,'P'};
+			Heater hExtruder {1.5,25.0,false,'H',30,250},
+					hBed {0.25, 25, true,'B',30,100};
+			PAT9125 m_fSensor;
+			PINDA pinda { (23.f), (5.f)};
+			LED lPINDA {0xFF0000FF,'P',true},
+				lIR {0xFFCC00FF,'I',true},
+				lSD {0x0000FF00,'C', true};
+
+
 
 		private:
 

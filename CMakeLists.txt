@@ -93,6 +93,7 @@ set(H_FILES
 	parts/components/MMU2.h
 	parts/components/PAT9125.h
 	parts/components/GCodeSniffer.h
+	parts/components/GLHelper.h
 	parts/components/TMC2130.h
 	parts/components/IRSensor.h
 	parts/components/Heater.h
@@ -321,6 +322,7 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	add_test(${TEST_BASE} MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer)
 endforeach()
 #	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
+add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps)
 
 
 add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}

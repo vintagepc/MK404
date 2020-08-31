@@ -27,7 +27,7 @@
 #include "Fan.h"                                 // for Fan
 #include "GCodeSniffer.h"
 #include "HC595.h"
-#include "HD44780.h"                           // for HD44780GL
+#include "HD44780GL.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
 // #include "LED.h"                                 // for LED
 #include "IRSensor.h"                          // for IRSensor
@@ -91,7 +91,7 @@ namespace Boards
 
 			PINDA m_pinda{0.f,0.f};
 
-			HD44780 m_lcd{20,4};
+			HD44780GL m_lcd;
 
 			SDCard m_card {};
 

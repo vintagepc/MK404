@@ -51,6 +51,7 @@
 #include <utility>                    // for pair
 #include <vector>                     // for vector
 
+
 int window = 0;
 
 std::atomic_int iWinH{0}, iWinW{0};
@@ -61,6 +62,8 @@ Boards::Board *pBoard = nullptr;
 bool m_bStopping = false;
 
 bool m_bTestMode = false;
+
+
 
 // Exit cleanly on ^C
 void OnSigINT(int) {
@@ -327,9 +330,9 @@ int main(int argc, char *argv[])
 	}
 	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue()=="none");
 
-	m_bTestMode =  (argModel.getValue()=="Test_Printer") | argTest.isSet();
+	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
-	bNoGraphics |= m_bTestMode;
+	//bNoGraphics |= (m_bTestMode && bRunGLTests);
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 

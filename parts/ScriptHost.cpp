@@ -433,7 +433,9 @@ void ScriptHost::OnAVRCycle()
 				if (m_bQuitOnTimeout)
 				{
 					std::cout << "ScriptHost: Script TIMED OUT on " << m_script.at(m_iLine) << ". Quitting...\n";
-					int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
+					int ID = m_clients.at("Board")->m_ActionIDs.at("Resume");
+					m_clients.at("Board")->ProcessAction(ID,{});
+					ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
 					m_clients.at("Board")->ProcessAction(ID,{});
 					m_iLine = m_script.size();
 					return;

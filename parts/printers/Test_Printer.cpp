@@ -19,10 +19,15 @@
  */
 
 #include "Test_Printer.h"
-
+#include "HD44780GL.h"
+#include <GL/glew.h>
+#include <GL/freeglut_std.h>
+#include <utility>
 
 void Test_Printer::SetupHardware()
 {
+	auto prSize = GetWindowSize();
+	m_gl.SetWindowHeight(prSize.first*4, prSize.second*4);
 	Test_Board::SetupHardware();
 }
 
@@ -33,4 +38,20 @@ void Test_Printer::OnAVRCycle()
 	// {
 	// 	m_key = 0;
 	// }
+}
+
+
+void Test_Printer::Draw()
+{
+		glPushMatrix();
+		glLoadIdentity(); // Start with an identity matrix
+			glScalef(4, 4, 1);
+
+			m_lcd.Draw(0x00FF00FF, /* background */
+						0x0000FFFF, /* character background */
+						0xFFFFFFFF, /* text */
+						0x00000055 /* shadow */ );
+		glPopMatrix();
+		glutSwapBuffers();
+		m_gl.OnDraw();
 }

@@ -21,6 +21,7 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - uses: openrndr/setup-opengl@v1
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
       uses: actions/checkout@v2.2.0
@@ -65,7 +66,6 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Run tests
-    - uses: openrndr/setup-opengl@v1
       run: |
         cd ${{ runner.workspace }}/MK404/build && env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
         tar -xcvf snaps.tar.gz ${{ runner.workspace }}/MK404/tests/snaps/

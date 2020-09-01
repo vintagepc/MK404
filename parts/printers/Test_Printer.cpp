@@ -19,15 +19,14 @@
  */
 
 #include "Test_Printer.h"
+#include "Fan.h"              // for Fan
 #include "HD44780GL.h"
-#include <GL/glew.h>
-#include <GL/freeglut_std.h>
-#include <utility>
+#include "Heater.h"           // for Heater
+#include "TMC2130.h"          // for TMC2130
+#include <GL/glew.h> //NOLINT - must come first.
 
 void Test_Printer::SetupHardware()
 {
-	auto prSize = GetWindowSize();
-	m_gl.SetWindowHeight(prSize.first*4, prSize.second*4);
 	Test_Board::SetupHardware();
 }
 
@@ -52,6 +51,19 @@ void Test_Printer::Draw()
 						0xFFFFFFFF, /* text */
 						0x00000055 /* shadow */ );
 		glPopMatrix();
-		glutSwapBuffers();
+		glLoadIdentity();
+		float fX = (5 + m_lcd.GetWidth()* 6)*4;
+		float fY = (5 + m_lcd.GetHeight() * 9);
+		glScalef(fX/350,4,1);
+		glPushMatrix();
+			glTranslatef(0, fY,0);
+			m_TMC.Draw();
+			glTranslatef(0,10,0);
+			m_TMC.Draw_Simple();
+			glTranslatef(0,10,0);
+			m_Fan.Draw();
+			glTranslatef(20,0,0);
+			m_heat.Draw();
+		glPopMatrix();
 		m_gl.OnDraw();
 }

@@ -20,10 +20,12 @@
 
 #pragma once
 
+#include "3rdParty/pngpp/png.hpp"
 #include "IScriptable.h"
 #include "Scriptable.h"
 #include "Util.h"
-#include <GL/glew.h>
+#include <GL/glew.h> //NOLINT
+#include <GL/freeglut_std.h>
 #include <atomic>
 #include <fstream>
 #include <iostream>
@@ -37,22 +39,22 @@ class GLHelper: public Scriptable
 		GLHelper():Scriptable("GLHelper")
 		{
 			RegisterAction("CheckPixel","Checks the pixel color at the given position matches specified (x,y,RGBA).",ActCheckPixel, {ArgType::uint32,ArgType::uint32, ArgType::uint32});
-			RegisterAction("Snapshot", "Takes a PPM snapshot of the current GL rendering", ActTakeSnapshot, {ArgType::String});
-		}
-
-		// Tell the helper the window height so coordinates can be from the top left.
-		inline void SetWindowHeight(unsigned w, unsigned h)
-		{
-			m_w = w;
-			m_h = h;
-			m_vBuffer.resize(w*h*3,0);
+			RegisterAction("Snapshot", "Takes a snap of the current GL rendering", ActTakeSnapshot, {ArgType::String});
+			RegisterAction("SnapRect", "Takes a snap a region (file,x,y,w,h)", ActTakeSnapshotArea, {ArgType::String,ArgType::Int,ArgType::Int,ArgType::Int,ArgType::Int});
 		}
 
 		// Function for running the GL stuff inside the GL context.
 		void OnDraw()
 		{
-			if (m_iState.load() == St_Queued)
+			auto width = glutGet(GLUT_WINDOW_WIDTH);
+			auto height = glutGet(GLUT_WINDOW_HEIGHT);
+			if (m_iState == St_Queued)
 			{
+				m_iState = St_Busy;
+				if (m_vBuffer.size()!=(3u*width*height))
+				{
+					m_vBuffer.resize(3u*width*height,0);
+				}
 				switch (m_iAct.load())
 				{
 					case ActCheckPixel:
@@ -65,7 +67,13 @@ class GLHelper: public Scriptable
 					break;
 					case ActTakeSnapshot:
 					{
-						WritePPM();
+						m_w = width;
+						m_h = height;
+					}
+					/* FALLTHRU */
+					case ActTakeSnapshotArea:
+					{
+						WritePNG(width, height, m_iAct==ActTakeSnapshotArea);
 						m_iState = St_Done;
 					}
 					break;
@@ -79,24 +87,62 @@ class GLHelper: public Scriptable
 		}
 	protected:
 
-		bool WritePPM()
+		bool WritePNG(int width, int height, bool bRegion)
 		{
-			glReadPixels(0,0,m_w, m_h, GL_RGB, GL_UNSIGNED_BYTE, m_vBuffer.data());
-			std::ofstream fsOut;
-			fsOut.open(m_strFile);
-			if (!fsOut.is_open())
+			auto w = m_w.load(), h = m_h.load();
+			auto iPixCt = w*h;
+			if (bRegion)
 			{
-				return false;
+				glReadPixels(m_x,(height-m_y)-h,w, h, GL_RGB, GL_UNSIGNED_BYTE, m_vBuffer.data());
 			}
-			fsOut << "P3\n" << std::dec << m_w << " " << m_h << "\n255\n";
-			for (auto &v : m_vBuffer)
+			else
 			{
-				fsOut << std::to_string(v) << ' ';
+				glReadPixels(0,0,width, height, GL_RGB, GL_UNSIGNED_BYTE, m_vBuffer.data());
+
 			}
-			fsOut << '\n';
-			fsOut.close();
+			// std::ofstream fsOut;
+			// fsOut.open(m_strFile + ".ppm");
+			// if (!fsOut.is_open())
+			// {
+			// 	return false;
+			// }
+			// fsOut << "P3\n" << std::dec << m_w << " " << m_h << "\n255\n";
+			// for (auto i = 0u; i<iPixCt; i++)
+			// {
+			// 	fsOut << std::to_string(m_vBuffer.at(i)) << ' ';
+			// }
+			// fsOut << '\n';
+			// fsOut.close();
+			png::image<png::rgb_pixel,png::solid_pixel_buffer<png::rgb_pixel>> img(w, h);
+			size_t i = 0,y=0;
+			while(i<iPixCt)
+			{
+				img[m_bVFlip?(h-y-1):y][i%w] = png::rgb_pixel(m_vBuffer.at(3*i),m_vBuffer.at((3*i)+1),m_vBuffer.at((3*i)+2));
+				i++;
+				if(i%w==0)	y++;
+			}
+			img.write(m_strFile.c_str());
 			return true;
 		}
+
+		// bool WritePPM()
+		// {
+		// 	glReadPixels(0,0,m_w, m_h, GL_RGB, GL_UNSIGNED_BYTE, m_vBuffer.data());
+		// 	std::ofstream fsOut;
+		// 	fsOut.open(m_strFile);
+		// 	if (!fsOut.is_open())
+		// 	{
+		// 		return false;
+		// 	}
+		// 	fsOut << "P3\n" << std::dec << m_w << " " << m_h << "\n255\n";
+		// 	for (auto &v : m_vBuffer)
+		// 	{
+		// 		fsOut << std::to_string(v) << ' ';
+		// 	}
+		// 	fsOut << '\n';
+		// 	fsOut.close();
+		// 	return true;
+		// }
 
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override
 		{
@@ -132,10 +178,19 @@ class GLHelper: public Scriptable
 				}
 				break;
 				case ActTakeSnapshot:
+				case ActTakeSnapshotArea:
 				{
+					bool bIsArea = iAct == ActTakeSnapshotArea;
 					if (m_iState == St_Idle)
 					{
-						m_strFile = vArgs.at(0) + ".ppm";
+						m_strFile = vArgs.at(0) + ".png";
+						if (bIsArea)
+						{
+							m_x = std::stoi(vArgs.at(1));
+							m_y = std::stoi(vArgs.at(2));
+							m_w = std::stoi(vArgs.at(3));
+							m_h = std::stoi(vArgs.at(4));
+						}
 						m_iAct = iAct;
 						m_iState = St_Queued;
 					}
@@ -156,18 +211,20 @@ class GLHelper: public Scriptable
 		enum Actions
 		{
 			ActCheckPixel,
-			ActTakeSnapshot
+			ActTakeSnapshot,
+			ActTakeSnapshotArea
 		};
 		enum ActState
 		{
 			St_Idle,
 			St_Queued,
+			St_Busy,
 			St_Done
 		};
 		std::string m_strFile;
 		std::atomic_int m_iAct {-1};
-		std::atomic_uint32_t m_x{0}, m_y{0}, m_color{0};
+		std::atomic_uint32_t m_x{0}, m_y{0}, m_h{0}, m_w{0}, m_color{0};
 		std::atomic_int m_iState {St_Idle};
 		std::vector<uint8_t> m_vBuffer{};
-		unsigned int m_h = 0, m_w = 0;
+		bool m_bVFlip = true;
 };

@@ -10,3 +10,6 @@
 [submodule "3rdParty/gitversion"]
 	path = 3rdParty/gitversion
 	url = https://github.com/vintagepc/gitversion.git
+[submodule "3rdParty/pngpp"]
+	path = 3rdParty/pngpp
+	url = https://github.com/sampotter/pngpp.git

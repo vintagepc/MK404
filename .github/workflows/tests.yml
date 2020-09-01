@@ -65,13 +65,18 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Run tests
-      run: cd ${{ runner.workspace }}/MK404/build && env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
+    - uses: openrndr/setup-opengl@v1
+      run: |
+        cd ${{ runner.workspace }}/MK404/build && env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
+        tar -xcvf snaps.tar.gz ${{ runner.workspace }}/MK404/tests/snaps/
 
     - name: Upload report
       uses: actions/upload-artifact@v2
       with:
         name: Report
-        path: ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
+        path: |
+          ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
+          ${{ runner.workspace }}/MK404/build/snaps.tar.gz
 
     - name: Comment on PR
       if: ${{ github.event.pull_request }}

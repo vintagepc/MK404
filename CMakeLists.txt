@@ -275,7 +275,7 @@ else()
 target_link_libraries(MK404 GLEW::GLEW)
 endif()
 
-target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
+target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU ${SDL_LIBRARY} png tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 endif()
 
 target_link_libraries(MK404 gsl-lite)
@@ -322,7 +322,7 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	add_test(${TEST_BASE} MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer)
 endforeach()
 #	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
-add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps)
+add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)
 
 
 add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}

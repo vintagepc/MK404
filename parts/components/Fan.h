@@ -87,7 +87,7 @@ public:
 		uint16_t m_uiMaxRPM = 2000;
 		uint16_t m_uiCurrentRPM = 0;
 		uint16_t m_uiUsecPulse = 0;
-		uint16_t m_uiRot = 0;
+		std::atomic_uint16_t m_uiRot {0};
 
 		char m_chrSym = ' ';
 

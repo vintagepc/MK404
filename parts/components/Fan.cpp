@@ -44,13 +44,13 @@ avr_cycle_count_t Fan::OnTachChange(avr_t *, avr_cycle_count_t)
 {
     RaiseIRQ(TACH_OUT, m_bPulseState^=1);
     RegisterTimerUsec(m_fcnTachChange,m_uiUsecPulse,this);
+	m_uiRot = (m_uiRot + ((m_uiPWM)/10))%360;
+
     return 0;
 }
 
 void Fan::Draw()
 {
-	bool bOn = m_uiPWM>0;
-
     glPushMatrix();
 	    glColor3ub(0,m_uiPWM>>1U,0);
         glBegin(GL_QUADS);
@@ -62,10 +62,6 @@ void Fan::Draw()
         glColor3f(1,1,1);
         glTranslatef(9,5,-1);
         glScalef(0.10,-0.05,1);
-		if (bOn)
-		{
-			m_uiRot = (m_uiRot + (2*(m_uiPWM)/10))%360;
-		}
 		glRotatef(m_uiRot,0,0,-1);
 		glTranslatef(-50,-50,0);
 		glPushAttrib(GL_LINE_BIT);

@@ -46,14 +46,14 @@ class GLHelper: public Scriptable
 		// Function for running the GL stuff inside the GL context.
 		void OnDraw()
 		{
-			auto width = glutGet(GLUT_WINDOW_WIDTH);
-			auto height = glutGet(GLUT_WINDOW_HEIGHT);
+			auto width = 500;//glutGet(GLUT_WINDOW_WIDTH);
+			auto height = 324;//glutGet(GLUT_WINDOW_HEIGHT);
 			if (m_iState == St_Queued)
 			{
 				m_iState = St_Busy;
-				if (m_vBuffer.size()!=(3u*width*height))
+				if (m_vBuffer.size()!=(4u*width*height))
 				{
-					m_vBuffer.resize(3u*width*height,0);
+					m_vBuffer.resize(4u*width*height,0);
 				}
 				switch (m_iAct.load())
 				{
@@ -93,11 +93,11 @@ class GLHelper: public Scriptable
 			auto iPixCt = w*h;
 			if (bRegion)
 			{
-				glReadPixels(m_x,(height-m_y)-h,w, h, GL_RGB, GL_UNSIGNED_BYTE, m_vBuffer.data());
+				glReadPixels(m_x,(height-m_y)-h,w, h, GL_BGRA, GL_UNSIGNED_BYTE, m_vBuffer.data());
 			}
 			else
 			{
-				glReadPixels(0,0,width, height, GL_RGB, GL_UNSIGNED_BYTE, m_vBuffer.data());
+				glReadPixels(0,0,width, height, GL_BGRA, GL_UNSIGNED_BYTE, m_vBuffer.data());
 
 			}
 			// std::ofstream fsOut;
@@ -117,7 +117,7 @@ class GLHelper: public Scriptable
 			size_t i = 0,y=0;
 			while(i<iPixCt)
 			{
-				img[m_bVFlip?(h-y-1):y][i%w] = png::rgb_pixel(m_vBuffer.at(3*i),m_vBuffer.at((3*i)+1),m_vBuffer.at((3*i)+2));
+				img[m_bVFlip?(h-y-1):y][i%w] = png::rgb_pixel(m_vBuffer.at((4*i)+2),m_vBuffer.at((4*i)+1),m_vBuffer.at(4*i));
 				i++;
 				if(i%w==0)	y++;
 			}

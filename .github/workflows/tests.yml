@@ -45,7 +45,7 @@ jobs:
       with:
           path: "packages"
           key: "pkgs-1_0_1-test"
-          restore-keys: "pkgs-1_0_0-test"
+          restore-keys: "pkgs-1_0_1-test"
 
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
@@ -54,7 +54,7 @@ jobs:
     - name: Install packages
       run: |
           sudo apt-get update
-          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov
+          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov xvfb
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
@@ -67,7 +67,10 @@ jobs:
 
     - name: Run tests
       run: |
-        cd ${{ runner.workspace }}/MK404/build && env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
+        cd ${{ runner.workspace }}/MK404/build
+        Xvfb :99 -screen 0 800x600x24 &
+        export DISPLAY=:99
+        env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
         tar -xcvf snaps.tar.gz ${{ runner.workspace }}/MK404/tests/snaps/
 
     - name: Upload report

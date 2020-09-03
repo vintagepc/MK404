@@ -68,6 +68,8 @@ jobs:
     - name: Run tests
       run: |
         cd ${{ runner.workspace }}/MK404/build
+        export LD_LIBRARY_PATH=mesa-18.2.3/usr/local/lib/x86_64-linux-gnu
+        export GALLIUM_DRIVER=swr
         env CTEST_OUTPUT_ON_FAILURE=1 xvfb-run make Coverage.tar.gz
         tar -xcvf snaps.tar.gz ${{ runner.workspace }}/MK404/tests/snaps/
 

@@ -377,7 +377,7 @@ add_custom_target(Release_Package
 add_dependencies(Release_Package MK404)
 
 add_custom_target(Tests
-	COMMAND glxinfo
+	COMMAND xvfb-run glxinfo
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/tests/snaps"
 	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
 	COMMAND cd ${PROJECT_BINARY_DIR} && make test

@@ -68,8 +68,7 @@ jobs:
     - name: Run tests
       run: |
         cd ${{ runner.workspace }}/MK404/build
-        export DISPLAY=:99
-        env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
+        env CTEST_OUTPUT_ON_FAILURE=1 xvfb-run make Coverage.tar.gz
         tar -xcvf snaps.tar.gz ${{ runner.workspace }}/MK404/tests/snaps/
 
     - name: Upload report

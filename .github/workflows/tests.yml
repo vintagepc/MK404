@@ -68,7 +68,7 @@ jobs:
     - name: Run tests
       run: |
         cd ${{ runner.workspace }}/MK404/build
-        Xvfb :99 -screen 0 800x600x24 &
+        Xvfb :99 -screen 0 800x600x24 +extension GLX +render -noreset &
         export DISPLAY=:99
         env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
         tar -xcvf snaps.tar.gz ${{ runner.workspace }}/MK404/tests/snaps/

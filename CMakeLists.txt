@@ -385,6 +385,7 @@ add_custom_target(Release_Package
 add_dependencies(Release_Package MK404)
 
 add_custom_target(Tests
+	COMMAND echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
 	COMMAND xvfb-run glxinfo
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/tests/snaps"
 	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters

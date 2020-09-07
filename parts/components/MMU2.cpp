@@ -131,7 +131,7 @@ void MMU2::SetupHardware()
 	m_Sel.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(SELECTOR_OUT));
 	m_Idl.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(IDLER_OUT));
 	m_Extr.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(PULLEY_IN));
-	m_shift.ConnectTo(HC595::OUT, GetIRQ(SHIFT_IN));
+	m_shift.ConnectTo(HC595::SHIFT_OUT, GetIRQ(SHIFT_IN));
 }
 
 

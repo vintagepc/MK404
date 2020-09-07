@@ -56,7 +56,7 @@ void HC595::OnLatchIn(struct avr_irq_t * irq, uint32_t value)
 	{	// rising edge
 		uint32_t uiChanged = m_uiLatch ^ m_uiValue; // Grab the bits that have changed since last latch.
 		m_uiLatch = m_uiValue;
-		RaiseIRQ(OUT, m_uiLatch);
+		RaiseIRQ(SHIFT_OUT, m_uiLatch);
 		for (unsigned int i=0; i<32; i++)
 		{
 			if (uiChanged & (1U<<i)) RaiseIRQ(BIT0+i,(m_uiLatch>>i) & 1U);
@@ -72,7 +72,7 @@ void HC595::OnResetIn(struct avr_irq_t * irq, uint32_t value)
 	if (irq->value && !value) 	// falling edge
 	{
 		m_uiLatch = m_uiValue = 0;
-		RaiseIRQ(OUT, m_uiLatch);
+		RaiseIRQ(SHIFT_OUT, m_uiLatch);
 		for (int i=0; i<32; i++)
 		{
 				RaiseIRQ(BIT0+i,0);
@@ -94,5 +94,5 @@ void HC595::Init(struct avr_t * avr)
 	TH.AddTrace(this, IN_RESET,{TC::OutputPin, TC::Misc});
 	TH.AddTrace(this, IN_CLOCK,{TC::OutputPin, TC::Misc});
 	TH.AddTrace(this, IN_DATA,{TC::OutputPin, TC::Misc});
-	TH.AddTrace(this, OUT,{TC::Misc},32);
+	TH.AddTrace(this, SHIFT_OUT,{TC::Misc},32);
 }

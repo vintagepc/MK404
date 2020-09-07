@@ -65,7 +65,10 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - uses: openrndr/setup-opengl@v1
-    - run: xvfb-run glxinfo
+    - run: |
+        xvfb-run glxinfo
+        ls -l
+        echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
 
     - name: Run tests
       run: |

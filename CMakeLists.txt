@@ -312,9 +312,6 @@ add_custom_command(TARGET MK404 POST_BUILD
 file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/test_*.c)
 message(STATUS "Checking for tests...")
 
-if(RUNNER_ENV)
-	set_tests_properties(MK404 PROPERTIES ENVIRONMENT LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr)
-endif()
 
 enable_testing()
 add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
@@ -328,6 +325,9 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 		COMMAND ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
 	)
+	if(RUNNER_ENV)
+		set_tests_properties(${TEST_BASE} PROPERTIES ENVIRONMENT LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr)
+	endif()
 endforeach()
 #	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
 add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)

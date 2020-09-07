@@ -65,6 +65,7 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - uses: openrndr/setup-opengl@v1
+    - run: xvfb-run glxinfo
 
     - name: Run tests
       run: |

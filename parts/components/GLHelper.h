@@ -20,10 +20,10 @@
 
 #pragma once
 
-#include "3rdParty/pngpp/png.hpp"
 #include "IScriptable.h"
 #include "Scriptable.h"
 #include "Util.h"
+#include "png.hpp"
 #include <GL/glew.h> //NOLINT
 #include <GL/freeglut_std.h>
 #include <atomic>

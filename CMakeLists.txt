@@ -227,7 +227,7 @@ target_include_directories (MK404 PUBLIC
                             "${PROJECT_SOURCE_DIR}/utility"
                             "${PROJECT_SOURCE_DIR}/3rdParty/arcball"
                          )
-
+target_include_directories(MK404 SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rdParty/pngpp")
 
 include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 

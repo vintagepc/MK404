@@ -390,5 +390,7 @@ add_custom_target(Tests
 	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
 	COMMAND cd ${PROJECT_BINARY_DIR} && make test
 )
+message(STATUS "Environment path is $ENV{LD_LIBRARY_PATH}")
+message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")
 set_target_properties(Tests PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr")
 add_dependencies(Tests Test_all MK404)

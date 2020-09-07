@@ -314,22 +314,23 @@ message(STATUS "Checking for tests...")
 
 
 if(RUNNER_ENV)
-	set(TEST_EXPORT_PREFIX LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr DISPLAY=:99)
-	set(TEST_XVFB_PREFIX "xvfb-run")
+	set(TEST_LIB_PATH ${PROJECT_SOURCE_DIR}/$ENV{LD_LIBRARY_PATH})
+	set(TEST_EXPORT_PREFIX LD_LIBRARY_PATH=${TEST_LIB_PATH} GALLIUM_DRIVER=swr DISPLAY=:99)
+	set(TEST_XVFB_PREFIX "./TestWrapper.sh")
 else()
 	unset(TEST_EXPORT_PREFIX)
 	unset(TEST_XVFB_PREFIX)
+	unset(TEST_LIB_PATH)
 endif()
 
+add_custom_target(TestWrapper.sh
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/assets/TestWrapper.sh" "${PROJECT_BINARY_DIR}"
+	COMMAND chmod +x ${PROJECT_BINARY_DIR}/TestWrapper.sh
+)
 
 enable_testing()
 add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
-add_test(Check_GL xvfb-run glxinfo)
-if (RUNNER_ENV)
-	set_property(TEST Check_GL PROPERTY ENVIRONMENT GALLIUM_DRIVER=swr)
-	set_property(TEST Check_GL APPEND PROPERTY ENVIRONMENT LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/$ENV{LD_LIBRARY_PATH})
-	set_property(TEST Check_GL APPEND PROPERTY ENVIRONMENT DISPLAY=:99)
-endif()
+add_test(Check_GL ${TEST_XVFB_PREFIX} ${TEST_LIB_PATH} glxinfo)
 
 add_test(Test_Printer_Trace MK404 Test_Printer --trace ?)
 add_test(Test_Printer_Script MK404 Test_Printer --scripthelp)
@@ -338,13 +339,8 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	message(STATUS "Adding test: ${TEST_BASE}" )
 	add_test(NAME ${TEST_BASE}
 		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-		COMMAND ${TEST_XVFB_PREFIX} ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
+		COMMAND ${TEST_XVFB_PREFIX} ${TEST_LIB_PATH} ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
 	)
-	if (RUNNER_ENV)
-		set_property(TEST ${TEST_BASE} PROPERTY ENVIRONMENT GALLIUM_DRIVER=swr)
-		set_property(TEST ${TEST_BASE} APPEND PROPERTY ENVIRONMENT LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/$ENV{LD_LIBRARY_PATH})
-		set_property(TEST ${TEST_BASE} APPEND PROPERTY ENVIRONMENT DISPLAY=:99)
-	endif()
 endforeach()
 #	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
 add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)
@@ -412,4 +408,4 @@ message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")
 
 
 
-add_dependencies(Tests Test_all MK404)
+add_dependencies(Tests Test_all MK404 TestWrapper.sh)

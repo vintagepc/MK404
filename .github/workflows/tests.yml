@@ -75,7 +75,8 @@ jobs:
       run: |
         cd ${{ runner.workspace }}/MK404/build
         env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
-        tar -xcvf snaps.tar.gz ${{ runner.workspace }}/MK404/tests/snaps/
+
+    - run: cd ${{ runner.workspace }}/MK404/build && tar -xcvf snaps.tar.gz ${{ runner.workspace }}/MK404/tests/snaps/
 
     - name: Upload report
       uses: actions/upload-artifact@v2

@@ -313,9 +313,7 @@ file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/test_*.c)
 message(STATUS "Checking for tests...")
 
 if(RUNNER_ENV)
-	set(TEST_ENV_VARS LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr)
-else()
-	set(TEST_ENV_VARS "")
+	set_tests_properties(MK404 PROPERTIES ENVIRONMENT LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr)
 endif()
 
 enable_testing()
@@ -326,8 +324,9 @@ add_test(Test_Printer_Script MK404 Test_Printer --scripthelp)
 foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
 	message(STATUS "Adding test: ${TEST_BASE}" )
-	add_test(${TEST_BASE} ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
-		ENVIRONMENT ${TEST_ENV_VARS} WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+	add_test(NAME ${TEST_BASE}
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMAND ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
 	)
 endforeach()
 #	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)

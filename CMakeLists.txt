@@ -14,6 +14,7 @@ option(ENABLE_IWYU "Enables Include-what-you-use")
 option(ENABLE_TIDY "Enables Clang-tidy")
 option(ENABLE_GCOV "Enables gcov coverage")
 option(ENABLE_GPERF "Enables gperf profiling")
+option(RUNNER_ENV, "Adjust commands for github runner")
 
 if (ENABLE_GCOV)
 	SET(GCOV_BINARY /usr/bin/gcov-7)
@@ -311,6 +312,12 @@ add_custom_command(TARGET MK404 POST_BUILD
 file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/test_*.c)
 message(STATUS "Checking for tests...")
 
+if(RUNNER_ENV)
+	set(TEST_ENV_VARS LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr)
+else()
+	set(TEST_ENV_VARS "")
+endif()
+
 enable_testing()
 add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
 add_test(Test_Printer_Trace MK404 Test_Printer --trace ?)
@@ -319,7 +326,9 @@ add_test(Test_Printer_Script MK404 Test_Printer --scripthelp)
 foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
 	message(STATUS "Adding test: ${TEST_BASE}" )
-	add_test(${TEST_BASE} MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer)
+	add_test(${TEST_BASE} ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
+		ENVIRONMENT ${TEST_ENV_VARS} WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+	)
 endforeach()
 #	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
 add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)

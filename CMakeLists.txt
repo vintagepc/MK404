@@ -326,7 +326,7 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 		COMMAND ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
 	)
 	if(RUNNER_ENV)
-		set_tests_properties(${TEST_BASE} PROPERTIES ENVIRONMENT LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr)
+		set_tests_properties(${TEST_BASE} PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr")
 	endif()
 endforeach()
 #	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)

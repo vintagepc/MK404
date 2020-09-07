@@ -313,6 +313,13 @@ file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/test_*.c)
 message(STATUS "Checking for tests...")
 
 
+if(RUNNER_ENV)
+	set(TEST_EXPORT_PREFIX export LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/$ENV{LD_LIBRARY_PATH} && export GALLIUM_DRIVER=swr &&)
+else()
+	unset(TEST_EXPORT_PREFIX)
+endif()
+
+
 enable_testing()
 add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
 add_test(Test_Printer_Trace MK404 Test_Printer --trace ?)
@@ -323,11 +330,8 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	message(STATUS "Adding test: ${TEST_BASE}" )
 	add_test(NAME ${TEST_BASE}
 		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-		COMMAND ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
+		COMMAND ${TEST_EXPORT_PREFIX} ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
 	)
-	if(RUNNER_ENV)
-		set_tests_properties(${TEST_BASE} PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr")
-	endif()
 endforeach()
 #	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
 add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)
@@ -385,15 +389,15 @@ add_custom_target(Release_Package
 add_dependencies(Release_Package MK404)
 
 add_custom_target(Tests
-	COMMAND echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
-	COMMAND xvfb-run glxinfo
+	COMMAND ${TEST_EXPORT_PREFIX} echo LD is $$LD_LIBRARY_PATH and GD is $$GALLIUM_DRIVER
+	COMMAND ${TEST_EXPORT_PREFIX} xvfb-run glxinfo
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/tests/snaps"
 	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
-	COMMAND cd ${PROJECT_BINARY_DIR} && make test
+	COMMAND ${TEST_EXPORT_PREFIX} cd ${PROJECT_BINARY_DIR} && make test
 )
 message(STATUS "Environment path is $ENV{LD_LIBRARY_PATH}")
 message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")
-if(RUNNER_ENV)
-set_target_properties(Tests PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr")
-endif()
-add_dependencies(Tests Test_all MK404)
+
+
+
+#add_dependencies(Tests Test_all MK404)

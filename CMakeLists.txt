@@ -392,5 +392,7 @@ add_custom_target(Tests
 )
 message(STATUS "Environment path is $ENV{LD_LIBRARY_PATH}")
 message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")
-set_target_properties(Tests PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr")
+if(RUNNER_ENV)
+set_target_properties(Tests PROPERTIES ENVIRONMENT "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/$ENV{LD_LIBRARY_PATH} GALLIUM_DRIVER=swr")
+endif()
 add_dependencies(Tests Test_all MK404)

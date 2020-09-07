@@ -272,6 +272,7 @@ endif()
 
 if(CYGWIN)
 target_link_libraries(MK404 GLEW)
+add_definitions(-D_WIN32) # Add for png++
 else()
 target_link_libraries(MK404 GLEW::GLEW)
 endif()

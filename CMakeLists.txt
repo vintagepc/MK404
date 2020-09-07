@@ -323,17 +323,13 @@ else()
 	unset(TEST_LIB_PATH)
 endif()
 
-add_custom_target(TestWrapper.sh
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PROJECT_SOURCE_DIR}/assets/TestWrapper.sh" "${PROJECT_BINARY_DIR}"
-	COMMAND chmod +x ${PROJECT_BINARY_DIR}/TestWrapper.sh
-)
 
 enable_testing()
 add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
 add_test(Check_GL env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} glxinfo )
 
-add_test(Test_Printer_Trace MK404 Test_Printer --trace ?)
-add_test(Test_Printer_Script MK404 Test_Printer --scripthelp)
+add_test(Test_Printer_Trace MK404 Test_Printer -g none --trace ?)
+add_test(Test_Printer_Script MK404 Test_Printer -g none --scripthelp)
 foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
 	message(STATUS "Adding test: ${TEST_BASE}" )
@@ -408,4 +404,4 @@ message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")
 
 
 
-add_dependencies(Tests Test_all MK404 TestWrapper.sh)
+add_dependencies(Tests Test_all MK404)

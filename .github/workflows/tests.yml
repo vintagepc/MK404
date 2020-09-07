@@ -71,6 +71,7 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Run tests
+      continue-on-error: true
       run: |
         cd ${{ runner.workspace }}/MK404/build
         env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz

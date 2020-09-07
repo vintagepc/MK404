@@ -126,11 +126,12 @@ void MMU2::SetupHardware()
 
 	RegisterNotify(RESET,MAKE_C_CALLBACK(MMU2,OnResetIn),this);
 	RegisterNotify(PULLEY_IN, MAKE_C_CALLBACK(MMU2,OnPulleyFeedIn),this);
+	RegisterNotify(SHIFT_IN, MAKE_C_CALLBACK(MMU2,LEDHandler),this);
 
 	m_Sel.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(SELECTOR_OUT));
 	m_Idl.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(IDLER_OUT));
 	m_Extr.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(PULLEY_IN));
-	avr_irq_register_notify(m_shift.GetIRQ(m_shift.OUT), MAKE_C_CALLBACK(MMU2,LEDHandler),this);
+	m_shift.ConnectTo(HC595::OUT, GetIRQ(SHIFT_IN));
 }
 
 

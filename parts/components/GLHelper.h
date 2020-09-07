@@ -59,8 +59,8 @@ class GLHelper: public Scriptable
 				{
 					case ActCheckPixel:
 					{
-						uint8_t uiTmp[4] {0};
-						glReadPixels(m_x.load(), m_y.load(), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &uiTmp);
+						uint32_t uiTmp[4] {0};
+						glReadPixels(m_x.load(), m_y.load(), 1, 1, GL_RGBA, GL_UNSIGNED_INT, &uiTmp);
 						m_color = uiTmp[0]<<24U | uiTmp[1] << 16U | uiTmp[2] <<8U | uiTmp[3];
 						m_iState = St_Done;
 					}

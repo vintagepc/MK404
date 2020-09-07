@@ -130,7 +130,7 @@ void MMU2::SetupHardware()
 	m_Sel.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(SELECTOR_OUT));
 	m_Idl.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(IDLER_OUT));
 	m_Extr.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(PULLEY_IN));
-	avr_irq_register_notify(m_shift.GetIRQ(HC595::OUT), MAKE_C_CALLBACK(MMU2,LEDHandler),this);
+	avr_irq_register_notify(m_shift.GetIRQ(m_shift.OUT), MAKE_C_CALLBACK(MMU2,LEDHandler),this);
 }
 
 

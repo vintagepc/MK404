@@ -27,7 +27,9 @@
 #include "printers/Prusa_MK3MMU2.h"
 #include "printers/Prusa_MK3S.h"
 #include "printers/Prusa_MK3SMMU2.h"
+#ifndef __APPLE__
 #include "printers/Test_Printer.h"
+#endif // __APPLE__
 #include <iostream>
 
 /*

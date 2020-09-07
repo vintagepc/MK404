@@ -400,4 +400,4 @@ message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")
 
 
 
-#add_dependencies(Tests Test_all MK404)
+add_dependencies(Tests Test_all MK404)

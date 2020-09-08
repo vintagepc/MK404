@@ -46,8 +46,8 @@ class GLHelper: public Scriptable
 		// Function for running the GL stuff inside the GL context.
 		void OnDraw()
 		{
-			auto width = 500;//glutGet(GLUT_WINDOW_WIDTH);
-			auto height = 324;//glutGet(GLUT_WINDOW_HEIGHT);
+			auto width = glutGet(GLUT_WINDOW_WIDTH);
+			auto height = glutGet(GLUT_WINDOW_HEIGHT);
 			if (m_iState == St_Queued)
 			{
 				m_iState = St_Busy;
@@ -100,19 +100,6 @@ class GLHelper: public Scriptable
 				glReadPixels(0,0,width, height, GL_BGRA, GL_UNSIGNED_BYTE, m_vBuffer.data());
 
 			}
-			// std::ofstream fsOut;
-			// fsOut.open(m_strFile + ".ppm");
-			// if (!fsOut.is_open())
-			// {
-			// 	return false;
-			// }
-			// fsOut << "P3\n" << std::dec << m_w << " " << m_h << "\n255\n";
-			// for (auto i = 0u; i<iPixCt; i++)
-			// {
-			// 	fsOut << std::to_string(m_vBuffer.at(i)) << ' ';
-			// }
-			// fsOut << '\n';
-			// fsOut.close();
 			png::image<png::rgb_pixel,png::solid_pixel_buffer<png::rgb_pixel>> img(w, h);
 			size_t i = 0,y=0;
 			while(i<iPixCt)
@@ -121,7 +108,7 @@ class GLHelper: public Scriptable
 				i++;
 				if(i%w==0)	y++;
 			}
-			img.write(m_strFile.c_str());
+			img.write(m_strFile);
 			return true;
 		}
 

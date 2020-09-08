@@ -22,6 +22,9 @@
 #include "Prusa_MK3SMMU2.h"
 #include "BasePeripheral.h"       // for MAKE_C_CALLBACK
 #include "IRSensor.h"             // for IRSensor, IRSensor::IRState::IR_AUTO
+#ifdef SUPPORTS_LIBPNG
+#include "GLHelper.h"
+#endif // SUPPORTS_LIBPNG
 #include "MK3SGL.h"               // for MK3SGL
 #include "PinNames.h"             // for Pin::MMU_HWRESET
 #include "SerialPipe.h"           // for SerialPipe
@@ -75,6 +78,7 @@ void Prusa_MK3SMMU2::Draw()
 	glPushMatrix();
 		Prusa_MK3S::Draw();
 		m_MMU.Draw(static_cast<float>(GetWindowSize().second));
+		m_gl.OnDraw();
 	glPopMatrix();
 }
 

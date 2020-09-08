@@ -15,6 +15,8 @@ option(ENABLE_TIDY "Enables Clang-tidy")
 option(ENABLE_GCOV "Enables gcov coverage")
 option(ENABLE_GPERF "Enables gperf profiling")
 option(RUNNER_ENV, "Adjust commands for github runner")
+option(SANITY_TESTS, "Run general sanity tests in addition to explicit component tests")
+
 
 if (ENABLE_GCOV)
 	SET(GCOV_BINARY /usr/bin/gcov-7)
@@ -293,6 +295,7 @@ target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::
 endif()
 
 if(NOT APPLE)
+	add_definitions(-DSUPPORTS_LIBPNG)
 	target_link_libraries(MK404 png)
 endif()
 
@@ -356,8 +359,18 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 		COMMAND env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
 	)
 endforeach()
-#	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
-add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)
+
+if(SANITY_TESTS)
+	add_test(MK3S_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -f MK3S.afx --script ../scripts/tests/test_boot_MK3S.txt)
+	add_test(MK3_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3 -f MK3S.afx --script ../scripts/tests/test_boot_MK3.txt)
+	add_test(MK3SMMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3SMMU2.txt)
+	add_test(MK3MMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3MMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3MMU2.txt)
+endif()
+
+# This is a bit meaningless if your system doesn't generate the same renderings as the BR.
+if(RUNNER_ENV)
+	add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)
+endif()
 
 
 add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}

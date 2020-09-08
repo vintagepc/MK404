@@ -1,0 +1,12 @@
+# This script just checks that the printer boots by looking for 'start' on the serial line.
+ScriptHost::SetTimeoutMs(10000)
+ScriptHost::SetQuitOnTimeout(1)
+Serial0::WaitForLine(start)
+Board::Pause()
+GLHelper::Snapshot(tests/snaps/MK3SMMU201)
+Board::Resume()
+Serial0::WaitForLineContains(paused for user)
+Board::Pause()
+GLHelper::Snapshot(tests/snaps/MK3SMMU202)
+Board::Resume()
+Board::Quit()

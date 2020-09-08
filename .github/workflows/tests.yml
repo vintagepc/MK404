@@ -65,7 +65,7 @@ jobs:
         echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
 
     - name: Prepare CMake build
-      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DENABLE_GCOV=1 -DRUNNER_ENV=1 ..
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DENABLE_GCOV=1 -DSANITY_TESTS=1 -DRUNNER_ENV=1 ..
 
     - name: Build Einsy
       run: cd ${{ runner.workspace }}/MK404/build && make -j2

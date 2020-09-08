@@ -78,7 +78,9 @@ void Prusa_MK3SMMU2::Draw()
 	glPushMatrix();
 		Prusa_MK3S::Draw();
 		m_MMU.Draw(static_cast<float>(GetWindowSize().second));
+#ifdef SUPPORTS_LIBPNG
 		m_gl.OnDraw();
+#endif // SUPPORTS_LIBPNG
 	glPopMatrix();
 }
 

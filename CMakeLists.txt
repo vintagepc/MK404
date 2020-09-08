@@ -172,8 +172,9 @@ set(MK404_BASE
 	3rdParty/arcball/Camera.cpp
 )
 
-if(NOT APPLE)
+if(NOT APPLE AND NOT CYGWIN)
 	set(MK404_SOURCES ${MK404_NON_APPLE} ${MK404_BASE})
+	add_definitions(-DTEST_PRINTER)
 else()
 	set(MK404_SOURCES ${MK404_BASE})
 endif()
@@ -291,7 +292,7 @@ endif()
 target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 endif()
 
-if(NOT APPLE)
+if(NOT APPLE AND NOT CYGWIN)
 	target_link_libraries(MK404 png)
 endif()
 

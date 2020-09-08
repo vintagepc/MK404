@@ -289,6 +289,7 @@ target_link_libraries(MK404 GLEW::GLEW)
 endif()
 
 target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
+endif()
 
 if(NOT APPLE)
 	target_link_libraries(MK404 png)

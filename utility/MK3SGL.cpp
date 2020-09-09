@@ -361,8 +361,6 @@ void MK3SGL::Draw()
 		for (int i=0; i<5; i++) m_vPrints[i]->Clear();
 		m_bClearPrints = false;
 	}
-	int iOldWin = glutGetWindow();
-	glutSetWindow(m_iWindow);
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 	glClearDepth(1.0f);
 	glClear( US(GL_COLOR_BUFFER_BIT) | US(GL_DEPTH_BUFFER_BIT));
@@ -508,7 +506,6 @@ void MK3SGL::Draw()
 		m_snap.OnDraw();
 		glutSwapBuffers();
 		m_bDirty = false;
-		glutSetWindow(iOldWin);
 }
 
 void MK3SGL::DrawRoundLED()

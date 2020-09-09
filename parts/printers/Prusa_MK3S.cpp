@@ -89,7 +89,7 @@ void Prusa_MK3S::Draw()
 
 	if ((GetVisualType()!="none") && m_pVis)
 	{
-		m_pVis->Draw();
+		m_pVis->FlagForRedraw();
 	}
 }
 

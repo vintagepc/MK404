@@ -30,6 +30,7 @@
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
 #include <GL/glew.h>         // for glTranslatef
+#include <GL/freeglut_std.h> //NOLINT
 #include <GLPrint.h>         // for GLPrint
 #include <atomic>            // for atomic, atomic_bool, atomic_int
 #include <cstdint>          // for uint32_t
@@ -84,8 +85,8 @@ class MK3SGL: public BasePeripheral, public Scriptable
         // Sets nozzle cam mode enabled to an explicit value.
         void SetFollowNozzle(bool bFollow) { m_bFollowNozzle = bFollow;}
 
-
-
+		// Flags window for redisplay
+		inline void FlagForRedraw() { glutPostWindowRedisplay(m_iWindow); }
 
         // GL helpers needed for the window and mouse callbacks, use when creating the GL window.
         void MouseCB(int button, int state, int x, int y);

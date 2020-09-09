@@ -115,7 +115,7 @@ class GLHelper: public Scriptable
 			}
 			img.write(m_strFile);
 #else
-			std::err << "TODO: Sorry, libPNG is not implemented. Snapshots cannot be saved.\n";
+			std::cerr << "TODO: Sorry, libPNG is not implemented. Snapshots cannot be saved.\n";
 #endif // SUPPORTS_LIBPNG
 			return true;
 		}

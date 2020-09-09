@@ -64,7 +64,7 @@ class GLHelper: public Scriptable
 					case ActCheckPixel:
 					{
 						uint32_t uiTmp[4] {0};
-						glReadPixels(m_x.load(), m_y.load(), 1, 1, GL_RGBA, GL_UNSIGNED_INT, &uiTmp);
+						glReadPixels(m_x,(height-m_y)-1u, 1, 1, GL_RGBA, GL_UNSIGNED_INT, &uiTmp);
 						m_color = uiTmp[0]<<24U | uiTmp[1] << 16U | uiTmp[2] <<8U | uiTmp[3];
 						m_iState = St_Done;
 					}
@@ -94,7 +94,6 @@ class GLHelper: public Scriptable
 		bool WritePNG(int width, int height, bool bRegion)
 		{
 			auto w = m_w.load(), h = m_h.load();
-			auto iPixCt = w*h;
 			if (bRegion)
 			{
 				glReadPixels(m_x,(height-m_y)-h,w, h, GL_BGRA, GL_UNSIGNED_BYTE, m_vBuffer.data());
@@ -105,6 +104,7 @@ class GLHelper: public Scriptable
 
 			}
 #ifdef SUPPORTS_LIBPNG
+			auto iPixCt = w*h;
 			png::image<png::rgb_pixel,png::solid_pixel_buffer<png::rgb_pixel>> img(w, h);
 			size_t i = 0,y=0;
 			while(i<iPixCt)

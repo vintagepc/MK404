@@ -30,7 +30,7 @@
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
 #include <GL/glew.h>         // for glTranslatef
-#include <GL/freeglut_std.h> //NOLINT
+#include <GL/freeglut_std.h> // NOLINT
 #include <GLPrint.h>         // for GLPrint
 #include <atomic>            // for atomic, atomic_bool, atomic_int
 #include <cstdint>          // for uint32_t

@@ -38,7 +38,7 @@
 class GLHelper: public Scriptable
 {
 	public:
-		GLHelper():Scriptable("GLHelper")
+		explicit GLHelper(const std::string &strName = "GLHelper"):Scriptable(strName)
 		{
 			RegisterAction("CheckPixel","Checks the pixel color at the given position matches specified (x,y,RGBA).",ActCheckPixel, {ArgType::uint32,ArgType::uint32, ArgType::uint32});
 			RegisterAction("Snapshot", "Takes a snap of the current GL rendering", ActTakeSnapshot, {ArgType::String});
@@ -119,6 +119,7 @@ class GLHelper: public Scriptable
 #endif // SUPPORTS_LIBPNG
 			return true;
 		}
+		// Useful for debugging as it's a very simple format.
 		// bool WritePPM()
 		// {
 		// 	glReadPixels(0,0,m_w, m_h, GL_RGB, GL_UNSIGNED_BYTE, m_vBuffer.data());

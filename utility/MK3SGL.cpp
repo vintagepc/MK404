@@ -505,6 +505,7 @@ void MK3SGL::Draw()
 		{
 			DrawMMU();
 		}
+		m_snap.OnDraw();
 		glutSwapBuffers();
 		m_bDirty = false;
 		glutSetWindow(iOldWin);

@@ -22,6 +22,7 @@
 
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "Camera.hpp"        // for Camera
+#include "GLHelper.h"
 #include "GLObj.h"           // for GLObj
 #include "HD44780.h"         // for _IRQ
 #include "IScriptable.h"     // for IScriptable::LineStatus
@@ -102,6 +103,8 @@ class MK3SGL: public BasePeripheral, public Scriptable
         GLObj m_MMUBase {"assets/MMU_stationary.obj"};
         GLObj m_MMUSel {"assets/MMU_Selector.obj"};
         GLObj m_MMUIdl {"assets/Idler_moving.obj"};
+
+		GLHelper m_snap{"3DView"};
 
 		OBJCollection *m_Objs = nullptr;
 

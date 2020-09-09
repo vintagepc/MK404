@@ -69,6 +69,7 @@ namespace Wirings
 					{SDSS,42},
 					{SWI2C_SCL, 21},
 					{SWI2C_SDA, 20},
+					{LCD_BL_PIN, 8}
 
 				};
 			};

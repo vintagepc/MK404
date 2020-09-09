@@ -106,6 +106,13 @@ namespace Boards
 
 		AddHardware(m_pat, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
 
+		AddHardware(m_LED);
+		AddHardware(m_LED2);
+		TryConnect(LCD_BL_PIN, m_LED, LED::LED_IN);
+		m_LED.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), LED::PWM_IN);
+		TryConnect(LCD_BL_PIN, m_LED2, LED::LED_IN);
+		m_LED2.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), LED::PWM_IN);
+
 	}
 
 	// Convenience function for debug printing a particular pin.

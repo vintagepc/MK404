@@ -82,12 +82,11 @@ void Prusa_MK3S::Draw()
 			lIR.Draw();
 		glPopMatrix();
 
-#ifdef SUPPORTS_LIBPNG
 		if(!GetHasMMU())
 		{
 			m_gl.OnDraw();
 		}
-#endif
+
 	if ((GetVisualType()!="none") && m_pVis)
 	{
 		m_pVis->Draw();

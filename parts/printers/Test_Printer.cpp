@@ -22,6 +22,7 @@
 #include "Fan.h"              // for Fan
 #include "HD44780GL.h"
 #include "Heater.h"           // for Heater
+#include "LED.h"
 #include "TMC2130.h"          // for TMC2130
 #include <GL/glew.h> //NOLINT - must come first.
 
@@ -64,6 +65,10 @@ void Test_Printer::Draw()
 			m_Fan.Draw();
 			glTranslatef(20,0,0);
 			m_heat.Draw();
+			glTranslatef(20,0,0);
+			m_LED.Draw();
+			glTranslatef(20,0,0);
+			m_LED2.Draw();
 		glPopMatrix();
 		m_gl.OnDraw();
 }

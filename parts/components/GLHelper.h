@@ -23,7 +23,9 @@
 #include "IScriptable.h"
 #include "Scriptable.h"
 #include "Util.h"
+#ifdef SUPPORTS_LIBPNG
 #include "png.hpp"
+#endif // SUPPORTS_LIBPNG
 #include <GL/glew.h> //NOLINT
 #include <GL/freeglut_std.h>
 #include <atomic>
@@ -42,6 +44,8 @@ class GLHelper: public Scriptable
 			RegisterAction("Snapshot", "Takes a snap of the current GL rendering", ActTakeSnapshot, {ArgType::String});
 			RegisterAction("SnapRect", "Takes a snap a region (file,x,y,w,h)", ActTakeSnapshotArea, {ArgType::String,ArgType::Int,ArgType::Int,ArgType::Int,ArgType::Int});
 		}
+
+		inline bool IsTakingSnapshot() { return m_iState >= St_Queued; }
 
 		// Function for running the GL stuff inside the GL context.
 		void OnDraw()
@@ -100,6 +104,7 @@ class GLHelper: public Scriptable
 				glReadPixels(0,0,width, height, GL_BGRA, GL_UNSIGNED_BYTE, m_vBuffer.data());
 
 			}
+#ifdef SUPPORTS_LIBPNG
 			png::image<png::rgb_pixel,png::solid_pixel_buffer<png::rgb_pixel>> img(w, h);
 			size_t i = 0,y=0;
 			while(i<iPixCt)
@@ -109,9 +114,11 @@ class GLHelper: public Scriptable
 				if(i%w==0)	y++;
 			}
 			img.write(m_strFile);
+#else
+			std::err << "TODO: Sorry, libPNG is not implemented. Snapshots cannot be saved.\n";
+#endif // SUPPORTS_LIBPNG
 			return true;
 		}
-
 		// bool WritePPM()
 		// {
 		// 	glReadPixels(0,0,m_w, m_h, GL_RGB, GL_UNSIGNED_BYTE, m_vBuffer.data());
@@ -161,7 +168,7 @@ class GLHelper: public Scriptable
 						}
 
 					}
-					return LineStatus::Waiting;
+					return LineStatus::HoldExec;
 				}
 				break;
 				case ActTakeSnapshot:
@@ -187,7 +194,7 @@ class GLHelper: public Scriptable
 						std::cout << "Wrote: " << m_strFile << '\n';
 						return LineStatus::Finished;
 					}
-					return LineStatus::Waiting;
+					return LineStatus::HoldExec; // Pauses primary board execution until finished.
 				}
 				break;
 				default:
@@ -204,9 +211,9 @@ class GLHelper: public Scriptable
 		enum ActState
 		{
 			St_Idle,
-			St_Queued,
-			St_Busy,
-			St_Done
+			St_Done, // DO NOT REORDER
+			St_Queued, // we check against >=QUEUED to determine if a snapshot is in progress.
+			St_Busy
 		};
 		std::string m_strFile;
 		std::atomic_int m_iAct {-1};

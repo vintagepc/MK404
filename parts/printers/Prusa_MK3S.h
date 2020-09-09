@@ -21,9 +21,7 @@
 #pragma once
 
 #include "EinsyRambo.h"     // for EinsyRambo
-#ifdef SUPPORTS_LIBPNG
 #include "GLHelper.h"
-#endif // SUPPORTS_LIBPNG
 #include "IRSensor.h"
 #include "MK3SGL.h"
 #include "Printer.h"        // for Printer, Printer::VisualType
@@ -68,9 +66,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 
 		std::unique_ptr<MK3SGL> m_pVis {nullptr};
 
-#ifdef SUPPORTS_LIBPNG
 		GLHelper m_gl{};
-#endif //SUPPORTS_LIBPNG
 
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);

@@ -151,6 +151,7 @@ class ScriptHost: public IScriptable
 		static bool m_bQuitOnTimeout;
 		static bool m_bMenuCreated;
 		static bool m_bIsInitialized;
+		static bool m_bIsExecHold;
 
 		static std::atomic_uint m_uiQueuedMenu;
 

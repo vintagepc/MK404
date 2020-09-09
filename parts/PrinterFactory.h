@@ -27,9 +27,7 @@
 #include "printers/Prusa_MK3MMU2.h"
 #include "printers/Prusa_MK3S.h"
 #include "printers/Prusa_MK3SMMU2.h"
-#ifdef TEST_PRINTER
 #include "printers/Test_Printer.h"
-#endif // TEST_PRINTER
 #include <iostream>
 
 /*
@@ -119,10 +117,8 @@ class PrinterFactory
 				{"Prusa_MK3",			{&PrinterFactory::_CreatePrinter<Prusa_MK3>	, 		&PrinterFactory::_DestroyPrinter<Prusa_MK3>}},
 				{"Prusa_MK3S",			{&PrinterFactory::_CreatePrinter<Prusa_MK3S>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3S>}},
 				{"Prusa_MK3SMMU2",		{&PrinterFactory::_CreatePrinter<Prusa_MK3SMMU2>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3SMMU2>}},
-#ifdef TEST_PRINTER // png++ doesn't work with apple
-				{"Test_Printer",		{&PrinterFactory::_CreatePrinter<Test_Printer>, 	&PrinterFactory::_DestroyPrinter<Test_Printer>}},
-#endif // TEST_PRINTER
-				{"Prusa_MK3MMU2",		{&PrinterFactory::_CreatePrinter<Prusa_MK3MMU2>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3MMU2>}}
+				{"Prusa_MK3MMU2",		{&PrinterFactory::_CreatePrinter<Prusa_MK3MMU2>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3MMU2>}},
+				{"Test_Printer",		{&PrinterFactory::_CreatePrinter<Test_Printer>, 	&PrinterFactory::_DestroyPrinter<Test_Printer>}}
 			};
 			return m_Models;
 		}

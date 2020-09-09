@@ -73,7 +73,8 @@ void LED::Draw()
             glVertex2f(20,0);
             glVertex2f(0,0);
         glEnd();
-        glColor3f(!m_bOn,!m_bOn,!m_bOn);
+		bool bWhite = m_uiBrightness<128;
+        glColor3f(bWhite,bWhite,bWhite);
         glTranslatef(4,7,-1);
         glScalef(0.1,-0.05,1);
         glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrLabel);

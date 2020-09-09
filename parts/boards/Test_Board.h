@@ -29,8 +29,8 @@
 #include "HC595.h"
 #include "HD44780GL.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
-// #include "LED.h"                                 // for LED
 #include "IRSensor.h"                          // for IRSensor
+#include "LED.h"                                 // for LED
 #include "PAT9125.h"
 #include "PINDA.h"                               // for PINDA
 #include "RotaryEncoder.h"                       // for RotaryEncoder
@@ -96,6 +96,9 @@ namespace Boards
 			SDCard m_card {};
 
 			PAT9125 m_pat{};
+
+			LED m_LED{0x0000FFFF,'L'};
+			LED m_LED2{0xFF0000FF,'E',true};
 
 		private:
 

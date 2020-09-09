@@ -43,6 +43,7 @@ int ScriptHost::m_iTimeoutCycles = -1, ScriptHost::m_iTimeoutCount = 0;
 bool ScriptHost::m_bQuitOnTimeout = false;
 bool ScriptHost::m_bMenuCreated = false;
 bool ScriptHost::m_bIsInitialized = false;
+bool ScriptHost::m_bIsExecHold = false;
 std::atomic_uint ScriptHost::m_uiQueuedMenu {0};
 
 void ScriptHost::PrintScriptHelp(bool bMarkdown)
@@ -400,6 +401,15 @@ void ScriptHost::OnAVRCycle()
 		switch (lsResult)
 		{
 			case LS::Finished:
+				if (m_bIsExecHold)
+				{
+					m_bIsExecHold = false;
+					if (m_clients.count("Board") && m_clients.at("Board")->m_ActionIDs.count("Resume"))
+					{
+						int ID = m_clients.at("Board")->m_ActionIDs.at("Resume");
+						m_clients.at("Board")->ProcessAction(ID,{});
+					}
+				}
 				m_iLine++; // This line is done, mobe on.
 				m_iTimeoutCount = 0;
 				break;
@@ -415,6 +425,17 @@ void ScriptHost::OnAVRCycle()
 				m_iLine = m_script.size(); // Error, end scripting.
 				return;
 			}
+			case LS::HoldExec: // like waiting, but pauses board.
+			{
+				// TODO (vintagepc) : clean this up and also handle board1.
+				if (m_clients.count("Board") && m_clients.at("Board")->m_ActionIDs.count("Pause"))
+				{
+					int ID = m_clients.at("Board")->m_ActionIDs.at("Pause");
+					m_clients.at("Board")->ProcessAction(ID,{});
+					m_bIsExecHold = true;
+				}
+			}
+			/* FALLTHRU */
 			case LS::Waiting:
 			{
 				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount<=m_iTimeoutCycles)

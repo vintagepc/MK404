@@ -127,17 +127,11 @@ set(H_FILES
 	3rdParty/arcball/Quaternion.hpp
 )
 
-
-set(MK404_NON_APPLE
-	parts/boards/Test_Board.cpp
-	parts/printers/Test_Printer.cpp
-)
-
-
-set(MK404_BASE
+set(MK404_SOURCES
 	parts/Board.cpp
 	parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp
+	parts/boards/Test_Board.cpp
 	parts/ScriptHost.cpp
 	parts/TelemetryHost.cpp
 	parts/components/GCodeSniffer.cpp
@@ -165,6 +159,7 @@ set(MK404_BASE
 	parts/components/Button.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
+	parts/printers/Test_Printer.cpp
 	utility/MK3SGL.cpp
 	utility/GLObj.cpp
 	utility/FatImage.cpp
@@ -173,14 +168,6 @@ set(MK404_BASE
 	utility/SerialPipe.cpp
 	3rdParty/arcball/Camera.cpp
 )
-
-if(NOT APPLE)
-	set(MK404_SOURCES ${MK404_NON_APPLE} ${MK404_BASE})
-	add_definitions(-DTEST_PRINTER)
-else()
-	set(MK404_SOURCES ${MK404_BASE})
-endif()
-
 
 if (ENABLE_TIDY)
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${FIRMWARE})

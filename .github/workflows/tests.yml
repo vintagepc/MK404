@@ -74,7 +74,7 @@ jobs:
       continue-on-error: true
       run: |
         cd ${{ runner.workspace }}/MK404/build
-        env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
+        make Coverage.tar.gz
 
     - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps.tar.gz tests/snaps/
 

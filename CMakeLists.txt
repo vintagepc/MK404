@@ -355,8 +355,8 @@ if(SANITY_TESTS)
 	add_test(Lite_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g lite -f MK3S.afx --script ../scripts/tests/test_lite_gfx.txt)
 	add_test(Bear_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g bear -f MK3S.afx --script ../scripts/tests/test_bear_gfx.txt)
 	add_test(Fancy_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancy_gfx.txt)
-	add_test(Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g lite -f MK3S.afx --script ../scripts/tests/test_litemmu_gfx.txt)
-	add_test(Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g lite -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
+	add_test(Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404  Prusa_MK3SMMU2 -g lite -f MK3S.afx --script ../scripts/tests/test_litemmu_gfx.txt)
+	add_test(Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g lite -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
 endif()
 
 # This is a bit meaningless if your system doesn't generate the same renderings as the BR.
@@ -420,7 +420,7 @@ add_custom_target(Tests
 	COMMAND env ${TEST_EXPORT_PREFIX} echo LD is $$LD_LIBRARY_PATH and GD is $$GALLIUM_DRIVER
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/tests/snaps"
 	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
-	COMMAND cd ${PROJECT_BINARY_DIR} && make test
+	COMMAND cd ${PROJECT_BINARY_DIR} && ctest -V
 )
 message(STATUS "Environment path is $ENV{LD_LIBRARY_PATH}")
 message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")

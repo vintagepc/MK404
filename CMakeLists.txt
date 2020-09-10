@@ -283,7 +283,7 @@ endif()
 target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 endif()
 
-if(NOT APPLE)
+if(EXISTS "${PNG_LIBRARY}")
 	add_definitions(-DSUPPORTS_LIBPNG)
 	target_link_libraries(MK404 ${PNG_LIBRARY})
 endif()

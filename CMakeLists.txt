@@ -241,6 +241,8 @@ find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
 include(FindSDL)
 include_directories(${SDL_INCLUDE_DIR})
+include(FindPNG)
+include_directories(${SDL_INCLUDE_DIR})
 include(FindOpenGL)
 include_directories(${OPENGL_INCLUDE_DIR})
 include(FindFreeGLUT)
@@ -283,7 +285,7 @@ endif()
 
 if(NOT APPLE)
 	add_definitions(-DSUPPORTS_LIBPNG)
-	target_link_libraries(MK404 png)
+	target_link_libraries(MK404 ${PNG_LIBRARY})
 endif()
 
 
@@ -356,7 +358,7 @@ if(SANITY_TESTS)
 	add_test(Bear_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g bear -f MK3S.afx --script ../scripts/tests/test_bear_gfx.txt)
 	add_test(Fancy_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancy_gfx.txt)
 	add_test(Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404  Prusa_MK3SMMU2 -g lite -f MK3S.afx --script ../scripts/tests/test_litemmu_gfx.txt)
-	add_test(Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g lite -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
+	add_test(Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
 endif()
 
 # This is a bit meaningless if your system doesn't generate the same renderings as the BR.

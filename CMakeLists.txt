@@ -422,7 +422,7 @@ add_custom_target(Tests
 	COMMAND env ${TEST_EXPORT_PREFIX} echo LD is $$LD_LIBRARY_PATH and GD is $$GALLIUM_DRIVER
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/tests/snaps"
 	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
-	COMMAND cd ${PROJECT_BINARY_DIR} && ctest -V --timeout 180
+	COMMAND cd ${PROJECT_BINARY_DIR} && ctest --timeout 180
 )
 message(STATUS "Environment path is $ENV{LD_LIBRARY_PATH}")
 message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")

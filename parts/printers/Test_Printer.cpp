@@ -19,6 +19,7 @@
  */
 
 #include "Test_Printer.h"
+#include "Beeper.h"
 #include "Fan.h"              // for Fan
 #include "HD44780GL.h"
 #include "Heater.h"           // for Heater
@@ -69,6 +70,8 @@ void Test_Printer::Draw()
 			m_LED.Draw();
 			glTranslatef(20,0,0);
 			m_LED2.Draw();
+			glTranslatef(20,0,0);
+			m_buzzer.Draw();
 		glPopMatrix();
 		m_gl.OnDraw();
 }

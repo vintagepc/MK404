@@ -20,8 +20,8 @@
 
 #pragma once
 
-// #include "Beeper.h"                              // for Beeper
 #include "ADC_Buttons.h"
+#include "Beeper.h"                              // for Beeper
 #include "Board.h"                               // for Board
 #include "Button.h"                              // for Button
 #include "Fan.h"                                 // for Fan
@@ -99,6 +99,8 @@ namespace Boards
 
 			LED m_LED{0x0000FFFF,'L'};
 			LED m_LED2{0xFF0000FF,'E',true};
+
+			Beeper m_buzzer{};
 
 		private:
 

@@ -113,6 +113,9 @@ namespace Boards
 		TryConnect(LCD_BL_PIN, m_LED2, LED::LED_IN);
 		m_LED2.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), LED::PWM_IN);
 
+		AddHardware(m_buzzer);
+		m_buzzer.ConnectFrom(GetDIRQ(BEEPER), Beeper::DIGITAL_IN);
+
 	}
 
 	// Convenience function for debug printing a particular pin.

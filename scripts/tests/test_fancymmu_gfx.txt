@@ -2,5 +2,6 @@
 ScriptHost::SetTimeoutMs(10000)
 ScriptHost::SetQuitOnTimeout(1)
 Serial0::WaitForLine(adc_init)
+TelHost::WaitFor(Heater_B_<heater.pwm_in,0)
 3DView::Snapshot(tests/snaps/GFXFancyMM01)
 Board::Quit()

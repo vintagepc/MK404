@@ -352,7 +352,7 @@ void uart_pty::Connect(char uart)
 			// {
 			// 	strLnk +="tap";
 			// }
-			strLnk+=std::to_string(uart);
+			strLnk+=uart;
 			unlink(strLnk.c_str());
 			if (symlink(static_cast<char*>(port[0].slavename), strLnk.c_str()) != 0)
 			{
@@ -360,7 +360,7 @@ void uart_pty::Connect(char uart)
 			}
 			else
 			{
-				std::cout << strLnk << " now points to: " << static_cast<char*>(port[0].slavename);
+				std::cout << strLnk << " now points to: " << static_cast<char*>(port[0].slavename) << '\n';
 			}
 		}
 	if (getenv("SIMAVR_UART_XTERM") && stoi(getenv("SIMAVR_UART_XTERM")))

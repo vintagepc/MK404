@@ -336,7 +336,7 @@ endif()
 
 enable_testing()
 add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
-add_test(Make_SD_image MK404 --sdimage Einsy_atmega2560_SDcard.bin --image-size 128M)
+add_test(Make_SD_image2 MK404 --sdimage Einsy_atmega2560_SDcard.bin --image-size 128M)
 add_test(Check_GL env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} glxinfo )
 
 add_test(Test_Printer_Trace MK404 Test_Printer -g none --trace ?)

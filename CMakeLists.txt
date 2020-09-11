@@ -257,6 +257,7 @@ endif()
 if (ENABLE_GCOV)
 	target_compile_options(MK404 PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
 	target_link_libraries(MK404 -coverage -lgcov)
+	add_definitions(-DTEST_MODE)
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 	add_custom_target(Coverage.tar.gz
 		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_BINARY_DIR}/Coverage

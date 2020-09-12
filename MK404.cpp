@@ -229,15 +229,19 @@ int initGL()
 	glutMotionFunc(MotionCB);
 	glutTimerFunc(1000, timerCB, 0);
 	glutReshapeFunc(ResizeCB);
+#ifndef TEST_MODE
 	glEnable(GL_MULTISAMPLE);
+#endif
 	glEnable(GL_TEXTURE_2D);
 	glShadeModel(GL_SMOOTH);
 
 	glClearColor(.0f, 0.f, 0.f, 1.0f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
+#ifndef TEST_MODE
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+#endif
 
 	return 1;
 }
@@ -361,10 +365,14 @@ int main(int argc, char *argv[])
 		int pixsize = 4;
 		iWinW = winSize.first * pixsize;
 		iWinH = winSize.second * pixsize;
-		glutSetOption(GLUT_MULTISAMPLE,2);
 		glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+#ifndef TEST_MODE
+		glutSetOption(GLUT_MULTISAMPLE,2);
 		//glutInitContextVersion(1,0);
 		glutInitDisplayMode(US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_MULTISAMPLE));
+#else
+		glutInitDisplayMode(US(GLUT_RGB) | US(GLUT_DOUBLE));
+#endif
 		glutInitWindowSize(iWinW, iWinH);		/* width=400pixels height=500pixels */
 		std::string strTitle = "Prusa i3 MK404 (PRINTER NOT FOUND) ";
 		strTitle += version::GIT_TAG_NAME;

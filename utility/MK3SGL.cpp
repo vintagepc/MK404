@@ -67,9 +67,12 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterActionAndMenu("ResetCamera","Resets camera view to default",ActResetView);
 
 	glewInit();
-
+#ifdef TEST_MODE
 	glutSetOption(GLUT_MULTISAMPLE,4);
+	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH)) ;
+#else
 	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH) | US(GLUT_MULTISAMPLE)) ;
+#endif
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
 	std::string strTitle = std::string("Fancy Graphics: ") + m_Objs->GetName();
 	m_iWindow = glutCreateWindow(strTitle.c_str());	/* create window */
@@ -91,7 +94,9 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+#ifndef TEST_MODE
 	glEnable(GL_MULTISAMPLE);
+#endif
 
 	ResetCamera();
 

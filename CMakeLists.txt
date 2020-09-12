@@ -437,3 +437,8 @@ message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")
 
 
 add_dependencies(Tests Test_all MK404)
+
+add_custom_target(Image_Visdiff
+	COMMAND cd ${PROJECT_BINARY_DIR}
+	COMMAND for i in tests/snaps/*.png; do compare -compose src ${PROJECT_SOURCE_DIR}/scripts/$i $i ${i}diff; done;
+)

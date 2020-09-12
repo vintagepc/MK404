@@ -363,7 +363,7 @@ if(SANITY_TESTS)
 	add_test(Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
 	add_test(KeyPress env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
 	add_test(Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
-	add_test(Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} bunzip2 -k ../scripts/tests/Test.img.bz2 && ./MK404 Prusa_MK3S -g lite --sdimage ../scripts/tests/Test.img --script ../scripts/tests/test_GLPrint.txt)
+	add_test(Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage ../scripts/tests/Test.img --script ../scripts/tests/test_GLPrint.txt)
 endif()
 
 # This is a bit meaningless if your system doesn't generate the same renderings as the BR.
@@ -427,6 +427,8 @@ add_custom_target(Tests
 	COMMAND env ${TEST_EXPORT_PREFIX} echo LD is $$LD_LIBRARY_PATH and GD is $$GALLIUM_DRIVER
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/tests/snaps"
 	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
+	COMMAND cp ${PROJECT_SOURCE_DIR}/scripts/tests/Test.img.bz2 ${PROJECT_BINARY_DIR}
+	COMMAND bunzip2 ${PROJECT_BINARY_DIR}/Test.img.bz2
 	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest --timeout 180
 )
 message(STATUS "Environment path is $ENV{LD_LIBRARY_PATH}")

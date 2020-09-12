@@ -65,6 +65,8 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
 	RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);
 	RegisterActionAndMenu("ResetCamera","Resets camera view to default",ActResetView);
+	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state)", ActMouse, {ArgType::Int,ArgType::Int});
+	RegisterAction("MouseMove", "Simulates a mouse move (x,y)", ActMouseMove, {ArgType::Int,ArgType::Int});
 
 	glewInit();
 #ifdef TEST_MODE
@@ -211,7 +213,7 @@ void MK3SGL::Init(avr_t *avr)
 }
 
 
-Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<std::string> &)
+Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -223,6 +225,12 @@ Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vecto
 			return LineStatus::Finished;
 		case ActClear:
 			ClearPrint();
+			return LineStatus::Finished;
+		case ActMouse:
+			MouseCB(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)),0,0);
+			return LineStatus::Finished;
+		case ActMouseMove:
+			MotionCB(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)));
 			return LineStatus::Finished;
 		default:
 			return LineStatus::Unhandled;

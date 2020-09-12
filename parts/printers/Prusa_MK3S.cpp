@@ -254,10 +254,12 @@ void Prusa_MK3S::OnAVRCycle()
 	}
 }
 
+// pragma: LCOV_EXCL_START
 void Prusa_MK3S::OnMouseMove(int,int)
 {
 	// Passthrough? May not be necessary...
 }
+// pragma: LCOV_EXCL_STOP
 
 void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
 {
@@ -266,9 +268,9 @@ void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
 			m_key = key;
 			m_bPaused = false;
 			break;
-		case 'd':
-			//gbPrintPC = gbPrintPC==0;
-			break;
+		// case 'd':
+		// 	//gbPrintPC = gbPrintPC==0;
+		// 	break;
 		case '1':
 			m_iScheme ^=1;
 			break;

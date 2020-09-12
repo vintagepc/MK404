@@ -119,10 +119,12 @@ namespace Boards
 	}
 
 	// Convenience function for debug printing a particular pin.
-	void Test_Board::DebugPin(avr_irq_t *, uint32_t value)
+	void Test_Board::DebugPin(avr_irq_t *, uint32_t value) // pragma: LCOV_EXCL_START
 	{
 		std::cout << "Pin DBG: change to " << std::hex << value << '\n';
 	}
+
+	// pragma: LCOV_EXCL_STOP
 
 	void Test_Board::OnAVRInit()
 	{

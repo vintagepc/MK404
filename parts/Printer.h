@@ -42,7 +42,7 @@ class Printer: public Scriptable
 		}
 
 		// GL methods, use these to render your printer visuals and
-		virtual void Draw(){};
+		virtual void Draw(){}; // pragma: LCOV_EXCL_START
 
 		// Passthrough for GlutKeyboardFunc
 		virtual void OnKeyPress(unsigned char /*key*/, int /*x*/, int /*y*/){};
@@ -56,7 +56,7 @@ class Printer: public Scriptable
 		// Overload this if you need to setup your visuals.
 		virtual void OnVisualTypeSet(const std::string &/*type*/){};
 
-		virtual std::pair<int,int> GetWindowSize() = 0;
+		virtual std::pair<int,int> GetWindowSize() = 0; // pragma: LCOV_EXCL_STOP
 
 		std::string GetVisualType() { return m_visType; }
 		void SetVisualType(const std::string &visType) {m_visType = visType; OnVisualTypeSet(visType);}

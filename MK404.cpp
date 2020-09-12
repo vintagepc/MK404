@@ -64,7 +64,7 @@ bool m_bStopping = false;
 bool m_bTestMode = false;
 
 
-
+// pragma: LCOV_EXCL_START
 // Exit cleanly on ^C
 void OnSigINT(int) {
 	if (!m_bStopping)
@@ -105,6 +105,7 @@ extern "C" {
 		std::cerr << "ID:" << id << " type = " << type << " sev = " << severity << " message = " << message << '\n';
 	}
 }
+// pragma: LCOV_EXCL_STOP
 
 std::atomic_bool bIsQuitting {false};
 
@@ -168,7 +169,7 @@ void keyCB(unsigned char key, int x, int y)	/* called on key press */
 			printer->OnKeyPress(key,x,y);
 	}
 }
-
+// pragma: LCOV_EXCL_START
 void MouseCB(int button, int action, int x, int y)	/* called on key press */
 {
 	printer->OnMousePress(button,action,x,y);
@@ -178,7 +179,7 @@ void MotionCB(int x, int y)
 {
 	printer->OnMouseMove(x,y);
 }
-
+// pragma: LCOV_EXCL_STOP
 // gl timer. if the lcd is dirty, refresh display
 void timerCB(int i)
 {

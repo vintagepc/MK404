@@ -172,7 +172,9 @@ class MK3SGL: public BasePeripheral, public Scriptable
 		{
 			ActClear,
 			ActToggleNCam,
-			ActResetView
+			ActResetView,
+			ActMouse,
+			ActMouseMove
 		};
 
 		static MK3SGL *g_pMK3SGL;

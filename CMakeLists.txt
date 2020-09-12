@@ -363,7 +363,7 @@ if(SANITY_TESTS)
 	add_test(Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
 	add_test(KeyPress env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
 	add_test(Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
-	add_test(Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage ../scripts/tests/Test.img --script ../scripts/tests/test_GLPrint.txt)
+	add_test(Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint.txt)
 endif()
 
 # This is a bit meaningless if your system doesn't generate the same renderings as the BR.

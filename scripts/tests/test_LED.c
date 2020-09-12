@@ -75,9 +75,8 @@ int main()
 	for (unsigned int i=0; i<256; i+=20)
 	{
 		OCR4C = i; // set pwm duty
-		_delay_ms(2);
+		_delay_ms(10);
 		printf("PWM %d\n",i);
-
 		_delay_ms(20);
 	}
 

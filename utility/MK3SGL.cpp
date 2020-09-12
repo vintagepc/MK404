@@ -249,10 +249,10 @@ void MK3SGL::OnBoolChanged(avr_irq_t *irq, uint32_t value)
 			m_bPrintSurface = bVal;
 			break;
 		case IRQ::EFAN_IN:
-			m_bFanOn = bVal;
+			m_iFanPos = value;
 			break;
 		case IRQ::PFAN_IN:
-			m_bPFanOn = bVal;
+			m_iPFanPos = value;
 			break;
 		case IRQ::SD_IN:
 			m_bSDCard = !bVal; // CS is inverted.
@@ -433,18 +433,10 @@ void MK3SGL::Draw()
 					glPopMatrix();
 				}
 				glPushMatrix();
-					if (m_bPFanOn)
-					{
-						m_iPFanPos = (m_iPFanPos + 5)%360;
-					}
 					m_Objs->DrawPFan(m_iPFanPos);
 				glPopMatrix();
 
 				glPushMatrix();
-					if (m_bFanOn)
-					{
-						m_iFanPos = (m_iFanPos + 339)%360;
-					}
 					m_Objs->DrawEFan(m_iFanPos);
 				glPopMatrix();
 				glPushMatrix();

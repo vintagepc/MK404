@@ -44,8 +44,8 @@ avr_cycle_count_t Fan::OnTachChange(avr_t *, avr_cycle_count_t)
 {
     RaiseIRQ(TACH_OUT, m_bPulseState^=1);
     RegisterTimerUsec(m_fcnTachChange,m_uiUsecPulse,this);
-	m_uiRot = (m_uiRot + ((m_uiPWM)/10))%360;
-
+	m_uiRot = (m_uiRot + 21)%360;
+	RaiseIRQ(ROTATION_OUT,m_uiRot);
     return 0;
 }
 

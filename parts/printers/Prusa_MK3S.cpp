@@ -114,8 +114,8 @@ void Prusa_MK3S::OnVisualTypeSet(const std::string &type)
 	m_pVis->ConnectFrom(Z.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::Z_IN);
 	m_pVis->ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::E_IN);
 	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
-	m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::SPEED_OUT), MK3SGL::EFAN_IN);
-	m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::SPEED_OUT), MK3SGL::PFAN_IN);
+	m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
+	m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
 	m_pVis->ConnectFrom(hBed.GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
 	m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
 	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);

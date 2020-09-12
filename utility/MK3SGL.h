@@ -151,12 +151,10 @@ class MK3SGL: public BasePeripheral, public Scriptable
         std::atomic_int m_iKnobPos {0}, m_iFanPos = {0}, m_iPFanPos = {0}, m_iIdlPos = {0};
 
         std::atomic_bool m_bDirty = {false},
-			m_bFanOn = {false},
 			m_bMMU = {false},
 			m_bBedOn = {false},
 			m_bPINDAOn = {false},
 			m_bFINDAOn = {false},
-        	m_bPFanOn = {false},
 			m_bSDCard = {true},
 			m_bPrintSurface = {true};
 

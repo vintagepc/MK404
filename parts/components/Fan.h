@@ -41,7 +41,8 @@ public:
     #define IRQPAIRS    _IRQ(PWM_IN,"<Fan.pwm_in") \
                         _IRQ(DIGITAL_IN, "<Fan.digital_in>")\
                         _IRQ(TACH_OUT, ">Fan.tach_out")\
-                        _IRQ(SPEED_OUT, ">Fan.speed_out")
+                        _IRQ(SPEED_OUT, ">Fan.speed_out")\
+						_IRQ(ROTATION_OUT, ">Fan.angle_out")
 
     // Helper to keep pairs in sync.
     #include "IRQHelper.h"

@@ -159,7 +159,9 @@ class GLHelper: public Scriptable
 						std::stringstream strVal;
 						strVal << "0x" << std::setw(8) << std::setfill('0') << std::hex << m_color.load();
 						std::cout << "Actual pixel color: " << strVal.str() << '\n';
-						if (strVal.str()!=vArgs.at(2))
+						// Check agains the first n chars, so you can ignore alpha.
+						bool bMatch = vArgs.at(2) == strVal.str().substr(0,vArgs.at(2).length());
+						if (!bMatch)
 						{
 							return LineStatus::Timeout;
 						}

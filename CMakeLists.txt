@@ -14,6 +14,9 @@ option(ENABLE_IWYU "Enables Include-what-you-use")
 option(ENABLE_TIDY "Enables Clang-tidy")
 option(ENABLE_GCOV "Enables gcov coverage")
 option(ENABLE_GPERF "Enables gperf profiling")
+option(RUNNER_ENV, "Adjust commands for github runner")
+option(SANITY_TESTS, "Run general sanity tests in addition to explicit component tests")
+
 
 if (ENABLE_GCOV)
 	SET(GCOV_BINARY /usr/bin/gcov-7)
@@ -93,6 +96,7 @@ set(H_FILES
 	parts/components/MMU2.h
 	parts/components/PAT9125.h
 	parts/components/GCodeSniffer.h
+	parts/components/GLHelper.h
 	parts/components/TMC2130.h
 	parts/components/IRSensor.h
 	parts/components/Heater.h
@@ -122,7 +126,6 @@ set(H_FILES
 	3rdParty/arcball/ArcBall.hpp
 	3rdParty/arcball/Quaternion.hpp
 )
-
 
 set(MK404_SOURCES
 	parts/Board.cpp
@@ -225,7 +228,7 @@ target_include_directories (MK404 PUBLIC
                             "${PROJECT_SOURCE_DIR}/utility"
                             "${PROJECT_SOURCE_DIR}/3rdParty/arcball"
                          )
-
+target_include_directories(MK404 SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rdParty/pngpp")
 
 include_directories("${PROJECT_SOURCE_DIR}/3rdParty/tinyobjloader/")
 
@@ -237,6 +240,8 @@ if (NOT CPPCHECK_ONLY)
 find_package(LibElf REQUIRED)
 include_directories(${LIBELF_INCLUDE_DIRS})
 include(FindSDL)
+include_directories(${SDL_INCLUDE_DIR})
+include(FindPNG)
 include_directories(${SDL_INCLUDE_DIR})
 include(FindOpenGL)
 include_directories(${OPENGL_INCLUDE_DIR})
@@ -252,6 +257,7 @@ endif()
 if (ENABLE_GCOV)
 	target_compile_options(MK404 PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
 	target_link_libraries(MK404 -coverage -lgcov)
+	add_definitions(-DTEST_MODE)
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
 	add_custom_target(Coverage.tar.gz
 		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_BINARY_DIR}/Coverage
@@ -270,12 +276,19 @@ endif()
 
 if(CYGWIN)
 target_link_libraries(MK404 GLEW)
+add_definitions(-D__GLIBC__) # Add for png++ endian check
 else()
 target_link_libraries(MK404 GLEW::GLEW)
 endif()
 
 target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
 endif()
+
+if(EXISTS "${PNG_LIBRARY}")
+	add_definitions(-DSUPPORTS_LIBPNG)
+	target_link_libraries(MK404 ${PNG_LIBRARY})
+endif()
+
 
 target_link_libraries(MK404 gsl-lite)
 
@@ -310,17 +323,53 @@ add_custom_command(TARGET MK404 POST_BUILD
 file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/test_*.c)
 message(STATUS "Checking for tests...")
 
+
+if(RUNNER_ENV)
+	set(TEST_LIB_PATH ${PROJECT_SOURCE_DIR}/$ENV{LD_LIBRARY_PATH})
+	set(TEST_EXPORT_PREFIX LD_LIBRARY_PATH=${TEST_LIB_PATH} GALLIUM_DRIVER=swr DISPLAY=:99)
+	set(TEST_XVFB_PREFIX "xvfb-run")
+else()
+	unset(TEST_EXPORT_PREFIX)
+	unset(TEST_XVFB_PREFIX)
+	unset(TEST_LIB_PATH)
+endif()
+
+
 enable_testing()
 add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
-add_test(Test_Printer_Trace MK404 Test_Printer --trace ?)
-add_test(Test_Printer_Script MK404 Test_Printer --scripthelp)
+add_test(Make_SD_image2 MK404 --sdimage Einsy_atmega2560_SDcard.bin --image-size 128M)
+add_test(Check_GL env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} glxinfo )
 
+add_test(Test_Printer_Trace MK404 Test_Printer -g none --trace ?)
+add_test(Test_Printer_Script MK404 Test_Printer -g none --scripthelp)
 foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
 	message(STATUS "Adding test: ${TEST_BASE}" )
-	add_test(${TEST_BASE} MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer)
+	add_test(NAME ${TEST_BASE}
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMAND env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
+	)
 endforeach()
-#	add_test(MK3s_Boot MK404 Prusa_MK3SMMU2 --test -f MK3S.afx --script ../scripts/tests/test_boot.txt)
+
+if(SANITY_TESTS)
+	add_test(MK3S_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -f MK3S.afx --script ../scripts/tests/test_boot_MK3S.txt)
+	add_test(MK3_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3 -f MK3S.afx --script ../scripts/tests/test_boot_MK3.txt)
+	add_test(MK3SMMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3SMMU2.txt)
+	add_test(MK3MMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3MMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3MMU2.txt)
+	add_test(Lite_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g lite -f MK3S.afx --script ../scripts/tests/test_lite_gfx.txt)
+	add_test(Bear_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g bear -f MK3S.afx --script ../scripts/tests/test_bear_gfx.txt)
+	add_test(Fancy_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancy_gfx.txt)
+	add_test(Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404  Prusa_MK3SMMU2 -g lite -f MK3S.afx --script ../scripts/tests/test_litemmu_gfx.txt)
+	add_test(Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
+	add_test(KeyPress env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
+	add_test(Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
+	add_test(Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint.txt)
+endif()
+
+# This is a bit meaningless if your system doesn't generate the same renderings as the BR.
+if(RUNNER_ENV)
+	add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)
+endif()
 
 
 add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}
@@ -375,7 +424,21 @@ add_custom_target(Release_Package
 add_dependencies(Release_Package MK404)
 
 add_custom_target(Tests
+	COMMAND env ${TEST_EXPORT_PREFIX} echo LD is $$LD_LIBRARY_PATH and GD is $$GALLIUM_DRIVER
+	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/tests/snaps"
 	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
-	COMMAND cd ${PROJECT_BINARY_DIR} && make test
+	COMMAND cp ${PROJECT_SOURCE_DIR}/scripts/tests/Test.img.bz2 ${PROJECT_BINARY_DIR}
+	COMMAND bunzip2 ${PROJECT_BINARY_DIR}/Test.img.bz2
+	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest --timeout 180
 )
+message(STATUS "Environment path is $ENV{LD_LIBRARY_PATH}")
+message(STATUS "Renderer is $ENV{GALLIUM_DRIVER}")
+
+
+
 add_dependencies(Tests Test_all MK404)
+
+add_custom_target(Image_Visdiff
+	COMMAND cd ${PROJECT_BINARY_DIR}
+	COMMAND for i in tests/snaps/*.png; do compare -compose src ${PROJECT_SOURCE_DIR}/scripts/$i $i ${i}diff; done;
+)

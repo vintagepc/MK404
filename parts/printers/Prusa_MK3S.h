@@ -21,6 +21,7 @@
 #pragma once
 
 #include "EinsyRambo.h"     // for EinsyRambo
+#include "GLHelper.h"
 #include "IRSensor.h"
 #include "MK3SGL.h"
 #include "Printer.h"        // for Printer, Printer::VisualType
@@ -57,13 +58,15 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 		virtual void SetupIR(); // Overridden by the MK3 to setup the PAT.
 		inline virtual void ToggleFSensor(){ IR.Toggle(); };
 
-		inline virtual void FSensorJam() {};
+		inline virtual void FSensorJam() {}; // pragma: LCOV_EXCL_LINE
 
 		void OnAVRCycle() override;
 
 		virtual bool GetHasMMU() {return false;}
 
 		std::unique_ptr<MK3SGL> m_pVis {nullptr};
+
+		GLHelper m_gl{};
 
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);
@@ -74,6 +77,8 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 		std::vector<uint32_t> m_colors = {
 		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
 		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055};
+
+
 
 
 };

@@ -49,4 +49,4 @@ PAT9125::Toggle Jam()
 Serial0::NextLineMustBe(RD 14: 05)
 PAT9125::Resume Auto()
 PAT9125::Toggle()
-#Board::Quit();
+Board::Quit();

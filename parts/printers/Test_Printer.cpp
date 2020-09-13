@@ -19,7 +19,13 @@
  */
 
 #include "Test_Printer.h"
-
+#include "Beeper.h"
+#include "Fan.h"              // for Fan
+#include "HD44780GL.h"
+#include "Heater.h"           // for Heater
+#include "LED.h"
+#include "TMC2130.h"          // for TMC2130
+#include <GL/glew.h> //NOLINT - must come first.
 
 void Test_Printer::SetupHardware()
 {
@@ -33,4 +39,39 @@ void Test_Printer::OnAVRCycle()
 	// {
 	// 	m_key = 0;
 	// }
+}
+
+
+void Test_Printer::Draw()
+{
+		glPushMatrix();
+		glLoadIdentity(); // Start with an identity matrix
+			glScalef(4, 4, 1);
+
+			m_lcd.Draw(0x00FF00FF, /* background */
+						0x0000FFFF, /* character background */
+						0xFFFFFFFF, /* text */
+						0x00000055 /* shadow */ );
+		glPopMatrix();
+		glLoadIdentity();
+		float fX = (5 + m_lcd.GetWidth()* 6)*4;
+		float fY = (5 + m_lcd.GetHeight() * 9);
+		glScalef(fX/350,4,1);
+		glPushMatrix();
+			glTranslatef(0, fY,0);
+			m_TMC.Draw();
+			glTranslatef(0,10,0);
+			m_TMC.Draw_Simple();
+			glTranslatef(0,10,0);
+			m_Fan.Draw();
+			glTranslatef(20,0,0);
+			m_heat.Draw();
+			glTranslatef(20,0,0);
+			m_LED.Draw();
+			glTranslatef(20,0,0);
+			m_LED2.Draw();
+			glTranslatef(20,0,0);
+			m_buzzer.Draw();
+		glPopMatrix();
+		m_gl.OnDraw();
 }

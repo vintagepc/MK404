@@ -30,10 +30,10 @@ struct _hexColor_t{
 	_hexColor_t(const uint32_t &val, const float &fScale)
 	{
 		memcpy(this, &val, 4);
-		alpha = static_cast<float>(alpha)/fScale;
-		red = 	static_cast<float>(red)/fScale;
-		green = static_cast<float>(green)/fScale;
-		blue = 	static_cast<float>(blue)/fScale;
+		alpha = static_cast<float>(alpha)*fScale;
+		red = 	static_cast<float>(red)*fScale;
+		green = static_cast<float>(green)*fScale;
+		blue = 	static_cast<float>(blue)*fScale;
 	} // Helper constructor
 	uint8_t alpha{0};
 	uint8_t blue {0};

@@ -36,13 +36,15 @@ class SoftPWMable : public BasePeripheral
 	protected:
 
 		// You will receive soft PWM values here.
-		virtual void OnPWMChange(avr_irq_t */*irq*/, uint32_t /*value*/){};
+		virtual void OnPWMChange(avr_irq_t */*irq*/, uint32_t /*value*/){};  // pragma: LCOV_EXCL_START
 
 		// Override this with your normal method for a digital change when NOT soft-PWMed
 		virtual void OnDigitalChange(avr_irq_t */*irq*/, uint32_t /*value*/){};
 
 		// Called when the frequency changes.
 		virtual void OnWaveformChange(uint32_t /*uiTOn*/, uint32_t /*uiTTotal*/) {};
+
+		// pragma: LCOV_EXCL_STOP
 
 		// Binding for soft PWM digital input register notify.
 		inline void OnDigitalInSPWM(avr_irq_t *irq, uint32_t value)

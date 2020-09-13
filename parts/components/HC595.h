@@ -48,7 +48,7 @@ class HC595: public BasePeripheral
 			_IRQ(IN_RESET,"<hc959.reset_in") \
 			_IRQ(IN_CLOCK,"<hc959.clock_in") \
 			_IRQ(IN_DATA,"<hc959.data_in") \
-			_IRQ(OUT,"32>hc959.out") \
+			_IRQ(SHIFT_OUT,"32>hc959.out") \
 			_IRQ(BIT0	,">bit0") \
 			_IRQ(BIT1	,">bit1") \
 			_IRQ(BIT2	,">bit2") \

@@ -59,9 +59,9 @@ class I2CPeripheral: public BasePeripheral
 		}
 
 		// Override these for read and write operations on your device's registers.
-		virtual uint8_t GetRegVal(uint8_t /*uiAddr*/){return 0;};
+		virtual uint8_t GetRegVal(uint8_t /*uiAddr*/){return 0;}; // pragma: LCOV_EXCL_LINE
 		// Return T if success, F if failure. F results in NACK.
-		virtual bool SetRegVal(uint8_t /*uiAddr*/, uint32_t /*uiData*/){return false;};
+		virtual bool SetRegVal(uint8_t /*uiAddr*/, uint32_t /*uiData*/){return false;}; // pragma: LCOV_EXCL_LINE
 
 
     private:

@@ -192,11 +192,12 @@ namespace Boards
 
 	}
 
-	// Convenience function for debug printing a particular pin.
+	// Convenience function for debug printing a particular pin. pragma: LCOV_EXCL_START
 	void EinsyRambo::DebugPin(avr_irq_t *, uint32_t value)
 	{
 		std::cout << "Pin DBG: change to " << value << '\n';
 	}
+	// pragma: LCOV_EXCL_STOP
 
 	void EinsyRambo::OnAVRInit()
 	{

@@ -3,9 +3,15 @@ ScriptHost::SetTimeoutMs(500)
 ScriptHost::SetQuitOnTimeout(1)
 Serial0::NextLineMustBe(READY)
 TelHost::WaitFor(Heater_B_>heater.on,0)
+Board::Pause()
+GLHelper::SnapRect(tests/snaps/Heater01,29,244,28,40)
+Board::Resume()
 Heater_B::StopHeating()
 Serial0::NextLineMustBe(ON)
 TelHost::WaitFor(Heater_B_>heater.on,1)
+Board::Pause()
+GLHelper::SnapRect(tests/snaps/Heater02,29,244,28,40)
+Board::Resume()
 ScriptHost::SetTimeoutMs(6000);
 Board::WaitMs(5000);
 # Check that temp has not increased... yet
@@ -14,10 +20,16 @@ Heater_B::Resume()
 # 50C
 ScriptHost::SetTimeoutMs(15000);
 TelHost::WaitForGT(Heater_B_>heater.temp_out,12800)
+Board::Pause()
+GLHelper::SnapRect(tests/snaps/Heater03,29,244,28,40)
+Board::Resume()
 Button::Press();
 Button::Release();
 Serial0::NextLineMustBe(OFF)
 TelHost::WaitFor(Heater_B_>heater.on,0)
+Board::Pause()
+GLHelper::SnapRect(tests/snaps/Heater04,29,244,28,40)
+Board::Resume()
 # 48C
 Board::WaitMs(1000)
 TelHost::WaitForLT(Heater_B_>heater.temp_out,12288)

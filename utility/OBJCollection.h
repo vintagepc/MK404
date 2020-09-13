@@ -33,7 +33,7 @@ class OBJCollection
 	public:
 
 		explicit OBJCollection(std::string strName):m_strName(std::move(strName)){};
-		~OBJCollection() = default;
+		~OBJCollection() = default; // pragma: LCOV_EXCL_LINE
 
 		void Load()
 		{
@@ -61,7 +61,6 @@ class OBJCollection
 			Other
 		};
 
-		virtual void SetupLighting(){};
 
 		inline void Draw(const ObjClass type)
 		{
@@ -77,14 +76,15 @@ class OBJCollection
 
 		};
 
+		virtual inline void ApplyPLEDTransform() {}; // pragma: LCOV_EXCL_START  - these lines are not reachable if derivatives are properly implemented.
+
 		virtual void GetBaseCenter(gsl::span<float> fTrans)
 		{
 			m_pBaseObj->GetCenteringTransform(fTrans);
 		};
 
 		virtual void OnLoadComplete(){};
-
-		virtual inline void ApplyPLEDTransform() {};
+		virtual void SetupLighting(){};
 		virtual inline void ApplyBedLEDTransform() {};
 		virtual inline void ApplyLCDTransform() {};
 		virtual inline void ApplyPrintTransform(){};
@@ -99,6 +99,8 @@ class OBJCollection
 		virtual void DrawEFan(int /*iRotation*/){};
 		virtual void DrawPFan(int /*iRotation*/){};
 		virtual void DrawEVis(float /*fEPos*/){};
+
+		// pragma: LCOV_EXCL_STOP
 
 		virtual bool SupportsMMU() { return false; }
 

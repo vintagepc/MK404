@@ -105,7 +105,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
         void ProcessCommand();
         void CreateReply();
 
-        void CheckDiagOut();
+        //void CheckDiagOut();
 
         bool m_bDir  = false;
         std::atomic_bool m_bEnable {true}, m_bConfigured {false};

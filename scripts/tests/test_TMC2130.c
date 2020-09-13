@@ -155,6 +155,7 @@ int main()
 
 	// DISABLE
 	PORTA|=(1U<<4);
+	printf("DISABLED\n");
 	if (PINA&0x2)
 			printf("DIAG NOT CLEARED\n");
 

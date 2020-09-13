@@ -181,15 +181,16 @@ uint8_t TMC2130::OnSPIIn(struct avr_irq_t *, uint32_t value)
     return byte; // SPIPeripheral takes care of the reply.
 }
 
-void TMC2130::CheckDiagOut()
-{
-    bool bDiag = m_regs.defs.DRV_STATUS.stallGuard && m_regs.defs.GCONF.diag0_stall;
-    //printf("Diag: %01x\n",bDiag);
-    if (bDiag)
-	{
-        RaiseIRQ(DIAG_OUT, bDiag^ m_regs.defs.GCONF.diag0_int_pushpull);
-	}
-}
+// TODO (anyone): Fix the diag output so it respects GCONF
+// void TMC2130::CheckDiagOut()
+// {
+//     bool bDiag = m_regs.defs.DRV_STATUS.stallGuard && m_regs.defs.GCONF.diag0_stall;
+//     //printf("Diag: %01x\n",bDiag);
+//     if (bDiag)
+// 	{
+//         RaiseIRQ(DIAG_OUT, bDiag^ m_regs.defs.GCONF.diag0_int_pushpull);
+// 	}
+// }
 
 // Called when CSEL changes.
 void TMC2130::OnCSELIn(struct avr_irq_t *, uint32_t value)

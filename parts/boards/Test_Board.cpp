@@ -112,6 +112,8 @@ namespace Boards
 		m_LED.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), LED::PWM_IN);
 		TryConnect(LCD_BL_PIN, m_LED2, LED::LED_IN);
 		m_LED2.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), LED::PWM_IN);
+		TryConnect(LCD_BL_PIN,m_lcd, HD44780::BRIGHTNESS_IN);
+		m_lcd.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), HD44780::BRIGHTNESS_PWM_IN);
 
 		AddHardware(m_buzzer);
 		m_buzzer.ConnectFrom(GetDIRQ(BEEPER), Beeper::DIGITAL_IN);

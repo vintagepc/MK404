@@ -65,7 +65,7 @@ class GLHelper: public Scriptable
 					{
 						uint32_t uiTmp[4] {0};
 						glReadPixels(m_x,(height-m_y)-1u, 1, 1, GL_RGBA, GL_UNSIGNED_INT, &uiTmp);
-						m_color = uiTmp[0]<<24U | uiTmp[1] << 16U | uiTmp[2] <<8U | uiTmp[3];
+						m_color = uiTmp[0]<<24U | (uiTmp[1]&0xFFu) << 16U | (uiTmp[2]&0xFFu) <<8U | (uiTmp[3]&0xFFu);
 						m_iState = St_Done;
 					}
 					break;
@@ -149,7 +149,7 @@ class GLHelper: public Scriptable
 					{
 						// Dispatch check.
 						m_x = std::stoul(vArgs.at(0));
-						m_y = m_h - std::stoul(vArgs.at(1)); // Work from the top down so new additions at the bottom of the window don't mess up existing tests.
+						m_y = std::stoul(vArgs.at(1)); // Work from the top down so new additions at the bottom of the window don't mess up existing tests.
 						m_iAct = iAct;
 						m_iState = St_Queued;
 					}

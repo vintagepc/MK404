@@ -64,7 +64,7 @@ namespace Boards
 			Heater hExtruder {1.5,25.0,false,'H',30,250},
 					hBed {0.25, 25, true,'B',30,100};
 			PAT9125 m_fSensor;
-			PINDA pinda { (23.f), (5.f)};
+			PINDA pinda { (23.f), (5.f), PINDA::XYCalMap::MK25};
 			LED lPINDA {0xFF0000FF,'P',true},
 				lIR {0xFFCC00FF,'I',true},
 				lSD {0x0000FF00,'C', true};

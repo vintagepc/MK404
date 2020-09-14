@@ -73,6 +73,7 @@ namespace Boards
 		hExtruder.ConnectTo(Heater::TEMP_OUT, tExtruder.GetIRQ(Thermistor::TEMP_IN));
 
 		std::cout << "MK3 - adding laser sensor\n";
+		AddHardware(lIR);
 		AddHardware(m_fSensor, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
 		lIR.ConnectFrom(m_fSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 
@@ -100,7 +101,8 @@ namespace Boards
 
 		Z.GetConfig().bInverted = true;
 		Z.GetConfig().uiStepsPerMM = 400;
-		Z.GetConfig().iMaxMM = 210;
+		Z.GetConfig().iMaxMM = 215;
+		Z.GetConfig().fStartPos = 215;
 		AddHardware(Z);
 		TryConnect(Z_DIR_PIN, 		Z, A4982::DIR_IN);
 		TryConnect(Z_STEP_PIN, 		Z, A4982::STEP_IN);

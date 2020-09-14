@@ -31,13 +31,23 @@
 #include <string>            // for string
 #include <vector>            // for vector
 
+// Forward declaration:
+namespace gsl { template <class U> class span; }
+
 class PINDA:public BasePeripheral,public Scriptable{
     public:
         #define IRQPAIRS _IRQ(X_POS_IN,"<pinda.x_in") _IRQ(Y_POS_IN,"<pinda.y_in") _IRQ(Z_POS_IN,"<pinda.Z_in") _IRQ(TRIGGER_OUT,">pinda.out") _IRQ(SHEET_OUT,">sheet.out")
         #include "IRQHelper.h"
 
+	// Switch var for tracking which set of XY cal points to return for the heatbed.
+	enum class XYCalMap
+	{
+		MK3,
+		MK25
+	};
+
     // Creates a new PINDA with X/Y nozzle offsets fX and fY
-    explicit PINDA(float fX = 0, float fY = 0);
+    explicit PINDA(float fX = 0, float fY = 0, XYCalMap map = XYCalMap::MK3);
 
     // Initializes the PINDA on AVR, and connects it to the X/Y/Z position IRQs
     void Init(avr_t *avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t *irqZ);
@@ -82,17 +92,13 @@ private:
 
     void SetMBLMap();
 
+	gsl::span<float>& GetXYCalPoints();
+
 	float m_fZTrigHeight = 1.0; // Trigger height above Z=0, i.e. the "zip tie" adjustment
     float m_fOffset[2] = {0,0}; // pinda X Y offset  from nozzle
     float m_fPos[3] = {10,10,10}; // Current position tracking.
     MBLMap_t m_mesh = MBLMap_t();// MBL map
     std::atomic_bool m_bIsSheetPresent {true}; // Is the steel sheet present? IF yes, PINDA will attempt to simulate the bed sensing point for selfcal instead.
+	XYCalMap m_XYCalType;
 
-    // pulled from mesh_bed_calibration.cpp
-    float _bed_calibration_points[8] = {
-        37.f -2.0, 18.4f -9.4 + 2,
-        245.f -2.0, 18.4f - 9.4 + 2,
-        245.f -2.0, 210.4f - 9.4 + 2,
-        37.f -2.0,  210.4f -9.4 + 2
-    };
 };

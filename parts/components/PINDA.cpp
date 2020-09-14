@@ -39,8 +39,8 @@ void PINDA::CheckTriggerNoSheet()
     //printf("PINDA: X: %f Y: %f\n", this->fPos[0], this->fPos[1]);
     for (int i=0; i<4; i++)
     {
-        fEdist = sqrt( pow(m_fPos[0] - gsl::at(PINDA::_bed_calibration_points,2*i),2)  +
-            pow(m_fPos[1] - gsl::at(PINDA::_bed_calibration_points,(2*i)+1),2));
+        fEdist = sqrt( pow(m_fPos[0] - GetXYCalPoints().at(2*i),2)  +
+            pow(m_fPos[1] - GetXYCalPoints().at((2*i)+1),2));
         if (fEdist<10)
         {
             bFound = true;
@@ -107,8 +107,8 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const std::vecto
 				return IssueLineError(std::string("Index ") + std::to_string(iVal) + " is out of range [0,3]");
 			}
 			float fX = stof(vArgs.at(1)), fY = stof(vArgs.at(2));
-			gsl::at(_bed_calibration_points,2*iVal) = fX;
-			gsl::at(_bed_calibration_points,(2*iVal)+1) = fY;
+			GetXYCalPoints().at(2*iVal) = fX;
+			GetXYCalPoints().at((2*iVal)+1) = fY;
 			return LineStatus::Finished;
 		}
 	}
@@ -162,6 +162,36 @@ void PINDA::OnYChanged(struct avr_irq_t*,uint32_t value)
 
 }
 
+gsl::span<float>& PINDA::GetXYCalPoints()
+{
+    // pulled from mesh_bed_calibration.cpp
+    static float _fMK3Cal[8] = {
+        37.f -2.0, 18.4f -9.4 + 2,
+        245.f -2.0, 18.4f - 9.4 + 2,
+        245.f -2.0, 210.4f - 9.4 + 2,
+        37.f -2.0,  210.4f -9.4 + 2
+    };
+	static float _fMK25Cal[8] = {
+        37.f -2.0, 18.4f -9.4 + 2,
+        245.f -2.0, 18.4f - 9.4 + 2,
+        245.f -2.0, 210.4f - 9.4,
+        37.f -2.0,  210.4f -9.4
+    };
+	static gsl::span<float> fMK3 {_fMK3Cal};
+	static gsl::span<float> fMK25 {_fMK25Cal};
+
+	switch (m_XYCalType)
+	{
+		case XYCalMap::MK25:
+			return fMK25;
+		case XYCalMap::MK3:
+		default:
+			return fMK3;
+	}
+
+
+}
+
 void PINDA::OnZChanged(avr_irq_t*, uint32_t value)
 {
     // Z is translated so that the bed level heights don't need to account for it, e.g. they are just
@@ -194,7 +224,7 @@ void PINDA::ToggleSheet()
     RaiseIRQ(SHEET_OUT,m_bIsSheetPresent);
 }
 
-PINDA::PINDA(float fX, float fY):Scriptable("PINDA"),m_fOffset{fX,fY}
+PINDA::PINDA(float fX, float fY, XYCalMap map):Scriptable("PINDA"),m_fOffset{fX,fY}, m_XYCalType(map)
 {
     SetMBLMap();
 }

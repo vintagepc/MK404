@@ -21,6 +21,7 @@
 #pragma once
 
 #include "A4982.h"
+#include "Beeper.h"
 #include "Board.h"                               // for Board
 #include "Fan.h"
 #include "HD44780GL.h"                           // for HD44780G
@@ -56,10 +57,11 @@ namespace Boards
 			void OnAVRDeinit() override;
 
 			HD44780GL lcd;
+			Beeper m_buzzer;
 			uart_pty UART0;
 			RotaryEncoder encoder;
 			A4982 X{'X'}, Y{'Y'}, Z{'Z'}, E{'E'};
-			Thermistor tExtruder, tBed, tAmbient;
+			Thermistor tExtruder, tBed, tPinda, tAmbient;
 			Fan fExtruder {3300,'E'}, fPrint {5000,'P'};
 			Heater hExtruder {1.5,25.0,false,'H',30,250},
 					hBed {0.25, 25, true,'B',30,100};

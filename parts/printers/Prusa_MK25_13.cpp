@@ -20,6 +20,7 @@
 
 #include "Prusa_MK25_13.h"
 #include "A4982.h"
+#include "Beeper.h"
 #include "Fan.h"
 #include "HD44780GL.h"        // for HD44780GL
 #include "Heater.h"
@@ -59,7 +60,7 @@ void Prusa_MK25_13::Draw()
 			glTranslatef(0,10,0);
 			E.Draw_Simple();
 			glTranslatef(190,0,0);
-			//m_buzzer.Draw();
+			m_buzzer.Draw();
 			glTranslatef(20,0,0);
 			fPrint.Draw();
 			glTranslatef(20,0,0);

@@ -20,6 +20,7 @@
 
 #include "MiniRambo.h"
 #include "3rdParty/MK3/thermistortables.h"  // for OVERSAMPLENR, temptable_1, temptable_2000
+#include "Beeper.h"
 #include "HD44780.h"           // for HD44780
 #include "LED.h"
 #include "PAT9125.h"
@@ -63,6 +64,10 @@ namespace Boards
 		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
 		tAmbient.SetTable({(int16_t*)temptable_2000, sizeof(temptable_2000)/sizeof(int16_t)}, OVERSAMPLENR);
 
+		AddHardware(tPinda, GetPinNumber(TEMP_PINDA_PIN));
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
+		tPinda.SetTable({(int16_t*)temptable_1, sizeof(temptable_1)/sizeof(int16_t)}, OVERSAMPLENR);
+
 		AddHardware(fExtruder, 	GetDIRQ(X_MAX_PIN), GetDIRQ(E0_FAN), GetPWMIRQ(E0_FAN));
 		AddHardware(fPrint, 	nullptr, GetDIRQ(FAN_PIN), GetPWMIRQ(FAN_PIN));
 
@@ -76,6 +81,9 @@ namespace Boards
 		AddHardware(lIR);
 		AddHardware(m_fSensor, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
 		lIR.ConnectFrom(m_fSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
+
+		AddHardware(m_buzzer);
+		m_buzzer.ConnectFrom(GetDIRQ(BEEPER),Beeper::DIGITAL_IN);
 
 		X.GetConfig().bInverted = true;
 		X.GetConfig().iMaxMM = 255;

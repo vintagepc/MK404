@@ -71,6 +71,7 @@ namespace Wirings
 					{SWI2C_SDA,20},				//IR_SENSOR_PIN on MK2.5S
 					{TEMP_0_PIN,0},
 					{TEMP_1_PIN,1},				//TEMP_PINDA_PIN for MK2.5+MK2.5S
+					{TEMP_PINDA_PIN,1},
 					{TEMP_AMBIENT_PIN,6},
 					{TEMP_BED_PIN,2},
 					{X_DIR_PIN,48},

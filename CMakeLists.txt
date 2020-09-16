@@ -94,6 +94,7 @@ set(H_FILES
 	parts/pinspecs/PinSpec_32u4.h
 	parts/PrinterFactory.h
 	parts/Printer.h
+	parts/printers/Prusa_MK1_13.h
 	parts/printers/Prusa_MK2_13.h
 	parts/printers/Prusa_MK25_13.h
 	parts/printers/Prusa_MK25S_13.h
@@ -166,6 +167,7 @@ set(MK404_SOURCES
 	parts/components/uart_pty.cpp
 	parts/components/VoltageSrc.cpp
 	parts/components/w25x20cl.cpp
+	parts/printers/Prusa_MK1_13.cpp
 	parts/printers/Prusa_MK2_13.cpp
 	parts/printers/Prusa_MK25_13.cpp
 	parts/printers/Prusa_MK25S_13.cpp

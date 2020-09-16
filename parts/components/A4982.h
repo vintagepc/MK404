@@ -78,6 +78,8 @@ class A4982: public BasePeripheral
 	private:
 		void _Draw(bool bSimple = false);
 
+		void CheckEndstops();
+
 		// Input handlers.
 		void OnDirIn(avr_irq_t *irq, uint32_t value);
 		void OnEnableIn(avr_irq_t *irq, uint32_t value);

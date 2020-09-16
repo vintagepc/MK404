@@ -141,21 +141,7 @@ void A4982::OnStepIn(struct avr_irq_t * /*irq*/, uint32_t value)
 
     if (!m_cfg.bHasNoEndStops)
     {
-        if (m_iCurStep<0)
-        {
-            m_iCurStep = 0;
-            RaiseIRQ(MIN_OUT,1);
-        }
-        else if (m_iCurStep>m_iMaxPos)
-        {
-            m_iCurStep = m_iMaxPos;
-            RaiseIRQ(MAX_OUT,1);
-        }
-		else
-		{
-			RaiseIRQ(MAX_OUT,0);
-			RaiseIRQ(MIN_OUT,0);
-		}
+		CheckEndstops();
     }
 
     m_fCurPos = StepToPos(m_iCurStep);
@@ -164,12 +150,32 @@ void A4982::OnStepIn(struct avr_irq_t * /*irq*/, uint32_t value)
     RaiseIRQ(POSITION_OUT, posOut);
 }
 
+void A4982::CheckEndstops()
+{
+	if (m_iCurStep<0)
+	{
+		m_iCurStep = 0;
+		RaiseIRQ(MIN_OUT,1);
+	}
+	else if (m_iCurStep>m_iMaxPos)
+	{
+		m_iCurStep = m_iMaxPos;
+		RaiseIRQ(MAX_OUT,1);
+	}
+	else
+	{
+		RaiseIRQ(MAX_OUT,0);
+		RaiseIRQ(MIN_OUT,0);
+	}
+}
+
 void A4982::ReparseConfig()
 {
     m_iCurStep = PosToStep(m_cfg.fStartPos);
     m_iMaxPos = PosToStep(m_cfg.iMaxMM);
     m_fCurPos = m_cfg.fStartPos;
 	m_fEnd = StepToPos(m_iMaxPos);
+	CheckEndstops();
 }
 
 // Called when DRV_EN is triggered.

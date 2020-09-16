@@ -100,7 +100,7 @@ namespace Boards
 		Z.GetConfig().bInverted = true;
 		Z.GetConfig().uiStepsPerMM = 400;
 		Z.GetConfig().iMaxMM = 215;
-		Z.GetConfig().fStartPos = 215;
+		Z.GetConfig().fStartPos = 10.f;
 		AddHardware(Z);
 		TryConnect(Z_DIR_PIN, 		Z, A4982::DIR_IN);
 		TryConnect(Z_STEP_PIN, 		Z, A4982::STEP_IN);
@@ -138,11 +138,6 @@ namespace Boards
 		if (mount_error != 0) {
 			std::cerr << "SD card image (" << strSD << ") could not be mounted (error " << mount_error << " ).\n";
 		}
-
-		AddHardware(pinda, X.GetIRQ(A4982::POSITION_OUT),  Y.GetIRQ(A4982::POSITION_OUT),  Z.GetIRQ(A4982::POSITION_OUT));
-		TryConnect(pinda, PINDA::TRIGGER_OUT ,Z_MIN_PIN);
-		AddHardware(lPINDA);
-		lPINDA.ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), LED::LED_IN);
 
 	}
 

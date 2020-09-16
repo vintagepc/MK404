@@ -47,6 +47,8 @@ class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 	protected:
 		void SetupHardware() override;
 
+		virtual void SetupPINDA();
+
 		void OnAVRCycle() override;
 
 	private:

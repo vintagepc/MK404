@@ -19,20 +19,22 @@
  */
 
 #include "Prusa_MK2_13.h"
-#include "A4982.h"
-#include "Beeper.h"
-#include "Fan.h"
+#include "A4982.h"            // for A4982, A4982::IRQ::POSITION_OUT, PINDA:...
+#include "Beeper.h"           // for Beeper
+#include "Fan.h"              // for Fan
 #include "HD44780GL.h"        // for HD44780GL
-#include "Heater.h"
-#include "LED.h"
-#include "MMU1.h"
-#include "RotaryEncoder.h"
-#include "SDCard.h"
-#include "sim_io.h"
+#include "Heater.h"           // for Heater
+#include "LED.h"              // for LED
+#include "MMU1.h"             // for MMU1
+#include "PINDA.h"            // for PINDA
+#include "PinNames.h"         // for Pin::Z_MIN_PIN
+#include "RotaryEncoder.h"    // for RotaryEncoder, RotaryEncoder::::CCW_CLICK
+#include "SDCard.h"           // for SDCard
+#include "sim_io.h"           // for avr_register_io_write
 #include "uart_pty.h"         // for uart_pty
-#include <GL/glew.h>		//NOLINT - GLEW must come first.
+#include <GL/glew.h>          // NOLINT for glTranslatef, glLoadIdentity, glPopMatrix
 #include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
-#include <iostream>            // for printf
+#include <iostream>           // for operator<<, cout, ostream, basic_ostream
 
 using std::cout;
 
@@ -101,9 +103,19 @@ void Prusa_MK2_13::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
 	avr_core_watch_write(avr,addr,v);
 }
 
+void Prusa_MK2_13:: SetupPINDA()
+{
+	AddHardware(pinda, X.GetIRQ(A4982::POSITION_OUT),  Y.GetIRQ(A4982::POSITION_OUT),  Z.GetIRQ(A4982::POSITION_OUT));
+	TryConnect(pinda, PINDA::TRIGGER_OUT ,Z_MIN_PIN);
+	AddHardware(lPINDA);
+	lPINDA.ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), LED::LED_IN);
+}
+
 void Prusa_MK2_13::SetupHardware()
 {
 	MiniRambo::SetupHardware();
+
+	SetupPINDA();
 
 	if (GetConnectSerial())
 	{

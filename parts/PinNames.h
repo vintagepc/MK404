@@ -25,6 +25,8 @@ namespace PinNames {
 		__TMC2130_PIN_SET(E0)
 		__A4982_PIN_SET(E0)
 		E0_FAN,
+		E_MUX0_PIN,
+		E_MUX1_PIN,
 		FAN_1_PIN,
 		FAN_PIN,
 		FINDA_PIN,

@@ -1,5 +1,5 @@
 /*
-	Prusa_MK25_13.h - Printer definition for the Prusa MK2.5 (mR 1.3)
+	Prusa_MK25S_13.cpp - Printer definition for the Prusa MK2.5S (mR1.3)
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
@@ -18,20 +18,16 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "Prusa_MK25S_13.h"
+#include "IRSensor.h"  // for IRSensor
+#include "LED.h"       // for LED, LED::IRQ::LED_IN, PAT9125::IRQ::LED_OUT
+#include "PAT9125.h"   // for PAT9125
+#include "PinNames.h"  // for Pin::IR_SENSOR_PIN, Pin::VOLT_IR_PIN
 
-#include "PAT9125.h"
-#include "Prusa_MK2_13.h"     // for EinsyRambo
-
-
-class Prusa_MK25_13 : public Prusa_MK2_13
+void Prusa_MK25S_13::SetupFilamentSensor()
 {
-
-	protected:
-		void SetupHardware() override;
-
-		virtual void SetupFilamentSensor();
-
-		PAT9125 m_fSensor;
-
-};
+	AddHardware(m_IR, GetPinNumber(VOLT_IR_PIN));
+	TryConnect(m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
+	TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
+	lIR.ConnectFrom(m_fSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
+}

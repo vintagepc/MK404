@@ -23,7 +23,6 @@
 #include "Beeper.h"
 #include "HD44780.h"           // for HD44780
 #include "LED.h"
-#include "PAT9125.h"
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
 #include <iostream>
 #include <string>
@@ -64,11 +63,7 @@ namespace Boards
 		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
 		tAmbient.SetTable({(int16_t*)temptable_2000, sizeof(temptable_2000)/sizeof(int16_t)}, OVERSAMPLENR);
 
-		AddHardware(tPinda, GetPinNumber(TEMP_PINDA_PIN));
-		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
-		tPinda.SetTable({(int16_t*)temptable_1, sizeof(temptable_1)/sizeof(int16_t)}, OVERSAMPLENR);
-
-		AddHardware(fExtruder, 	GetDIRQ(X_MAX_PIN), GetDIRQ(E0_FAN), GetPWMIRQ(E0_FAN));
+		AddHardware(fExtruder, 	nullptr, GetDIRQ(E0_FAN), GetPWMIRQ(E0_FAN));
 		AddHardware(fPrint, 	nullptr, GetDIRQ(FAN_PIN), GetPWMIRQ(FAN_PIN));
 
 		AddHardware(hBed, nullptr, GetDIRQ(HEATER_BED_PIN));
@@ -76,11 +71,6 @@ namespace Boards
 
 		AddHardware(hExtruder, nullptr, GetDIRQ(HEATER_0_PIN));
 		hExtruder.ConnectTo(Heater::TEMP_OUT, tExtruder.GetIRQ(Thermistor::TEMP_IN));
-
-		std::cout << "MK3 - adding laser sensor\n";
-		AddHardware(lIR);
-		AddHardware(m_fSensor, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
-		lIR.ConnectFrom(m_fSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 
 		AddHardware(m_buzzer);
 		m_buzzer.ConnectFrom(GetDIRQ(BEEPER),Beeper::DIGITAL_IN);
@@ -149,15 +139,10 @@ namespace Boards
 			std::cerr << "SD card image (" << strSD << ") could not be mounted (error " << mount_error << " ).\n";
 		}
 
-		m_fSensor.ConnectFrom(E.GetIRQ(A4982::POSITION_OUT), PAT9125::E_IN);
-		m_fSensor.Set(PAT9125::FS_NO_FILAMENT); // No filament - but this just updates the LED.
-
 		AddHardware(pinda, X.GetIRQ(A4982::POSITION_OUT),  Y.GetIRQ(A4982::POSITION_OUT),  Z.GetIRQ(A4982::POSITION_OUT));
 		TryConnect(pinda, PINDA::TRIGGER_OUT ,Z_MIN_PIN);
 		AddHardware(lPINDA);
 		lPINDA.ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), LED::LED_IN);
-
-		//avr_irq_register_notify(GetDIRQ(X_STEP_PIN), MAKE_C_CALLBACK(MiniRambo, DebugPin),this);
 
 	}
 

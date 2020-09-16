@@ -55,6 +55,8 @@ void LED::OnPWMChanged(struct avr_irq_t*, uint32_t value)
 
 void LED::Draw()
 {
+	if (!m_bAttached) return;
+
 	bool m_bOn = m_uiBrightness>0;
 	uint16_t uiBrt = ((m_uiBrightness*9)/10)+25;
     glPushMatrix();
@@ -85,4 +87,5 @@ void LED::Init(avr_t *avr)
     _Init(avr, this);
     RegisterNotify(LED_IN,MAKE_C_CALLBACK(LED,OnValueChanged),this);
 	RegisterNotify(PWM_IN,MAKE_C_CALLBACK(LED,OnPWMChanged),this);
+	m_bAttached = true;
 }

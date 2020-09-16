@@ -1,5 +1,5 @@
 /*
-	Prusa_MK25_13.h - Printer definition for the Prusa MK2.5 (mR 1.3)
+	Prusa_MK25_13.cpp - Printer definition for the Prusa MK2.5 (mR1.3)
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
@@ -18,20 +18,16 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "Prusa_MK2MMU_13.h"
+#include "MMU1.h"                   // for MMU1, MMU1::IRQ::MUX0, MMU1::IRQ:...
+#include "PinNames.h"               // for Pin::E_MUX0_PIN, Pin::E_MUX1_PIN
+#include "printers/Prusa_MK2_13.h"  // for Prusa_MK2_13
 
-#include "PAT9125.h"
-#include "Prusa_MK2_13.h"     // for EinsyRambo
-
-
-class Prusa_MK25_13 : public Prusa_MK2_13
+void Prusa_MK2MMU_13::SetupHardware()
 {
+	Prusa_MK2_13::SetupHardware();
 
-	protected:
-		void SetupHardware() override;
-
-		virtual void SetupFilamentSensor();
-
-		PAT9125 m_fSensor;
-
-};
+	AddHardware(m_mmu);
+	TryConnect(E_MUX0_PIN, m_mmu, MMU1::MUX0);
+	TryConnect(E_MUX1_PIN, m_mmu, MMU1::MUX1);
+}

@@ -1,5 +1,5 @@
 /*
-	Prusa_MK25_13.h - Printer definition for the Prusa MK2.5 (mR 1.3)
+	Prusa_MK25S_13.h - Printer definition for the Prusa MK2.5S (mR 1.3)
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
@@ -20,18 +20,15 @@
 
 #pragma once
 
-#include "PAT9125.h"
-#include "Prusa_MK2_13.h"     // for EinsyRambo
+#include "IRSensor.h"
+#include "Prusa_MK25_13.h"     // for EinsyRambo
 
 
-class Prusa_MK25_13 : public Prusa_MK2_13
+class Prusa_MK25S_13 : public Prusa_MK25_13
 {
-
 	protected:
-		void SetupHardware() override;
+		void SetupFilamentSensor() override;
 
-		virtual void SetupFilamentSensor();
-
-		PAT9125 m_fSensor;
+		IRSensor m_IR;
 
 };

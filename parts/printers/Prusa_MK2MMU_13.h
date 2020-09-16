@@ -20,18 +20,11 @@
 
 #pragma once
 
-#include "PAT9125.h"
-#include "Prusa_MK2_13.h"     // for EinsyRambo
+#include "Prusa_MK2_13.h"
 
-
-class Prusa_MK25_13 : public Prusa_MK2_13
+class Prusa_MK2MMU_13 : public Prusa_MK2_13
 {
-
 	protected:
 		void SetupHardware() override;
-
-		virtual void SetupFilamentSensor();
-
-		PAT9125 m_fSensor;
 
 };

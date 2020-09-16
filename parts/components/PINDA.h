@@ -43,7 +43,8 @@ class PINDA:public BasePeripheral,public Scriptable{
 	enum class XYCalMap
 	{
 		MK3,
-		MK25
+		MK25,
+		MK2
 	};
 
     // Creates a new PINDA with X/Y nozzle offsets fX and fY
@@ -54,6 +55,9 @@ class PINDA:public BasePeripheral,public Scriptable{
 
     // Toggles steel sheet presence. If it is removed, the PINDA will exhibit XY calibration trigger behaviour.
     void ToggleSheet();
+
+	// Reconfigures the PINDA after it's been set up (for printer variants sharing base classes)
+	void Reconfigure(float fX, float fY, XYCalMap map);
 
 	// so we can use initializer syntax later
 	using MBLMap_t = struct

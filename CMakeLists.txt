@@ -52,63 +52,70 @@ set (FIRMWARE
 
 set(H_FILES
 	parts/ADCPeripheral.h
-	parts/PinNames.h
 	parts/BasePeripheral.h
-	parts/boards/EinsyRambo.h
-	parts/boards/MM_Control_01.h
-	parts/PrinterFactory.h
-	parts/wiring/Einsy_1_1a.h
-	parts/wiring/MM_Control_01.h
-	parts/wiring/Einsy_1_0a.h
-	parts/ScriptHost.h
-	parts/pinspecs/PinSpec_2560.h
-	parts/I2CPeripheral.h
-	parts/pinspecs/PinSpec_32u4.h
-	parts/PinSpec.h
-	parts/SoftPWMable.h
-	parts/TelemetryHost.h
-	parts/Printer.h
-	parts/SPIPeripheral.h
-	parts/Scriptable.h
 	parts/Board.h
+	parts/boards/EinsyRambo.h
+	parts/boards/MiniRambo.h
+	parts/boards/MM_Control_01.h
+	parts/boards/Test_Board.h
 	parts/components/A4982.h
-	parts/components/LED.h
-	parts/components/PINDA.h
-	parts/components/HD44780GL.h
-	parts/components/SDCard.h
-	parts/components/uart_pty.h
-	parts/components/hd44780_charROM.h
-	parts/components/UART_Logger.h
-	parts/components/RotaryEncoder.h
-	parts/components/EEPROM.h
-	parts/components/Thermistor.h
-	parts/components/Fan.h
 	parts/components/ADC_Buttons.h
-	parts/components/VoltageSrc.h
-	parts/components/w25x20cl.h
 	parts/components/Beeper.h
-	parts/components/HD44780.h
-	parts/components/SerialLineMonitor.h
-	parts/components/HC595.h
 	parts/components/Button.h
+	parts/components/EEPROM.h
+	parts/components/Fan.h
+	parts/components/GCodeSniffer.h
+	parts/components/HC595.h
+	parts/components/hd44780_charROM.h
+	parts/components/HD44780GL.h
+	parts/components/HD44780.h
+	parts/components/Heater.h
+	parts/components/IRSensor.h
+	parts/components/LED.h
 	parts/components/MMU1.h
 	parts/components/MMU2.h
 	parts/components/PAT9125.h
-	parts/components/GCodeSniffer.h
+	parts/components/PINDA.h
+	parts/components/RotaryEncoder.h
+	parts/components/SDCard.h
+	parts/components/SerialLineMonitor.h
+	parts/components/Thermistor.h
 	parts/components/TMC2130.h
-	parts/components/IRSensor.h
-	parts/components/Heater.h
+	parts/components/UART_Logger.h
+	parts/components/uart_pty.h
+	parts/components/VoltageSrc.h
+	parts/components/w25x20cl.h
+	parts/I2CPeripheral.h
 	parts/IScriptable.h
+	parts/PinNames.h
+	parts/PinSpec.h
 	parts/PinSpec_Helper.h
-	parts/Wiring.h
-#	parts/IRQHelper.h  Can't be checked/used standalone.
+	parts/pinspecs/PinSpec_2560.h
+	parts/pinspecs/PinSpec_32u4.h
+	parts/PrinterFactory.h
+	parts/Printer.h
+	parts/printers/Prusa_MK2_13.h
 	parts/printers/Prusa_MK25_13.h
+	parts/printers/Prusa_MK25S_13.h
+	parts/printers/Prusa_MK2MMU_13.h
 	parts/printers/Prusa_MK3.h
+	parts/printers/Prusa_MK3MMU2.h
 	parts/printers/Prusa_MK3S.h
 	parts/printers/Prusa_MK3SMMU2.h
-	parts/printers/Prusa_MK3MMU2.h
 	parts/printers/Test_Printer.h
-	utility/Color.h
+	parts/Scriptable.h
+	parts/ScriptHost.h
+	parts/SoftPWMable.h
+	parts/SPIPeripheral.h
+	parts/TelemetryHost.h
+	parts/wiring/Einsy_1_0a.h
+	parts/wiring/Einsy_1_1a.h
+	parts/Wiring.h
+	parts/wiring/miniRAMBo_1_1b.h
+	parts/wiring/miniRAMBo_1_3a.h
+	parts/wiring/MM_Control_01.h
+	parts/wiring/Test_Wiring.h
+	uility/Color.h
 	utility/GLPrint.h
 	utility/FatImage.h
 	utility/MK3SGL.h
@@ -130,41 +137,44 @@ set(H_FILES
 
 set(MK404_SOURCES
 	parts/Board.cpp
-	parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp
 	parts/boards/MiniRambo.cpp
+	parts/boards/MM_Control_01.cpp
 	parts/boards/Test_Board.cpp
-	parts/ScriptHost.cpp
-	parts/TelemetryHost.cpp
 	parts/components/A4982.cpp
-	parts/components/GCodeSniffer.cpp
-	parts/components/Beeper.cpp
-	parts/components/HD44780GL.cpp
-	parts/components/VoltageSrc.cpp
 	parts/components/ADC_Buttons.cpp
-	parts/components/Heater.cpp
+	parts/components/Beeper.cpp
+	parts/components/Button.cpp
 	parts/components/EEPROM.cpp
-	parts/components/IRSensor.cpp
-	parts/components/w25x20cl.cpp
+	parts/components/Fan.cpp
+	parts/components/GCodeSniffer.cpp
+	parts/components/HC595.cpp
 	parts/components/HD44780.cpp
-	parts/components/UART_Logger.cpp
-	parts/components/SDCard.cpp
+	parts/components/HD44780GL.cpp
+	parts/components/Heater.cpp
+	parts/components/IRSensor.cpp
+	parts/components/LED.cpp
 	parts/components/MMU1.cpp
 	parts/components/MMU2.cpp
 	parts/components/PINDA.cpp
-	parts/components/TMC2130.cpp
-	parts/components/SerialLineMonitor.cpp
-	parts/components/LED.cpp
-	parts/components/HC595.cpp
 	parts/components/RotaryEncoder.cpp
-	parts/components/uart_pty.cpp
+	parts/components/SDCard.cpp
+	parts/components/SerialLineMonitor.cpp
 	parts/components/Thermistor.cpp
-	parts/components/Fan.cpp
-	parts/components/Button.cpp
+	parts/components/TMC2130.cpp
+	parts/components/UART_Logger.cpp
+	parts/components/uart_pty.cpp
+	parts/components/VoltageSrc.cpp
+	parts/components/w25x20cl.cpp
+	parts/printers/Prusa_MK2_13.cpp
 	parts/printers/Prusa_MK25_13.cpp
+	parts/printers/Prusa_MK25S_13.cpp
+	parts/printers/Prusa_MK2MMU_13.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
 	parts/printers/Test_Printer.cpp
+	parts/ScriptHost.cpp
+	parts/TelemetryHost.cpp
 	utility/MK3SGL.cpp
 	utility/GLObj.cpp
 	utility/FatImage.cpp

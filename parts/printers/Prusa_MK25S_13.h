@@ -29,6 +29,6 @@ class Prusa_MK25S_13 : public Prusa_MK25_13
 	protected:
 		void SetupFilamentSensor() override;
 
-		IRSensor m_IR;
+		IRSensor m_IR{};
 
 };

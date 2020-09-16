@@ -53,7 +53,8 @@ void PINDA::CheckTriggerNoSheet()
     // Now calc z trigger height for the given distance from the point center
     if (bFound)
     {
-        float fTrigZ = (1.0*(1-pow(fEdist/5,2))) + 3.0 ;
+		bool bHasSheet = m_XYCalType != XYCalMap::MK2;
+        float fTrigZ = (1.0*(1-pow(fEdist/5,2))) + (bHasSheet? 3.0 : 0.0) ;
         //printf("fTZ:%f fZ: %f\n",fTrigZ, this->fPos[2]);
         if (m_fPos[2]<=fTrigZ)
 		{
@@ -181,15 +182,15 @@ gsl::span<float>& PINDA::GetXYCalPoints()
         37.f -2.0,  210.4f -9.4
     };
 	static float _fMK2Cal[18] = {
-		 13.f + 23.f,	  6.4f + 9,
-		 13.f + 23.f, 	104.4f + 9,
-		 13.f + 23.f, 	202.4f + 9,
-		115.f + 23.f, 	  6.4f + 9,
-		115.f + 23.f, 	104.4f + 9,
-		115.f + 23.f,	202.4f + 9,
-		216.f + 23.f, 	  6.4f + 9,
-		216.f + 23.f, 	104.4f + 9,
-		216.f + 23.f, 	202.4f + 9
+		 13.f + 22.f,	  6.4f + 3,
+		 13.f + 22.f, 	104.4f + 3,
+		 13.f + 22.f, 	202.4f + 3,
+		115.f + 22.f, 	  6.4f + 3,
+		115.f + 22.f, 	104.4f + 3,
+		115.f + 22.f,	202.4f + 3,
+		216.f + 22.f, 	  6.4f + 3,
+		216.f + 22.f, 	104.4f + 3,
+		216.f + 22.f, 	202.4f + 3
 	};
 
 	static gsl::span<float> fMK3 {_fMK3Cal};

@@ -35,6 +35,8 @@ void Prusa_MK1_13::SetupHardware()
 	Z.GetConfig().iMaxMM = 201;
 	Z.GetConfig().uiStepsPerMM = 4000;
 	Z.ReparseConfig();
+	E.GetConfig().uiStepsPerMM = 174;
+	E.ReparseConfig();
 }
 
 inline void Prusa_MK1_13::SetupPINDA()

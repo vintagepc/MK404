@@ -21,7 +21,6 @@
 #include "Prusa_MK25S_13.h"
 #include "IRSensor.h"  // for IRSensor
 #include "LED.h"       // for LED, LED::IRQ::LED_IN, PAT9125::IRQ::LED_OUT
-#include "PAT9125.h"   // for PAT9125
 #include "PinNames.h"  // for Pin::IR_SENSOR_PIN, Pin::VOLT_IR_PIN
 
 void Prusa_MK25S_13::SetupFilamentSensor()
@@ -29,5 +28,4 @@ void Prusa_MK25S_13::SetupFilamentSensor()
 	AddHardware(m_IR, GetPinNumber(VOLT_IR_PIN));
 	TryConnect(m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
 	TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
-	lIR.ConnectFrom(m_fSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 }

@@ -99,7 +99,7 @@ namespace Boards
 
 		Z.GetConfig().bInverted = true;
 		Z.GetConfig().uiStepsPerMM = 400;
-		Z.GetConfig().iMaxMM = 215;
+		Z.GetConfig().iMaxMM = 210;
 		Z.GetConfig().fStartPos = 10.f;
 		AddHardware(Z);
 		TryConnect(Z_DIR_PIN, 		Z, A4982::DIR_IN);

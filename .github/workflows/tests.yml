@@ -44,7 +44,7 @@ jobs:
       with:
           path: "packages"
           key: "pkgs-1_0_1-test"
-          restore-keys: "pkgs-1_0_0-test"
+          restore-keys: "pkgs-1_0_1-test"
 
     - name: Setup cache dir
       if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
@@ -53,25 +53,38 @@ jobs:
     - name: Install packages
       run: |
           sudo apt-get update
-          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov
+          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov xvfb
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
 
+    - uses: openrndr/setup-opengl@v1
+    - run: |
+        xvfb-run glxinfo
+        ls -l
+        echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
+
     - name: Prepare CMake build
-      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DENABLE_GCOV=1 ..
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DENABLE_GCOV=1 -DSANITY_TESTS=1 -DRUNNER_ENV=1 ..
 
     - name: Build Einsy
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Run tests
-      run: cd ${{ runner.workspace }}/MK404/build && env CTEST_OUTPUT_ON_FAILURE=1 make Coverage.tar.gz
+      continue-on-error: true
+      run: |
+        cd ${{ runner.workspace }}/MK404/build
+        make Coverage.tar.gz
+
+    - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps.tar.gz tests/snaps/
 
     - name: Upload report
       uses: actions/upload-artifact@v2
       with:
         name: Report
-        path: ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
+        path: |
+          ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
+          ${{ runner.workspace }}/MK404/build/snaps.tar.gz
 
     - name: Comment on PR
       if: ${{ github.event.pull_request }}

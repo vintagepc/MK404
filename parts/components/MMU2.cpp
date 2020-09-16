@@ -126,11 +126,12 @@ void MMU2::SetupHardware()
 
 	RegisterNotify(RESET,MAKE_C_CALLBACK(MMU2,OnResetIn),this);
 	RegisterNotify(PULLEY_IN, MAKE_C_CALLBACK(MMU2,OnPulleyFeedIn),this);
+	RegisterNotify(SHIFT_IN, MAKE_C_CALLBACK(MMU2,LEDHandler),this);
 
 	m_Sel.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(SELECTOR_OUT));
 	m_Idl.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(IDLER_OUT));
 	m_Extr.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(PULLEY_IN));
-	avr_irq_register_notify(m_shift.GetIRQ(HC595::OUT), MAKE_C_CALLBACK(MMU2,LEDHandler),this);
+	m_shift.ConnectTo(HC595::SHIFT_OUT, GetIRQ(SHIFT_IN));
 }
 
 
@@ -161,10 +162,10 @@ void MMU2::OnPulleyFeedIn(struct avr_irq_t * ,uint32_t value)
 
 	if (m_bAutoFINDA)
 	{
-   		SetPin(FINDA_PIN,posOut>24.0f);
+   		SetPin(FINDA_PIN,posOut>33.0f);
 		// Reflect the distance out for IR sensor triggering.
 		RaiseIRQ(FEED_DISTANCE, value);
-		RaiseIRQ(FINDA_OUT,posOut>24.f);
+		RaiseIRQ(FINDA_OUT,posOut>33.f);
 	}
 	else
 	{

@@ -22,13 +22,15 @@
 
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "Camera.hpp"        // for Camera
+#include "GLHelper.h"
 #include "GLObj.h"           // for GLObj
 #include "HD44780.h"         // for _IRQ
 #include "IScriptable.h"     // for IScriptable::LineStatus
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
-#include <GL/glew.h>         // for glTranslatef
+#include <GL/glew.h>         // NOLINT for glTranslatef
+#include <GL/freeglut_std.h> //
 #include <GLPrint.h>         // for GLPrint
 #include <atomic>            // for atomic, atomic_bool, atomic_int
 #include <cstdint>          // for uint32_t
@@ -83,8 +85,8 @@ class MK3SGL: public BasePeripheral, public Scriptable
         // Sets nozzle cam mode enabled to an explicit value.
         void SetFollowNozzle(bool bFollow) { m_bFollowNozzle = bFollow;}
 
-
-
+		// Flags window for redisplay
+		inline void FlagForRedraw() { glutPostWindowRedisplay(m_iWindow); }
 
         // GL helpers needed for the window and mouse callbacks, use when creating the GL window.
         void MouseCB(int button, int state, int x, int y);
@@ -102,6 +104,8 @@ class MK3SGL: public BasePeripheral, public Scriptable
         GLObj m_MMUBase {"assets/MMU_stationary.obj"};
         GLObj m_MMUSel {"assets/MMU_Selector.obj"};
         GLObj m_MMUIdl {"assets/Idler_moving.obj"};
+
+		GLHelper m_snap{"3DView"};
 
 		OBJCollection *m_Objs = nullptr;
 
@@ -147,12 +151,10 @@ class MK3SGL: public BasePeripheral, public Scriptable
         std::atomic_int m_iKnobPos {0}, m_iFanPos = {0}, m_iPFanPos = {0}, m_iIdlPos = {0};
 
         std::atomic_bool m_bDirty = {false},
-			m_bFanOn = {false},
 			m_bMMU = {false},
 			m_bBedOn = {false},
 			m_bPINDAOn = {false},
 			m_bFINDAOn = {false},
-        	m_bPFanOn = {false},
 			m_bSDCard = {true},
 			m_bPrintSurface = {true};
 
@@ -170,7 +172,9 @@ class MK3SGL: public BasePeripheral, public Scriptable
 		{
 			ActClear,
 			ActToggleNCam,
-			ActResetView
+			ActResetView,
+			ActMouse,
+			ActMouseMove
 		};
 
 		static MK3SGL *g_pMK3SGL;

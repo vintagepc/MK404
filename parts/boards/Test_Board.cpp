@@ -20,6 +20,7 @@
 
 #include "Test_Board.h"
 #include "3rdParty/MK3/thermistortables.h"
+#include "HD44780.h"
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
 #include "RotaryEncoder.h"           // for HD44780
 
@@ -61,7 +62,7 @@ namespace Boards
 
 		TMC2130::TMC2130_cfg_t cfg;
 		cfg.iMaxMM = 20;
-		cfg.uiStepsPerMM=1;
+		cfg.uiFullStepsPerMM=16;
 
 		m_TMC.SetConfig(cfg);
 		AddHardware(m_TMC);
@@ -105,13 +106,27 @@ namespace Boards
 
 		AddHardware(m_pat, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
 
+		AddHardware(m_LED);
+		AddHardware(m_LED2);
+		TryConnect(LCD_BL_PIN, m_LED, LED::LED_IN);
+		m_LED.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), LED::PWM_IN);
+		TryConnect(LCD_BL_PIN, m_LED2, LED::LED_IN);
+		m_LED2.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), LED::PWM_IN);
+		TryConnect(LCD_BL_PIN,m_lcd, HD44780::BRIGHTNESS_IN);
+		m_lcd.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), HD44780::BRIGHTNESS_PWM_IN);
+
+		AddHardware(m_buzzer);
+		m_buzzer.ConnectFrom(GetDIRQ(BEEPER), Beeper::DIGITAL_IN);
+
 	}
 
 	// Convenience function for debug printing a particular pin.
-	void Test_Board::DebugPin(avr_irq_t *, uint32_t value)
+	void Test_Board::DebugPin(avr_irq_t *, uint32_t value) // pragma: LCOV_EXCL_START
 	{
 		std::cout << "Pin DBG: change to " << std::hex << value << '\n';
 	}
+
+	// pragma: LCOV_EXCL_STOP
 
 	void Test_Board::OnAVRInit()
 	{

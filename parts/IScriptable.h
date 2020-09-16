@@ -61,6 +61,7 @@ class IScriptable
 		Error,
 		Timeout,
 		Waiting,
+		HoldExec,
 		Running,
 		Finished,
 		Unhandled

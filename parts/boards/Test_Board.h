@@ -20,17 +20,17 @@
 
 #pragma once
 
-// #include "Beeper.h"                              // for Beeper
 #include "ADC_Buttons.h"
+#include "Beeper.h"                              // for Beeper
 #include "Board.h"                               // for Board
 #include "Button.h"                              // for Button
 #include "Fan.h"                                 // for Fan
 #include "GCodeSniffer.h"
 #include "HC595.h"
-#include "HD44780.h"                           // for HD44780GL
+#include "HD44780GL.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
-// #include "LED.h"                                 // for LED
 #include "IRSensor.h"                          // for IRSensor
+#include "LED.h"                                 // for LED
 #include "PAT9125.h"
 #include "PINDA.h"                               // for PINDA
 #include "RotaryEncoder.h"                       // for RotaryEncoder
@@ -83,7 +83,7 @@ namespace Boards
 
 			HC595 m_shift{};
 
-			Heater m_heat {3.f, 25.f, false, 'B',10.f,300.f};
+			Heater m_heat {5.f, 25.f, false, 'B',10.f,50.f};
 
 			Fan m_Fan {2000,'F'};
 
@@ -91,11 +91,16 @@ namespace Boards
 
 			PINDA m_pinda{0.f,0.f};
 
-			HD44780 m_lcd{20,4};
+			HD44780GL m_lcd;
 
 			SDCard m_card {};
 
 			PAT9125 m_pat{};
+
+			LED m_LED{0x0000FFFF,'L'};
+			LED m_LED2{0xFF0000FF,'E',true};
+
+			Beeper m_buzzer{};
 
 		private:
 

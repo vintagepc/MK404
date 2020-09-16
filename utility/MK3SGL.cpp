@@ -65,11 +65,16 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
 	RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);
 	RegisterActionAndMenu("ResetCamera","Resets camera view to default",ActResetView);
+	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state)", ActMouse, {ArgType::Int,ArgType::Int});
+	RegisterAction("MouseMove", "Simulates a mouse move (x,y)", ActMouseMove, {ArgType::Int,ArgType::Int});
 
 	glewInit();
-
+#ifdef TEST_MODE
 	glutSetOption(GLUT_MULTISAMPLE,4);
+	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH)) ;
+#else
 	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH) | US(GLUT_MULTISAMPLE)) ;
+#endif
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */
 	std::string strTitle = std::string("Fancy Graphics: ") + m_Objs->GetName();
 	m_iWindow = glutCreateWindow(strTitle.c_str());	/* create window */
@@ -91,7 +96,9 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+#ifndef TEST_MODE
 	glEnable(GL_MULTISAMPLE);
+#endif
 
 	ResetCamera();
 
@@ -206,7 +213,7 @@ void MK3SGL::Init(avr_t *avr)
 }
 
 
-Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<std::string> &)
+Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
 	switch (iAct)
 	{
@@ -218,6 +225,12 @@ Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vecto
 			return LineStatus::Finished;
 		case ActClear:
 			ClearPrint();
+			return LineStatus::Finished;
+		case ActMouse:
+			MouseCB(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)),0,0);
+			return LineStatus::Finished;
+		case ActMouseMove:
+			MotionCB(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)));
 			return LineStatus::Finished;
 		default:
 			return LineStatus::Unhandled;
@@ -249,10 +262,10 @@ void MK3SGL::OnBoolChanged(avr_irq_t *irq, uint32_t value)
 			m_bPrintSurface = bVal;
 			break;
 		case IRQ::EFAN_IN:
-			m_bFanOn = bVal;
+			m_iFanPos = value;
 			break;
 		case IRQ::PFAN_IN:
-			m_bPFanOn = bVal;
+			m_iPFanPos = value;
 			break;
 		case IRQ::SD_IN:
 			m_bSDCard = !bVal; // CS is inverted.
@@ -361,8 +374,6 @@ void MK3SGL::Draw()
 		for (int i=0; i<5; i++) m_vPrints[i]->Clear();
 		m_bClearPrints = false;
 	}
-	int iOldWin = glutGetWindow();
-	glutSetWindow(m_iWindow);
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 	glClearDepth(1.0f);
 	glClear( US(GL_COLOR_BUFFER_BIT) | US(GL_DEPTH_BUFFER_BIT));
@@ -435,18 +446,10 @@ void MK3SGL::Draw()
 					glPopMatrix();
 				}
 				glPushMatrix();
-					if (m_bPFanOn)
-					{
-						m_iPFanPos = (m_iPFanPos + 5)%360;
-					}
 					m_Objs->DrawPFan(m_iPFanPos);
 				glPopMatrix();
 
 				glPushMatrix();
-					if (m_bFanOn)
-					{
-						m_iFanPos = (m_iFanPos + 339)%360;
-					}
 					m_Objs->DrawEFan(m_iFanPos);
 				glPopMatrix();
 				glPushMatrix();
@@ -505,9 +508,9 @@ void MK3SGL::Draw()
 		{
 			DrawMMU();
 		}
+		m_snap.OnDraw();
 		glutSwapBuffers();
 		m_bDirty = false;
-		glutSetWindow(iOldWin);
 }
 
 void MK3SGL::DrawRoundLED()

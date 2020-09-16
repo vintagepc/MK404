@@ -28,9 +28,9 @@
 
 // Quick and dirty token-paste macro for turning external #defines into *unsigned* values for bitwise
 // operations, e.g. FLAG1 | FLAG2. Clang-tidy complains about them.
-#define US(x) _CVT(x,U)
+#define US(x) _CVT2U(x,U)
 
-#define _CVT(x,y) x##y
+#define _CVT2U(x,y) x##y
 #define _CVT2(x,y) x##.##y
 
 #define FL(x) _CVT2(x,f)

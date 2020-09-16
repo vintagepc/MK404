@@ -32,7 +32,7 @@
 
 using std::cerr;
 using std::cout;
-
+// pragma: LCOV_EXCL_START
 void UART_Logger::OnByteIn(struct avr_irq_t *, uint32_t value)
 {
 	if (!m_fsOut.is_open())
@@ -84,3 +84,4 @@ UART_Logger::~UART_Logger()
 	m_fsOut.close();
 	std::cout << "UART logger finished.\n";
 }
+// pragma: LCOV_EXCL_STOP

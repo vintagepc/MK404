@@ -201,6 +201,10 @@ namespace Boards
 					{
 						ScriptHost::DispatchMenuCB();
 					}
+					if (m_bIsPrimary && ScriptHost::IsInitialized())
+					{
+						ScriptHost::OnAVRCycle();
+					}
 					if (m_bPaused)
 					{
 						usleep(100000);
@@ -216,11 +220,6 @@ namespace Boards
 						}
 					}
 					OnAVRCycle();
-
-					if (m_bIsPrimary && ScriptHost::IsInitialized())
-					{
-						ScriptHost::OnAVRCycle();
-					}
 
 					if (m_bReset)
 					{

@@ -81,9 +81,15 @@ void Prusa_MK3S::Draw()
 			glTranslatef(20,0,0);
 			lIR.Draw();
 		glPopMatrix();
+
+		if(!GetHasMMU())
+		{
+			m_gl.OnDraw();
+		}
+
 	if ((GetVisualType()!="none") && m_pVis)
 	{
-		m_pVis->Draw();
+		m_pVis->FlagForRedraw();
 	}
 }
 
@@ -108,8 +114,8 @@ void Prusa_MK3S::OnVisualTypeSet(const std::string &type)
 	m_pVis->ConnectFrom(Z.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::Z_IN);
 	m_pVis->ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::E_IN);
 	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
-	m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::SPEED_OUT), MK3SGL::EFAN_IN);
-	m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::SPEED_OUT), MK3SGL::PFAN_IN);
+	m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
+	m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
 	m_pVis->ConnectFrom(hBed.GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
 	m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
 	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
@@ -248,10 +254,12 @@ void Prusa_MK3S::OnAVRCycle()
 	}
 }
 
+// pragma: LCOV_EXCL_START
 void Prusa_MK3S::OnMouseMove(int,int)
 {
 	// Passthrough? May not be necessary...
 }
+// pragma: LCOV_EXCL_STOP
 
 void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
 {
@@ -260,9 +268,9 @@ void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
 			m_key = key;
 			m_bPaused = false;
 			break;
-		case 'd':
-			//gbPrintPC = gbPrintPC==0;
-			break;
+		// case 'd':
+		// 	//gbPrintPC = gbPrintPC==0;
+		// 	break;
 		case '1':
 			m_iScheme ^=1;
 			break;

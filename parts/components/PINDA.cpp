@@ -129,7 +129,7 @@ void PINDA::CheckTrigger()
 	}
 
     // Just calc the nearest MBL point and report it.
-    uint8_t iX = round(((m_fPos[0] - m_fOffset[0])/255.0)*7);
+    uint8_t iX = floor(((m_fPos[0] - m_fOffset[0])/255.0)*7);
     uint8_t iY = floor(((m_fPos[1] - m_fOffset[1])/210.0)*7);
 
     float fZTrig = gsl::at(m_mesh.points,iX+(7*iY));

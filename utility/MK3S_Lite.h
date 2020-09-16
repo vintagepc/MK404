@@ -32,7 +32,7 @@ class MK3S_Lite: public OBJCollection
 			AddObject(ObjClass::Y, "assets/Y_AXIS.obj", 0, 0, -0.141);
 			AddObject(ObjClass::PrintSurface, "assets/SSSheet.obj", 0.025,0.083,0.431 + -0.141);
 			AddObject(ObjClass::Media, "assets/SDCard.obj",0,0,0,MM_TO_M)->SetKeepNormalsIfScaling(true);
-			AddObject(ObjClass::X, "assets/X_AXIS.obj",-0.044,-0.210,0);
+			m_pE = AddObject(ObjClass::X, "assets/X_AXIS.obj",-0.044,-0.210,0);
 			m_pKnob = AddObject(ObjClass::Other, "assets/LCD-knobR2.obj");
 			m_pPFan = AddObject(ObjClass::Other, "assets/Print-fan_rotor.obj");
 			m_pEFan = AddObject(ObjClass::Other, "assets/E_Fan.obj",MM_TO_M);
@@ -145,6 +145,6 @@ class MK3S_Lite: public OBJCollection
 
 	protected:
 
-		std::shared_ptr<GLObj> m_pKnob = nullptr, m_pEFan = nullptr, m_pPFan = nullptr, m_pEVis = nullptr;
+		std::shared_ptr<GLObj> m_pKnob = nullptr, m_pEFan = nullptr, m_pPFan = nullptr, m_pEVis = nullptr, m_pE = nullptr;
 
 };

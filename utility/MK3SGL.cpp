@@ -70,9 +70,9 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 
 	glewInit();
 #ifdef TEST_MODE
-	glutSetOption(GLUT_MULTISAMPLE,4);
 	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH)) ;
 #else
+	glutSetOption(GLUT_MULTISAMPLE,4);
 	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH) | US(GLUT_MULTISAMPLE)) ;
 #endif
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */

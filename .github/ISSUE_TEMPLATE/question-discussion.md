@@ -2,7 +2,7 @@
 name: Question/Discussion
 about: A general question or something to discuss that's not a bug or feature
 title: "[Q+A]"
-labels: question, discussion
+labels: discussion, question
 assignees: ''
 
 ---

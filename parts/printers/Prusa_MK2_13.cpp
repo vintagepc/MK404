@@ -66,7 +66,18 @@ void Prusa_MK2_13::Draw()
 			glTranslatef(0,10,0);
 			Z.Draw();
 			glTranslatef(0,10,0);
-			E.Draw_Simple();
+			glPushMatrix();
+				E.Draw_Simple();
+				glTranslatef(150.f,0,0);
+				E1.Draw_Simple();
+			glPopMatrix();
+			glTranslatef(0,10,0);
+			glPushMatrix();
+				E2.Draw_Simple();
+				glTranslatef(150.f,0,0);
+				E3.Draw_Simple();
+			glPopMatrix();
+			glTranslatef(0,10,0);
 			glTranslatef(170,0,0);
 			m_mmu.Draw();
 			glTranslatef(20,0,0);
@@ -89,7 +100,7 @@ void Prusa_MK2_13::Draw()
 }
 
 std::pair<int,int> Prusa_MK2_13::GetWindowSize(){
-	std::pair<int,int> prSize = { 5 + lcd.GetWidth() * 6, 40 + 5 + lcd.GetHeight() * 9};
+	std::pair<int,int> prSize = { 5 + lcd.GetWidth() * 6, 60 + 5 + lcd.GetHeight() * 9};
 	return prSize;
 }
 

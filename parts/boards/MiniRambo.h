@@ -60,7 +60,7 @@ namespace Boards
 			Beeper m_buzzer;
 			uart_pty UART0;
 			RotaryEncoder encoder;
-			A4982 X{'X'}, Y{'Y'}, Z{'Z'}, E{'E'};
+			A4982 X{'X'}, Y{'Y'}, Z{'Z'}, E{'E'}, E1{'2'}, E2{'3'}, E3{'4'};
 			Thermistor tExtruder, tBed, tPinda, tAmbient;
 			Fan fExtruder {3300,'E'}, fPrint {5000,'P'};
 			Heater hExtruder {1.5,25.0,false,'H',30,250},

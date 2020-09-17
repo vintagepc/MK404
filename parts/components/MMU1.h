@@ -33,7 +33,8 @@
 class MMU1 : public BasePeripheral
 {
 	public:
-		#define IRQPAIRS _IRQ(MUX0,"<mux0.in") _IRQ(MUX1,"<mux1.in") _IRQ(TOOL_OUT, "8>tool_out")
+		#define IRQPAIRS _IRQ(MUX0,"<mux0.in") _IRQ(MUX1,"<mux1.in") _IRQ(TOOL_OUT, "8>tool_out") \
+						_IRQ(STEP0,">STEP0") _IRQ(STEP1,">STEP1") _IRQ(STEP2,">STEP2") _IRQ(STEP3,">STEP3") _IRQ(STEP_IN,"<STEP")
 		#include "IRQHelper.h"
 
 		MMU1() = default;
@@ -50,6 +51,8 @@ class MMU1 : public BasePeripheral
 	private:
 
 		void OnMuxIn(avr_irq_t *irq, uint32_t value);
+
+		void OnStepIn(avr_irq_t *irq, uint32_t value);
 
 		std::atomic_uint8_t m_uiTool = {0};
 

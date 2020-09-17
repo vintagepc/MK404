@@ -94,7 +94,7 @@ class A4982: public BasePeripheral
 
 		bool m_bDir  = false;
 		bool m_bReset = false;
-		std::atomic_bool m_bEnable {true}, m_bSleep {false};
+		std::atomic_bool m_bEnable {false}, m_bSleep {false}, m_bConnected {false};
 
 
 		int32_t m_iCurStep = 0;

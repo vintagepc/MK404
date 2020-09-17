@@ -47,6 +47,7 @@ void A4982::Draw_Simple()
 
 void A4982::_Draw(bool bIsSimple)
 {
+	if (!m_bConnected) return;
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
@@ -260,6 +261,7 @@ void A4982::OnMSIn(avr_irq_t *irq, uint32_t value)
 void A4982::Init(struct avr_t * avr)
 {
     _Init(avr, this);
+	m_bConnected = true;
 
 	ReparseConfig();
 

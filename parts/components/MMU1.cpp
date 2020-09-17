@@ -33,6 +33,11 @@ void MMU1::Init(struct avr_t * avr)
 
 	RegisterNotify(MUX0, MAKE_C_CALLBACK(MMU1, OnMuxIn),this);
 	RegisterNotify(MUX1, MAKE_C_CALLBACK(MMU1, OnMuxIn),this);
+	RegisterNotify(STEP_IN, MAKE_C_CALLBACK(MMU1, OnStepIn),this);
+	for (auto i=0u; i<4; i++)
+	{
+		GetIRQ(STEP0+i)->flags |= IRQ_FLAG_FILTERED;
+	}
 
 	TelemetryHost::GetHost().AddTrace(this, TOOL_OUT, {TC::Misc},8);
 
@@ -59,6 +64,11 @@ void MMU1::Draw()
         glScalef(0.1,-0.05,1);
         glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'0'+m_uiTool);
     glPopMatrix();
+}
+
+void MMU1::OnStepIn(avr_irq_t */*irq*/, uint32_t value)
+{
+	RaiseIRQ(STEP0+m_uiTool, value);
 }
 
 void MMU1::OnMuxIn(avr_irq_t *irq, uint32_t value)

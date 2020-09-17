@@ -25,6 +25,7 @@
 #pragma once
 
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
+#include "IKeyClient.h"
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
 #include "sim_avr.h"           // for avr_t
@@ -34,7 +35,7 @@
 #include <string>              // for string
 #include <vector>              // for vector
 
-class RotaryEncoder:public BasePeripheral,public Scriptable
+class RotaryEncoder:public BasePeripheral,public Scriptable, public IKeyClient
 {
     public:
         #define IRQPAIRS _IRQ(OUT_A,">encoder.a") _IRQ(OUT_B,">encoder.b") _IRQ(OUT_BUTTON,">encoder.button")
@@ -66,6 +67,8 @@ class RotaryEncoder:public BasePeripheral,public Scriptable
         void Release();
 	protected:
 		LineStatus ProcessAction(unsigned int action, const std::vector<std::string> &vArgs) override;
+
+		void OnKeyPress(const Key &key) override;
 
     private:
 

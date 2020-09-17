@@ -25,6 +25,7 @@
 #include "HD44780GL.h"        // for HD44780GL
 #include "Heater.h"           // for Heater
 #include "IRSensor.h"         // for IRSensor
+#include "KeyController.h"
 #include "LED.h"              // for LED
 #include "PINDA.h"            // for PINDA
 #include "PinNames.h"         // for Pin::IR_SENSOR_PIN, Pin::VOLT_IR_PIN
@@ -183,23 +184,10 @@ void Prusa_MK3S::OnAVRCycle()
 		m_mouseBtn = 0;
 	}
 	int key = m_key;                            // copy atomic to local
+	KeyController::GetController().OnAVRCycle(); // Handle/dispatch any pressed keys.
 	if (key)
 	{
 		switch (key) {
-			case 'w':
-				std::cout << '<';
-				encoder.Twist(RotaryEncoder::CCW_CLICK);
-				if (m_pVis) m_pVis->TwistKnob(true);
-				break;
-			case 's':
-				std::cout << '>';
-				encoder.Twist(RotaryEncoder::CW_CLICK);
-				if (m_pVis) m_pVis->TwistKnob(false);
-				break;
-			case 0xd:
-				std::cout << "ENTER pushed\n";
-				encoder.Push();
-				break;
 			case 'r':
 				std::cout << "RESET/KILL\n";
 				// RESET BUTTON
@@ -213,13 +201,6 @@ void Prusa_MK3S::OnAVRCycle()
 				m_bFactoryReset =true;
 				// Hold the button during boot to get factory reset menu
 				SetResetFlag();
-				break;
-			case 'h':
-				encoder.PushAndHold();
-				break;
-			case 'm':
-				std::cout << "Toggled Mute\n";
-				m_buzzer.ToggleMute();
 				break;
 			case 'y':
 				pinda.ToggleSheet();

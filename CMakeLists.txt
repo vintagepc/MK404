@@ -125,6 +125,8 @@ set(H_FILES
 	3rdParty/arcball/Vectors.hpp
 	3rdParty/arcball/ArcBall.hpp
 	3rdParty/arcball/Quaternion.hpp
+	parts/IKeyClient.h
+	parts/KeyController.h
 )
 
 set(MK404_SOURCES
@@ -167,6 +169,8 @@ set(MK404_SOURCES
 	utility/Color.cpp
 	utility/SerialPipe.cpp
 	3rdParty/arcball/Camera.cpp
+	parts/IKeyClient.cpp
+	parts/KeyController.cpp
 )
 
 if (ENABLE_TIDY)

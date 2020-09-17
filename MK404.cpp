@@ -21,6 +21,7 @@
  */
 
 #include "FatImage.h"                 // for FatImage
+#include "KeyController.h"
 #include "Macros.h"
 #include "Printer.h"                  // for Printer, Printer::VisualType
 #include "PrinterFactory.h"           // for PrinterFactory
@@ -167,6 +168,7 @@ void keyCB(unsigned char key, int x, int y)	/* called on key press */
 			break;
 		default:
 			printer->OnKeyPress(key,x,y);
+			KeyController::GetController().OnKeyPressed(key);
 	}
 }
 // pragma: LCOV_EXCL_START
@@ -284,6 +286,7 @@ int main(int argc, char *argv[])
 	cmd.add(argMute);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
 	cmd.add(argLoad);
+	SwitchArg argKeyHelp("k","keys","Prints the list of available keyboard controls",cmd,false);
 	std::vector<string> vstrSizes = FatImage::GetSizes();
 	ValuesConstraint<string> vcSizes(vstrSizes);
 	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes);
@@ -407,6 +410,13 @@ int main(int argc, char *argv[])
 
 
 	}
+
+	if (argKeyHelp.isSet())
+	{
+		KeyController::GetController().PrintKeys(argMD.isSet());
+		exit(0);
+	}
+
 	if (argVCD.isSet() && argVCD.getValue().at(0)=="?")
 	{
 		TelemetryHost::GetHost().PrintTelemetry(argMD.isSet());

@@ -171,11 +171,40 @@ Scriptable::LineStatus RotaryEncoder::ProcessAction(unsigned int iAct, const std
 	return LineStatus::Finished;
 }
 
-RotaryEncoder::RotaryEncoder():Scriptable("Encoder")
+void RotaryEncoder::OnKeyPress(const Key &key)
+{
+	switch (key)
+	{
+		case 'w':
+			std::cout << '<';
+			Twist(RotaryEncoder::CCW_CLICK);
+			//if (m_pVis) m_pVis->TwistKnob(true);
+			break;
+		case 's':
+			std::cout << '>';
+			Twist(RotaryEncoder::CW_CLICK);
+			//if (m_pVis) m_pVis->TwistKnob(false);
+			break;
+		case 0xd:
+			std::cout << "ENTER pushed\n";
+			Push();
+			break;
+		case 'h':
+			PushAndHold();
+			break;
+	}
+}
+
+RotaryEncoder::RotaryEncoder():Scriptable("Encoder"),IKeyClient()
 {
 	RegisterActionAndMenu("Press", "Presses the encoder button",ActPress);
 	RegisterActionAndMenu("Release", "Releases the encoder button",ActRelease);
 	RegisterActionAndMenu("PressAndRelease", "Presses the encoder button",ActPressAndRelease);
 	RegisterActionAndMenu("TwistCW", "Twists the encoder one cycle clockwise",ActTwistCW);
 	RegisterActionAndMenu("TwistCCW", "Twists the encoder once cycle counterclockwise",ActTwistCCW);
+
+	RegisterKeyHandler('w', "Twists encoder CCW");
+	RegisterKeyHandler('s', "Twists encoder CW");
+	RegisterKeyHandler('h', "Pushes and long-holds the encoder button.");
+	RegisterKeyHandler(0xd, "Pushes and releases the encoder button");
 }

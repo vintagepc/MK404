@@ -112,7 +112,5 @@ void Prusa_MK3SMMU2::OnKeyPress(unsigned char key, int x, int y)
 		case '5':
 			m_MMU.PushButton(key - '2'); // button numbers are 1/2/3
 			break;
-		default:
-			Prusa_MK3S::OnKeyPress(key,x,y);
 	}
 }

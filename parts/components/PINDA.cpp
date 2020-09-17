@@ -197,6 +197,17 @@ void PINDA::ToggleSheet()
 PINDA::PINDA(float fX, float fY):Scriptable("PINDA"),m_fOffset{fX,fY}
 {
     SetMBLMap();
+	RegisterKeyHandler('y', "Toggles the steel sheet on the heatbed");
+}
+
+void PINDA::OnKeyPress(const Key &key)
+{
+	switch (key)
+	{
+		case 'y':
+			ToggleSheet();
+			break;
+	}
 }
 
 void PINDA::Init(struct avr_t * avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t *irqZ)

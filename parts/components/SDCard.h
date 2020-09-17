@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include "IKeyClient.h"
 #include "IScriptable.h"    // for ArgType, ArgType::String, IScriptable::Li...
 #include "SPIPeripheral.h"  // for SPIPeripheral
 #include "Scriptable.h"     // for Scriptable
@@ -35,7 +36,7 @@
 #include <sys/types.h>      // for off_t
 #include <vector>           // for vector
 
-class SDCard:public SPIPeripheral, public Scriptable
+class SDCard:public SPIPeripheral, public Scriptable, public IKeyClient
 {
 	public:
 	#define IRQPAIRS \
@@ -68,6 +69,7 @@ class SDCard:public SPIPeripheral, public Scriptable
 
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
+		void OnKeyPress(const Key& key) override;
 
 	private:
 

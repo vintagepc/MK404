@@ -188,22 +188,11 @@ void Prusa_MK3S::OnAVRCycle()
 	if (key)
 	{
 		switch (key) {
-			case 'r':
-				std::cout << "RESET/KILL\n";
-				// RESET BUTTON
-				SetResetFlag();
-				encoder.Push(); // I dont' know why this is required to not get stuck in factory reset mode.
-				// The only thing I can think of is that SimAVR doesn't like IRQ changes that don't have
-				// any avr_run cycles between them. :-/
-				break;
 			case 't':
 				std::cout << "FACTORY_RESET\n";
 				m_bFactoryReset =true;
 				// Hold the button during boot to get factory reset menu
 				SetResetFlag();
-				break;
-			case 'y':
-				pinda.ToggleSheet();
 				break;
 			case 'p':
 				std::cout << "SIMULATING POWER PANIC\n";
@@ -214,21 +203,6 @@ void Prusa_MK3S::OnAVRCycle()
 				break;
 			case 'j':
 				FSensorJam();
-				break;
-			case 'c':
-				if (!sd_card.IsMounted())
-				{
-					std::cout << "Mounting SD image...\n";
-					sd_card.Mount(); // Remounts last image.
-				}
-				else
-				{
-					std::cout << "SD card removed...\n";
-					sd_card.Unmount();
-				}
-				break;
-			case 'q':
-				Boards::EinsyRambo::SetQuitFlag();
 				break;
 		}
 		m_key = 0;
@@ -245,19 +219,8 @@ void Prusa_MK3S::OnMouseMove(int,int)
 void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
 {
 	switch (key) {
-		case 'q':
-			m_key = key;
-			m_bPaused = false;
-			break;
-		// case 'd':
-		// 	//gbPrintPC = gbPrintPC==0;
-		// 	break;
 		case '1':
 			m_iScheme ^=1;
-			break;
-		case 'z':
-			m_bPaused ^= true;
-			std::cout <<  "Pause: " << m_bPaused << '\n';
 			break;
 		case 'l':
 			if (m_pVis)m_pVis->ClearPrint();
@@ -268,14 +231,6 @@ void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
 		case '`':
 			if (m_pVis)m_pVis->ResetCamera();
 			break;
-		/* case 'r':
-			printf("Starting VCD trace; press 's' to stop\n");
-			avr_vcd_start(&vcd_file);
-			break;
-		case 's':
-			printf("Stopping VCD trace\n");
-			avr_vcd_stop(&vcd_file);
-			break */;
 		default:
 			m_key = key;
 	}

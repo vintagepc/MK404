@@ -23,6 +23,7 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "SDCard.h"
+#include "IKeyClient.h"
 #include "Macros.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
@@ -35,6 +36,25 @@
 #include <sys/stat.h>  // for fstat, stat, S_IRUSR, S_IWUSR
 #include <unistd.h>    // for close, off_t, ftruncate
 #include <utility>
+
+void SDCard::OnKeyPress(const Key& key)
+{
+	switch (key)
+	{
+		case 'c':
+		if (!IsMounted())
+		{
+			std::cout << "Mounting SD image...\n";
+			Mount(); // Remounts last image.
+		}
+		else
+		{
+			std::cout << "SD card removed...\n";
+			Unmount();
+		}
+		break;
+	}
+}
 
 SDCard:: SDCard(std::string strFile):Scriptable("SDCard"),m_strFile(std::move(strFile))
 {

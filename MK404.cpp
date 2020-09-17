@@ -167,7 +167,6 @@ void keyCB(unsigned char key, int x, int y)	/* called on key press */
 			std::cout << "Stopped VCD trace" << '\n';
 			break;
 		default:
-			printer->OnKeyPress(key,x,y);
 			KeyController::GetController().OnKeyPressed(key);
 	}
 }

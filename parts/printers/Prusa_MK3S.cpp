@@ -20,12 +20,10 @@
 
 #include "Prusa_MK3S.h"
 #include "Beeper.h"           // for Beeper
-#include "Button.h"           // for Button
 #include "Fan.h"              // for Fan
 #include "HD44780GL.h"        // for HD44780GL
 #include "Heater.h"           // for Heater
 #include "IRSensor.h"         // for IRSensor
-#include "KeyController.h"
 #include "LED.h"              // for LED
 #include "PINDA.h"            // for PINDA
 #include "PinNames.h"         // for Pin::IR_SENSOR_PIN, Pin::VOLT_IR_PIN
@@ -183,30 +181,6 @@ void Prusa_MK3S::OnAVRCycle()
 		}
 		m_mouseBtn = 0;
 	}
-	int key = m_key;                            // copy atomic to local
-	KeyController::GetController().OnAVRCycle(); // Handle/dispatch any pressed keys.
-	if (key)
-	{
-		switch (key) {
-			case 't':
-				std::cout << "FACTORY_RESET\n";
-				m_bFactoryReset =true;
-				// Hold the button during boot to get factory reset menu
-				SetResetFlag();
-				break;
-			case 'p':
-				std::cout << "SIMULATING POWER PANIC\n";
-				PowerPanic.Press(500);
-				break;
-			case 'f':
-				ToggleFSensor();
-				break;
-			case 'j':
-				FSensorJam();
-				break;
-		}
-		m_key = 0;
-	}
 }
 
 // pragma: LCOV_EXCL_START
@@ -216,25 +190,17 @@ void Prusa_MK3S::OnMouseMove(int,int)
 }
 // pragma: LCOV_EXCL_STOP
 
-void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
-{
-	switch (key) {
-		case '1':
-			m_iScheme ^=1;
-			break;
-		case 'l':
-			if (m_pVis)m_pVis->ClearPrint();
-			break;
-		case 'n':
-			if (m_pVis)m_pVis->ToggleNozzleCam();
-		break;
-		case '`':
-			if (m_pVis)m_pVis->ResetCamera();
-			break;
-		default:
-			m_key = key;
-	}
-}
+// void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
+// {
+// 	switch (key) {
+// 		case '1':
+// 			m_iScheme ^=1;
+// 			break;
+//
+// 		default:
+// 			m_key = key;
+// 	}
+// }
 
 void Prusa_MK3S::OnMousePress(int button, int action, int, int)
 {

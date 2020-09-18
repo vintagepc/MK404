@@ -22,14 +22,20 @@
  */
 
 #include "Button.h"
+#include "IKeyClient.h"
 #include "TelemetryHost.h"
 #include <iostream>  // for printf
 
-Button::Button(const std::string &strName):Scriptable(strName),m_strName(strName)
+Button::Button(const std::string &strName):Scriptable(strName),IKeyClient(),m_strName(strName)
 {
 	RegisterActionAndMenu("Press", "Simulate pressing the button", Actions::ActPress);
 	RegisterActionAndMenu("Release", "Simulate releasing the button", Actions::ActRelease);
 	RegisterActionAndMenu("PressAndRelease", "Simulate pressing and then releasing  the button", Actions::ActPressAndRelease);
+}
+
+Button::Button(const std::string &strName, const Key& key, const std::string& strDesc):Button(strName)
+{
+	RegisterKeyHandler(key,strDesc);
 }
 
 Scriptable::LineStatus Button::ProcessAction(unsigned int iAction, const std::vector<std::string>&)
@@ -47,6 +53,12 @@ Scriptable::LineStatus Button::ProcessAction(unsigned int iAction, const std::ve
 		break;
 	}
 	return LineStatus::Finished;
+}
+
+void Button::OnKeyPress(const Key& /*key*/)
+{
+	std::cout << "Pressed: " << m_strName << '\n';
+	Press(500);
 }
 
 void Button::Init(avr_t* avr)

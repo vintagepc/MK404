@@ -21,17 +21,34 @@
 
 #include "ADC_Buttons.h"
 #include "BasePeripheral.h"
+#include "IKeyClient.h"
 #include "IScriptable.h"
 #include <iostream>
 
-ADC_Buttons::ADC_Buttons(const std::string &strName):Scriptable(strName)
+ADC_Buttons::ADC_Buttons(const std::string &strName):Scriptable(strName),IKeyClient()
 {
 	m_fcnRelease = MAKE_C_TIMER_CALLBACK(ADC_Buttons,AutoRelease);
 	RegisterAction("Press","Presses the specified button in the array",0,{ArgType::Int});
 	RegisterActionAndMenu("Push Left","Press left button",ActBtnLeft);
 	RegisterActionAndMenu("Push Middle","Press middle button",ActBtnMiddle);
 	RegisterActionAndMenu("Push Right","Press right button",ActBtnRight);
+
+	RegisterKeyHandler('2', "MMU Left button");
+	RegisterKeyHandler('3', "MMU Left button");
+	RegisterKeyHandler('4', "MMU Left button");
 };
+
+void ADC_Buttons::OnKeyPress(const Key& key)
+{
+	switch (key)
+	{
+		case '3':
+		case '4':
+		case '5':
+			Push(key - '2'); // button numbers are 1/2/3
+			break;
+	}
+}
 
 uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t *, uint32_t)
 {

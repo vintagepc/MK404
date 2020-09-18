@@ -36,7 +36,7 @@
 #include <sys/types.h>      // for off_t
 #include <vector>           // for vector
 
-class SDCard:public SPIPeripheral, public Scriptable, public IKeyClient
+class SDCard:public SPIPeripheral, public Scriptable, private IKeyClient
 {
 	public:
 	#define IRQPAIRS \

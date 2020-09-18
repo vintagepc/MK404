@@ -22,6 +22,7 @@
 #pragma once
 
 #include "BasePeripheral.h"  // for BasePeripheral
+#include "IKeyClient.h"
 #include "IScriptable.h"     // for ArgType, ArgType::Int, ArgType::String
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
@@ -29,9 +30,7 @@
 #include "sim_vcd_file.h"    // for avr_vcd_init, avr_vcd_start, avr_vcd_stop
 #include <cstdint>          // for uint32_t, uint8_t
 #include <cstring>          // for memset
-#ifdef __CYGWIN__
 #include <iostream>
-#endif
 #include <map>               // for map
 #include <string>            // for string
 #include <vector>            // for vector
@@ -69,7 +68,7 @@ enum class TelCategory {
 using TelCats = const std::vector<TelCategory>&;
 using TC = TelCategory;
 
-class TelemetryHost: public BasePeripheral, public Scriptable
+class TelemetryHost: public BasePeripheral, public Scriptable, private IKeyClient
 {
 	public:
 
@@ -123,8 +122,22 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 			StopTrace();
 		}
 
+		void OnKeyPress(const Key& key) override
+		{
+			switch (key)
+			{
+				case '+':
+					TelemetryHost::GetHost().StartTrace();
+					std::cout << "Enabled VCD trace." << '\n';
+					break;
+				case '-':
+					TelemetryHost::GetHost().StopTrace();
+					std::cout << "Stopped VCD trace" << '\n';
+					break;
+			}
+		}
 	private:
-		TelemetryHost():Scriptable("TelHost")
+		TelemetryHost():Scriptable("TelHost"),IKeyClient()
 		{
 			memset(&m_trace, 0, sizeof(m_trace));
 #ifdef __CYGWIN__
@@ -137,6 +150,8 @@ class TelemetryHost: public BasePeripheral, public Scriptable
 			RegisterActionAndMenu("StartTrace", "Starts the telemetry trace. You must have set a category or set of items with the -t option",ActStartTrace);
 			RegisterActionAndMenu("StopTrace", "Stops a running telemetry trace.",ActStopTrace);
 #endif
+			RegisterKeyHandler('+',"Start VCD trace");
+			RegisterKeyHandler('-',"Stop VCD trace");
 		}
 
 		enum Actions

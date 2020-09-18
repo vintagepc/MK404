@@ -41,9 +41,5 @@ class Prusa_MK3: public Prusa_MK3S
 			LaserSensor.Set(PAT9125::FS_NO_FILAMENT); // No filament - but this just updates the LED.
 		}; // Overridde to setup the PAT.
 
-		inline void ToggleFSensor() override { LaserSensor.Toggle(); };
-
-		inline void FSensorJam() override { LaserSensor.ToggleJam();};
-
 		PAT9125 LaserSensor;
 };

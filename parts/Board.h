@@ -25,6 +25,7 @@
 #include "EEPROM.h"         // for EEPROM
 #include "IKeyClient.h"
 #include "IScriptable.h"    // for ArgType, IScriptable::LineStatus, IScript...
+#include "KeyController.h"
 #include "PinNames.h"       // for Pin
 #include "ScriptHost.h"     // for ScriptHost
 #include "Scriptable.h"     // for Scriptable
@@ -49,7 +50,7 @@ using namespace PinNames; //NOLINT - because proper using declarations don't sup
 
 namespace Boards
 {
-	class Board : public Scriptable, public IKeyClient
+	class Board : public Scriptable, virtual private IKeyClient
 	{
 		public:
 			// Making a type so that this is easy to update
@@ -209,6 +210,7 @@ namespace Boards
 					if (m_bIsPrimary) // Only one board should be scripting.
 					{
 						ScriptHost::DispatchMenuCB();
+						KeyController::GetController().OnAVRCycle(); // Handle/dispatch any pressed keys.
 					}
 					if (m_bIsPrimary && ScriptHost::IsInitialized())
 					{

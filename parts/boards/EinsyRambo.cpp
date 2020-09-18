@@ -199,6 +199,19 @@ namespace Boards
 	}
 	// pragma: LCOV_EXCL_STOP
 
+	void EinsyRambo::OnKeyPress(const Key& key)
+	{
+		switch(key)
+		{
+			case 't':
+				std::cout << "FACTORY_RESET\n";
+				m_bFactoryReset =true;
+				// Hold the button during boot to get factory reset menu
+				SetResetFlag();
+				break;
+		}
+	}
+
 	void EinsyRambo::OnAVRInit()
 	{
 		std::string strSPI = GetStorageFileName("xflash");

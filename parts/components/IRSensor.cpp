@@ -20,6 +20,7 @@
  */
 
 #include "IRSensor.h"
+#include "IKeyClient.h"
 #include "Scriptable.h"
 #include <iostream>  // for printf
 
@@ -45,7 +46,7 @@ uint32_t IRSensor::OnADCRead(struct avr_irq_t *, uint32_t)
 	return iVOut;
 }
 
-IRSensor::IRSensor():VoltageSrc()
+IRSensor::IRSensor():VoltageSrc(),IKeyClient()
 {
 	SetName("IRSensor");
 	RegisterActionAndMenu("Toggle","Toggles the IR sensor state",ActToggle);
@@ -55,6 +56,22 @@ IRSensor::IRSensor():VoltageSrc()
 	RegisterMenu("v0.3 Set Filament", ActSetV3Filament);
 	RegisterMenu("v0.3 No Filament", ActSetV3NoFilament);
 	RegisterMenu("Set Unknown", ActSetUnknown);
+
+	RegisterKeyHandler('f',"Toggles IR sensor Filament presence");
+	RegisterKeyHandler('A',""); // Full auto resume for FINDA/MMU
+}
+
+void IRSensor::OnKeyPress(const Key& key)
+{
+	switch (key)
+	{
+		case 'f':
+			Toggle();
+			break;
+		case 'A':
+		 	Set(IRSensor::IR_AUTO);
+			 break;
+	}
 }
 
 Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)

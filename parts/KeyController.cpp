@@ -42,14 +42,14 @@ void KeyController::AddKeyClient(IKeyClient *pClient, const unsigned char key, c
 	}
 }
 
-void KeyController::PrintKeys(bool /*bMarkdown*/)
+void KeyController::PrintKeys(bool bMarkdown)
 {
 	std::cout << "Available Key Controls:\n";
 	for (auto it : m_mDescrs)
 	{
-		std::cout << '\t';
+		std::cout << (bMarkdown?"- `":"\t");
 		PutNiceKeyName(it.first);
-		std::cout << ":\t" << it.second << '\n';
+		std::cout << (bMarkdown?"` -":":\t") << it.second << '\n';
 	}
 
 }

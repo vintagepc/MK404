@@ -44,9 +44,6 @@ class Printer: public Scriptable
 		// GL methods, use these to render your printer visuals and
 		virtual void Draw(){}; // pragma: LCOV_EXCL_START
 
-		// Passthrough for GlutKeyboardFunc
-		virtual void OnKeyPress(unsigned char /*key*/, int /*x*/, int /*y*/){};
-
 		// Passthrough for GlutMouseFunc
 		virtual void OnMousePress(int /*button*/, int /*action*/, int /*x*/, int /*y*/){};
 
@@ -70,9 +67,9 @@ class Printer: public Scriptable
 		{
 			switch (iAct)
 			{
-				case ActKeyPress:
-					OnKeyPress(vArgs.at(0).at(0),0,0);
-					return LineStatus::Finished;
+				// case ActKeyPress:
+				// 	OnKeyPress(vArgs.at(0).at(0),0,0);
+				// 	return LineStatus::Finished;
 				case ActMouseBtn:
 					OnMousePress(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)),0,0);
 					return LineStatus::Finished;

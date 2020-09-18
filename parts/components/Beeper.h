@@ -32,7 +32,7 @@
 #include <string>           // for string
 #include <vector>           // for vector
 
-class Beeper:public SoftPWMable, public Scriptable, public IKeyClient
+class Beeper:public SoftPWMable, public Scriptable, private IKeyClient
 {
 	public:
 		#define IRQPAIRS _IRQ(DIGITAL_IN,"<digital.in") _IRQ(PWM_IN,"<pwm.in")

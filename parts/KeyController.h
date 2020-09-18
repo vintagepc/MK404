@@ -43,6 +43,8 @@ class KeyController
 
 		void PrintKeys(bool bMarkdown);
 
+		static inline void GLKeyReceiver(unsigned char key, int /*x*/, int /*y*/) { KeyController::GetController().OnKeyPressed(key); };
+
 	protected:
 		KeyController() = default;
 		~KeyController() = default;

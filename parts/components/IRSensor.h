@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "IKeyClient.h"
 #include "IScriptable.h"  // for IScriptable::LineStatus
 #include "VoltageSrc.h"   // for VoltageSrc
 #include "sim_irq.h"      // for avr_irq_t
@@ -32,7 +33,7 @@
 #include <vector>         // for vector
 
 
-class IRSensor: public VoltageSrc
+class IRSensor: public VoltageSrc, private IKeyClient
 {
 public:
 	// Enumeration for IR sensor states.
@@ -64,6 +65,8 @@ public:
 
 	protected:
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
+
+		void OnKeyPress(const Key& key) override;
 
 private:
 

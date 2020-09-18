@@ -23,12 +23,12 @@
 #include "Camera.hpp"         // for Camera
 #include "GLPrint.h"          // for GLPrint
 #include "HD44780GL.h"        // for HD44780GL
+#include "KeyController.h"
 #include "MK3S_Bear.h"        // for MK3S_Bear
 #include "MK3S_Full.h"        // for MK3S_Full
 #include "MK3S_Lite.h"        // for MK3S_Lite
 #include "Macros.h"
 #include "OBJCollection.h"    // for OBJCollection, OBJCollection::ObjClass
-#include "Printer.h"          // for Printer
 #include "gsl-lite.hpp"
 //NOLINTNEXTLINE _std must come before _ext.
 #include <GL/freeglut_std.h>  // for glutSetWindow, GLUT_DOWN, GLUT_UP, glut...
@@ -149,8 +149,20 @@ void MK3SGL::ResizeCB(int w, int h)
 	glLoadIdentity();
 }
 
-void MK3SGL::KeyCB(unsigned char c, int x, int y)
+void MK3SGL::KeyCB(unsigned char c, int /*x*/, int /*y*/)
 {
+	switch (c)
+	{
+		case 'l':
+			ClearPrint();
+			break;
+		case 'n':
+			ToggleNozzleCam();
+		break;
+		case '`':
+			ResetCamera();
+			break;
+	}
 	// Decomment this block and use the flDbg variables
 	// as your position translation. Then, you can move the
 	// object into place using the numpad, and just read off
@@ -179,10 +191,8 @@ void MK3SGL::KeyCB(unsigned char c, int x, int y)
 	// }
 	// printf("Int: %d\n",m_iDbg.load());
 	// printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
-	if (m_pParent)
-	{
-		m_pParent->OnKeyPress(c,x,y);
-	}
+	KeyController::GetController().OnKeyPressed(c);
+
 }
 
 void MK3SGL::Init(avr_t *avr)

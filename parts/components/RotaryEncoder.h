@@ -35,7 +35,7 @@
 #include <string>              // for string
 #include <vector>              // for vector
 
-class RotaryEncoder:public BasePeripheral,public Scriptable, public IKeyClient
+class RotaryEncoder:public BasePeripheral,public Scriptable, private IKeyClient
 {
     public:
         #define IRQPAIRS _IRQ(OUT_A,">encoder.a") _IRQ(OUT_B,">encoder.b") _IRQ(OUT_BUTTON,">encoder.button")

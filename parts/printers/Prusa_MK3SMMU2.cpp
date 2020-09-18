@@ -30,7 +30,6 @@
 #include "uart_pty.h"             // for uart_pty
 #include <GL/glew.h>
 #include <cstring>
-#include <iostream>                // for printf
 #include <memory>                 // for unique_ptr
 
 void Prusa_MK3SMMU2::SetupHardware()
@@ -87,30 +86,4 @@ void Prusa_MK3SMMU2::OnMMUFeed(struct avr_irq_t *, uint32_t value)
 	float fVal;
 	std::memcpy(&fVal,&value,4);
 	IR.Auto_Input(fVal>400.f); // Trigger IR if MMU P pos > 400mm
-}
-
-
-void Prusa_MK3SMMU2::OnKeyPress(unsigned char key, int x, int y)
-{
-	switch (key) {
-		case 'F':
-		{
-			std::cout << "FINDA toggled (in manual control)\n";
-			m_MMU.SetFINDAAuto(false);
-			m_MMU.ToggleFINDA();
-		}
-		break;
-		case 'a':
-		{
-			std::cout << "FINDA in Auto control\n";
-			m_MMU.SetFINDAAuto(true);
-			FSensorResumeAuto(); // Also restore IR auto handling.
-			break;
-		}
-		case '3':
-		case '4':
-		case '5':
-			m_MMU.PushButton(key - '2'); // button numbers are 1/2/3
-			break;
-	}
 }

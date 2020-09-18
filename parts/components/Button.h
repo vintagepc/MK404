@@ -24,6 +24,7 @@
 #pragma once
 
 #include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
+#include "IKeyClient.h"
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
 #include "sim_avr.h"           // for avr_t
@@ -33,7 +34,7 @@
 #include <string>              // for string
 #include <vector>              // for vector
 
-class Button:public BasePeripheral, public Scriptable
+class Button:public BasePeripheral, public Scriptable, private IKeyClient
 {
 	public:
 	#define IRQPAIRS _IRQ(BUTTON_OUT,">button.out")
@@ -41,6 +42,7 @@ class Button:public BasePeripheral, public Scriptable
 
 	// Creates a new button with name strName
 	explicit Button(const std::string &strName = "Button");
+	Button(const std::string &strName, const Key& key, const std::string& strDesc);
 
 	// Initializes the button on "avr"
 	void Init(struct avr_t * avr);
@@ -50,6 +52,8 @@ class Button:public BasePeripheral, public Scriptable
 
 	protected:
 		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &vArgs) override;
+
+		void OnKeyPress(const Key& key) override;
 
 	private:
 		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);

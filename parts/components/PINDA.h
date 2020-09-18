@@ -32,7 +32,7 @@
 #include <string>            // for string
 #include <vector>            // for vector
 
-class PINDA:public BasePeripheral,public Scriptable, public IKeyClient {
+class PINDA:public BasePeripheral,public Scriptable, private IKeyClient {
     public:
         #define IRQPAIRS _IRQ(X_POS_IN,"<pinda.x_in") _IRQ(Y_POS_IN,"<pinda.y_in") _IRQ(Z_POS_IN,"<pinda.Z_in") _IRQ(TRIGGER_OUT,">pinda.out") _IRQ(SHEET_OUT,">sheet.out")
         #include "IRQHelper.h"

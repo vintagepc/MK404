@@ -72,14 +72,7 @@ void OnSigINT(int) {
 	{
 		std::cout << "Caught SIGINT... stopping..." << '\n';
 		m_bStopping = true;
-		if (m_bTestMode)
-		{
-			pBoard->SetQuitFlag();
-		}
-		else if (printer)
-		{
-			printer->OnKeyPress('q',0,0);
-		}
+		pBoard->SetQuitFlag();
 	}
 	else
 	{
@@ -154,22 +147,7 @@ void displayCB()		/* function called whenever redisplay needed */
 	glutSwapBuffers();
 }
 
-void keyCB(unsigned char key, int x, int y)	/* called on key press */
-{
-	switch(key)
-	{
-		case '+':
-			TelemetryHost::GetHost().StartTrace();
-			std::cout << "Enabled VCD trace." << '\n';
-			break;
-		case '-':
-			TelemetryHost::GetHost().StopTrace();
-			std::cout << "Stopped VCD trace" << '\n';
-			break;
-		default:
-			KeyController::GetController().OnKeyPressed(key);
-	}
-}
+
 // pragma: LCOV_EXCL_START
 void MouseCB(int button, int action, int x, int y)	/* called on key press */
 {
@@ -226,7 +204,7 @@ int initGL()
 {
 	// Set up projection matrix
 	glutDisplayFunc(displayCB);		/* set window's display callback */
-	glutKeyboardFunc(keyCB);		/* set window's key callback */
+	glutKeyboardFunc(KeyController::GLKeyReceiver);		/* set window's key callback */
 	glutMouseFunc(MouseCB);
 	glutMotionFunc(MotionCB);
 	glutTimerFunc(1000, timerCB, 0);
@@ -448,7 +426,7 @@ int main(int argc, char *argv[])
 	// This is a little lazy, I know. Figure it out once we have non-einsy printers.
 	if (argMute.isSet())
 	{
-		printer->OnKeyPress('m',0,0);
+		KeyController::GetController().OnKeyPressed('m');
 	}
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can

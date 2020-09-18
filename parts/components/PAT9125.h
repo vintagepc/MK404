@@ -23,6 +23,7 @@
 
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
 #include "I2CPeripheral.h"     // for I2CPeripheral
+#include "IKeyClient.h"
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
 #include "gsl-lite.hpp"
@@ -37,7 +38,7 @@
 #include <string>              // for string
 #include <vector>              // for vector
 
-class PAT9125: public I2CPeripheral, public Scriptable
+class PAT9125: public I2CPeripheral, public Scriptable, private IKeyClient
 {
 
 	public:
@@ -58,7 +59,7 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			FS_MAX
 		};
 
-		PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125")
+		PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125"),IKeyClient()
 		{
 			// Check register packing/sizes:
 			Expects(sizeof(m_regs) == sizeof(m_regs.raw));
@@ -67,6 +68,11 @@ class PAT9125: public I2CPeripheral, public Scriptable
 			RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
 			RegisterActionAndMenu("Toggle Jam","Toggles a jam (motion stall)",ActToggleJam);
 			RegisterActionAndMenu("Resume Auto","Resumes auto (MMU-pulley-based) operation",ActResumeAuto);
+
+			RegisterKeyHandler('f', "Toggle PAT9125 filament presence");
+			RegisterKeyHandler('j', "Toggle a simulated jam on the PAT9125");
+			RegisterKeyHandler('A',"");
+
 		};
 
 		void Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)
@@ -125,6 +131,22 @@ class PAT9125: public I2CPeripheral, public Scriptable
 
 
 	protected:
+
+		void OnKeyPress(const Key& key) override
+		{
+			switch(key)
+			{
+				case 'f':
+					Toggle();
+					break;
+				case 'j':
+					ToggleJam();
+					break;
+				case 'A':
+					Set(PAT9125::FS_AUTO);
+					break;
+			}
+		}
 
 		void UpdateSensorState()
 		{

@@ -21,6 +21,7 @@
 
 #include "MMU2.h"
 #include "HC595.h"            // for HC595, TMC2130::IRQ::POSITION_OUT, MMU2...
+#include "IKeyClient.h"
 #include "LED.h"              // for LED
 #include "MM_Control_01.h"    // for MM_Control_01
 #include "PinNames.h"         // for Pin::FINDA_PIN
@@ -44,7 +45,7 @@ MMU2 *MMU2::g_pMMU = nullptr;
 
 using Boards::MM_Control_01;
 
-MMU2::MMU2():MM_Control_01()
+MMU2::MMU2():IKeyClient(),MM_Control_01()
 {
 	if (g_pMMU)
 	{
@@ -54,6 +55,30 @@ MMU2::MMU2():MM_Control_01()
 	g_pMMU = this;
 	SetBoardName("MMU2");
 	CreateBoard("MM-control-01.hex",0, false, 100,"");
+
+	RegisterKeyHandler('F',"Toggle the FINDA");
+	RegisterKeyHandler('A', "Resumes full-auto MMU mode.");
+}
+
+void MMU2::OnKeyPress(const Key& key)
+{
+	switch (key)
+	{
+		case 'F':
+		{
+			std::cout << "FINDA toggled (in manual control)\n";
+			m_bAutoFINDA = false;
+			ToggleFINDA();
+		}
+		break;
+		case 'A':
+		{
+			std::cout << "FINDA in Auto control\n";
+			m_bAutoFINDA = true;
+			//FSensorResumeAuto(); // Also restore IR auto handling.
+			break;
+		}
+	}
 }
 
 const std::string MMU2::GetSerialPort()

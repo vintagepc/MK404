@@ -32,7 +32,6 @@
 #include <memory>           // for unique_ptr
 #include <string>           // for string
 #include <utility>          // for pair
-#include <vector>
 
 class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 {
@@ -43,7 +42,6 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 		~Prusa_MK3S() override = default;
 
 		void Draw() override;
-		void OnKeyPress(unsigned char key, int x, int y) override;
 		void OnMousePress(int button, int action, int x, int y) override;
 		void OnMouseMove(int x,int y) override;
 		void OnVisualTypeSet(const std::string &type) override;
@@ -56,9 +54,6 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 		IRSensor IR{};
 
 		virtual void SetupIR(); // Overridden by the MK3 to setup the PAT.
-		inline virtual void ToggleFSensor(){ IR.Toggle(); };
-
-		inline virtual void FSensorJam() {}; // pragma: LCOV_EXCL_LINE
 
 		void OnAVRCycle() override;
 
@@ -71,14 +66,6 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);
 
-		std::atomic_int m_key = {0}, m_mouseBtn = {0};
-
-		unsigned int m_iScheme = 0;
-		std::vector<uint32_t> m_colors = {
-		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
-		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055};
-
-
-
+		std::atomic_int m_mouseBtn = {0};
 
 };

@@ -21,7 +21,6 @@
 #pragma once
 
 #include "GCodeSniffer.h"  // for GCodeSniffer
-#include "IRSensor.h"      // for IRSensor, IRSensor::IRState::IR_AUTO
 #include "MMU2.h"          // for MMU2
 #include "Prusa_MK3S.h"    // for Prusa_MK3S
 #include "SerialPipe.h"
@@ -45,12 +44,8 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 
 		std::pair<int,int> GetWindowSize() override;
 
-		void OnKeyPress(unsigned char key, int x, int y) override;
-
 	protected:
 		void SetupHardware() override;
-
-		inline virtual void FSensorResumeAuto() { IR.Set(IRSensor::IR_AUTO);}
 
 		void OnMMUFeed(avr_irq_t *irq, uint32_t value);// Helper for MMU IR sensor triggering.
 

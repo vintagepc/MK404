@@ -21,6 +21,7 @@
 
 #include "Beeper.h"
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
+#include "IKeyClient.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
 #include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
@@ -37,7 +38,7 @@
 #include <iostream>
 #include <iterator>
 
-Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
+Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper"), IKeyClient()
 {
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
 	{
@@ -55,6 +56,8 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 	RegisterActionAndMenu("Unmute","Unmutes the beeper", ActUnmute);
 	RegisterActionAndMenu("ToggleMute","Toggles the beeper mute", ActToggle);
 
+	RegisterKeyHandler('m',"Mutes buzzer audio tones");
+
     if(SDL_OpenAudio(&m_specWant, &m_specHave) != 0)
 	{
 		std::cerr << "Failed to open audio: " << SDL_GetError() << '\n';
@@ -67,6 +70,16 @@ Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper")
 	}
 	m_bAudioAvail = true;
 
+}
+
+void Beeper::OnKeyPress(const Key &key)
+{
+	switch (key)
+	{
+		case 'm':
+			ToggleMute();
+			break;
+	}
 }
 
 Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const std::vector<std::string>&)

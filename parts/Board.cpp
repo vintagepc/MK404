@@ -181,6 +181,25 @@ namespace Boards {
 		OnAVRDeinit();
 	}
 
+	void Board::OnKeyPress(const Key& key)
+	{
+		switch (key)
+		{
+			case 'z':
+				m_bPaused ^= true;
+				std::cout <<  "Pause: " << m_bPaused << '\n';
+			break;
+			case 'q':
+				SetQuitFlag();
+			break;
+			case 'r':
+				std::cout << "RESET/KILL\n";
+				// RESET BUTTON
+				SetResetFlag();
+			break;
+		}
+	}
+
 	avr_flashaddr_t Board::LoadFirmware(const string &strFW)
 	{
 		uint32_t uiFWSize = 0, uiFWStart = 0;

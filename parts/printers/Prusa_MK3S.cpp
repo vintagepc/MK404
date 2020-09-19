@@ -20,7 +20,6 @@
 
 #include "Prusa_MK3S.h"
 #include "Beeper.h"           // for Beeper
-#include "Button.h"           // for Button
 #include "Fan.h"              // for Fan
 #include "HD44780GL.h"        // for HD44780GL
 #include "Heater.h"           // for Heater
@@ -43,11 +42,7 @@ void Prusa_MK3S::Draw()
 		glPushMatrix();
 		glLoadIdentity(); // Start with an identity matrix
 			glScalef(4, 4, 1);
-
-			lcd.Draw(m_colors.at((4*m_iScheme) + 0), /* background */
-					m_colors.at((4*m_iScheme) + 1), /* character background */
-					m_colors.at((4*m_iScheme) + 2), /* text */
-					m_colors.at((4*m_iScheme) + 3) /* shadow */ );
+			lcd.Draw();
 		glPopMatrix();
 
 		// Do something for the motors...
@@ -139,6 +134,7 @@ void Prusa_MK3S::SetupIR()
 	AddHardware(IR, GetPinNumber(VOLT_IR_PIN));
 	TryConnect(IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
 	TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
+	IR.Set(IRSensor::IR_v4_FILAMENT_PRESENT);
 }
 
 void Prusa_MK3S::SetupHardware()
@@ -182,76 +178,6 @@ void Prusa_MK3S::OnAVRCycle()
 		}
 		m_mouseBtn = 0;
 	}
-	int key = m_key;                            // copy atomic to local
-	if (key)
-	{
-		switch (key) {
-			case 'w':
-				std::cout << '<';
-				encoder.Twist(RotaryEncoder::CCW_CLICK);
-				if (m_pVis) m_pVis->TwistKnob(true);
-				break;
-			case 's':
-				std::cout << '>';
-				encoder.Twist(RotaryEncoder::CW_CLICK);
-				if (m_pVis) m_pVis->TwistKnob(false);
-				break;
-			case 0xd:
-				std::cout << "ENTER pushed\n";
-				encoder.Push();
-				break;
-			case 'r':
-				std::cout << "RESET/KILL\n";
-				// RESET BUTTON
-				SetResetFlag();
-				encoder.Push(); // I dont' know why this is required to not get stuck in factory reset mode.
-				// The only thing I can think of is that SimAVR doesn't like IRQ changes that don't have
-				// any avr_run cycles between them. :-/
-				break;
-			case 't':
-				std::cout << "FACTORY_RESET\n";
-				m_bFactoryReset =true;
-				// Hold the button during boot to get factory reset menu
-				SetResetFlag();
-				break;
-			case 'h':
-				encoder.PushAndHold();
-				break;
-			case 'm':
-				std::cout << "Toggled Mute\n";
-				m_buzzer.ToggleMute();
-				break;
-			case 'y':
-				pinda.ToggleSheet();
-				break;
-			case 'p':
-				std::cout << "SIMULATING POWER PANIC\n";
-				PowerPanic.Press(500);
-				break;
-			case 'f':
-				ToggleFSensor();
-				break;
-			case 'j':
-				FSensorJam();
-				break;
-			case 'c':
-				if (!sd_card.IsMounted())
-				{
-					std::cout << "Mounting SD image...\n";
-					sd_card.Mount(); // Remounts last image.
-				}
-				else
-				{
-					std::cout << "SD card removed...\n";
-					sd_card.Unmount();
-				}
-				break;
-			case 'q':
-				Boards::EinsyRambo::SetQuitFlag();
-				break;
-		}
-		m_key = 0;
-	}
 }
 
 // pragma: LCOV_EXCL_START
@@ -261,44 +187,17 @@ void Prusa_MK3S::OnMouseMove(int,int)
 }
 // pragma: LCOV_EXCL_STOP
 
-void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
-{
-	switch (key) {
-		case 'q':
-			m_key = key;
-			m_bPaused = false;
-			break;
-		// case 'd':
-		// 	//gbPrintPC = gbPrintPC==0;
-		// 	break;
-		case '1':
-			m_iScheme ^=1;
-			break;
-		case 'z':
-			m_bPaused ^= true;
-			std::cout <<  "Pause: " << m_bPaused << '\n';
-			break;
-		case 'l':
-			if (m_pVis)m_pVis->ClearPrint();
-			break;
-		case 'n':
-			if (m_pVis)m_pVis->ToggleNozzleCam();
-		break;
-		case '`':
-			if (m_pVis)m_pVis->ResetCamera();
-			break;
-		/* case 'r':
-			printf("Starting VCD trace; press 's' to stop\n");
-			avr_vcd_start(&vcd_file);
-			break;
-		case 's':
-			printf("Stopping VCD trace\n");
-			avr_vcd_stop(&vcd_file);
-			break */;
-		default:
-			m_key = key;
-	}
-}
+// void Prusa_MK3S::OnKeyPress(unsigned char key, int, int)
+// {
+// 	switch (key) {
+// 		case '1':
+// 			m_iScheme ^=1;
+// 			break;
+//
+// 		default:
+// 			m_key = key;
+// 	}
+// }
 
 void Prusa_MK3S::OnMousePress(int button, int action, int, int)
 {

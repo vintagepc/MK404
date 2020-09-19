@@ -43,9 +43,5 @@ class Prusa_MK3MMU2 : public Prusa_MK3SMMU2
 			LaserSensor.Set(PAT9125::FS_AUTO); // No filament - but this just updates the LED.
 		}; // Overridde to setup the PAT.
 
-		inline void ToggleFSensor() override { LaserSensor.Toggle(); };
-
-		inline void FSensorResumeAuto() override { LaserSensor.Set(PAT9125::FS_AUTO);};
-
 		PAT9125 LaserSensor;
 };

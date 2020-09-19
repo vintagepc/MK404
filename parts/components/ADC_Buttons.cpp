@@ -21,17 +21,34 @@
 
 #include "ADC_Buttons.h"
 #include "BasePeripheral.h"
+#include "IKeyClient.h"
 #include "IScriptable.h"
 #include <iostream>
 
-ADC_Buttons::ADC_Buttons(const std::string &strName):Scriptable(strName)
+ADC_Buttons::ADC_Buttons(const std::string &strName, uint32_t uiDelay):Scriptable(strName),IKeyClient(), m_uiDelay{uiDelay}
 {
 	m_fcnRelease = MAKE_C_TIMER_CALLBACK(ADC_Buttons,AutoRelease);
 	RegisterAction("Press","Presses the specified button in the array",0,{ArgType::Int});
 	RegisterActionAndMenu("Push Left","Press left button",ActBtnLeft);
 	RegisterActionAndMenu("Push Middle","Press middle button",ActBtnMiddle);
 	RegisterActionAndMenu("Push Right","Press right button",ActBtnRight);
+
+	RegisterKeyHandler('2', "MMU Left button");
+	RegisterKeyHandler('3', "MMU Middle button");
+	RegisterKeyHandler('4', "MMU Right button");
 };
+
+void ADC_Buttons::OnKeyPress(const Key& key)
+{
+	switch (key)
+	{
+		case '2':
+		case '3':
+		case '4':
+			Push(key - '1'); // button numbers are 1/2/3
+			break;
+	}
+}
 
 uint32_t ADC_Buttons::OnADCRead(struct avr_irq_t *, uint32_t)
 {
@@ -92,7 +109,7 @@ void ADC_Buttons::Push(uint8_t uiBtn)
 {
 	std::cout << "Pressing button " << uiBtn << '\n';
 	m_uiCurBtn = uiBtn;
-	RegisterTimerUsec(m_fcnRelease,2500000, this);
+	RegisterTimerUsec(m_fcnRelease,m_uiDelay, this);
 }
 
 avr_cycle_count_t ADC_Buttons::AutoRelease(avr_t *, avr_cycle_count_t)

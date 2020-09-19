@@ -21,6 +21,7 @@
  */
 
 #include "FatImage.h"                 // for FatImage
+#include "KeyController.h"
 #include "Macros.h"
 #include "Printer.h"                  // for Printer, Printer::VisualType
 #include "PrinterFactory.h"           // for PrinterFactory
@@ -71,14 +72,7 @@ void OnSigINT(int) {
 	{
 		std::cout << "Caught SIGINT... stopping..." << '\n';
 		m_bStopping = true;
-		if (m_bTestMode)
-		{
-			pBoard->SetQuitFlag();
-		}
-		else if (printer)
-		{
-			printer->OnKeyPress('q',0,0);
-		}
+		pBoard->SetQuitFlag();
 	}
 	else
 	{
@@ -153,22 +147,7 @@ void displayCB()		/* function called whenever redisplay needed */
 	glutSwapBuffers();
 }
 
-void keyCB(unsigned char key, int x, int y)	/* called on key press */
-{
-	switch(key)
-	{
-		case '+':
-			TelemetryHost::GetHost().StartTrace();
-			std::cout << "Enabled VCD trace." << '\n';
-			break;
-		case '-':
-			TelemetryHost::GetHost().StopTrace();
-			std::cout << "Stopped VCD trace" << '\n';
-			break;
-		default:
-			printer->OnKeyPress(key,x,y);
-	}
-}
+
 // pragma: LCOV_EXCL_START
 void MouseCB(int button, int action, int x, int y)	/* called on key press */
 {
@@ -225,7 +204,7 @@ int initGL()
 {
 	// Set up projection matrix
 	glutDisplayFunc(displayCB);		/* set window's display callback */
-	glutKeyboardFunc(keyCB);		/* set window's key callback */
+	glutKeyboardFunc(KeyController::GLKeyReceiver);		/* set window's key callback */
 	glutMouseFunc(MouseCB);
 	glutMotionFunc(MotionCB);
 	glutTimerFunc(1000, timerCB, 0);
@@ -284,6 +263,7 @@ int main(int argc, char *argv[])
 	cmd.add(argMute);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
 	cmd.add(argLoad);
+	SwitchArg argKeyHelp("k","keys","Prints the list of available keyboard controls",cmd,false);
 	std::vector<string> vstrSizes = FatImage::GetSizes();
 	ValuesConstraint<string> vcSizes(vstrSizes);
 	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes);
@@ -407,6 +387,13 @@ int main(int argc, char *argv[])
 
 
 	}
+
+	if (argKeyHelp.isSet())
+	{
+		KeyController::GetController().PrintKeys(argMD.isSet());
+		exit(0);
+	}
+
 	if (argVCD.isSet() && argVCD.getValue().at(0)=="?")
 	{
 		TelemetryHost::GetHost().PrintTelemetry(argMD.isSet());
@@ -439,7 +426,7 @@ int main(int argc, char *argv[])
 	// This is a little lazy, I know. Figure it out once we have non-einsy printers.
 	if (argMute.isSet())
 	{
-		printer->OnKeyPress('m',0,0);
+		KeyController::GetController().OnKeyPressed('m');
 	}
 
 	// Useful for getting serial pipes/taps setup, the node exists so you can

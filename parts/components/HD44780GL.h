@@ -30,16 +30,24 @@
 #pragma once
 
 #include "HD44780.h"  // for HD44780
+#include "IKeyClient.h"
 #include "sim_avr.h"  // for avr_t
 #include "sim_irq.h"  // for avr_irq_t
 #include <atomic>
 #include <cstdint>   // for uint32_t, uint8_t
+#include <vector>
 
-class HD44780GL:public HD44780
+class HD44780GL:public HD44780, private IKeyClient
 {
 	public:
+		HD44780GL();
+		~HD44780GL() override = default;
+
 		// Registers with SimAVR (for brightness)
 		void Init(avr_t *avr);
+
+		// Draw with the currently selected colour scheme
+		void Draw(bool bMaterial = false);
 
 		// Draws the display with the given colours within the current GL context.
 		void Draw(uint32_t background,
@@ -49,6 +57,8 @@ class HD44780GL:public HD44780
 			bool bMaterial = false);
 
 	private:
+		void OnKeyPress(const Key& key) override;
+
 		// Char draw helper.
 		void GLPutChar(unsigned char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial = false);
 
@@ -59,4 +69,9 @@ class HD44780GL:public HD44780
 		uint8_t m_uiCharW = 5, m_uiCharH = 8;
 		std::atomic_uint8_t m_uiBrightness = {255};
 		std::atomic_uint8_t m_uiPWM = {255};
+
+		std::atomic_uint8_t m_iScheme {0};
+		std::vector<uint32_t> m_colors = {
+		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
+		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055};
 };

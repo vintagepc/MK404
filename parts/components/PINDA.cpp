@@ -249,6 +249,17 @@ PINDA::PINDA(float fX, float fY, XYCalMap map):Scriptable("PINDA"),m_fOffset{fX,
 {
 	m_bIsSheetPresent = m_XYCalType != XYCalMap::MK2;
     SetMBLMap();
+	RegisterKeyHandler('y', "Toggles the steel sheet on the heatbed");
+}
+
+void PINDA::OnKeyPress(const Key &key)
+{
+	switch (key)
+	{
+		case 'y':
+			ToggleSheet();
+			break;
+	}
 }
 
 void PINDA::Reconfigure(float fX, float fY, XYCalMap map)

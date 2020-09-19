@@ -26,6 +26,7 @@
 #include "Fan.h"                                 // for Fan
 #include "HD44780GL.h"                           // for HD44780GL
 #include "Heater.h"                              // for Heater
+#include "IKeyClient.h"
 #include "LED.h"                                 // for LED
 #include "Macros.h"
 #include "PINDA.h"                               // for PINDA
@@ -49,11 +50,10 @@ extern "C"
 
 namespace Boards
 {
-	class EinsyRambo: public Board
+	class EinsyRambo: public Board, virtual private IKeyClient
 	{
 		public:
-			explicit EinsyRambo(uint32_t uiFreq = 16000000)
-				:Board(m_wiring,uiFreq){ SetBoardName("Einsy");};
+			explicit EinsyRambo(uint32_t uiFreq = 16000000);
 
 		protected:
 			void SetupHardware() override;
@@ -64,13 +64,15 @@ namespace Boards
 
 			void OnAVRDeinit() override;
 
+			void OnKeyPress(const Key& key) override;
+
 			static constexpr float fScale24v = 1.0f/26.097f; // Based on rSense voltage divider outputting 5v
 
 			bool m_bFactoryReset = false;
 
 			HD44780GL lcd;
 			RotaryEncoder encoder;
-			Button PowerPanic {"Power Panic"};
+			Button PowerPanic {"Power Panic",'p',"Triggers Power Panic line"};
 			Beeper m_buzzer;
 			uart_pty UART0, UART2;
 			SerialLineMonitor m_Mon0 = SerialLineMonitor("Serial0");

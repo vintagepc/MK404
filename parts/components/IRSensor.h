@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "IKeyClient.h"
 #include "IScriptable.h"  // for IScriptable::LineStatus
 #include "VoltageSrc.h"   // for VoltageSrc
 #include "sim_irq.h"      // for avr_irq_t
@@ -32,15 +33,15 @@
 #include <vector>         // for vector
 
 
-class IRSensor: public VoltageSrc
+class IRSensor: public VoltageSrc, private IKeyClient
 {
 public:
 	// Enumeration for IR sensor states.
 	using IRState = enum {
 		IR_MIN = -1,
 		IR_SHORT,
-		IR_v3_FILAMENT_PRESENT,
-		IR_v4_FILAMENT_PRESENT,
+		IR_v3_FILAMENT_PRESENT, // Keep these in order, we
+		IR_v4_FILAMENT_PRESENT, // map directly from the Action enum.
 		IR_UNKNOWN,
 		IR_v3_NO_FILAMENT,
 		IR_v4_NO_FILAMENT,
@@ -64,17 +65,22 @@ public:
 	protected:
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
+		void OnKeyPress(const Key& key) override;
+
 private:
 
 	enum Actions
 	{
+		// Don't reorder these, we map as act-3 ->
+		// sensor value to reduce the size of the switch blocks
 		ActToggle = VoltageSrc::ActVS_END,
 		ActSet,
-		ActSetV3NoFilament,
 		ActSetV3Filament,
-		ActSetV4NoFilament,
 		ActSetV4Filament,
 		ActSetUnknown,
+		ActSetV3NoFilament,
+		ActSetV4NoFilament,
+		ActSetExtVal,
 		ActSetAuto
 	};
 

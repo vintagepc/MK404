@@ -38,7 +38,7 @@ class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 		~Prusa_MK2_13() override = default;
 
 		void Draw() override;
-		void OnKeyPress(unsigned char key, int x, int y) override;
+
 		void OnMousePress(int button, int action, int x, int y) override;
 		void OnMouseMove(int x,int y) override;
 

@@ -239,37 +239,6 @@ void Prusa_MK2_13::OnMouseMove(int /*x*/,int /*y*/)
 {
 }
 
-void Prusa_MK2_13::OnKeyPress(unsigned char key, int /*x*/, int /*y*/)
-{
-	switch (key) {
-		case 'q':
-			m_key = key;
-			m_bPaused = false;
-			break;
-		case 'd':
-			//gbPrintPC = gbPrintPC==0;
-			break;
-		case '1':
-			m_iScheme ^=1;
-			break;
-		case 'z':
-			m_bPaused ^= true;
-			std::cout << "Pause: " << m_bPaused.load() << '\n';
-			break;
-		// case 'l':
-		// 	if (m_pVis)m_pVis->ClearPrint();
-		// 	break;
-		// case 'n':
-		// 	if (m_pVis)m_pVis->ToggleNozzleCam();
-		// break;
-		// case '`':
-		// 	if (m_pVis)m_pVis->ResetCamera();
-		// 	break;
-		default:
-			m_key = key;
-	}
-}
-
 void Prusa_MK2_13::OnMousePress(int button, int action, int /*x*/, int /*y*/)
 {
 	if (button == GLUT_LEFT_BUTTON || button == GLUT_RIGHT_BUTTON) {

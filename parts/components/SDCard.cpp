@@ -23,6 +23,7 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "SDCard.h"
+#include "IKeyClient.h"
 #include "Macros.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
@@ -35,6 +36,25 @@
 #include <sys/stat.h>  // for fstat, stat, S_IRUSR, S_IWUSR
 #include <unistd.h>    // for close, off_t, ftruncate
 #include <utility>
+
+void SDCard::OnKeyPress(const Key& key)
+{
+	switch (key)
+	{
+		case 'c':
+		if (!IsMounted())
+		{
+			std::cout << "Mounting SD image...\n";
+			Mount(); // Remounts last image.
+		}
+		else
+		{
+			std::cout << "SD card removed...\n";
+			Unmount();
+		}
+		break;
+	}
+}
 
 SDCard:: SDCard(std::string strFile):Scriptable("SDCard"),m_strFile(std::move(strFile))
 {
@@ -49,6 +69,8 @@ SDCard:: SDCard(std::string strFile):Scriptable("SDCard"),m_strFile(std::move(st
 	RegisterActionAndMenu("Unmount", "Unmounts the currently mounted file, if any.", Actions::ActUnmount);
 	RegisterActionAndMenu("Remount", "Remounts the last mounted file, if any.", Actions::ActMountLast);
 	RegisterAction("Mount", "Mounts the specified file on the SD card.",ActMountFile,{ArgType::String});
+
+	RegisterKeyHandler('c',"Toggle SD card mount/unmount");
 };
 
 static uint8_t CRC7(gsl::span<uint8_t> data)

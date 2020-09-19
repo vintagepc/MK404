@@ -23,6 +23,7 @@
 
 #include "ADC_Buttons.h"
 #include "BasePeripheral.h"        // for BasePeripheral
+#include "IKeyClient.h"
 #include "boards/MM_Control_01.h"  // for MM_Control_01
 #include "sim_irq.h"               // for avr_irq_t
 #include <atomic>
@@ -31,7 +32,7 @@
 #include <string>                  // for string
 
 
-class MMU2: public BasePeripheral, public Boards::MM_Control_01
+class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private IKeyClient
 {
 
     public:
@@ -50,13 +51,13 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01
 
         void Draw(float fY);
 
-		inline void PushButton(uint8_t uiBtn) { m_buttons.Push(uiBtn);}
-		inline void SetFINDAAuto(bool bVal) { m_bAutoFINDA = bVal;}
 		inline void SetFINDAState(bool bVal) {m_bFINDAManual = bVal;}
 		void ToggleFINDA();
 
     protected:
         void SetupHardware() override;
+
+		void OnKeyPress(const Key& key) override;
 
     private:
 

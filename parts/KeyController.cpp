@@ -66,7 +66,7 @@ void KeyController::PrintKeys(bool bMarkdown)
 	{
 		std::cout << (bMarkdown?"- `":"\t");
 		PutNiceKeyName(it.first);
-		std::cout << (bMarkdown?"` -":":\t") << it.second << '\n';
+		std::cout << (bMarkdown?"` - ":":\t") << it.second << '\n';
 	}
 
 }

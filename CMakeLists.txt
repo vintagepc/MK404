@@ -394,21 +394,47 @@ add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PRO
                                                 COMMAND mv FAT32.img Einsy_atmega2560_SDcard.bin)
 add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)
 
+SET(PRINTERS
+	Prusa_MK3
+	Prusa_MK3MMU2
+	Prusa_MK3S
+	Prusa_MK3SMMU2
+)
+
 add_custom_target(UpdateDocs
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/autogen/Scripting_MK3S.md
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3SMMU2 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/autogen/Scripting_MK3SMMU2.md
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3MMU2 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/autogen/Scripting_MK3MMU2.md
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --scripthelp --markdown Prusa_MK3 | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/autogen/Scripting_MK3.md
-	COMMAND echo '```' > ${PROJECT_SOURCE_DIR}/ref/autogen/CommandLine.md
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 --help >> ${PROJECT_SOURCE_DIR}/ref/autogen/CommandLine.md
-	COMMAND echo '```' >> ${PROJECT_SOURCE_DIR}/ref/autogen/CommandLine.md
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? | grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/autogen/TraceOptions_MK3S.md
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3SMMU2| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/autogen/TraceOptions_MK3SMMU2.md
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3MMU2| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/autogen/TraceOptions_MK3MMU2.md
-	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 -g none --markdown --trace ? Prusa_MK3| grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/autogen/TraceOptions_MK3.md
+	COMMAND echo '```' > ${PROJECT_SOURCE_DIR}/ref/autogen/Command-Line.md
+	COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 --help >> ${PROJECT_SOURCE_DIR}/ref/autogen/Command-Line.md
+	COMMAND echo '```' >> ${PROJECT_SOURCE_DIR}/ref/autogen/Command-Line.md
 	COMMAND cd ${PROJECT_SOURCE_DIR}/ref/autogen && sh ../../assets/updateTOC.sh
 	)
 add_dependencies(UpdateDocs MK404)
+
+foreach (PRINTER IN LISTS PRINTERS)
+	message(STATUS "Adding DocGen for ${PRINTER}")
+	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/ref/autogen/Scripting-${PRINTER}.md
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMAND ./MK404 ${PRINTER} -g none --scripthelp --markdown | grep -A500 "Scripting options" > ${PROJECT_SOURCE_DIR}/ref/autogen/Scripting-${PRINTER}.md
+		DEPENDS MK404
+	)
+	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/ref/autogen/Trace-Options-${PRINTER}.md
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMAND ./MK404 ${PRINTER} -g none --markdown --trace ? | grep -A500 "telemetry" > ${PROJECT_SOURCE_DIR}/ref/autogen/Trace-Options-${PRINTER}.md
+		DEPENDS MK404
+	)
+	add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/ref/autogen/Key-Controls-${PRINTER}.md
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMAND ./MK404 ${PRINTER} -g none --markdown -k | grep -A500 "Key Controls:" > ${PROJECT_SOURCE_DIR}/ref/autogen/Key-Controls-${PRINTER}.md
+		DEPENDS MK404
+	)
+	add_custom_target(DocGen_${PRINTER} DEPENDS
+		${PROJECT_SOURCE_DIR}/ref/autogen/Key-Controls-${PRINTER}.md
+		${PROJECT_SOURCE_DIR}/ref/autogen/Trace-Options-${PRINTER}.md
+		${PROJECT_SOURCE_DIR}/ref/autogen/Scripting-${PRINTER}.md
+	)
+	add_dependencies(UpdateDocs DocGen_${PRINTER})
+endforeach()
+
+
 
 
 add_custom_target(Release_Package

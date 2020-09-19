@@ -63,9 +63,9 @@ namespace Boards
 
 			void OnAVRDeinit() override;
 
-			RotaryEncoder encoder;
+			RotaryEncoder encoder {true};
 
-			Button m_btn {};
+			Button m_btn {"Button",'p', "Test button"};
 
 			SerialLineMonitor m_Monitor {"Serial0"};
 
@@ -75,7 +75,7 @@ namespace Boards
 
 			VoltageSrc m_vSrc {0.2f, 0.f };
 
-			ADC_Buttons m_btns {"ADCButtons"};
+			ADC_Buttons m_btns {"ADCButtons", 1000};
 
 			Thermistor m_thrm {25.f};
 

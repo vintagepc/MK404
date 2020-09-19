@@ -22,6 +22,7 @@
 #pragma once
 
 #include "BasePeripheral.h"  // for BasePeripheral
+#include "IKeyClient.h"
 #include "IScriptable.h"     // for IScriptable::LineStatus
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
@@ -31,7 +32,7 @@
 #include <string>            // for string
 #include <vector>            // for vector
 
-class PINDA:public BasePeripheral,public Scriptable{
+class PINDA:public BasePeripheral,public Scriptable, private IKeyClient {
     public:
         #define IRQPAIRS _IRQ(X_POS_IN,"<pinda.x_in") _IRQ(Y_POS_IN,"<pinda.y_in") _IRQ(Z_POS_IN,"<pinda.Z_in") _IRQ(TRIGGER_OUT,">pinda.out") _IRQ(SHEET_OUT,">sheet.out")
         #include "IRQHelper.h"
@@ -59,6 +60,8 @@ class PINDA:public BasePeripheral,public Scriptable{
 
 	protected:
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
+
+		void OnKeyPress(const Key &key) override;
 
 private:
 

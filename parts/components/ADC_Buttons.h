@@ -23,6 +23,7 @@
 #pragma once
 
 #include "ADCPeripheral.h"     // for ADCPeripheral
+#include "IKeyClient.h"
 #include "IScriptable.h"       // for ArgType, ArgType::Int, IScriptable::Li...
 #include "Scriptable.h"        // for Scriptable
 #include "sim_avr.h"           // for avr_t
@@ -33,13 +34,13 @@
 #include <string>              // for string
 #include <vector>              // for vector
 
-class ADC_Buttons:public ADCPeripheral, public Scriptable
+class ADC_Buttons:public ADCPeripheral, public Scriptable, private IKeyClient
 {
 	public:
 		#define IRQPAIRS _IRQ(ADC_TRIGGER_IN,"<adc.trigger") _IRQ(ADC_VALUE_OUT,">adc.out") _IRQ(DIGITAL_OUT, ">adc.digital_out")
 		#include "IRQHelper.h"
 
-		explicit ADC_Buttons(const std::string &strName);
+		explicit ADC_Buttons(const std::string &strName, uint32_t uiDelay = 2500000);
 
 		~ADC_Buttons() override = default;
 
@@ -52,6 +53,8 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable
 
 	protected:
 			LineStatus ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs) override;
+
+			void OnKeyPress(const Key& key) override;
 	private:
 
 		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);
@@ -61,6 +64,8 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable
 		uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) override;
 
 		std::atomic_uint8_t m_uiCurBtn = {0};
+
+		uint32_t m_uiDelay = 2500000;
 
 		enum Actions
 		{

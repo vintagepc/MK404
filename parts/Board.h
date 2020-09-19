@@ -23,7 +23,9 @@
 #pragma once
 
 #include "EEPROM.h"         // for EEPROM
+#include "IKeyClient.h"
 #include "IScriptable.h"    // for ArgType, IScriptable::LineStatus, IScript...
+#include "KeyController.h"
 #include "PinNames.h"       // for Pin
 #include "ScriptHost.h"     // for ScriptHost
 #include "Scriptable.h"     // for Scriptable
@@ -35,6 +37,7 @@
 #include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_set
 #include <atomic>
 #include <cstdint>         // for uint32_t, uint8_t, int8_t
+#include <iomanip>
 #include <iostream>          // for printf, fprintf, NULL, stderr
 #include <pthread.h>        // for pthread_join, pthread_t
 #include <string>           // for string, basic_string, stoi
@@ -47,7 +50,7 @@ using namespace PinNames; //NOLINT - because proper using declarations don't sup
 
 namespace Boards
 {
-	class Board : public Scriptable
+	class Board : public Scriptable, virtual private IKeyClient
 	{
 		public:
 			// Making a type so that this is easy to update
@@ -62,6 +65,11 @@ namespace Boards
 				RegisterActionAndMenu("Pause","Pauses the simulated AVR execution.", ScriptAction::Pause);
 				RegisterActionAndMenu("Resume","Resumes simulated AVR execution.", ScriptAction::Unpause);
 				RegisterAction("WaitMs","Waits the specified number of milliseconds (in AVR-clock time)", ScriptAction::Wait,{ArgType::Int});
+
+				RegisterKeyHandler('r', "Resets the AVR/board");
+				RegisterKeyHandler('z', "Pauses/resumes AVR execution");
+				RegisterKeyHandler('q', "Shuts down the board and exits");
+
 			};
 
 			~Board() override { if (m_thread) std::cerr << "PROGRAMMING ERROR: " << m_strBoard << " THREAD NOT STOPPED BEFORE DESTRUCTION.\n"; }
@@ -123,7 +131,7 @@ namespace Boards
 			inline std::string GetSDCardFile(){return m_strSDFile.empty()?GetStorageFileName("SDcard"):m_strSDFile;}
 
 			inline void SetResetFlag(){m_bReset = true;}
-			inline void SetQuitFlag(){m_bQuit = true;}
+			inline void SetQuitFlag(){m_bQuit = true; m_bPaused = false;}
 			inline bool GetQuitFlag(){return m_bQuit;}
 
 			inline bool IsStopped(){ return m_pAVR->state == cpu_Stopped;}
@@ -148,6 +156,8 @@ namespace Boards
 			// Helper called every cycle - use it to process keys, mouse, etc.
 			// within the context of the AVR run thread.
 			virtual void OnAVRCycle(){};
+
+			void OnKeyPress(const Key& key) override;
 
 			LineStatus ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs) override
 			{
@@ -200,6 +210,7 @@ namespace Boards
 					if (m_bIsPrimary) // Only one board should be scripting.
 					{
 						ScriptHost::DispatchMenuCB();
+						KeyController::GetController().OnAVRCycle(); // Handle/dispatch any pressed keys.
 					}
 					if (m_bIsPrimary && ScriptHost::IsInitialized())
 					{
@@ -213,7 +224,7 @@ namespace Boards
 					int8_t uiMCUSR = avr_regbit_get(m_pAVR,MCUSR);
 					if (uiMCUSR != m_uiLastMCUSR)
 					{
-						std::cout << "MCUSR: " << std::hex << (m_uiLastMCUSR = uiMCUSR) << '\n';
+						std::cout << "MCUSR: " << std::setw(2) << std::hex << (m_uiLastMCUSR = uiMCUSR) << '\n';
 						if (uiMCUSR) // only run on change and not changed to 0
 						{
 							OnAVRReset();

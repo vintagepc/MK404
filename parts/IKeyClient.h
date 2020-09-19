@@ -1,5 +1,9 @@
 /*
-	Prusa_MK3.h - Printer definition for the Prusa MK3 (Laser sensor)
+	IKeyClient.h - Mixin interface class for components/objects that have
+	key actions. To use, mix in this class and call AddKeyControl()
+	for each key you wish to get notified of. Multiple handlers can
+	act on the same key by design.
+
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
@@ -20,26 +24,19 @@
 
 #pragma once
 
-#include "PAT9125.h"
-#include "Prusa_MK3S.h"     // for Prusa_MK3S
-#include "sim_irq.h"
-#include <iostream>
+#include <string>
 
-class MK3SGL;
+class KeyController;
 
-class Prusa_MK3: public Prusa_MK3S
+using Key = unsigned char;
+
+
+class IKeyClient
 {
+	friend KeyController;
+
 	protected:
-		void SetupIR() override
-		{
-			avr_raise_irq(GetDIRQ(IR_SENSOR_PIN),1);
-			std::cout << "MK3 - adding laser sensor\n";
-			AddHardware(LaserSensor, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
-			lIR.ConnectFrom(LaserSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
+		virtual void OnKeyPress(const Key &uiKey) = 0;
 
-			LaserSensor.ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT), PAT9125::E_IN);
-			LaserSensor.Set(PAT9125::FS_FILAMENT_PRESENT);
-		}; // Overridde to setup the PAT.
-
-		PAT9125 LaserSensor;
+		void RegisterKeyHandler(const Key uiKey, const std::string &strDesc);
 };

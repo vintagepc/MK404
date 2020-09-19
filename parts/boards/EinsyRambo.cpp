@@ -39,6 +39,12 @@
 
 namespace Boards
 {
+	EinsyRambo::EinsyRambo(uint32_t uiFreq):IKeyClient(),Board(m_wiring,uiFreq)
+	{
+		SetBoardName("Einsy");
+		RegisterKeyHandler('t', "Triggers a factory reset (reset + hold encoder");
+	};
+
 	void EinsyRambo::SetupHardware()
 	{
 		DisableInterruptLevelPoll(8);
@@ -198,6 +204,21 @@ namespace Boards
 		std::cout << "Pin DBG: change to " << value << '\n';
 	}
 	// pragma: LCOV_EXCL_STOP
+
+	void EinsyRambo::OnKeyPress(const Key& key)
+	{
+		switch(key)
+		{
+			case 't':
+				std::cout << "FACTORY_RESET\n";
+				m_bFactoryReset =true;
+				// Hold the button during boot to get factory reset menu
+				SetResetFlag();
+				break;
+			default:
+				Board::OnKeyPress(key); // Pass up because we overrode.
+		}
+	}
 
 	void EinsyRambo::OnAVRInit()
 	{

@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "IKeyClient.h"
 #include "IScriptable.h"    // for IScriptable::LineStatus
 #include "Scriptable.h"     // for Scriptable
 #include "SoftPWMable.h"    // for SoftPWMable
@@ -31,7 +32,7 @@
 #include <string>           // for string
 #include <vector>           // for vector
 
-class Beeper:public SoftPWMable, public Scriptable
+class Beeper:public SoftPWMable, public Scriptable, private IKeyClient
 {
 	public:
 		#define IRQPAIRS _IRQ(DIGITAL_IN,"<digital.in") _IRQ(PWM_IN,"<pwm.in")
@@ -55,6 +56,8 @@ class Beeper:public SoftPWMable, public Scriptable
 		void OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal) override;
 
 		Scriptable::LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
+
+		void OnKeyPress(const Key &key) override;
 
 	private:
 		void StartTone();

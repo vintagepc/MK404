@@ -20,6 +20,7 @@
  */
 
 #include "IRSensor.h"
+#include "IKeyClient.h"
 #include "Scriptable.h"
 #include <iostream>  // for printf
 
@@ -45,16 +46,34 @@ uint32_t IRSensor::OnADCRead(struct avr_irq_t *, uint32_t)
 	return iVOut;
 }
 
-IRSensor::IRSensor():VoltageSrc()
+IRSensor::IRSensor():VoltageSrc(),IKeyClient()
 {
 	SetName("IRSensor");
 	RegisterActionAndMenu("Toggle","Toggles the IR sensor state",ActToggle);
 	RegisterAction("Set","Sets the sensor state to a specific enum entry. (int value)",ActSet,{ArgType::Int});
+	RegisterAction("SetExtVal","Sets external imput value",ActSetExtVal, {ArgType::Bool});
 	RegisterMenu("v0.4 Set Filament", ActSetV4Filament);
 	RegisterMenu("v0.4 No Filament", ActSetV4NoFilament);
 	RegisterMenu("v0.3 Set Filament", ActSetV3Filament);
 	RegisterMenu("v0.3 No Filament", ActSetV3NoFilament);
 	RegisterMenu("Set Unknown", ActSetUnknown);
+	RegisterActionAndMenu("SetAuto", "Resumes auto (MMU) operation", ActSetAuto);
+
+	RegisterKeyHandler('f',"Toggles IR sensor Filament presence");
+	RegisterKeyHandler('A',""); // Full auto resume for FINDA/MMU
+}
+
+void IRSensor::OnKeyPress(const Key& key)
+{
+	switch (key)
+	{
+		case 'f':
+			Toggle();
+			break;
+		case 'A':
+		 	Set(IRSensor::IR_AUTO);
+			 break;
+	}
 }
 
 Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
@@ -75,23 +94,18 @@ Scriptable::LineStatus IRSensor::ProcessAction(unsigned int iAct, const std::vec
 			Set(static_cast<IRState>(iVal));
 			return LineStatus::Finished;
 		}
+		case ActSetExtVal:
+		{
+			Auto_Input(stoul(vArgs.at(0)));
+			return LineStatus::Finished;
+		}
 		case ActSetV3Filament:
-			Set(IR_v3_FILAMENT_PRESENT);
-			return LineStatus::Finished;
 		case ActSetV4Filament:
-			Set(IR_v4_FILAMENT_PRESENT);
-			return LineStatus::Finished;
 		case ActSetV3NoFilament:
-			Set(IR_v3_NO_FILAMENT);
-			return LineStatus::Finished;
 		case ActSetV4NoFilament:
-			Set(IR_v4_NO_FILAMENT);
-			return LineStatus::Finished;
 		case ActSetUnknown:
-			Set(IR_UNKNOWN);
-			return LineStatus::Finished;
 		case ActSetAuto:
-			Set(IR_AUTO);
+			Set(static_cast<IRState>(iAct-3));
 			return LineStatus::Finished;
 	}
 	return LineStatus::Unhandled;

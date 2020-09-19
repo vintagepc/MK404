@@ -108,6 +108,15 @@ int main()
 		}
 	};
 
+	printf("PUSHED\n");
+
+	while (PINH>>6);
+	printf("PUSHED\n");
+	while (!(1U&(PINH>>6)));
+	printf("RELEASED\n");
+
+	while(1);
+
 	cli();
 
 	printf("FINISHED\n");

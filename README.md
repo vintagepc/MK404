@@ -66,12 +66,12 @@ You can make an SD card image and copy files to it using `mcopy`, or by placing 
 ### Controls:
 
 * [Mouse](https://github.com/vintagepc/MK404/wiki/Mouse-Functions)
-* [Keyboard](https://github.com/vintagepc/MK404/wiki/Key-Functions)
+* [Keyboard](https://github.com/vintagepc/MK404/wiki/Key-Controls)
 
 ### Reference documentation:
 Advanced documentation has moved to the [Wiki](https://github.com/vintagepc/MK404/wiki):
-* [Argument reference](https://github.com/vintagepc/MK404/wiki/CommandLine)
+* [Argument reference](https://github.com/vintagepc/MK404/wiki/Command-Line)
 * [General scripting info (not in wiki)](scripts/Scripting.md)
 
 * [Script command reference](https://github.com/vintagepc/MK404/wiki/Scripting)
-* [Trace option reference](https://github.com/vintagepc/MK404/wiki/TraceOptions)
+* [Trace option reference](https://github.com/vintagepc/MK404/wiki/Trace-Options)

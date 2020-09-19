@@ -40,8 +40,8 @@ public:
 	using IRState = enum {
 		IR_MIN = -1,
 		IR_SHORT,
-		IR_v3_FILAMENT_PRESENT,
-		IR_v4_FILAMENT_PRESENT,
+		IR_v3_FILAMENT_PRESENT, // Keep these in order, we
+		IR_v4_FILAMENT_PRESENT, // map directly from the Action enum.
 		IR_UNKNOWN,
 		IR_v3_NO_FILAMENT,
 		IR_v4_NO_FILAMENT,
@@ -72,13 +72,16 @@ private:
 
 	enum Actions
 	{
+		// Don't reorder these, we map as act-3 ->
+		// sensor value to reduce the size of the switch blocks
 		ActToggle = VoltageSrc::ActVS_END,
 		ActSet,
-		ActSetV3NoFilament,
 		ActSetV3Filament,
-		ActSetV4NoFilament,
 		ActSetV4Filament,
 		ActSetUnknown,
+		ActSetV3NoFilament,
+		ActSetV4NoFilament,
+		ActSetExtVal,
 		ActSetAuto
 	};
 

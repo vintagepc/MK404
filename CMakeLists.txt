@@ -432,7 +432,7 @@ add_custom_target(Tests
 	COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/tests/snaps"
 	COMMAND lcov -b ${PROJECT_BINARY_DIR} -d ${PROJECT_BINARY_DIR} --zerocounters
 	COMMAND cp ${PROJECT_SOURCE_DIR}/scripts/tests/Test.img.bz2 ${PROJECT_BINARY_DIR}
-	COMMAND bunzip2 ${PROJECT_BINARY_DIR}/Test.img.bz2
+	COMMAND bunzip2 -f ${PROJECT_BINARY_DIR}/Test.img.bz2
 	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest --timeout 180
 )
 message(STATUS "Environment path is $ENV{LD_LIBRARY_PATH}")

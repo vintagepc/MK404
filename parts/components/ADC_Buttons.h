@@ -40,7 +40,7 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable, private IKeyClient
 		#define IRQPAIRS _IRQ(ADC_TRIGGER_IN,"<adc.trigger") _IRQ(ADC_VALUE_OUT,">adc.out") _IRQ(DIGITAL_OUT, ">adc.digital_out")
 		#include "IRQHelper.h"
 
-		explicit ADC_Buttons(const std::string &strName);
+		explicit ADC_Buttons(const std::string &strName, uint32_t uiDelay = 2500000);
 
 		~ADC_Buttons() override = default;
 
@@ -64,6 +64,8 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable, private IKeyClient
 		uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) override;
 
 		std::atomic_uint8_t m_uiCurBtn = {0};
+
+		uint32_t m_uiDelay = 2500000;
 
 		enum Actions
 		{

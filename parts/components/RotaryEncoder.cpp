@@ -195,7 +195,7 @@ void RotaryEncoder::OnKeyPress(const Key &key)
 	}
 }
 
-RotaryEncoder::RotaryEncoder():Scriptable("Encoder"),IKeyClient()
+RotaryEncoder::RotaryEncoder(bool bVerbose):Scriptable("Encoder"),IKeyClient(),m_bVerbose{bVerbose}
 {
 	RegisterActionAndMenu("Press", "Presses the encoder button",ActPress);
 	RegisterActionAndMenu("Release", "Releases the encoder button",ActRelease);

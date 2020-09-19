@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "IScriptable.h"
+#include "Scriptable.h"
 #include <atomic>
 #include <map>               // for map
 #include <string>            // for string
@@ -28,7 +30,7 @@
 
 class IKeyClient;
 
-class KeyController
+class KeyController: private Scriptable
 {
 	friend IKeyClient;
 
@@ -46,11 +48,13 @@ class KeyController
 		static inline void GLKeyReceiver(unsigned char key, int /*x*/, int /*y*/) { KeyController::GetController().OnKeyPressed(key); };
 
 	protected:
-		KeyController() = default;
-		~KeyController() = default;
+		KeyController();
+		~KeyController() override = default;
 
 		// Invoked by IKeyClient to add a client.
 		void AddKeyClient(IKeyClient *pClient, const unsigned char key, const std::string &strDesc);
+
+		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &args) override;
 
 	private:
 		void PutNiceKeyName(unsigned char key);

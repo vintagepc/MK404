@@ -46,7 +46,7 @@ class RotaryEncoder:public BasePeripheral,public Scriptable, private IKeyClient
             CCW_CLICK
         };
 
-		RotaryEncoder();
+		explicit RotaryEncoder(bool bVerbose = false);
 
         // Registers a rotary encoder with "avr"
         void Init(avr_t *avr);

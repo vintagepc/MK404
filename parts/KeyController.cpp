@@ -21,6 +21,7 @@
 
 #include "KeyController.h"
 #include "IKeyClient.h"
+#include "IScriptable.h"
 #include <iostream>
 #include <string>
 #include <utility>
@@ -32,6 +33,22 @@ KeyController& KeyController::GetController()
 	return k;
 }
 
+
+KeyController::KeyController():Scriptable("KeyCtl")
+{
+	RegisterAction("Key","Simulates a keypress",0, {ArgType::String});
+}
+
+IScriptable::LineStatus KeyController::ProcessAction(unsigned int /*iAction*/, const std::vector<std::string> &vArgs)
+{
+	Key key = vArgs.at(0).at(0);
+	if (vArgs.at(0)=="enter")
+	{
+		key = 0xd;
+	}
+	OnKeyPressed(key);
+	return LineStatus::Finished;
+}
 
 void KeyController::AddKeyClient(IKeyClient *pClient, const unsigned char key, const std::string &strDesc)
 {
@@ -78,10 +95,12 @@ void KeyController::OnAVRCycle()
 
 	m_key.store(0);
 
-	std::vector<IKeyClient*>& vClients = m_mClients.at(key);
-	for (auto c: vClients)
+	if (m_mClients.count(key)>0)
 	{
-		c->OnKeyPress(key);
+		std::vector<IKeyClient*>& vClients = m_mClients.at(key);
+		for (auto c: vClients)
+		{
+			c->OnKeyPress(key);
+		}
 	}
-
 }

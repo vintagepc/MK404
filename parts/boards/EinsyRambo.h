@@ -53,8 +53,7 @@ namespace Boards
 	class EinsyRambo: public Board, virtual private IKeyClient
 	{
 		public:
-			explicit EinsyRambo(uint32_t uiFreq = 16000000)
-				:IKeyClient(),Board(m_wiring,uiFreq){ SetBoardName("Einsy");};
+			explicit EinsyRambo(uint32_t uiFreq = 16000000);
 
 		protected:
 			void SetupHardware() override;

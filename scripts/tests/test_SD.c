@@ -159,6 +159,20 @@ int main()
 	else
 		printf("CARD\n");
 
+	_delay_ms(20);
+
+	if (PINL&(1u<<6))
+		printf("NO CARD\n");
+	else
+		printf("CARD\n");
+
+	_delay_ms(20);
+	if (PINL&(1u<<6))
+		printf("NO CARD\n");
+	else
+		printf("CARD\n");
+
+
 	printf("REPLY %02x\n",SDTXB(0xFF));
 
 

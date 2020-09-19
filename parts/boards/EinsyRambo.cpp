@@ -39,6 +39,12 @@
 
 namespace Boards
 {
+	EinsyRambo::EinsyRambo(uint32_t uiFreq):IKeyClient(),Board(m_wiring,uiFreq)
+	{
+		SetBoardName("Einsy");
+		RegisterKeyHandler('t', "Triggers a factory reset (reset + hold encoder");
+	};
+
 	void EinsyRambo::SetupHardware()
 	{
 		DisableInterruptLevelPoll(8);
@@ -209,6 +215,8 @@ namespace Boards
 				// Hold the button during boot to get factory reset menu
 				SetResetFlag();
 				break;
+			default:
+				Board::OnKeyPress(key); // Pass up because we overrode.
 		}
 	}
 

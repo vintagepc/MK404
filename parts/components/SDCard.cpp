@@ -69,6 +69,8 @@ SDCard:: SDCard(std::string strFile):Scriptable("SDCard"),m_strFile(std::move(st
 	RegisterActionAndMenu("Unmount", "Unmounts the currently mounted file, if any.", Actions::ActUnmount);
 	RegisterActionAndMenu("Remount", "Remounts the last mounted file, if any.", Actions::ActMountLast);
 	RegisterAction("Mount", "Mounts the specified file on the SD card.",ActMountFile,{ArgType::String});
+
+	RegisterKeyHandler('c',"Toggle SD card mount/unmount");
 };
 
 static uint8_t CRC7(gsl::span<uint8_t> data)

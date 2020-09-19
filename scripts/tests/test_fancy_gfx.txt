@@ -2,5 +2,6 @@
 ScriptHost::SetTimeoutMs(10000)
 ScriptHost::SetQuitOnTimeout(1)
 Serial0::WaitForLine(start)
+Board::WaitMs(10)
 3DView::Snapshot(tests/snaps/GFXFancy01)
 Board::Quit()

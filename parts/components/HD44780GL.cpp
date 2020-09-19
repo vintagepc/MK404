@@ -72,6 +72,19 @@ glColorHelper(const hexColor_t &color, bool bMaterial = false)
 
 }
 
+HD44780GL::HD44780GL():HD44780(),IKeyClient()
+{
+	RegisterKeyHandler('1',"Toggles LCD Colour scheme");
+}
+
+void HD44780GL::OnKeyPress(const Key& key)
+{
+	if (key =='1')
+	{
+		m_iScheme = (m_iScheme+1)%2;
+	}
+}
+
 void HD44780GL::Init(avr_t *avr)
 {
 	HD44780::Init(avr);
@@ -170,6 +183,12 @@ void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, ui
 		}
 		uiData++;
 	}
+}
+
+void HD44780GL::Draw(bool bMaterial)
+{
+	uint8_t iScheme = m_iScheme;
+	Draw(m_colors.at((4*iScheme)), m_colors.at((4*iScheme)+1), m_colors.at((4*iScheme)+2), m_colors.at((4*iScheme)+3), bMaterial);
 }
 
 

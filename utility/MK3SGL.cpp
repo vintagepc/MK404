@@ -41,7 +41,7 @@
 
 MK3SGL* MK3SGL::g_pMK3SGL = nullptr;
 
-MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scriptable("3DVisuals"),m_bMMU(bMMU),m_pParent(pParent)
+MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scriptable("3DVisuals"), IKeyClient(),m_bMMU(bMMU),m_pParent(pParent)
 {
 	if (g_pMK3SGL)
 	{
@@ -68,6 +68,12 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state)", ActMouse, {ArgType::Int,ArgType::Int});
 	RegisterAction("MouseMove", "Simulates a mouse move (x,y)", ActMouseMove, {ArgType::Int,ArgType::Int});
 
+	RegisterKeyHandler('`', "Reset camera view to default");
+	RegisterKeyHandler('n',"Toggle Nozzle-Cam Mode");
+	RegisterKeyHandler('l',"Clears any print on the bed. May cause graphical glitches if used while printing.");
+	RegisterKeyHandler('w',"");
+	RegisterKeyHandler('s',"");
+
 	glewInit();
 #ifdef TEST_MODE
 	glutSetOption(GLUT_MULTISAMPLE,4);
@@ -82,8 +88,7 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	auto fcnDraw = []() { g_pMK3SGL->Draw();};
 	glutDisplayFunc(fcnDraw);
 
-	auto fcnKey = [](unsigned char c, int x, int y) { g_pMK3SGL->KeyCB(c,x,y);};
-	glutKeyboardFunc(fcnKey); // same func as main window.
+	glutKeyboardFunc(KeyController::GLKeyReceiver); // same func as main window.
 
 	auto fwd = [](int button, int state, int x, int y) {g_pMK3SGL->MouseCB(button,state,x,y);};
 	glutMouseFunc(fwd);
@@ -149,9 +154,9 @@ void MK3SGL::ResizeCB(int w, int h)
 	glLoadIdentity();
 }
 
-void MK3SGL::KeyCB(unsigned char c, int /*x*/, int /*y*/)
+void MK3SGL::OnKeyPress(const Key& key)
 {
-	switch (c)
+	switch (key)
 	{
 		case 'l':
 			ClearPrint();
@@ -161,6 +166,10 @@ void MK3SGL::KeyCB(unsigned char c, int /*x*/, int /*y*/)
 		break;
 		case '`':
 			ResetCamera();
+			break;
+		case 'w':
+		case 's':
+			TwistKnob(key=='w');
 			break;
 	}
 	// Decomment this block and use the flDbg variables
@@ -191,8 +200,6 @@ void MK3SGL::KeyCB(unsigned char c, int /*x*/, int /*y*/)
 	// }
 	// printf("Int: %d\n",m_iDbg.load());
 	// printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
-	KeyController::GetController().OnKeyPressed(c);
-
 }
 
 void MK3SGL::Init(avr_t *avr)

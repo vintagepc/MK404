@@ -25,6 +25,7 @@
 #include "GLHelper.h"
 #include "GLObj.h"           // for GLObj
 #include "HD44780.h"         // for _IRQ
+#include "IKeyClient.h"
 #include "IScriptable.h"     // for IScriptable::LineStatus
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
@@ -41,7 +42,7 @@ class HD44780GL;
 class OBJCollection;
 class Printer;
 
-class MK3SGL: public BasePeripheral, public Scriptable
+class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 {
     public:
         #define IRQPAIRS    _IRQ(X_IN,"<x.in") _IRQ(Y_IN,"<y.in") _IRQ(Z_IN,"<z.in") \
@@ -91,7 +92,6 @@ class MK3SGL: public BasePeripheral, public Scriptable
         // GL helpers needed for the window and mouse callbacks, use when creating the GL window.
         void MouseCB(int button, int state, int x, int y);
 		void MotionCB(int x, int y);
-        void KeyCB(unsigned char key, int x, int y);
         void SetWindow(int iWin) { m_iWindow = iWin;};
 		void ResizeCB(int w, int h);
 
@@ -100,6 +100,9 @@ class MK3SGL: public BasePeripheral, public Scriptable
 
 
     private:
+
+		void OnKeyPress(const Key& key) override;
+
         GLObj m_EVis {"assets/Triangles.obj"};
         GLObj m_MMUBase {"assets/MMU_stationary.obj"};
         GLObj m_MMUSel {"assets/MMU_Selector.obj"};

@@ -42,11 +42,7 @@ void Prusa_MK3S::Draw()
 		glPushMatrix();
 		glLoadIdentity(); // Start with an identity matrix
 			glScalef(4, 4, 1);
-
-			lcd.Draw(m_colors.at((4*m_iScheme) + 0), /* background */
-					m_colors.at((4*m_iScheme) + 1), /* character background */
-					m_colors.at((4*m_iScheme) + 2), /* text */
-					m_colors.at((4*m_iScheme) + 3) /* shadow */ );
+			lcd.Draw();
 		glPopMatrix();
 
 		// Do something for the motors...

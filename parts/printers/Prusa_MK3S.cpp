@@ -139,6 +139,7 @@ void Prusa_MK3S::SetupIR()
 	AddHardware(IR, GetPinNumber(VOLT_IR_PIN));
 	TryConnect(IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
 	TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
+	IR.Set(IRSensor::IR_v4_FILAMENT_PRESENT);
 }
 
 void Prusa_MK3S::SetupHardware()

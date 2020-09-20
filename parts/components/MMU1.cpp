@@ -88,7 +88,7 @@ void MMU1::OnMuxIn(avr_irq_t *irq, uint32_t value)
 		uiTool = (2*(value))+GetIRQ(MUX0)->value;
 	}
 	m_uiTool = uiTool;
-	printf("TOOL: %u\n", uiTool);
+	//printf("TOOL: %u\n", uiTool);
 	RaiseIRQ(TOOL_OUT,uiTool);
 }
 

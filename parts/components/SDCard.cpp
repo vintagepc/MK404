@@ -520,6 +520,7 @@ void SDCard::Init(struct avr_t *avr)
 
 int SDCard::Mount(const std::string &filename, off_t image_size)
 {
+	RaiseIRQ(CARD_PRESENT,1);
 	int fd = 0;
 	void *mapped;
 

@@ -177,9 +177,12 @@ void Prusa_MK2_13::OnAVRCycle()
 	}
 }
 
+
+// pragma: LCOV_EXCL_START
 void Prusa_MK2_13::OnMouseMove(int /*x*/,int /*y*/)
 {
 }
+// pragma: LCOV_EXCL_STOP
 
 void Prusa_MK2_13::OnMousePress(int button, int action, int /*x*/, int /*y*/)
 {

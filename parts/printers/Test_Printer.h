@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include "GLHelper.h"
 #include "HD44780GL.h"
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "Test_Board.h"     		// for EinsyRambo
@@ -42,8 +41,5 @@ class Test_Printer : public Boards::Test_Board, public Printer
 		void SetupHardware() override;
 
 		void OnAVRCycle() override;
-
-	private:
-		GLHelper m_gl {};
 
 };

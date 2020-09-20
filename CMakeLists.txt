@@ -283,15 +283,20 @@ if (ENABLE_GCOV)
 	target_link_libraries(MK404 -coverage -lgcov)
 	add_definitions(-DTEST_MODE)
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
+	add_custom_target(TestClean
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_BINARY_DIR}/*.bin_test
+	)
 	add_custom_target(Coverage.tar.gz
 		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_BINARY_DIR}/Coverage
+
 		COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/coverage.info
 		COMMAND lcov --remove coverage.info '/usr/*' -o coverage.info
 		COMMAND lcov --remove coverage.info '*/3rdParty/*' -o coverage.info
 		COMMAND genhtml coverage.info --output-directory Coverage
 		COMMAND tar -zcvf Coverage.tar.gz Coverage
 		COMMAND ${PROJECT_SOURCE_DIR}/3rdParty/gcovr -r ${PROJECT_SOURCE_DIR} -e 3rdParty | tee ${PROJECT_BINARY_DIR}/summary.txt
-		DEPENDS Tests
+		DEPENDS Tests TestClean
 	)
 else()
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE OFF)
@@ -360,12 +365,13 @@ endif()
 
 
 enable_testing()
-add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
-add_test(Make_SD_image2 MK404 --sdimage Einsy_atmega2560_SDcard.bin --image-size 128M)
+add_test(Make_SD_image MK404 --sdimage Test_Printer_SDcard.bin_test --image-size 64M)
+add_test(Make_SD_image2 MK404 --sdimage Blank_SDcard.bin_test --image-size 128M)
 add_test(Check_GL env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} glxinfo )
 
 add_test(Test_Printer_Trace MK404 Test_Printer -g none --trace ?)
 add_test(Test_Printer_Script MK404 Test_Printer -g none --scripthelp)
+add_test(Test_Printer_Keyprint MK404 Test_Printer -g none -k)
 foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
 	message(STATUS "Adding test: ${TEST_BASE}" )
@@ -376,6 +382,11 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 endforeach()
 
 if(SANITY_TESTS)
+	add_test(MK1_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK1_mR13 -f ../assets/Firmware/MK1-mR13a.hex --script ../scripts/tests/test_boot_MK1.txt)
+	add_test(MK2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2_mR13 -f ../assets/Firmware/MK2-mR13a.hex --script ../scripts/tests/test_boot_MK2.txt)
+	add_test(MK2MMU_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2MMU_mR13 -f ../assets/Firmware/MK2MMU-mR13a.hex --script ../scripts/tests/test_boot_MK2MMU.txt)
+	add_test(MK25_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -f ../assets/Firmware/MK25-mR13a.hex --script ../scripts/tests/test_boot_MK25.txt)
+	add_test(MK25S_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25S_mR13 -f ../assets/Firmware/MK25S-mR13a.hex --script ../scripts/tests/test_boot_MK25S.txt)
 	add_test(MK3S_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -f MK3S.afx --script ../scripts/tests/test_boot_MK3S.txt)
 	add_test(MK3_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3 -f MK3S.afx --script ../scripts/tests/test_boot_MK3.txt)
 	add_test(MK3SMMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3SMMU2.txt)

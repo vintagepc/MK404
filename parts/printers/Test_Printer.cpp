@@ -22,6 +22,7 @@
 #include "A4982.h"
 #include "Beeper.h"
 #include "Fan.h"              // for Fan
+#include "GLHelper.h"
 #include "HD44780GL.h"
 #include "Heater.h"           // for Heater
 #include "LED.h"

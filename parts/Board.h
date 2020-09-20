@@ -287,6 +287,9 @@ namespace Boards
 				std::string strFN {CXXDemangle(typeid(*this).name())};//= m_strBoard;
 				//strFN.append("_").append(m_wiring.GetMCUName()).append("_").append(strType).append(".bin");
 				strFN.append("_").append(strType).append(".bin");
+#ifdef TEST_MODE // Creates special files in test mode that don't clobber your existing stuff.
+					strFN.append("_test");
+#endif
 				return strFN;
 			}
 

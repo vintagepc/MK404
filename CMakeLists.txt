@@ -120,7 +120,7 @@ set(H_FILES
 	parts/wiring/miniRAMBo_1_3a.h
 	parts/wiring/MM_Control_01.h
 	parts/wiring/Test_Wiring.h
-	uility/Color.h
+	utility/Color.h
 	utility/GLPrint.h
 	utility/FatImage.h
 	utility/MK3SGL.h

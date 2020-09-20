@@ -34,7 +34,7 @@ class Test_Printer : public Boards::Test_Board, public Printer
 
 		~Test_Printer() override = default;
 
-		std::pair<int,int> GetWindowSize() override {return { 5 + m_lcd.GetWidth() * 6, 40 + 5 + m_lcd.GetHeight() * 9}; };
+		std::pair<int,int> GetWindowSize() override {return { 5 + m_lcd.GetWidth() * 6, 50 + 5 + m_lcd.GetHeight() * 9}; };
 
 		void Draw() override;
 

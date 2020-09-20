@@ -70,8 +70,12 @@ namespace Wirings
 					{SWI2C_SCL, 21},
 					{SWI2C_SDA, 20},
 					{LCD_BL_PIN, 8},
-					{BEEPER, 5}
-
+					{BEEPER, 5},
+					{E_MUX0_PIN, 76},
+					{E_MUX1_PIN, 77},
+					{X_SLP_PIN, 74},
+					{X_RST_PIN, 75},
+					{X_MAX_PIN, 73}
 				};
 			};
 		private:

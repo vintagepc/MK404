@@ -28,4 +28,5 @@ void Prusa_MK25S_13::SetupFilamentSensor()
 	AddHardware(m_IR, GetPinNumber(VOLT_IR_PIN));
 	TryConnect(m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
 	TryConnect(IR_SENSOR_PIN, lIR, LED::LED_IN);
+	m_IR.Set(IRSensor::IR_v4_FILAMENT_PRESENT);
 }

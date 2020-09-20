@@ -37,7 +37,7 @@ void PINDA::CheckTriggerNoSheet()
     float fEdist = 100;
     bool bFound = false;
     //printf("PINDA: X: %f Y: %f\n", m_fPos[0], m_fPos[1]);
-	if (m_fPos[2]<5.f)
+	if (m_fPos[2]<10.f)
 	{
 		for (auto i=0U; i<GetXYCalPoints().size()/2; i++)
 		{

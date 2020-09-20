@@ -27,7 +27,6 @@
 #include <atomic>           // for atomic_int
 #include <cstdint>         // for uint32_t, uint8_t
 #include <utility>          // for pair
-#include <vector>
 
 class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 {
@@ -55,11 +54,5 @@ class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);
 
 		std::atomic_int m_key = {0}, m_mouseBtn = {0};
-
-		unsigned int m_iScheme = 0;
-		std::vector<uint32_t> m_colors = {
-		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
-		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055};
-
 
 };

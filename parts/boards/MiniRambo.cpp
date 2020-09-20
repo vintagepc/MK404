@@ -141,11 +141,13 @@ namespace Boards
 
 	}
 
+	// pragma: LCOV_EXCL_START
 	// Convenience function for debug printing a particular pin.
 	void MiniRambo::DebugPin(avr_irq_t */*irq*/, uint32_t value)
 	{
 		std::cout << "Pin DBG: change to " << std::hex << value << '\n';
 	}
+	// pragma: LCOV_EXCL_STOP
 
 	void MiniRambo::OnAVRInit()
 	{
@@ -153,6 +155,7 @@ namespace Boards
 
 	void MiniRambo::OnAVRDeinit()
 	{
+		sd_card.Unmount();
 	}
 
 	void MiniRambo::OnAVRReset()
@@ -164,7 +167,5 @@ namespace Boards
 
 		UART0.Reset();
 	}
-
-
 
 }; // namespace Boards

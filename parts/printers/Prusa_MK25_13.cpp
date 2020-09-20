@@ -51,5 +51,5 @@ void Prusa_MK25_13::SetupFilamentSensor()
 	AddHardware(m_fSensor, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
 	lIR.ConnectFrom(m_fSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 	m_fSensor.ConnectFrom(E.GetIRQ(A4982::POSITION_OUT), PAT9125::E_IN);
-	m_fSensor.Set(PAT9125::FS_NO_FILAMENT); // No filament - but this just updates the LED.
+	m_fSensor.Set(PAT9125::FS_FILAMENT_PRESENT); // No filament - but this just updates the LED.
 }

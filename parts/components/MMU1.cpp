@@ -39,7 +39,12 @@ void MMU1::Init(struct avr_t * avr)
 		GetIRQ(STEP0+i)->flags |= IRQ_FLAG_FILTERED;
 	}
 
-	TelemetryHost::GetHost().AddTrace(this, TOOL_OUT, {TC::Misc},8);
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, TOOL_OUT, {TC::Misc},8);
+	TH.AddTrace(this, STEP0, {TC::Stepper});
+	TH.AddTrace(this, STEP1, {TC::Stepper});
+	TH.AddTrace(this, STEP2, {TC::Stepper});
+	TH.AddTrace(this, STEP3, {TC::Stepper});
 
 	m_bEnabled = true;
 }
@@ -83,6 +88,7 @@ void MMU1::OnMuxIn(avr_irq_t *irq, uint32_t value)
 		uiTool = (2*(value))+GetIRQ(MUX0)->value;
 	}
 	m_uiTool = uiTool;
+	printf("TOOL: %u\n", uiTool);
 	RaiseIRQ(TOOL_OUT,uiTool);
 }
 

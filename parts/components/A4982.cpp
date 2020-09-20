@@ -231,7 +231,7 @@ void A4982::OnMSIn(avr_irq_t *irq, uint32_t value)
 		uiM2 = value;
 	}
 	uint8_t m_uiNewShift = (static_cast<unsigned>(uiM1)<<1U | static_cast<unsigned>(uiM2));
-	std::cout << "MS changed: " << m_uiNewShift << '\n';
+	std::cout << "MS changed: " << std::to_string(m_uiNewShift) << '\n';
 	switch (m_uiNewShift)
 	{
 		case 0:
@@ -252,8 +252,8 @@ void A4982::OnMSIn(avr_irq_t *irq, uint32_t value)
 			m_uiStepSize = 1;
 			// No shift, smallest supported microstep size.
 			break;
-		default:
-			std::cerr << "A4982: PROGRAMMER ERROR! Invalid step size?\n";
+		default: // pragma: LCOV_EXCL_LINE
+			std::cerr << "A4982: PROGRAMMER ERROR! Invalid step size?\n"; // pragma: LCOV_EXCL_LINE
 	}
 
 }
@@ -277,6 +277,8 @@ void A4982::Init(struct avr_t * avr)
 	RegisterNotify(SLEEP_IN, 	MAKE_C_CALLBACK(A4982, OnSleepIn), this);
     RegisterNotify(STEP_IN,     MAKE_C_CALLBACK(A4982,OnStepIn), this);
 	RegisterNotify(RESET_IN, 	MAKE_C_CALLBACK(A4982, OnResetIn), this);
+	RegisterNotify(MS1_IN, MAKE_C_CALLBACK(A4982, OnMSIn), this);
+	RegisterNotify(MS2_IN, MAKE_C_CALLBACK(A4982, OnMSIn), this);
 
 	RaiseIRQ(MIN_OUT,0);
 	RaiseIRQ(MAX_OUT,0);

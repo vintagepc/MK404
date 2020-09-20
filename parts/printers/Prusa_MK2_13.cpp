@@ -29,7 +29,6 @@
 #include "PINDA.h"            // for PINDA
 #include "PinNames.h"         // for Pin::Z_MIN_PIN
 #include "RotaryEncoder.h"    // for RotaryEncoder, RotaryEncoder::::CCW_CLICK
-#include "SDCard.h"           // for SDCard
 #include "sim_io.h"           // for avr_register_io_write
 #include "uart_pty.h"         // for uart_pty
 #include <GL/glew.h>          // NOLINT for glTranslatef, glLoadIdentity, glPopMatrix
@@ -47,11 +46,7 @@ void Prusa_MK2_13::Draw()
 		glPushMatrix();
 		glLoadIdentity(); // Start with an identity matrix
 			glScalef(4, 4, 1);
-
-			lcd.Draw(m_colors[(4*m_iScheme) + 0], /* background */
-					m_colors[(4*m_iScheme) + 1], /* character background */
-					m_colors[(4*m_iScheme) + 2], /* text */
-					m_colors[(4*m_iScheme) + 3] /* shadow */ );
+			lcd.Draw();
 		glPopMatrix();
 		// Do something for the motors...
 		float fX = (5 + lcd.GetWidth()* 6)*4;
@@ -167,69 +162,13 @@ void Prusa_MK2_13::OnAVRCycle()
 	if (key)
 	{
 		switch (key) {
-			case 'w':
-				cout << "<";
-				encoder.Twist(RotaryEncoder::CCW_CLICK);
-			//	if (m_pVis) m_pVis->TwistKnob(true);
-				break;
-			case 's':
-				cout << ">";
-				encoder.Twist(RotaryEncoder::CW_CLICK);
-			//	if (m_pVis) m_pVis->TwistKnob(false);
-				break;
-			case 0xd:
-				cout << "ENTER pushed\n";
-				encoder.Push();
-				break;
-			case 'r':
-				cout << "RESET/KILL\n";
-				// RESET BUTTON
-				SetResetFlag();
-				//encoder.Push(); // I dont' know why this is required to not get stuck in factory reset mode.
-				// The only thing I can think of is that SimAVR doesn't like IRQ changes that don't have
-				// any avr_run cycles between them. :-/
-				break;
 			case 't':
 				cout << "FACTORY_RESET\n";
 				//m_bFactoryReset =true;
 				// Hold the button during boot to get factory reset menu
 				SetResetFlag();
 				break;
-			case 'h':
-				encoder.PushAndHold();
-				break;
-			case 'm':
-				//printf("Toggled Mute\n");
-				m_buzzer.ToggleMute();
-				break;
-			// case 'y':
-			// 	pinda.ToggleSheet();
-			// 	break;
-			// case 'p':
-			// 	printf("SIMULATING POWER PANIC\n");
-			// 	PowerPanic.Press(500);
-			// 	break;
-			// case 'f':
-			// 	ToggleFSensor();
-			// 	break;
-			// case 'j':
-			// 	FSensorJam();
-			// 	break;
-			case 'c':
-				if (!sd_card.IsMounted())
-				{
-					std::cout << "Mounting SD image...\n";
-					sd_card.Mount(); // Remounts last image.
-				}
-				else
-				{
-					std::cout << "SD card removed...\n";
-					sd_card.Unmount();
-				}
-				break;
-			case 'q':
-				Boards::MiniRambo::SetQuitFlag();
-				break;
+
 		}
 		m_key = 0;
 	}

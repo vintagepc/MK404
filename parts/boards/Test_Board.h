@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "A4982.h"
 #include "ADC_Buttons.h"
 #include "Beeper.h"                              // for Beeper
 #include "Board.h"                               // for Board
@@ -31,6 +32,7 @@
 #include "Heater.h"                              // for Heater
 #include "IRSensor.h"                          // for IRSensor
 #include "LED.h"                                 // for LED
+#include "MMU1.h"
 #include "PAT9125.h"
 #include "PINDA.h"                               // for PINDA
 #include "RotaryEncoder.h"                       // for RotaryEncoder
@@ -63,6 +65,8 @@ namespace Boards
 
 			void OnAVRDeinit() override;
 
+			A4982 m_Allg{'Y'};
+
 			RotaryEncoder encoder {true};
 
 			Button m_btn {"Button",'p', "Test button"};
@@ -84,6 +88,8 @@ namespace Boards
 			HC595 m_shift{};
 
 			Heater m_heat {5.f, 25.f, false, 'B',10.f,50.f};
+
+			MMU1 m_MM1{};
 
 			Fan m_Fan {2000,'F'};
 

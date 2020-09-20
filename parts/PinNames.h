@@ -13,6 +13,8 @@
 		__PIN_COMBO(x,_MS1_PIN), \
 		__PIN_COMBO(x,_MS2_PIN), \
 		__PIN_COMBO(x,_REF_PIN), \
+		__PIN_COMBO(x,_RST_PIN), \
+		__PIN_COMBO(x,_SLP_PIN), \
 
 // Pin names. Just add yours here.
 namespace PinNames {

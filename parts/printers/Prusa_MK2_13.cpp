@@ -22,6 +22,7 @@
 #include "A4982.h"            // for A4982, A4982::IRQ::POSITION_OUT, PINDA:...
 #include "Beeper.h"           // for Beeper
 #include "Fan.h"              // for Fan
+#include "GLHelper.h"
 #include "HD44780GL.h"        // for HD44780GL
 #include "Heater.h"           // for Heater
 #include "LED.h"              // for LED
@@ -92,6 +93,8 @@ void Prusa_MK2_13::Draw()
 			glTranslatef(20,0,0);
 			lIR.Draw();
 		glPopMatrix();
+		// GL snapshot helper
+		m_gl.OnDraw();
 }
 
 std::pair<int,int> Prusa_MK2_13::GetWindowSize(){

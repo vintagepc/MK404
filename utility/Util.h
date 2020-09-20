@@ -23,6 +23,7 @@
 #pragma once
 
 #include <cstring>
+#include <cxxabi.h>
 
 struct _hexColor_t{
 	//NOLINTNEXTLINE - we want the implicit conversion...
@@ -42,3 +43,13 @@ struct _hexColor_t{
 };
 
 using hexColor_t = _hexColor_t;
+
+// Helper to demangle C++ typenames
+inline const std::string CXXDemangle(const char* strMangled)
+{
+	int status = 0;
+	char * demangled = abi::__cxa_demangle(strMangled,nullptr,nullptr,&status);
+    std::string strDemang {demangled};
+    free(demangled); // NOLINT, no alternative.
+	return strDemang;
+}

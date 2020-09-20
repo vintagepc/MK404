@@ -29,18 +29,20 @@
 #include "PinNames.h"       // for Pin
 #include "ScriptHost.h"     // for ScriptHost
 #include "Scriptable.h"     // for Scriptable
+#include "Util.h"
 #include "Wiring.h"         // for Wiring
 #include "avr_extint.h"     // for avr_extint_set_strict_lvl_trig
 #include "sim_avr.h"        // for avr_t, avr_flashaddr_t, avr_reset, avr_run
 #include "sim_avr_types.h"  // for avr_regbit_t
 #include "sim_irq.h"        // for avr_connect_irq, avr_irq_t, avr_raise_irq
-#include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_set
+#include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_se
 #include <atomic>
 #include <cstdint>         // for uint32_t, uint8_t, int8_t
 #include <iomanip>
 #include <iostream>          // for printf, fprintf, NULL, stderr
 #include <pthread.h>        // for pthread_join, pthread_t
 #include <string>           // for string, basic_string, stoi
+#include <typeinfo>
 #include <uart_pty.h>       // for uart_pty
 #include <unistd.h>         // for usleep
 #include <utility>
@@ -280,10 +282,11 @@ namespace Boards
 				return nullptr;
 			}
 
-			inline std::string GetStorageFileName(const std::string &strType)
+			std::string GetStorageFileName(const std::string &strType)
 			{
-				std::string strFN = m_strBoard;
-				strFN.append("_").append(m_wiring.GetMCUName()).append("_").append(strType).append(".bin");
+				std::string strFN {CXXDemangle(typeid(*this).name())};//= m_strBoard;
+				//strFN.append("_").append(m_wiring.GetMCUName()).append("_").append(strType).append(".bin");
+				strFN.append("_").append(strType).append(".bin");
 				return strFN;
 			}
 
@@ -337,8 +340,7 @@ namespace Boards
 			bool m_bNoHacks = false;
 			pthread_t m_thread = 0;
 			const Wirings::Wiring &m_wiring;
-			//std::string m_strFW, m_strBoot;
-			std::string m_strBoard;
+			std::string m_strBoard = "";
 
 			std::string m_strSDFile = "";
 			const uint32_t m_uiFreq;

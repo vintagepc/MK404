@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "GLHelper.h"
 #include "Scriptable.h"
 #include <cstdlib>
 #include <string>
@@ -37,7 +38,6 @@ class Printer: public Scriptable
 
 		Printer():Scriptable("Printer")
 		{
-			RegisterAction("Key", "Simulates a keypress of a given key (character)", ActKeyPress, {ArgType::String});
 			RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state)", ActMouseBtn, {ArgType::Int,ArgType::Int});
 		}
 
@@ -67,9 +67,6 @@ class Printer: public Scriptable
 		{
 			switch (iAct)
 			{
-				// case ActKeyPress:
-				// 	OnKeyPress(vArgs.at(0).at(0),0,0);
-				// 	return LineStatus::Finished;
 				case ActMouseBtn:
 					OnMousePress(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)),0,0);
 					return LineStatus::Finished;
@@ -78,9 +75,14 @@ class Printer: public Scriptable
 			}
 		}
 
+
+		GLHelper m_gl{};
+
 	private:
 		std::string m_visType = "lite";
 		bool m_bConnectSerial = false;
+
+		std::string m_strPrintName;
 
 		enum Actions
 		{

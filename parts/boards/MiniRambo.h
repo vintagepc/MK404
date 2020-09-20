@@ -31,6 +31,7 @@
 #include "PINDA.h"
 #include "RotaryEncoder.h"
 #include "SDCard.h"
+#include "SerialLineMonitor.h"
 #include "Thermistor.h"
 #include "sim_irq.h"                             // for avr_irq_t
 #include "uart_pty.h"                            // for uart_pty
@@ -72,6 +73,8 @@ namespace Boards
 			SDCard sd_card{};
 
 			MMU1 m_mmu;
+
+			SerialLineMonitor m_Mon0 {"Serial0"};
 
 		private:
 

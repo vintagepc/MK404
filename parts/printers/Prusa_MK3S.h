@@ -21,7 +21,6 @@
 #pragma once
 
 #include "EinsyRambo.h"     // for EinsyRambo
-#include "GLHelper.h"
 #include "IRSensor.h"
 #include "MK3SGL.h"
 #include "Printer.h"        // for Printer, Printer::VisualType
@@ -37,7 +36,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 {
 
 	public:
-		Prusa_MK3S():EinsyRambo(),Printer(){};
+		Prusa_MK3S();
 
 		~Prusa_MK3S() override = default;
 
@@ -60,8 +59,6 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 		virtual bool GetHasMMU() {return false;}
 
 		std::unique_ptr<MK3SGL> m_pVis {nullptr};
-
-		GLHelper m_gl{};
 
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);

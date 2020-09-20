@@ -36,6 +36,8 @@ namespace Boards
 
 		AddHardware(UART0);
 
+		AddHardware(m_Mon0,'0');
+
 		AddHardware(lcd);
 		// D4-D7,
 		std::vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};

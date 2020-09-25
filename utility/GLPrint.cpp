@@ -24,6 +24,7 @@
 #include <algorithm>   // for transform
 #include <cstdlib>    // for abs
 #include <functional>  // for minus
+#include <iostream>
 
 static constexpr int iPrintRes = 100000; //0.1mm (meters/this)
 
@@ -88,7 +89,7 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 		if (bExtruding) // Just started extruding. Update the various pointers.
 		{
 
-			m_ivTStart.push_back(m_fvTri.size()/3);
+			//m_ivTStart.push_back(m_fvTri.size()/3);
 			if (fZ>m_fCurZ)
 			{
 				//printf("New Z layer: %.02f\n", fZ);
@@ -101,28 +102,30 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 			std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA.data(), std::minus<float>());
 			CrossProduct(fA,fB,{fCross.data(),3});
 			Normalize({fCross.data(),3});
+			m_fvPath.clear();
+			m_fvPath.push_back({m_fExtrEnd[0], m_fExtrEnd[2], fE});
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
-			for (int i=0; i<4; i++)
-			{
-				m_iExtrStart = m_iExtrEnd;
-				m_fExtrStart = m_fExtrEnd;
-			}
+
+			m_iExtrStart = m_iExtrEnd;
+			m_fExtrStart = m_fExtrEnd;
+
 			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
 			m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
 			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
 
 		}
-		// m_fvTri.push_back(m_fExtrEnd[0]);
-		// m_fvTri.push_back(m_fExtrEnd[1]-0.0002);
-		// m_fvTri.push_back(m_fExtrEnd[2]);
-		// m_fvTri.insert(m_fvTri.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+
 
 		if (!bExtruding)
 		{
-			std::lock_guard<std::mutex> lock(m_lock);
-			m_ivCount.push_back((m_fvDraw.size()/3) - m_ivStart.back());
-			// m_ivTCount.push_back((m_fvTri.size()/3) - m_ivTStart.back());
+			m_fvPath.push_back({m_fExtrEnd[0], m_fExtrEnd[2], m_fExtrEnd[3]});
+			{
+				std::lock_guard<std::mutex> lock(m_lock);
+				m_ivCount.push_back((m_fvDraw.size()/3) - m_ivStart.back());
+			}
+			//m_ivTCount.push_back((m_fvTri.size()/3) - m_ivTStart.back());
 			//printf("Ended extrusion %u (%u vertices)\n", m_ivCount.size(), m_ivCount.back());
+			AddSegment();
 		}
 		m_bExtruding = bExtruding;
 	}
@@ -155,27 +158,112 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 				// New segment, push it onto the vertex list and update the segment count
 		//printf("New segment: %d\n",m_vCoords.size());
 		{
+			m_fvPath.push_back({m_fExtrEnd[0], m_fExtrEnd[2],m_fExtrEnd[3]});
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 			m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+
+			//m_Pipe.addPathPoint({m_fExtrEnd[0],m_fExtrEnd[1],m_fExtrEnd[2]});
 			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
+			// m_fvTri.push_back(m_fExtrEnd[0]+(fCross[0]*0.0002));
+			// m_fvTri.push_back(m_fExtrEnd[1]+(fCross[1]*0.0002));
+			// m_fvTri.push_back(m_fExtrEnd[2]+(fCross[2]*0.0002));
+			// m_fvTri.insert(m_fvTri.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
 			m_iExtrStart = m_iExtrEnd;
 			m_fExtrStart = m_fExtrEnd;
+
 		}
-		// m_fvTri.push_back(m_fExtrEnd[0]);
-		// m_fvTri.push_back(m_fExtrEnd[1]-0.0002);
-		// m_fvTri.push_back(m_fExtrEnd[2]);.
-		// m_fvTri.insert(m_fvTri.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+
 
 	}
 	// Update the end we are tracking.
+	m_fExtrPrev = m_fExtrEnd;
 	m_fExtrEnd[0] = fX;
 	m_fExtrEnd[2] = fY;
 	m_fExtrEnd[1] = fZ;
+	m_fExtrEnd[3] = fE;
 	m_iExtrEnd[0] = iX;
 	m_iExtrEnd[2] = iY;
 	m_iExtrEnd[1] = iZ;
 	//m_iExtrEnd[3] = iE;
 
+}
+
+// Does the computational geometry and pushes the extrusion:
+static constexpr float fLayerZRad = 0.0001f; //0.5*layer height. TODO (vintagepc): Sort this out based on guessed z height.
+void GLPrint::AddSegment()
+{
+	static constexpr float FILAMENT_AREA_COEFF = (.00175f/2.f)*(.00175f/2.f); // No pi because it factors out later anyway.
+
+//	auto extPrev = m_fvDraw.end()-3;
+	//std::cout << "Adding segment from: " << extPrev[0] << " " << fZ << " " << fY << " to " << m_fExtrEnd[0] << " " << m_fExtrEnd[1] << " " << m_fExtrEnd[2] << '\n';
+	std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
+	// auto itPrev = m_fExtrEnd.begin();
+	// std::transform(itPrev, itPrev+3, extPrev, fA.data(), std::minus<float>()); // Length from p->curr
+
+	for(auto it = m_fvPath.begin(); it!=m_fvPath.end()-1; it++)
+	{
+		auto pt = *it, ptNext = *std::next(it);
+		float fZ = m_fExtrEnd[1] - fLayerZRad;
+		auto fX = std::get<0>(pt), fY = std::get<1>(pt), fE = std::get<2>(pt);
+		auto fXN = std::get<0>(ptNext), fYN = std::get<1>(ptNext), fEN = std::get<2>(ptNext);
+		float fdE = fEN - fE; // E linear distance.
+		if (fdE <0)
+		{
+			continue;
+		}
+		fA[0] = fXN - fX;
+		fA[2] = fYN - fY;
+		// Approximate the resulting extrusion width with an ellipse.
+		float fdXY = std::sqrt((fA[0]*fA[0])+(fA[2]*fA[2])); // Length of extrusion on print surface.
+		float fExtrVol =  FILAMENT_AREA_COEFF * fdE;
+		float fExtRad = (fExtrVol/(fLayerZRad*fdXY)); // Should give us the XY radius of the extrusion ellipse.
+		std::cout << "Seg: " << fX << " " << fY << " E:" << fE << "R:" << fExtRad << '\n';
+		CrossProduct(fB,fA,{fCross.data(),3});
+		Normalize({fCross.data(),3});
+		auto fCrossRev = fCross;
+		fCrossRev[0]= -fCross[0];
+		fCrossRev[2]= -fCross[2];
+		{
+			auto iTStart = m_fvTri.size()/3;
+			std::lock_guard<std::mutex> lock(m_lock);
+			m_fvTri.reserve(m_fvTri.size()+30);
+			m_fvTriNorm.reserve(m_fvTri.size());
+
+			m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+			m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+			m_fvTri.insert(m_fvTri.end(), {fXN, fZ+fLayerZRad, fYN});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), {0,1,0});
+
+			m_fvTri.insert(m_fvTri.end(), {fX, fZ+fLayerZRad, fY});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), {0,1,0});
+
+			m_fvTri.insert(m_fvTri.end(), {fXN-(fCross[0]*fExtRad), fZ, fYN-(fCross[2]*fExtRad)});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
+
+			m_fvTri.insert(m_fvTri.end(), {fX-(fCross[0]*fExtRad), fZ, fY-(fCross[2]*fExtRad)});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
+
+			m_fvTri.insert(m_fvTri.end(), {fXN, fZ-fLayerZRad, fYN});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), {0,-1,0});
+
+			m_fvTri.insert(m_fvTri.end(), {fX, fZ-fLayerZRad, fY});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), {0,-1,0});
+
+			m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+			m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
+			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+
+			m_ivTStart.push_back(iTStart);
+			m_ivTCount.push_back((m_fvTri.size()/3) - iTStart);
+		}
+	}
 }
 
 void GLPrint::Draw()
@@ -192,10 +280,13 @@ void GLPrint::Draw()
 	//glEnable(GL_AUTO_NORMAL);
 	//glEnable(GL_NORMALIZE);
 	glEnableClientState(GL_VERTEX_ARRAY);
+		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
+		glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
+		glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
+		//glEnable(GL_NORMALIZE);
+		glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
+	//	glDisable(GL_NORMALIZE);
 	glEnableClientState(GL_NORMAL_ARRAY);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fK.data());
-		//glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
-		// glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
 		//glNormal3f(0,1,0);
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
 		{
@@ -203,6 +294,33 @@ void GLPrint::Draw()
 			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
 			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
 			glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
+				// glEnable(GL_COLOR_MATERIAL);
+				// int count = m_Pipe.getContourCount();
+				// for(int i = 0; i < count - 1; ++i)
+				// {
+				// 	std::vector<Vector3> c1 = m_Pipe.getContour(i);
+				// 	std::vector<Vector3> c2 = m_Pipe.getContour(i+1);
+				// 	std::vector<Vector3> n1 = m_Pipe.getNormal(i);
+				// 	std::vector<Vector3> n2 = m_Pipe.getNormal(i+1);
+				// 	glBegin(GL_TRIANGLE_STRIP);
+				// 	for(int j = 0; j < (int)c2.size(); ++j)
+				// 	{
+				// 		if (j==0)
+				// 			glColor3ub(255,0,0);
+				// 		else if (j==1)
+				// 			glColor3ub(0,255,0);
+				// 		else if(j==2)
+				// 			glColor3ub(0,0,255);
+				// 		else
+				// 			glColor3ub(255,255,255);
+				// 		glNormal3fv(&n2[j].x);
+				// 		glVertex3fv(&c2[j].x);
+				// 		glNormal3fv(&n1[j].x);
+				// 		glVertex3fv(&c1[j].x);
+				// 	}
+				// 	glEnd();
+				// }
+				// glDisable(GL_COLOR_MATERIAL);
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());
 			if (m_ivCount.size()>0)
 			{

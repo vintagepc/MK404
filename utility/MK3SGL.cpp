@@ -528,6 +528,16 @@ void MK3SGL::Draw()
 			DrawMMU();
 		}
 		m_snap.OnDraw();
+		m_iFrCount++;
+		m_iTic=glutGet(GLUT_ELAPSED_TIME);
+		auto iDiff = m_iTic - m_iLast;
+		if (iDiff > 1000) {
+			int iFPS = m_iFrCount*1000.f/(iDiff);
+			m_iLast = m_iTic;
+			m_iFrCount = 0;
+			std::string strTitle = "Fancy Graphics: " + m_Objs->GetName() + " (" +std::to_string(iFPS) + " FPS)";
+			glutSetWindowTitle(strTitle.c_str());
+		}
 		glutSwapBuffers();
 		m_bDirty = false;
 }

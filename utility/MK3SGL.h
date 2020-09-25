@@ -164,6 +164,8 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
         int m_iWindow = 0;
 
+		int m_iTic =0, m_iLast = 0, m_iFrCount = 0;
+
 		// Useful for instant positioning.
 
 		inline void DebugTx(){glTranslatef(m_flDbg,m_flDbg2,m_flDbg3);}

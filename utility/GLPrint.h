@@ -63,13 +63,15 @@ class GLPrint
 
 		//void FindNearest(const float fVec[3]);
 
+		void AddSegment();//(const std::array<float, 4> &fvEnd, gsl::span<float> &fvPrev);
 
 		std::array<int,4> m_iExtrEnd = {{0,0,0,0}}, m_iExtrStart = {{0,0,0,0}};
-		std::array<float,4> m_fExtrEnd = {{0,0,0,0}}, m_fExtrStart = {{0,0,0,0}};
+		std::array<float,4> m_fExtrEnd = {{0,0,0,0}}, m_fExtrStart = {{0,0,0,0}}, m_fExtrPrev = m_fExtrEnd;
+
 		std::vector<int> m_ivStart, m_ivTStart;
 		std::vector<int> m_ivCount, m_ivTCount;
 		std::vector<float> m_fvDraw, m_fvNorms;
-		std::vector<float> m_fvTri;
+		std::vector<float> m_fvTri, m_fvTriNorm;
 		// Layer vertex tracking.
 		std::vector<float*> m_vpfLayer1, m_vpfLayer2;
 		// std::vector<float*> *m_pCurLayer = &m_vpfLayer1;   // not used
@@ -79,6 +81,7 @@ class GLPrint
 		float m_fEMax = 0;
 		const float m_fColR, m_fColG, m_fColB;
 		std::atomic_bool m_bExtruding = {false};
+		std::vector<std::tuple<float,float,float>> m_fvPath;
 
 		std::mutex m_lock;
 };

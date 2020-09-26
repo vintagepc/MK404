@@ -53,7 +53,6 @@ set (FIRMWARE
     )
 
 set(H_FILES
-	parts/A4982.h
 	parts/ADCPeripheral.h
 	parts/BasePeripheral.h
 	parts/Board.h

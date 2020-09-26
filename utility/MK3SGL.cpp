@@ -76,6 +76,14 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterKeyHandler('w',"");
 	RegisterKeyHandler('s',"");
 
+	// RegisterKeyHandler('5',"");
+	// RegisterKeyHandler('6',"");
+	// RegisterKeyHandler('7',"");
+	// RegisterKeyHandler('8',"");
+	// RegisterKeyHandler('9',"");
+	// RegisterKeyHandler('0',"");
+
+
 	glewInit();
 #ifdef TEST_MODE
 	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH)) ;
@@ -173,25 +181,24 @@ void MK3SGL::OnKeyPress(const Key& key)
 		case 's':
 			TwistKnob(key=='w');
 			break;
+		case '5':
+		case '6':
+			m_flDbg = m_flDbg + (key=='5'?0.001f:-0.001f);
+			break;
+		case '7':
+		case '8':
+			m_flDbg2 = m_flDbg2 + (key=='7'?0.001f:-0.001f);
+			break;
+		case '9':
+		case '0':
+			m_flDbg3 = m_flDbg3 + (key=='9'?0.001f:-0.001f);
+			break;
+
 	}
 	// Decomment this block and use the flDbg variables
 	// as your position translation. Then, you can move the
 	// object into place using the numpad, and just read off
 	// the correct position values to use when finished.
-	// if (c =='+')
-	// 	m_flDbg = m_flDbg+0.001f;
-	// else if (c == '-')
-	// 	m_flDbg = m_flDbg-0.001f;
-	// if (c =='*')
-	// 	m_flDbg2 = m_flDbg2+0.001f;
-	// else if (c == '/')
-	// 	m_flDbg2 = m_flDbg2-0.001f;
-	// if (c =='3')
-	// 	m_flDbg3 = m_flDbg3+0.001f;
-	// else if (c == '9')
-	// 	m_flDbg3 = m_flDbg3-0.001f;
-	// else if (c == '7')
-	// {
 	// 	m_iDbg ++;
 	// 	m_MMUBase.SetSubobjectVisible(m_iDbg,false);
 	// }
@@ -201,7 +208,7 @@ void MK3SGL::OnKeyPress(const Key& key)
 	// 	m_iDbg --;
 	// }
 	// printf("Int: %d\n",m_iDbg.load());
-	// printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
+	//printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
 }
 
 void MK3SGL::Init(avr_t *avr)

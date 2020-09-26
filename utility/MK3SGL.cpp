@@ -32,7 +32,9 @@
 #include "gsl-lite.hpp"
 //NOLINTNEXTLINE _std must come before _ext.
 #include <GL/freeglut_std.h>  // for glutSetWindow, GLUT_DOWN, GLUT_UP, glut...
+#ifndef TEST_MODE
 #include <GL/freeglut_ext.h>  // for glutSetOption
+#endif
 #include <GL/glew.h>          // for glTranslatef, glPopMatrix, glPushMatrix
 #include <cstdlib>           // for exit
 #include <cstring>
@@ -76,9 +78,9 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 
 	glewInit();
 #ifdef TEST_MODE
-	glutSetOption(GLUT_MULTISAMPLE,4);
 	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH)) ;
 #else
+	glutSetOption(GLUT_MULTISAMPLE,4);
 	glutInitDisplayMode( US(GLUT_RGB) | US(GLUT_DOUBLE) | US(GLUT_DEPTH) | US(GLUT_MULTISAMPLE)) ;
 #endif
 	glutInitWindowSize(800,800);		/* width=400pixels height=500pixels */

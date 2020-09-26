@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include "GLHelper.h"
 #include "HD44780GL.h"
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "Test_Board.h"     		// for EinsyRambo
@@ -34,7 +33,7 @@ class Test_Printer : public Boards::Test_Board, public Printer
 
 		~Test_Printer() override = default;
 
-		std::pair<int,int> GetWindowSize() override {return { 5 + m_lcd.GetWidth() * 6, 40 + 5 + m_lcd.GetHeight() * 9}; };
+		std::pair<int,int> GetWindowSize() override {return { 5 + m_lcd.GetWidth() * 6, 50 + 5 + m_lcd.GetHeight() * 9}; };
 
 		void Draw() override;
 
@@ -42,8 +41,5 @@ class Test_Printer : public Boards::Test_Board, public Printer
 		void SetupHardware() override;
 
 		void OnAVRCycle() override;
-
-	private:
-		GLHelper m_gl {};
 
 };

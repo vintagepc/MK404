@@ -520,6 +520,7 @@ void SDCard::Init(struct avr_t *avr)
 
 int SDCard::Mount(const std::string &filename, off_t image_size)
 {
+	RaiseIRQ(CARD_PRESENT,1);
 	int fd = 0;
 	void *mapped;
 
@@ -538,9 +539,15 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 	{
 		m_strFile = filename; // New file given.
 	}
+	// Check file existence. We don't want to create bad 0b SD images anymore.
+	if (access(m_strFile.c_str(), F_OK) == -1)
+	{
+		std::cout << "SD file " << m_strFile << " does not exist. Will not create it.\n";
+		return -1;
+	}
 
 	/* Open the specified disk image. */
-	fd = open (m_strFile.c_str(), O_RDWR | O_CREAT | O_CLOEXEC, S_IRUSR | S_IWUSR); //NOLINT - no c++ stl non vararg memmap available.
+	fd = open (m_strFile.c_str(), O_RDWR | O_CLOEXEC, S_IRUSR | S_IWUSR); //NOLINT - no c++ stl non vararg memmap available.
 
 	if (fd == -1)
 	{

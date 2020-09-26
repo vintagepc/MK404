@@ -47,6 +47,8 @@ class MK3S_Full: public MK3S_Lite
 			 m_pBaseObj = AddObject(ObjClass::Fixed, "assets/Stationary.obj");
 		};
 
+		inline void SetNozzleCam(bool bOn) override { m_pE->SetSubobjectVisible(0,!bOn); }
+
 		void OnLoadComplete() override {};
 
 		inline float GetScaleFactor() override { return m_pBaseObj->GetScaleFactor();};

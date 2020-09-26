@@ -21,6 +21,7 @@
 #include "Test_Board.h"
 #include "3rdParty/MK3/thermistortables.h"
 #include "HD44780.h"
+#include "MMU1.h"
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
 #include "RotaryEncoder.h"           // for HD44780
 
@@ -80,6 +81,8 @@ namespace Boards
 		// Cheat and reuse a line (driver doesn't care, EN is off)
 		TryConnect(X_DIR_PIN, m_shift, HC595::IN_RESET);
 
+
+
 		AddHardware(m_heat,GetPWMIRQ(HEATER_0_PIN), GetDIRQ(HEATER_0_PIN));
 
 		AddHardware(m_Fan,GetDIRQ(TACH_0), GetDIRQ(FAN_PIN), GetPWMIRQ(FAN_PIN));
@@ -117,6 +120,26 @@ namespace Boards
 
 		AddHardware(m_buzzer);
 		m_buzzer.ConnectFrom(GetDIRQ(BEEPER), Beeper::DIGITAL_IN);
+
+		AddHardware(m_MM1);
+		TryConnect(E_MUX0_PIN, m_MM1, MMU1::MUX0);
+		TryConnect(E_MUX1_PIN, m_MM1, MMU1::MUX1);
+		TryConnect(X_STEP_PIN, m_MM1, MMU1::STEP_IN);
+
+
+		m_Allg.GetConfig().iMaxMM = 20;
+		m_Allg.GetConfig().fStartPos = 10.f;
+		m_Allg.GetConfig().uiStepsPerMM = 10;
+		AddHardware(m_Allg);
+		TryConnect(X_DIR_PIN, m_Allg, A4982::DIR_IN);
+		TryConnect(X_STEP_PIN, m_Allg, A4982::STEP_IN);
+		TryConnect(X_ENABLE_PIN, m_Allg, A4982::ENABLE_IN);
+		TryConnect(E_MUX0_PIN, m_Allg, A4982::MS1_IN);
+		TryConnect(E_MUX1_PIN, m_Allg, A4982::MS2_IN);
+		TryConnect(X_RST_PIN, m_Allg, A4982::RESET_IN);
+		TryConnect(X_SLP_PIN, m_Allg, A4982::SLEEP_IN);
+		TryConnect(m_Allg, A4982::MAX_OUT, X_MAX_PIN);
+		TryConnect(m_Allg, A4982::MIN_OUT, X_MAX_PIN);
 
 	}
 

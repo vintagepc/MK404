@@ -21,7 +21,6 @@
 #pragma once
 
 #include "Einsy_1_0a.h"
-
 namespace Wirings
 {
 	class Einsy_1_1a : public Einsy_1_0a

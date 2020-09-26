@@ -53,7 +53,6 @@ public:
 	// Constructs a new IRSensor on ADC mux uiMux
     IRSensor();
 
-
 	// Flips the state between filament and no filament.
 	void Toggle();
 

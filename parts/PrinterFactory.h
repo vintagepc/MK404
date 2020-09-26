@@ -23,6 +23,11 @@
 
 #include "Board.h"
 #include "Printer.h"
+#include "printers/Prusa_MK1_13.h"
+#include "printers/Prusa_MK25S_13.h"
+#include "printers/Prusa_MK25_13.h"
+#include "printers/Prusa_MK2MMU_13.h"
+#include "printers/Prusa_MK2_13.h"
 #include "printers/Prusa_MK3.h"
 #include "printers/Prusa_MK3MMU2.h"
 #include "printers/Prusa_MK3S.h"
@@ -114,6 +119,11 @@ class PrinterFactory
 		static std::map<std::string,std::pair<Ctor,Dtor>>& GetModelMap()
 		{
 			static std::map<std::string,std::pair<PrinterFactory::Ctor,PrinterFactory::Dtor>> m_Models  = {
+				{"Prusa_MK1_mR13",		{&PrinterFactory::_CreatePrinter<Prusa_MK1_13>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK1_13>}},
+				{"Prusa_MK2_mR13",		{&PrinterFactory::_CreatePrinter<Prusa_MK2_13>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK2_13>}},
+				{"Prusa_MK2MMU_mR13",	{&PrinterFactory::_CreatePrinter<Prusa_MK2MMU_13>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK2MMU_13>}},
+				{"Prusa_MK25_mR13",		{&PrinterFactory::_CreatePrinter<Prusa_MK25_13>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK25_13>}},
+				{"Prusa_MK25S_mR13",	{&PrinterFactory::_CreatePrinter<Prusa_MK25S_13>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK25S_13>}},
 				{"Prusa_MK3",			{&PrinterFactory::_CreatePrinter<Prusa_MK3>	, 		&PrinterFactory::_DestroyPrinter<Prusa_MK3>}},
 				{"Prusa_MK3S",			{&PrinterFactory::_CreatePrinter<Prusa_MK3S>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3S>}},
 				{"Prusa_MK3SMMU2",		{&PrinterFactory::_CreatePrinter<Prusa_MK3SMMU2>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3SMMU2>}},

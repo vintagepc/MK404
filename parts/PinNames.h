@@ -9,6 +9,13 @@
 		__PIN_COMBO(x,_TMC2130_CS),\
 		__PIN_COMBO(x,_TMC2130_DIAG),\
 
+#define __A4982_PIN_SET(x) \
+		__PIN_COMBO(x,_MS1_PIN), \
+		__PIN_COMBO(x,_MS2_PIN), \
+		__PIN_COMBO(x,_REF_PIN), \
+		__PIN_COMBO(x,_RST_PIN), \
+		__PIN_COMBO(x,_SLP_PIN), \
+
 // Pin names. Just add yours here.
 namespace PinNames {
 	enum Pin{
@@ -18,7 +25,10 @@ namespace PinNames {
 		BTN_ENC,
 		BTN_ARRAY,
 		__TMC2130_PIN_SET(E0)
+		__A4982_PIN_SET(E0)
 		E0_FAN,
+		E_MUX0_PIN,
+		E_MUX1_PIN,
 		FAN_1_PIN,
 		FAN_PIN,
 		FINDA_PIN,
@@ -42,6 +52,7 @@ namespace PinNames {
 		PAT_INT_PIN,
 		PS_ON_PIN,
 		__TMC2130_PIN_SET(S)
+		RX2_PIN,
 		SDCARDDETECT,
 		SDPOWER,
 		SDSS,
@@ -59,6 +70,7 @@ namespace PinNames {
 		TEMP_AMBIENT_PIN,
 		TEMP_BED_PIN,
 		TEMP_PINDA_PIN,
+		TX2_PIN,
 		UVLO_PIN,
 		VOLT_BED_PIN,
 		VOLT_IR_PIN,
@@ -67,12 +79,15 @@ namespace PinNames {
 		X_MAX_PIN,
 		X_MIN_PIN,
 		__TMC2130_PIN_SET(X)
+		__A4982_PIN_SET(X)
 		Y_MAX_PIN,
 		Y_MIN_PIN,
 		__TMC2130_PIN_SET(Y)
+		__A4982_PIN_SET(Y)
 		Z_MAX_PIN,
 		Z_MIN_PIN,
 		__TMC2130_PIN_SET(Z)
+		__A4982_PIN_SET(Z)
 		PIN_COUNT
 	};
 }; // namespace PinNames

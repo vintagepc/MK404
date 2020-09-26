@@ -53,4 +53,6 @@ private:
 	std::atomic_uint8_t m_uiBrightness = {0};
 	bool m_bInvert = false;
 
+	std::atomic_bool m_bAttached {false};
+
 };

@@ -21,6 +21,7 @@
 #include "Prusa_MK3S.h"
 #include "Beeper.h"           // for Beeper
 #include "Fan.h"              // for Fan
+#include "GLHelper.h"
 #include "HD44780GL.h"        // for HD44780GL
 #include "Heater.h"           // for Heater
 #include "IRSensor.h"         // for IRSensor
@@ -36,6 +37,10 @@
 #include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
 #include <cstdint>
 #include <iostream>            // for printf
+
+Prusa_MK3S::Prusa_MK3S():EinsyRambo(),Printer()
+{
+}
 
 void Prusa_MK3S::Draw()
 {

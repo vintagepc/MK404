@@ -55,59 +55,71 @@ set (FIRMWARE
 
 set(H_FILES
 	parts/ADCPeripheral.h
-	parts/PinNames.h
 	parts/BasePeripheral.h
-	parts/boards/EinsyRambo.h
-	parts/boards/MM_Control_01.h
-	parts/PrinterFactory.h
-	parts/wiring/Einsy_1_1a.h
-	parts/wiring/MM_Control_01.h
-	parts/wiring/Einsy_1_0a.h
-	parts/ScriptHost.h
-	parts/pinspecs/PinSpec_2560.h
-	parts/I2CPeripheral.h
-	parts/pinspecs/PinSpec_32u4.h
-	parts/PinSpec.h
-	parts/SoftPWMable.h
-	parts/TelemetryHost.h
-	parts/Printer.h
-	parts/SPIPeripheral.h
-	parts/Scriptable.h
 	parts/Board.h
-	parts/components/LED.h
-	parts/components/PINDA.h
-	parts/components/HD44780GL.h
-	parts/components/SDCard.h
-	parts/components/uart_pty.h
-	parts/components/hd44780_charROM.h
-	parts/components/UART_Logger.h
-	parts/components/RotaryEncoder.h
-	parts/components/EEPROM.h
-	parts/components/Thermistor.h
-	parts/components/Fan.h
+	parts/boards/EinsyRambo.h
+	parts/boards/MiniRambo.h
+	parts/boards/MM_Control_01.h
+	parts/boards/Test_Board.h
+	parts/components/A4982.h
 	parts/components/ADC_Buttons.h
-	parts/components/VoltageSrc.h
-	parts/components/w25x20cl.h
 	parts/components/Beeper.h
-	parts/components/HD44780.h
-	parts/components/SerialLineMonitor.h
-	parts/components/HC595.h
 	parts/components/Button.h
-	parts/components/MMU2.h
-	parts/components/PAT9125.h
+	parts/components/EEPROM.h
+	parts/components/Fan.h
 	parts/components/GCodeSniffer.h
 	parts/components/GLHelper.h
-	parts/components/TMC2130.h
-	parts/components/IRSensor.h
+	parts/components/HC595.h
+	parts/components/hd44780_charROM.h
+	parts/components/HD44780GL.h
+	parts/components/HD44780.h
 	parts/components/Heater.h
+	parts/components/IRSensor.h
+	parts/components/LED.h
+	parts/components/MMU1.h
+	parts/components/MMU2.h
+	parts/components/PAT9125.h
+	parts/components/PINDA.h
+	parts/components/RotaryEncoder.h
+	parts/components/SDCard.h
+	parts/components/SerialLineMonitor.h
+	parts/components/Thermistor.h
+	parts/components/TMC2130.h
+	parts/components/UART_Logger.h
+	parts/components/uart_pty.h
+	parts/components/VoltageSrc.h
+	parts/components/w25x20cl.h
+	parts/I2CPeripheral.h
 	parts/IScriptable.h
+	parts/PinNames.h
+	parts/PinSpec.h
 	parts/PinSpec_Helper.h
-	parts/Wiring.h
-#	parts/IRQHelper.h  Can't be checked/used standalone.
+	parts/pinspecs/PinSpec_2560.h
+	parts/pinspecs/PinSpec_32u4.h
+	parts/PrinterFactory.h
+	parts/Printer.h
+	parts/printers/Prusa_MK1_13.h
+	parts/printers/Prusa_MK2_13.h
+	parts/printers/Prusa_MK25_13.h
+	parts/printers/Prusa_MK25S_13.h
+	parts/printers/Prusa_MK2MMU_13.h
+	parts/printers/Prusa_MK3.h
+	parts/printers/Prusa_MK3MMU2.h
 	parts/printers/Prusa_MK3S.h
 	parts/printers/Prusa_MK3SMMU2.h
-	parts/printers/Prusa_MK3MMU2.h
 	parts/printers/Test_Printer.h
+	parts/Scriptable.h
+	parts/ScriptHost.h
+	parts/SoftPWMable.h
+	parts/SPIPeripheral.h
+	parts/TelemetryHost.h
+	parts/wiring/Einsy_1_0a.h
+	parts/wiring/Einsy_1_1a.h
+	parts/Wiring.h
+	parts/wiring/miniRAMBo_1_1b.h
+	parts/wiring/miniRAMBo_1_3a.h
+	parts/wiring/MM_Control_01.h
+	parts/wiring/Test_Wiring.h
 	utility/Color.h
 	utility/GLPrint.h
 	utility/FatImage.h
@@ -131,37 +143,45 @@ set(H_FILES
 
 set(MK404_SOURCES
 	parts/Board.cpp
-	parts/boards/MM_Control_01.cpp
 	parts/boards/EinsyRambo.cpp
+	parts/boards/MiniRambo.cpp
+	parts/boards/MM_Control_01.cpp
 	parts/boards/Test_Board.cpp
-	parts/ScriptHost.cpp
-	parts/TelemetryHost.cpp
-	parts/components/GCodeSniffer.cpp
-	parts/components/Beeper.cpp
-	parts/components/HD44780GL.cpp
-	parts/components/VoltageSrc.cpp
+	parts/components/A4982.cpp
 	parts/components/ADC_Buttons.cpp
-	parts/components/Heater.cpp
+	parts/components/Beeper.cpp
+	parts/components/Button.cpp
 	parts/components/EEPROM.cpp
-	parts/components/IRSensor.cpp
-	parts/components/w25x20cl.cpp
+	parts/components/Fan.cpp
+	parts/components/GCodeSniffer.cpp
+	parts/components/HC595.cpp
 	parts/components/HD44780.cpp
-	parts/components/UART_Logger.cpp
-	parts/components/SDCard.cpp
+	parts/components/HD44780GL.cpp
+	parts/components/Heater.cpp
+	parts/components/IRSensor.cpp
+	parts/components/LED.cpp
+	parts/components/MMU1.cpp
 	parts/components/MMU2.cpp
 	parts/components/PINDA.cpp
-	parts/components/TMC2130.cpp
-	parts/components/SerialLineMonitor.cpp
-	parts/components/LED.cpp
-	parts/components/HC595.cpp
 	parts/components/RotaryEncoder.cpp
-	parts/components/uart_pty.cpp
+	parts/components/SDCard.cpp
+	parts/components/SerialLineMonitor.cpp
 	parts/components/Thermistor.cpp
-	parts/components/Fan.cpp
-	parts/components/Button.cpp
+	parts/components/TMC2130.cpp
+	parts/components/UART_Logger.cpp
+	parts/components/uart_pty.cpp
+	parts/components/VoltageSrc.cpp
+	parts/components/w25x20cl.cpp
+	parts/printers/Prusa_MK1_13.cpp
+	parts/printers/Prusa_MK2_13.cpp
+	parts/printers/Prusa_MK25_13.cpp
+	parts/printers/Prusa_MK25S_13.cpp
+	parts/printers/Prusa_MK2MMU_13.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
 	parts/printers/Test_Printer.cpp
+	parts/ScriptHost.cpp
+	parts/TelemetryHost.cpp
 	utility/MK3SGL.cpp
 	utility/GLObj.cpp
 	utility/FatImage.cpp
@@ -263,15 +283,20 @@ if (ENABLE_GCOV)
 	target_link_libraries(MK404 -coverage -lgcov)
 	add_definitions(-DTEST_MODE)
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
+	add_custom_target(TestClean
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+		COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_BINARY_DIR}/*.bin_test
+	)
 	add_custom_target(Coverage.tar.gz
 		COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_BINARY_DIR}/Coverage
+
 		COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/coverage.info
 		COMMAND lcov --remove coverage.info '/usr/*' -o coverage.info
 		COMMAND lcov --remove coverage.info '*/3rdParty/*' -o coverage.info
 		COMMAND genhtml coverage.info --output-directory Coverage
 		COMMAND tar -zcvf Coverage.tar.gz Coverage
 		COMMAND ${PROJECT_SOURCE_DIR}/3rdParty/gcovr -r ${PROJECT_SOURCE_DIR} -e 3rdParty | tee ${PROJECT_BINARY_DIR}/summary.txt
-		DEPENDS Tests
+		DEPENDS Tests TestClean
 	)
 else()
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE OFF)
@@ -340,12 +365,17 @@ endif()
 
 
 enable_testing()
-add_test(Make_SD_image MK404 --sdimage Test_Board_atmega2560_SDcard.bin --image-size 64M)
-add_test(Make_SD_image2 MK404 --sdimage Einsy_atmega2560_SDcard.bin --image-size 128M)
+add_test(Make_SD_image MK404 --sdimage Test_Printer_SDcard.bin_test --image-size 64M)
+add_test(Make_SD_image2 MK404 --sdimage Blank_SDcard.bin_test --image-size 128M)
+add_test(Make_SD_image3 MK404 --sdimage Prusa_MK3S_SDcard.bin_test --image-size 256M)
+add_test(Make_SD_image4 MK404 --sdimage Prusa_MK3_SDcard.bin_test --image-size 512M)
+add_test(Make_SD_image5 MK404 --sdimage Prusa_MK3SMMU2_SDcard.bin_test --image-size 1G)
+add_test(Make_SD_image6 MK404 --sdimage Prusa_MK3MMU2_SDcard.bin_test --image-size 2G)
 add_test(Check_GL env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} glxinfo )
 
 add_test(Test_Printer_Trace MK404 Test_Printer -g none --trace ?)
 add_test(Test_Printer_Script MK404 Test_Printer -g none --scripthelp)
+add_test(Test_Printer_Keyprint MK404 Test_Printer -g none -k)
 foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
 	message(STATUS "Adding test: ${TEST_BASE}" )
@@ -356,6 +386,11 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 endforeach()
 
 if(SANITY_TESTS)
+	add_test(MK1_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK1_mR13 -f ../assets/Firmware/MK1-mR13a.hex --script ../scripts/tests/test_boot_MK1.txt)
+	add_test(MK2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2_mR13 -f ../assets/Firmware/MK2-mR13a.hex --script ../scripts/tests/test_boot_MK2.txt)
+	add_test(MK2MMU_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2MMU_mR13 -f ../assets/Firmware/MK2MMU-mR13a.hex --script ../scripts/tests/test_boot_MK2MMU.txt)
+	add_test(MK25_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -f ../assets/Firmware/MK25-mR13a.hex --script ../scripts/tests/test_boot_MK25.txt)
+	add_test(MK25S_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25S_mR13 -f ../assets/Firmware/MK25S-mR13a.hex --script ../scripts/tests/test_boot_MK25S.txt)
 	add_test(MK3S_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -f MK3S.afx --script ../scripts/tests/test_boot_MK3S.txt)
 	add_test(MK3_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3 -f MK3S.afx --script ../scripts/tests/test_boot_MK3.txt)
 	add_test(MK3SMMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3SMMU2.txt)
@@ -399,6 +434,11 @@ SET(PRINTERS
 	Prusa_MK3MMU2
 	Prusa_MK3S
 	Prusa_MK3SMMU2
+	Prusa_MK25S_mR13
+	Prusa_MK25_mR13
+	Prusa_MK2MMU_mR13
+	Prusa_MK2_mR13
+	Prusa_MK1_mR13
 )
 
 add_custom_target(UpdateDocs

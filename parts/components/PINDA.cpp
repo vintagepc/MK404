@@ -36,21 +36,25 @@ void PINDA::CheckTriggerNoSheet()
 {
     float fEdist = 100;
     bool bFound = false;
-    //printf("PINDA: X: %f Y: %f\n", this->fPos[0], this->fPos[1]);
-    for (int i=0; i<4; i++)
-    {
-        fEdist = sqrt( pow(m_fPos[0] - gsl::at(PINDA::_bed_calibration_points,2*i),2)  +
-            pow(m_fPos[1] - gsl::at(PINDA::_bed_calibration_points,(2*i)+1),2));
-        if (fEdist<10)
-        {
-            bFound = true;
-            break;  // Stop as soon as we find a near cal point.
-        }
-    }
+    //printf("PINDA: X: %f Y: %f\n", m_fPos[0], m_fPos[1]);
+	if (m_fPos[2]<10.f)
+	{
+		for (auto i=0U; i<GetXYCalPoints().size()/2; i++)
+		{
+			fEdist = sqrt( pow(m_fPos[0] - GetXYCalPoints().at(2*i),2)  +
+				pow(m_fPos[1] - GetXYCalPoints().at((2*i)+1),2));
+			if (fEdist<10)
+			{
+				bFound = true;
+				break;  // Stop as soon as we find a near cal point.
+			}
+		}
+	}
     // Now calc z trigger height for the given distance from the point center
     if (bFound)
     {
-        float fTrigZ = (1.0*(1-pow(fEdist/5,2))) + 3.0 ;
+		bool bHasSheet = m_XYCalType != XYCalMap::MK2;
+        float fTrigZ = (1.0*(1-pow(fEdist/5,2))) + (bHasSheet? 3.0 : 0.0) ;
         //printf("fTZ:%f fZ: %f\n",fTrigZ, this->fPos[2]);
         if (m_fPos[2]<=fTrigZ)
 		{
@@ -107,8 +111,8 @@ Scriptable::LineStatus PINDA::ProcessAction (unsigned int iAct, const std::vecto
 				return IssueLineError(std::string("Index ") + std::to_string(iVal) + " is out of range [0,3]");
 			}
 			float fX = stof(vArgs.at(1)), fY = stof(vArgs.at(2));
-			gsl::at(_bed_calibration_points,2*iVal) = fX;
-			gsl::at(_bed_calibration_points,(2*iVal)+1) = fY;
+			GetXYCalPoints().at(2*iVal) = fX;
+			GetXYCalPoints().at((2*iVal)+1) = fY;
 			return LineStatus::Finished;
 		}
 	}
@@ -162,6 +166,51 @@ void PINDA::OnYChanged(struct avr_irq_t*,uint32_t value)
 
 }
 
+gsl::span<float>& PINDA::GetXYCalPoints()
+{
+    // pulled from mesh_bed_calibration.cpp
+    static float _fMK3Cal[8] = {
+        37.f -2.0, 18.4f -9.4 + 2,
+        245.f -2.0, 18.4f - 9.4 + 2,
+        245.f -2.0, 210.4f - 9.4 + 2,
+        37.f -2.0,  210.4f -9.4 + 2
+    };
+	static float _fMK25Cal[8] = {
+        37.f -2.0, 18.4f -9.4 + 2,
+        245.f -2.0, 18.4f - 9.4 + 2,
+        245.f -2.0, 210.4f - 9.4,
+        37.f -2.0,  210.4f -9.4
+    };
+	static float _fMK2Cal[18] = {
+		 13.f + 22.f,	  6.4f + 3,
+		 13.f + 22.f, 	104.4f + 3,
+		 13.f + 22.f, 	202.4f + 3,
+		115.f + 22.f, 	  6.4f + 3,
+		115.f + 22.f, 	104.4f + 3,
+		115.f + 22.f,	202.4f + 3,
+		216.f + 22.f, 	  6.4f + 3,
+		216.f + 22.f, 	104.4f + 3,
+		216.f + 22.f, 	202.4f + 3
+	};
+
+	static gsl::span<float> fMK3 {_fMK3Cal};
+	static gsl::span<float> fMK25 {_fMK25Cal};
+	static gsl::span<float> fMK2 {_fMK2Cal};
+
+	switch (m_XYCalType)
+	{
+		case XYCalMap::MK2:
+			return fMK2;
+		case XYCalMap::MK25:
+			return fMK25;
+		case XYCalMap::MK3:
+		default:
+			return fMK3;
+	}
+
+
+}
+
 void PINDA::OnZChanged(avr_irq_t*, uint32_t value)
 {
     // Z is translated so that the bed level heights don't need to account for it, e.g. they are just
@@ -189,13 +238,16 @@ void PINDA::SetMBLMap()
 
 void PINDA::ToggleSheet()
 {
+	if (m_XYCalType == XYCalMap::MK2) return;
+
     m_bIsSheetPresent=!m_bIsSheetPresent;
     std::cout << "Steel sheet: " << (m_bIsSheetPresent? "INSTALLED\n" : "REMOVED\n");
     RaiseIRQ(SHEET_OUT,m_bIsSheetPresent);
 }
 
-PINDA::PINDA(float fX, float fY):Scriptable("PINDA"),m_fOffset{fX,fY}
+PINDA::PINDA(float fX, float fY, XYCalMap map):Scriptable("PINDA"),m_fOffset{fX,fY}, m_XYCalType(map)
 {
+	m_bIsSheetPresent = m_XYCalType != XYCalMap::MK2;
     SetMBLMap();
 	RegisterKeyHandler('y', "Toggles the steel sheet on the heatbed");
 }
@@ -210,10 +262,20 @@ void PINDA::OnKeyPress(const Key &key)
 	}
 }
 
+void PINDA::Reconfigure(float fX, float fY, XYCalMap map)
+{
+	m_XYCalType = map;
+	m_fOffset[0] = fX;
+	m_fOffset[1] = fY;
+	m_bIsSheetPresent = m_XYCalType != XYCalMap::MK2;
+
+}
+
 void PINDA::Init(struct avr_t * avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t *irqZ)
 {
     _Init(avr, this);
 
+	// The MK2 does not have a separate set of MBL points or a removable sheet.
 	RegisterActionAndMenu("ToggleSheet","Toggles the presence of the steel sheet",ActToggleSheet);
 	RegisterAction("SetMBLPoint","Sets the given MBL point (0-48) to the given Z value",ActSetMBLPoint,{ArgType::Int,ArgType::Float});
 	RegisterAction("SetXYPoint","Sets the (0-3)rd XY cal point position to x,y. (index, x,y)",ActSetXYCalPont,{ArgType::Int, ArgType::Float,ArgType::Float});

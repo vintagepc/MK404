@@ -73,7 +73,7 @@ class GLPrint
 		std::vector<float*> m_vpfLayer1, m_vpfLayer2;
 		// std::vector<float*> *m_pCurLayer = &m_vpfLayer1;   // not used
 		// std::vector<float*> *m_pPrevLayer = &m_vpfLayer2;  // not used
-		//float m_fCurZ = -1;
+		float m_fPrevZ = -1, m_fCurZ = 0, m_fZHt = 1.001;
 		// float m_fLastZ = -1;                          // not used
 		uint64_t m_iEMax = 0;
 		bool m_bFirst = true;

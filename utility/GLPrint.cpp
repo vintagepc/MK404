@@ -27,7 +27,7 @@
 #include <algorithm>   // for transform
 #include <cmath>
 #include <functional>  // for minus
-//#include <iostream>
+#include <iostream>
 #include <iterator>
 
 
@@ -86,7 +86,7 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 	bool bExtruding; // Extruding if we are > than the highest E value previously observed
 	if (!m_b3DExt)
 	{
-		bExtruding = (uiE+64)>=(m_iEMax);
+		bExtruding = (uiE+(m_iStepsPerMM[3]/10))>=(m_iEMax); // the 224 is 0.1mm in steps.
 	}
 	else
 	{
@@ -114,7 +114,6 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 	{
 		return;
 	}
-
 	if (uiE>m_iEMax)
 	{
 		m_iEMax = uiE;
@@ -130,7 +129,6 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 		static_cast<float>(m_uiExtrEnd[1])/static_cast<float>(m_iStepsPerMM[2]*1000),
 		static_cast<float>(m_uiExtrEnd[2])/static_cast<float>(m_iStepsPerMM[1]*1000),
 		};
-
 	std::array<float,3> vfPos =
 	{{
 		static_cast<float>(m_uiX)/static_cast<float>(m_iStepsPerMM[0]*1000),
@@ -142,14 +140,6 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 		// Extruding condition has changed. Start a new segment.
 		if (bExtruding) // Just started extruding. Update the various pointers.
 		{
-
-			//m_ivTStart.push_back(m_fvTri.size()/3);
-			// if (fZ>m_fCurZ)
-			{
-				//printf("New Z layer: %.02f\n", fZ);
-				//m_fLastZ = m_fCurZ;
-				//m_fCurZ = fZ;
-			}
 			//printf("New extrusion %u at index %u\n",m_ivStart.size(),m_ivStart.back());
 			// Add a temporary normal vertex
 			std::vector<float> fCross = {0,0,0}, fA = {0,0,0}, fB = {0,-1,0};
@@ -157,25 +147,37 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 			CrossProduct(fA,fB,{fCross.data(),3});
 			Normalize({fCross.data(),3});
 			m_vPath.clear();
+			m_fCurZ = vfPos[1];
+			if (m_fPrevZ<0)
+			{
+				m_fPrevZ = m_fCurZ - 0.0002; // first layer height.
+			}
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
-
 			m_uiExtrStart = m_uiExtrEnd;
 			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
 			m_fvDraw.insert(m_fvDraw.end(),fExtrEnd.begin(), fExtrEnd.end());
 			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
 
 		}
-		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[3]});
+		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});
 		if (!bExtruding)
 		{
 			{
 				std::lock_guard<std::mutex> lock(m_lock);
 				m_ivCount.push_back((m_fvDraw.size()/3) - m_ivStart.back());
+				m_fCurZ/= m_ivCount.back();
 			}
 			//printf("Ended extrusion %u (%u vertices)\n", m_ivCount.size(), m_ivCount.back());
 			if (m_b3DExt)
 			{
+				if (m_fCurZ>(m_fPrevZ+0.0001))
+				{
+					m_fZHt = m_fCurZ - m_fPrevZ;
+					std::cout << "Est segment Z height: " << m_fZHt*1000.f << '\n';
+					m_fPrevZ = m_fCurZ;
+				}
 				AddSegment();
+
 			}
 		}
 		m_bExtruding = bExtruding;
@@ -202,7 +204,8 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 		Normalize({fCross.data(),3});
 				// New segment, push it onto the vertex list and update the segment count
 		//printf("New segment: %d\n",m_vCoords.size());
-		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[3]});
+		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});
+		m_fCurZ+= vfPos[1];
 		{
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 			m_fvDraw.insert(m_fvDraw.end(),fExtrEnd.begin(), fExtrEnd.end());
@@ -227,18 +230,26 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 
 // Does the computational geometry and pushes the extrusion:
 // NOTE: All math results/positions in mm for sanity; the draw function does a scale by 1/1000.
-static constexpr float fLayerZRad = 0.0001f; //0.5*layer height. TODO (vintagepc): Sort this out based on guessed z height.
 void GLPrint::AddSegment()
 {
 	static constexpr float FILAMENT_AREA_COEFF = (.00175f*.00175f)/4.f; // No pi because it factors out later anyway.
 	static constexpr float fNarrow[3] = {0,1,1}, fWide[3] = {1,0,0} ;
 
+	const float fLayerZRad = m_fZHt/2; //0.5*layer height. TODO (vintagepc): Sort this out based on guessed z height.
+
 	//std::cout << "Adding segment from: " << extPrev[0] << " " << fZ << " " << fY << " to " << m_fExtrEnd[0] << " " << m_fExtrEnd[1] << " " << m_fExtrEnd[2] << '\n';
 	std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-2,0};
 
+	auto pStart = m_vPath.begin();
+	bool bIsSkipping = false;
 	for(auto it = m_vPath.begin(); it!=m_vPath.end()-1; it++)
 	{
-		auto pt = *it, ptNext = *std::next(it);
+		auto pt = *it;
+		if (bIsSkipping)
+		{
+			pt = *pStart;
+		}
+		auto ptNext = *std::next(it);
 		float fZ = (static_cast<float>(m_uiExtrEnd[1])/static_cast<float>(m_iStepsPerMM[2]*1000)) - fLayerZRad;
 		auto iX = std::get<0>(pt), iY = std::get<1>(pt), iE = std::get<2>(pt);
 		auto iXN = std::get<0>(ptNext), iYN = std::get<1>(ptNext), iEN = std::get<2>(ptNext);
@@ -259,6 +270,13 @@ void GLPrint::AddSegment()
 		auto fYN = static_cast<float>(iYN)/static_cast<float>(m_iStepsPerMM[1]*1000);
 		// Approximate the resulting extrusion width with an ellipse.
 		float fdXY = std::sqrt((fA[0]*fA[0])+(fA[2]*fA[2])); // Length of extrusion on print surface.
+		if (!m_bHRE && fdXY<0.0004) // Segment length averaging control for non HRE.
+		{
+			if (!bIsSkipping) pStart = it;
+			bIsSkipping = true;
+			continue;
+		}
+		bIsSkipping = false;
 		float fExtrVol =  FILAMENT_AREA_COEFF *(static_cast<float>(idE)/static_cast<float>(m_iStepsPerMM[3]*1000));
 		float fExtRad = (fExtrVol/(fLayerZRad*fdXY)); // Should give us the XY radius of the extrusion ellipse.
 		//std::cout << "Seg: " << fX << " \t" << fY << "\t E:" << idE << "\t R:" << fExtRad << '\n';
@@ -336,9 +354,9 @@ void GLPrint::Draw()
 	glEnableClientState(GL_NORMAL_ARRAY);
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
 		{
+			std::lock_guard<std::mutex> lock(m_lock);
 			if (m_b3DExt)
 			{
-				std::lock_guard<std::mutex> lock(m_lock);
 				glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
 				glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
 				if (m_bColExt)
@@ -354,13 +372,10 @@ void GLPrint::Draw()
 					glDisableClientState(GL_COLOR_ARRAY);
 				}
 			}
-			else
-			{
-				std::lock_guard<std::mutex> lock(m_lock);
-				glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
-				glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
-				glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
-			}
+			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
+			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
+			if (!m_b3DExt)	glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
+
 
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());
 			if (m_ivCount.size()>0) // the "In progress" segments

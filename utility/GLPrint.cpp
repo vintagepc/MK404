@@ -51,6 +51,7 @@ GLPrint::GLPrint(float fR, float fG, float fB):m_fColR(fR),m_fColG(fG),m_fColB(f
 	Clear();
 	m_bHRE = Config::Get().GetHRE();
 	m_bColExt = Config::Get().GetColourE();
+	m_b3DExt = Config::Get().Get3DE();
 }
 
 void GLPrint::Clear()
@@ -82,7 +83,17 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 
 	bool bColinear = iArea == 0;
 	bool bSamePos = (m_uiX == m_uiExtrEnd[0]) && (m_uiY == m_uiExtrEnd[2]);
-	bool bExtruding = uiE>m_iEMax; // Extruding if we are > than the highest E value previously observed
+	bool bExtruding; // Extruding if we are > than the highest E value previously observed
+	if (!m_b3DExt)
+	{
+		bExtruding = (uiE+64)>=(m_iEMax);
+	}
+	else
+	{
+		bExtruding = uiE>=m_iEMax;
+	}
+
+
 	auto idX = m_uiX - m_uiExtrEnd[0];
 	auto idY = m_uiY - m_uiExtrEnd[2];
 	auto idE = m_uiE - m_uiExtrEnd[3];
@@ -162,7 +173,10 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 				m_ivCount.push_back((m_fvDraw.size()/3) - m_ivStart.back());
 			}
 			//printf("Ended extrusion %u (%u vertices)\n", m_ivCount.size(), m_ivCount.back());
-			AddSegment();
+			if (m_b3DExt)
+			{
+				AddSegment();
+			}
 		}
 		m_bExtruding = bExtruding;
 	}
@@ -322,26 +336,31 @@ void GLPrint::Draw()
 	glEnableClientState(GL_NORMAL_ARRAY);
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
 		{
-			std::lock_guard<std::mutex> lock(m_lock);
-
-			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
-			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
-			if (m_bColExt)
+			if (m_b3DExt)
 			{
-				glEnable(GL_COLOR_MATERIAL);
-				glEnableClientState(GL_COLOR_ARRAY);
-				glColorPointer(3, GL_FLOAT, 3*sizeof(float), m_vfTriColor.data());
+				std::lock_guard<std::mutex> lock(m_lock);
+				glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
+				glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
+				if (m_bColExt)
+				{
+					glEnable(GL_COLOR_MATERIAL);
+					glEnableClientState(GL_COLOR_ARRAY);
+					glColorPointer(3, GL_FLOAT, 3*sizeof(float), m_vfTriColor.data());
+				}
+				glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
+				if (m_bColExt)
+				{
+					glDisable(GL_COLOR_MATERIAL);
+					glDisableClientState(GL_COLOR_ARRAY);
+				}
 			}
-			glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
-			if (m_bColExt)
+			else
 			{
-				glDisable(GL_COLOR_MATERIAL);
-				glDisableClientState(GL_COLOR_ARRAY);
+				std::lock_guard<std::mutex> lock(m_lock);
+				glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
+				glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
+				glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
 			}
-
-			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
-			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
-			// glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
 
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());
 			if (m_ivCount.size()>0) // the "In progress" segments

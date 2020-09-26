@@ -200,7 +200,7 @@ void timerCB(int i)
 	{
 		glutReshapeWindow(iWinW, iWinH);
 	}
-	glutTimerFunc(50, timerCB, i);
+	glutTimerFunc(20, timerCB, i);
 	glutPostRedisplay();
 }
 
@@ -294,6 +294,7 @@ int main(int argc, char *argv[])
 	SwitchArg argColourE("", "colour-extrusion", "Colours extrusion by width (for advanced step/extrusion debugging.", cmd, false);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.",cmd);
 	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown",cmd);
+	SwitchArg arg3D("", "3d-extrusion", "Visualize with 3D extrusions (can be GPU intensive for large prints)", cmd);
 
 	std::vector<string> vstrPrinters = PrinterFactory::GetModels();
 	ValuesConstraint<string> vcAllowed(vstrPrinters);
@@ -331,6 +332,7 @@ int main(int argc, char *argv[])
 
 	Config::Get().SetHRE(argHRE.isSet());
 	Config::Get().SetColourE(argColourE.isSet());
+	Config::Get().Set3DE(arg3D.isSet());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 

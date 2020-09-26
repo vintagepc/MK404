@@ -38,8 +38,12 @@ class Config
 		inline void SetColourE(bool bVal){ m_bColorExtrusion = bVal;}
 		inline bool GetColourE(){ return m_bColorExtrusion;}
 
+		inline void Set3DE(bool bVal){ m_b3DExtrusion = bVal;}
+		inline bool Get3DE(){ return m_b3DExtrusion;}
+
 	private:
 		bool m_bHiResExtrusion = false;
 		bool m_bColorExtrusion = false;
+		bool m_b3DExtrusion = false;
 
 };

@@ -84,5 +84,5 @@ class GLPrint
 
 		std::mutex m_lock;
 
-		bool m_bHRE = false, m_bColExt = false;
+		bool m_bHRE = false, m_bColExt = false, m_b3DExt = false;
 };

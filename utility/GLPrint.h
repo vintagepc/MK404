@@ -68,7 +68,7 @@ class GLPrint
 		std::vector<int> m_ivStart, m_ivTStart;
 		std::vector<int> m_ivCount, m_ivTCount;
 		std::vector<float> m_fvDraw, m_fvNorms;
-		std::vector<float> m_fvTri, m_fvTriNorm;
+		std::vector<float> m_fvTri, m_fvTriNorm, m_vfTriColor;
 		// Layer vertex tracking.
 		std::vector<float*> m_vpfLayer1, m_vpfLayer2;
 		// std::vector<float*> *m_pCurLayer = &m_vpfLayer1;   // not used
@@ -84,5 +84,5 @@ class GLPrint
 
 		std::mutex m_lock;
 
-		bool m_bHRE = false;
+		bool m_bHRE = false, m_bColExt = false;
 };

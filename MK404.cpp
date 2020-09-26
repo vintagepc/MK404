@@ -268,54 +268,37 @@ int main(int argc, char *argv[])
 	signal(SIGINT, OnSigINT);
 
 	TCLAP::CmdLine cmd("MK404 is an 8-bit AVR based 3D printer simulator for firmware debugging and tinkering.\n Copyright 2020 VintagePC <https://github.com/vintagepc/> with contributions from leptun, wavexx and 3d-gussner.",' ',version::VERSION_STRING); // NOLINT
-	SwitchArg argWait("w","wait","Wait after the printer (and any PTYs) are set up but before starting execution.");
-	cmd.add(argWait);
-	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.");
-	cmd.add(argSpam);
-	ValueArg<int> argVCDRate("","tracerate", "Sets the logging frequency of the VCD trace (default 100uS)",false, 100,"integer");
-	cmd.add(argVCDRate);
-	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string");
-	cmd.add(argVCD);
-	SwitchArg argTest("","test","Run it test mode (no graphics, don't auto-exit.");
-	cmd.add(argTest);
-	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img");
-	cmd.add(argSD);
-	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.");
-	cmd.add(argSerial);
-	SwitchArg argScriptHelp("","scripthelp", "Prints the available scripting commands for the current printer/context",false);
-	cmd.add(argScriptHelp);
-	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "filename.txt");
-	cmd.add(argScript);
-	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.");
-	cmd.add(argNoHacks);
-	SwitchArg argMute("m","mute","Tell a printer to mute any audio it may produce.");
-	cmd.add(argMute);
-	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.");
-	cmd.add(argLoad);
+	SwitchArg argWait("w","wait","Wait after the printer (and any PTYs) are set up but before starting execution.", cmd);
+	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.",cmd);
+	ValueArg<int> argVCDRate("","tracerate", "Sets the logging frequency of the VCD trace (default 100uS)",false, 100,"integer",cmd);
+	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string",cmd);
+	SwitchArg argTest("","test","Run it test mode (no graphics, don't auto-exit.", cmd);
+	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img", cmd);
+	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.", cmd);
+	SwitchArg argScriptHelp("","scripthelp", "Prints the available scripting commands for the current printer/context",cmd, false);
+	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "filename.txt", cmd);
+	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.",cmd);
+	SwitchArg argMute("m","mute","Tell a printer to mute any audio it may produce.", cmd);
+	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.", cmd);
 	SwitchArg argKeyHelp("k","keys","Prints the list of available keyboard controls",cmd,false);
 	std::vector<string> vstrSizes = FatImage::GetSizes();
 	ValuesConstraint<string> vcSizes(vstrSizes);
-	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes);
-	cmd.add(argImgSize);
+	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes,cmd);
 	SwitchArg argHRE("","highres-extrusion","Enables high accuracy extrusion simulation. Creates a LOT of triangles, do not use for large prints!", cmd, false);
 	SwitchArg argGDB("","gdb","Enable SimAVR's GDB support",cmd);
 	std::vector<string> vstrGfx = {"none","lite","fancy", "bear"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
-	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
-	cmd.add(argGfx);
-	ValueArg<string> argFW("f","firmware","hex/afx/elf Firmware file to load (default MK3S.afx)",false,"MK3S.afx","filename");
-	cmd.add(argFW);
-	MultiSwitchArg argDebug("d","debug","Increases debugging output, where supported.");
-	cmd.add(argDebug);
-	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.");
-	cmd.add(argBootloader);
-	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown");
-	cmd.add(argMD);
+	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed, cmd);
+	ValueArg<string> argFW("f","firmware","hex/afx/elf Firmware file to load (default MK3S.afx)",false,"MK3S.afx","filename", cmd);
+	MultiSwitchArg argDebug("d","debug","Increases debugging output, where supported.", cmd);
+	SwitchArg argColourE("", "colour-extrusion", "Colours extrusion by width (for advanced step/extrusion debugging.", cmd, false);
+	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.",cmd);
+	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown",cmd);
+
 	std::vector<string> vstrPrinters = PrinterFactory::GetModels();
 	ValuesConstraint<string> vcAllowed(vstrPrinters);
 
-	TCLAP::UnlabeledValueArg<string> argModel("printer","Model name of the printer to run",false,"Prusa_MK3S",&vcAllowed);
-	cmd.add(argModel);
+	TCLAP::UnlabeledValueArg<string> argModel("printer","Model name of the printer to run",false,"Prusa_MK3S",&vcAllowed, cmd);
 
 	if (version::IS_DEV_VERSION)
 	{
@@ -347,6 +330,7 @@ int main(int argc, char *argv[])
 	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
 	Config::Get().SetHRE(argHRE.isSet());
+	Config::Get().SetColourE(argColourE.isSet());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 

@@ -20,6 +20,7 @@
  */
 
 #include "Config.h"
+#include "Color.h"
 #include "GLPrint.h"
 #include "gsl-lite.hpp"
 #include <GL/glew.h>   // for glMaterialfv, GL_FRONT_AND_BACK, glDisableClie...
@@ -49,6 +50,7 @@ GLPrint::GLPrint(float fR, float fG, float fB):m_fColR(fR),m_fColG(fG),m_fColB(f
 {
 	Clear();
 	m_bHRE = Config::Get().GetHRE();
+	m_bColExt = Config::Get().GetColourE();
 }
 
 void GLPrint::Clear()
@@ -215,6 +217,7 @@ static constexpr float fLayerZRad = 0.0001f; //0.5*layer height. TODO (vintagepc
 void GLPrint::AddSegment()
 {
 	static constexpr float FILAMENT_AREA_COEFF = (.00175f*.00175f)/4.f; // No pi because it factors out later anyway.
+	static constexpr float fNarrow[3] = {0,1,1}, fWide[3] = {1,0,0} ;
 
 	//std::cout << "Adding segment from: " << extPrev[0] << " " << fZ << " " << fY << " to " << m_fExtrEnd[0] << " " << m_fExtrEnd[1] << " " << m_fExtrEnd[2] << '\n';
 	std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-2,0};
@@ -245,6 +248,9 @@ void GLPrint::AddSegment()
 		float fExtrVol =  FILAMENT_AREA_COEFF *(static_cast<float>(idE)/static_cast<float>(m_iStepsPerMM[3]*1000));
 		float fExtRad = (fExtrVol/(fLayerZRad*fdXY)); // Should give us the XY radius of the extrusion ellipse.
 		//std::cout << "Seg: " << fX << " \t" << fY << "\t E:" << idE << "\t R:" << fExtRad << '\n';
+
+		Color3fv colW;
+		colorLerp(fNarrow, fWide, fExtRad/0.002, colW);
 		CrossProduct(fB,fA,{fCross.data(),3});
 		Normalize({fCross.data(),3});
 		auto fCrossRev = fCross;
@@ -286,6 +292,15 @@ void GLPrint::AddSegment()
 			m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
 			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
 
+			if (m_bColExt)
+			{
+				m_vfTriColor.reserve(m_fvTri.size());
+				for (int i=0; i<10; i++)
+				{
+					m_vfTriColor.insert(m_vfTriColor.end(), {colW[0], colW[1], colW[2]});
+				}
+			}
+
 			m_ivTStart.push_back(iTStart);
 			m_ivTCount.push_back((m_fvTri.size()/3) - iTStart);
 		}
@@ -311,7 +326,18 @@ void GLPrint::Draw()
 
 			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
 			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
+			if (m_bColExt)
+			{
+				glEnable(GL_COLOR_MATERIAL);
+				glEnableClientState(GL_COLOR_ARRAY);
+				glColorPointer(3, GL_FLOAT, 3*sizeof(float), m_vfTriColor.data());
+			}
 			glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
+			if (m_bColExt)
+			{
+				glDisable(GL_COLOR_MATERIAL);
+				glDisableClientState(GL_COLOR_ARRAY);
+			}
 
 			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
 			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());

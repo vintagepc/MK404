@@ -34,7 +34,12 @@ class Config
 		inline void SetHRE(bool bVal){ m_bHiResExtrusion = bVal;}
 		inline bool GetHRE(){ return m_bHiResExtrusion;}
 
+		// Should extrusion be coloured by width?.
+		inline void SetColourE(bool bVal){ m_bColorExtrusion = bVal;}
+		inline bool GetColourE(){ return m_bColorExtrusion;}
+
 	private:
 		bool m_bHiResExtrusion = false;
+		bool m_bColorExtrusion = false;
 
 };

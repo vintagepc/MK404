@@ -20,6 +20,7 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Config.h"
 #include "FatImage.h"                 // for FatImage
 #include "KeyController.h"
 #include "Macros.h"
@@ -64,6 +65,10 @@ bool m_bStopping = false;
 
 bool m_bTestMode = false;
 
+// GL context stuff for FPS counting...
+
+int m_iTic =0, m_iLast = 0, m_iFrCount = 0;
+
 
 // pragma: LCOV_EXCL_START
 // Exit cleanly on ^C
@@ -101,6 +106,19 @@ extern "C" {
 }
 // pragma: LCOV_EXCL_STOP
 
+static std::string GetBaseTitle()
+{
+	static std::string strTitle;
+	if (strTitle.empty())
+	{
+		strTitle += "Prusa i3 MK404 (PRINTER NOT FOUND) ";
+		strTitle += version::GIT_TAG_NAME;
+		strTitle.push_back('+');
+		strTitle+= std::to_string(version::GIT_COMMITS_SINCE_TAG);
+	}
+	return strTitle;
+}
+
 std::atomic_bool bIsQuitting {false};
 
 void displayCB()		/* function called whenever redisplay needed */
@@ -116,6 +134,17 @@ void displayCB()		/* function called whenever redisplay needed */
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
 	int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	printer->Draw();
+
+	m_iFrCount++;
+	m_iTic=glutGet(GLUT_ELAPSED_TIME);
+	auto iDiff = m_iTic - m_iLast;
+	if (iDiff > 1000) {
+		int iFPS = m_iFrCount*1000.f/(iDiff);
+		m_iLast = m_iTic;
+		m_iFrCount = 0;
+		std::string strFPS = GetBaseTitle() + " (" +std::to_string(iFPS) + " FPS)";
+		glutSetWindowTitle(strFPS.c_str());
+	}
 
 	if (pBoard->IsStopped() || pBoard->IsPaused())
 	{
@@ -268,8 +297,8 @@ int main(int argc, char *argv[])
 	ValuesConstraint<string> vcSizes(vstrSizes);
 	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes);
 	cmd.add(argImgSize);
-	SwitchArg argGDB("","gdb","Enable SimAVR's GDB support");
-	cmd.add(argGDB);
+	SwitchArg argHRE("","highres-extrusion","Enables high accuracy extrusion simulation. Creates a LOT of triangles, do not use for large prints!", cmd, false);
+	SwitchArg argGDB("","gdb","Enable SimAVR's GDB support",cmd);
 	std::vector<string> vstrGfx = {"none","lite","fancy", "bear"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed);
@@ -317,7 +346,7 @@ int main(int argc, char *argv[])
 
 	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
-	//bNoGraphics |= (m_bTestMode && bRunGLTests);
+	Config::Get().SetHRE(argHRE.isSet());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 
@@ -355,11 +384,7 @@ int main(int argc, char *argv[])
 		glutInitDisplayMode(US(GLUT_RGB) | US(GLUT_DOUBLE));
 #endif
 		glutInitWindowSize(iWinW, iWinH);		/* width=400pixels height=500pixels */
-		std::string strTitle = "Prusa i3 MK404 (PRINTER NOT FOUND) ";
-		strTitle += version::GIT_TAG_NAME;
-		strTitle.push_back('+');
-		strTitle+= std::to_string(version::GIT_COMMITS_SINCE_TAG);
-		window = glutCreateWindow(strTitle.c_str());	/* create window */
+		window = glutCreateWindow(GetBaseTitle().c_str());	/* create window */
 
 		glewInit();
 		std::cout << "GL_VERSION   : " << glGetString(GL_VERSION) << '\n';

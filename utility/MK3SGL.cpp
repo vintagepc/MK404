@@ -216,6 +216,12 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(SEL_IN,fcnCB,this);
 	RegisterNotify(IDL_IN,fcnCB,this);
 
+	auto fcnMotor = MAKE_C_CALLBACK(MK3SGL, OnMotorStep);
+	RegisterNotify(X_STEP_IN, fcnMotor, this);
+	RegisterNotify(Y_STEP_IN, fcnMotor, this);
+	RegisterNotify(Z_STEP_IN, fcnMotor, this);
+	RegisterNotify(E_STEP_IN, fcnMotor, this);
+
 	auto fcnBoolCB = MAKE_C_CALLBACK(MK3SGL,OnBoolChanged);
 	RegisterNotify(SHEET_IN, 	fcnBoolCB, 	this);
 	RegisterNotify(EFAN_IN, 	fcnBoolCB, 	this);
@@ -341,6 +347,25 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 	m_bDirty = true;
 }
 
+void MK3SGL::OnMotorStep(avr_irq_t *irq, uint32_t value)
+{
+		switch (irq->irq)
+	{
+		case IRQ::X_STEP_IN:
+			m_vPrints[m_iCurTool]->OnXStep(value);
+			break;
+		case IRQ::Y_STEP_IN:
+			m_vPrints[m_iCurTool]->OnYStep(value);
+			break;
+		case IRQ::Z_STEP_IN:
+			m_vPrints[m_iCurTool]->OnZStep(value);
+			break;
+		case IRQ::E_STEP_IN:
+			m_vPrints[m_iCurTool]->OnEStep(value);
+			break;
+	}
+}
+
 void MK3SGL::OnPosChanged(avr_irq_t *irq, uint32_t value)
 {
 	float fPos;
@@ -358,7 +383,6 @@ void MK3SGL::OnPosChanged(avr_irq_t *irq, uint32_t value)
 			break;
 		case IRQ::E_IN:
 			m_fEPos = fPos/1000.f;
-			m_vPrints[m_iCurTool]->NewCoord(m_fXPos,m_fYPos,m_fZPos,m_fEPos);
 			break;
 		case IRQ::FEED_IN:
 			m_fPPos = fPos/1000.f;
@@ -528,16 +552,6 @@ void MK3SGL::Draw()
 			DrawMMU();
 		}
 		m_snap.OnDraw();
-		m_iFrCount++;
-		m_iTic=glutGet(GLUT_ELAPSED_TIME);
-		auto iDiff = m_iTic - m_iLast;
-		if (iDiff > 1000) {
-			int iFPS = m_iFrCount*1000.f/(iDiff);
-			m_iLast = m_iTic;
-			m_iFrCount = 0;
-			std::string strTitle = "Fancy Graphics: " + m_Objs->GetName() + " (" +std::to_string(iFPS) + " FPS)";
-			glutSetWindowTitle(strTitle.c_str());
-		}
 		glutSwapBuffers();
 		m_bDirty = false;
 }

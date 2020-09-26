@@ -49,7 +49,7 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
                             _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
                             _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in") _IRQ(PFAN_IN,"<PFAN.in") _IRQ(SEL_IN,"<Sel.in") \
                             _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in") _IRQ(TOOL_IN,"8<TOOL_IN") _IRQ(FINDA_IN,"<finda.in") \
-							_IRQ(FEED_IN,"<feed.in")
+							_IRQ(FEED_IN,"<feed.in") _IRQ(X_STEP_IN,"") _IRQ(Y_STEP_IN,"") _IRQ(Z_STEP_IN,"") _IRQ(E_STEP_IN,"")
         #include "IRQHelper.h"
 
 
@@ -95,6 +95,11 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
         void SetWindow(int iWin) { m_iWindow = iWin;};
 		void ResizeCB(int w, int h);
 
+		inline void SetStepsPerMM(int16_t iX, int16_t iY, int16_t iZ, int16_t iE)
+		{
+			m_Print.SetStepsPerMM(iX,iY,iZ,iE);
+		}
+
 	protected:
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
@@ -135,6 +140,7 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
         // IRQ receivers.
 		void OnPosChanged(avr_irq_t *irq, uint32_t value);
+		void OnMotorStep(avr_irq_t *irq, uint32_t value);
 		void OnBoolChanged(avr_irq_t *irq, uint32_t value);
 
         void OnMMULedsChanged(avr_irq_t *irq, uint32_t value);
@@ -163,8 +169,6 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
 
         int m_iWindow = 0;
-
-		int m_iTic =0, m_iLast = 0, m_iFrCount = 0;
 
 		// Useful for instant positioning.
 

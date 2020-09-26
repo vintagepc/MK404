@@ -19,63 +19,92 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Config.h"
 #include "GLPrint.h"
+#include "gsl-lite.hpp"
 #include <GL/glew.h>   // for glMaterialfv, GL_FRONT_AND_BACK, glDisableClie...
 #include <algorithm>   // for transform
-#include <cstdlib>    // for abs
+#include <cmath>
 #include <functional>  // for minus
-#include <iostream>
+//#include <iostream>
+#include <iterator>
 
-static constexpr int iPrintRes = 100000; //0.1mm (meters/this)
+
+static void CrossProduct(const std::vector<float>&fA, const std::vector<float>&fB, gsl::span<float>fOut)
+{
+	fOut[0] = (fA[1]*fB[2]) - (fA[2]*fB[1]);
+	fOut[1] = (fA[2]*fB[0]) - (fA[0]*fB[2]);
+	fOut[2] = (fA[0]*fB[1]) - (fA[1]*fB[0]);
+};
+
+static void Normalize(gsl::span<float>fA)
+{
+	float fNorm = std::sqrt((fA[0]*fA[0]) + (fA[1]*fA[1]) + (fA[2]*fA[2]));
+	fA[0]/=fNorm;
+	fA[1]/=fNorm;
+	fA[2]/=fNorm;
+}
 
 GLPrint::GLPrint(float fR, float fG, float fB):m_fColR(fR),m_fColG(fG),m_fColB(fB)
 {
 	Clear();
+	m_bHRE = Config::Get().GetHRE();
 }
 
 void GLPrint::Clear()
 {
-	m_iExtrStart = m_iExtrEnd = {{0,0,0,0}};
-	m_fExtrStart = m_fExtrEnd = {{0,0,0,0}};
+	m_uiExtrStart = m_uiExtrEnd = {{0,0,0,0}};
 	m_ivCount.clear();
 	m_ivStart.clear();
 	m_fvDraw.clear();
 	m_fvNorms.clear();
 	m_bExtruding = false;
-	m_fEMax = -1;
+	m_bFirst = true;
 }
 
-void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
+void GLPrint::OnEStep(const uint32_t& uiE)
 {
-	if (m_fEMax<0) // First cycle/extrusion.
+	m_uiE = uiE;
+	if (m_bFirst) // First cycle/extrusion.
 	{
+		m_bFirst = false;
 		std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
-		m_fEMax = fE;
-		m_fExtrEnd = m_fExtrStart = {{fX,fZ,fY,fE}};
+		m_iEMax = uiE;
+		m_uiExtrEnd = m_uiExtrStart = {{m_uiX,m_uiZ,m_uiY,m_uiE}};
 	}
-	int iX = fX*iPrintRes,iY = fY*iPrintRes,iZ = fZ*iPrintRes;
-	std::array<float,3> vfPos = {{fX,fZ,fY}};
 	// Test if the new coordinate is still collinear with the existing segment.
 	// Triangle area method. Slopes have risks of zero/inf/nan for very small deltas.
  	//Ax(By - Cy) + Bx(Cy - Ay) + Cx(Ay - By)
 	 // We don't bother with div by 2/abs since we only care if the area is 0.
-	int iArea = (m_iExtrStart[0]* ( m_iExtrEnd[2] - iY)) + (m_iExtrEnd[0]*(iY - m_iExtrStart[2])) + (iX * (m_iExtrStart[2] - m_iExtrEnd[2]));
-	float fArea = (m_fExtrStart[0]* ( m_fExtrEnd[2] - fY)) + (m_fExtrEnd[0]*(fY - m_fExtrStart[2])) + (fX * (m_fExtrStart[2] - m_fExtrEnd[2]));
-	if (fArea<0) fArea = -fArea;
-	bool bColinear = (fArea/2)<1e-10 || abs((iArea/2)) <= 1;
+	int iArea = (m_uiExtrStart[0]* ( m_uiExtrEnd[2] - m_uiY)) + (m_uiExtrEnd[0]*(m_uiY - m_uiExtrStart[2])) + (m_uiX * (m_uiExtrStart[2] - m_uiExtrEnd[2]));
 
-	bool bSamePos = (iX == m_iExtrEnd[0]) && (iY == m_iExtrEnd[2]);
-	bool bExtruding = fE>(m_fEMax-5e-5); //-0.0002); // Extruding if we are > than the highest E value previously observed
-	// Trailing 0.0002 is fudge factor for LA/retraction threshold to avoid gaps at E end.
+	bool bColinear = iArea == 0;
+	bool bSamePos = (m_uiX == m_uiExtrEnd[0]) && (m_uiY == m_uiExtrEnd[2]);
+	bool bExtruding = uiE>m_iEMax; // Extruding if we are > than the highest E value previously observed
+	auto idX = m_uiX - m_uiExtrEnd[0];
+	auto idY = m_uiY - m_uiExtrEnd[2];
+	auto idE = m_uiE - m_uiExtrEnd[3];
+	float fDist = std::sqrt(static_cast<float>((idX*idX)+(idY*idY)));
+	float fERate = 0;
+	if (m_bHRE && fDist > 0)
+	{
+		fERate = static_cast<float>(idE)/fDist; // This is the extrusion distance to travel distance ratio.
+		//std::cout << "fERate:" << std::to_string(fERate) << " dXY:" << std::to_string(fDist) << "dE:" << std::to_string(idE) << '\n';
+		if (std::abs(m_fLastERate - fERate)>1e-5) // if dE is changing, mark it as non-colinear to force a segment add.
+		{
+			bColinear = false;
+		}
+	}
 
-	if ((bSamePos && !bExtruding) || (bSamePos && (iZ == m_iExtrEnd[1]))) //SamePos doesn't inculde Z so we don't get inf/zero slopes on hops.
+
+	if ((bSamePos && !bExtruding) || (bSamePos && (m_uiZ == m_uiExtrEnd[1]))) //SamePos doesn't inculde Z so we don't get inf/zero slopes on hops.
 	{
 		return;
 	}
 
-	if (fE>m_fEMax)
+	if (uiE>m_iEMax)
 	{
-		m_fEMax = fE;
+		m_iEMax = uiE;
 	}
 	else if (!m_bExtruding && !bExtruding)
 	{
@@ -83,6 +112,18 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 		// We don't need to track co-linearity if not extruding.
 		bColinear = true;
 	}
+	std::vector<float> fExtrEnd = {
+		static_cast<float>(m_uiExtrEnd[0])/static_cast<float>(m_iStepsPerMM[0]*1000),
+		static_cast<float>(m_uiExtrEnd[1])/static_cast<float>(m_iStepsPerMM[2]*1000),
+		static_cast<float>(m_uiExtrEnd[2])/static_cast<float>(m_iStepsPerMM[1]*1000),
+		};
+
+	std::array<float,3> vfPos =
+	{{
+		static_cast<float>(m_uiX)/static_cast<float>(m_iStepsPerMM[0]*1000),
+		static_cast<float>(m_uiZ)/static_cast<float>(m_iStepsPerMM[2]*1000),
+		static_cast<float>(m_uiY)/static_cast<float>(m_iStepsPerMM[1]*1000)
+	}};
 	if (bExtruding ^ m_bExtruding)
 	{
 		// Extruding condition has changed. Start a new segment.
@@ -90,7 +131,7 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 		{
 
 			//m_ivTStart.push_back(m_fvTri.size()/3);
-			if (fZ>m_fCurZ)
+			// if (fZ>m_fCurZ)
 			{
 				//printf("New Z layer: %.02f\n", fZ);
 				//m_fLastZ = m_fCurZ;
@@ -98,32 +139,26 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 			}
 			//printf("New extrusion %u at index %u\n",m_ivStart.size(),m_ivStart.back());
 			// Add a temporary normal vertex
-			std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
-			std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA.data(), std::minus<float>());
+			std::vector<float> fCross = {0,0,0}, fA = {0,0,0}, fB = {0,-1,0};
+			std::transform(vfPos.begin(), vfPos.end(), fExtrEnd.data(), fA.data(), std::minus<float>());
 			CrossProduct(fA,fB,{fCross.data(),3});
 			Normalize({fCross.data(),3});
-			m_fvPath.clear();
-			m_fvPath.push_back({m_fExtrEnd[0], m_fExtrEnd[2], fE});
+			m_vPath.clear();
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 
-			m_iExtrStart = m_iExtrEnd;
-			m_fExtrStart = m_fExtrEnd;
-
+			m_uiExtrStart = m_uiExtrEnd;
 			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
-			m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
+			m_fvDraw.insert(m_fvDraw.end(),fExtrEnd.begin(), fExtrEnd.end());
 			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
 
 		}
-
-
+		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[3]});
 		if (!bExtruding)
 		{
-			m_fvPath.push_back({m_fExtrEnd[0], m_fExtrEnd[2], m_fExtrEnd[3]});
 			{
 				std::lock_guard<std::mutex> lock(m_lock);
 				m_ivCount.push_back((m_fvDraw.size()/3) - m_ivStart.back());
 			}
-			//m_ivTCount.push_back((m_fvTri.size()/3) - m_ivTStart.back());
 			//printf("Ended extrusion %u (%u vertices)\n", m_ivCount.size(), m_ivCount.back());
 			AddSegment();
 		}
@@ -132,9 +167,6 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 	else if (!bColinear)
 	{
 		// First, update the previous normal with the new vertex info.
-		// TODO(#114): fB really should be pointing at the nearest vertex on the layer below, but that's a lot of coordinate
-		// that's going to be disposable once this changes to a geometry or normal shader instead of the current implemetnation
-		// so I'm going to leave it as is for now.
 		std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
 		auto itPrev = m_fvNorms.end()-3;
 		std::transform(itPrev, itPrev+3, vfPos.data(), fA.data(), std::minus<float>()); // Length from p->curr
@@ -148,76 +180,71 @@ void GLPrint::NewCoord(float fX, float fY, float fZ, float fE)
 			itPrev++;
 			itCross++;
 		}
-		// pfPrev[1] += fCross[1];
-		// pfPrev[2] += fCross[2];
-		// pfPrev[0]/=2.f; pfPrev[1]/=2.f; pfPrev[2]/=2.f;
 		// And then append the new temporary end one.
-		std::transform(vfPos.begin(), vfPos.end(), m_fExtrEnd.data(), fA.data(), std::minus<float>());
+		std::transform(vfPos.begin(), vfPos.end(), fExtrEnd.data(), fA.data(), std::minus<float>());
 		CrossProduct(fA,fB,{fCross.data(),3});
 		Normalize({fCross.data(),3});
 				// New segment, push it onto the vertex list and update the segment count
 		//printf("New segment: %d\n",m_vCoords.size());
+		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[3]});
 		{
-			m_fvPath.push_back({m_fExtrEnd[0], m_fExtrEnd[2],m_fExtrEnd[3]});
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
-			m_fvDraw.insert(m_fvDraw.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
-
-			//m_Pipe.addPathPoint({m_fExtrEnd[0],m_fExtrEnd[1],m_fExtrEnd[2]});
+			m_fvDraw.insert(m_fvDraw.end(),fExtrEnd.begin(), fExtrEnd.end());
 			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
-			// m_fvTri.push_back(m_fExtrEnd[0]+(fCross[0]*0.0002));
-			// m_fvTri.push_back(m_fExtrEnd[1]+(fCross[1]*0.0002));
-			// m_fvTri.push_back(m_fExtrEnd[2]+(fCross[2]*0.0002));
-			// m_fvTri.insert(m_fvTri.end(),m_fExtrEnd.data(), m_fExtrEnd.data()+3);
-			m_iExtrStart = m_iExtrEnd;
-			m_fExtrStart = m_fExtrEnd;
-
+			m_uiExtrStart = m_uiExtrEnd;
 		}
 
 
 	}
 	// Update the end we are tracking.
-	m_fExtrPrev = m_fExtrEnd;
-	m_fExtrEnd[0] = fX;
-	m_fExtrEnd[2] = fY;
-	m_fExtrEnd[1] = fZ;
-	m_fExtrEnd[3] = fE;
-	m_iExtrEnd[0] = iX;
-	m_iExtrEnd[2] = iY;
-	m_iExtrEnd[1] = iZ;
-	//m_iExtrEnd[3] = iE;
+	m_fLastERate = fERate;
+	m_uiExtrEnd[0] = m_uiX;
+	m_uiExtrEnd[2] = m_uiY;
+	m_uiExtrEnd[1] = m_uiZ;
+	m_uiExtrEnd[3] = m_uiE;
+	{
+		std::lock_guard<std::mutex> lock (m_lock);
+		m_fExtrEnd = {{fExtrEnd[0],fExtrEnd[1],fExtrEnd[2]}};
+	}
 
 }
 
 // Does the computational geometry and pushes the extrusion:
+// NOTE: All math results/positions in mm for sanity; the draw function does a scale by 1/1000.
 static constexpr float fLayerZRad = 0.0001f; //0.5*layer height. TODO (vintagepc): Sort this out based on guessed z height.
 void GLPrint::AddSegment()
 {
-	static constexpr float FILAMENT_AREA_COEFF = (.00175f/2.f)*(.00175f/2.f); // No pi because it factors out later anyway.
+	static constexpr float FILAMENT_AREA_COEFF = (.00175f*.00175f)/4.f; // No pi because it factors out later anyway.
 
-//	auto extPrev = m_fvDraw.end()-3;
 	//std::cout << "Adding segment from: " << extPrev[0] << " " << fZ << " " << fY << " to " << m_fExtrEnd[0] << " " << m_fExtrEnd[1] << " " << m_fExtrEnd[2] << '\n';
-	std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
-	// auto itPrev = m_fExtrEnd.begin();
-	// std::transform(itPrev, itPrev+3, extPrev, fA.data(), std::minus<float>()); // Length from p->curr
+	std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-2,0};
 
-	for(auto it = m_fvPath.begin(); it!=m_fvPath.end()-1; it++)
+	for(auto it = m_vPath.begin(); it!=m_vPath.end()-1; it++)
 	{
 		auto pt = *it, ptNext = *std::next(it);
-		float fZ = m_fExtrEnd[1] - fLayerZRad;
-		auto fX = std::get<0>(pt), fY = std::get<1>(pt), fE = std::get<2>(pt);
-		auto fXN = std::get<0>(ptNext), fYN = std::get<1>(ptNext), fEN = std::get<2>(ptNext);
-		float fdE = fEN - fE; // E linear distance.
-		if (fdE <0)
+		float fZ = (static_cast<float>(m_uiExtrEnd[1])/static_cast<float>(m_iStepsPerMM[2]*1000)) - fLayerZRad;
+		auto iX = std::get<0>(pt), iY = std::get<1>(pt), iE = std::get<2>(pt);
+		auto iXN = std::get<0>(ptNext), iYN = std::get<1>(ptNext), iEN = std::get<2>(ptNext);
+		int32_t idE = gsl::narrow<int32_t>(iEN) - iE; // E linear distance.
+		if (idE <0)
 		{
 			continue;
 		}
-		fA[0] = fXN - fX;
-		fA[2] = fYN - fY;
+		int32_t dX = gsl::narrow<int32_t>(iXN) - iX;
+		int32_t dY = gsl::narrow<int32_t>(iYN) - iY;
+		fA[0] = dX;
+		fA[2] = dY;
+		fA[0]/= static_cast<float>(m_iStepsPerMM[0]*1000);
+		fA[2]/= static_cast<float>(m_iStepsPerMM[1]*1000);
+		auto fX = static_cast<float>(iX)/static_cast<float>(m_iStepsPerMM[0]*1000);
+		auto fXN = static_cast<float>(iXN)/static_cast<float>(m_iStepsPerMM[0]*1000);
+		auto fY = static_cast<float>(iY)/static_cast<float>(m_iStepsPerMM[1]*1000);
+		auto fYN = static_cast<float>(iYN)/static_cast<float>(m_iStepsPerMM[1]*1000);
 		// Approximate the resulting extrusion width with an ellipse.
 		float fdXY = std::sqrt((fA[0]*fA[0])+(fA[2]*fA[2])); // Length of extrusion on print surface.
-		float fExtrVol =  FILAMENT_AREA_COEFF * fdE;
+		float fExtrVol =  FILAMENT_AREA_COEFF *(static_cast<float>(idE)/static_cast<float>(m_iStepsPerMM[3]*1000));
 		float fExtRad = (fExtrVol/(fLayerZRad*fdXY)); // Should give us the XY radius of the extrusion ellipse.
-		std::cout << "Seg: " << fX << " " << fY << " E:" << fE << "R:" << fExtRad << '\n';
+		//std::cout << "Seg: " << fX << " \t" << fY << "\t E:" << idE << "\t R:" << fExtRad << '\n';
 		CrossProduct(fB,fA,{fCross.data(),3});
 		Normalize({fCross.data(),3});
 		auto fCrossRev = fCross;
@@ -259,7 +286,6 @@ void GLPrint::AddSegment()
 			m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
 			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
 
-
 			m_ivTStart.push_back(iTStart);
 			m_ivTCount.push_back((m_fvTri.size()/3) - iTStart);
 		}
@@ -277,52 +303,22 @@ void GLPrint::Draw()
 
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,fSpec.data());
 	glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,64);
-	//glEnable(GL_AUTO_NORMAL);
-	//glEnable(GL_NORMALIZE);
 	glEnableClientState(GL_VERTEX_ARRAY);
-		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
-		glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
-		glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
-		//glEnable(GL_NORMALIZE);
-		glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
-	//	glDisable(GL_NORMALIZE);
 	glEnableClientState(GL_NORMAL_ARRAY);
-		//glNormal3f(0,1,0);
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
 		{
 			std::lock_guard<std::mutex> lock(m_lock);
+
+			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
+			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
+			glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
+
 			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
 			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
-			glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
-				// glEnable(GL_COLOR_MATERIAL);
-				// int count = m_Pipe.getContourCount();
-				// for(int i = 0; i < count - 1; ++i)
-				// {
-				// 	std::vector<Vector3> c1 = m_Pipe.getContour(i);
-				// 	std::vector<Vector3> c2 = m_Pipe.getContour(i+1);
-				// 	std::vector<Vector3> n1 = m_Pipe.getNormal(i);
-				// 	std::vector<Vector3> n2 = m_Pipe.getNormal(i+1);
-				// 	glBegin(GL_TRIANGLE_STRIP);
-				// 	for(int j = 0; j < (int)c2.size(); ++j)
-				// 	{
-				// 		if (j==0)
-				// 			glColor3ub(255,0,0);
-				// 		else if (j==1)
-				// 			glColor3ub(0,255,0);
-				// 		else if(j==2)
-				// 			glColor3ub(0,0,255);
-				// 		else
-				// 			glColor3ub(255,255,255);
-				// 		glNormal3fv(&n2[j].x);
-				// 		glVertex3fv(&c2[j].x);
-				// 		glNormal3fv(&n1[j].x);
-				// 		glVertex3fv(&c1[j].x);
-				// 	}
-				// 	glEnd();
-				// }
-				// glDisable(GL_COLOR_MATERIAL);
+			// glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
+
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());
-			if (m_ivCount.size()>0)
+			if (m_ivCount.size()>0) // the "In progress" segments
 			{
 				glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),((m_fvDraw.size()/3)-m_ivStart.back())-1);
 			}

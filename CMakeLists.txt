@@ -30,7 +30,6 @@ endif()
 
 add_subdirectory(3rdParty/tinyobjloader)
 add_subdirectory(3rdParty/gsl)
-
 add_subdirectory(scripts/tests)
 
 if (ENABLE_IWYU)
@@ -54,6 +53,7 @@ set (FIRMWARE
     )
 
 set(H_FILES
+	parts/A4982.h
 	parts/ADCPeripheral.h
 	parts/BasePeripheral.h
 	parts/Board.h
@@ -121,6 +121,7 @@ set(H_FILES
 	parts/wiring/MM_Control_01.h
 	parts/wiring/Test_Wiring.h
 	utility/Color.h
+	utility/Config.h
 	utility/GLPrint.h
 	utility/FatImage.h
 	utility/MK3SGL.h

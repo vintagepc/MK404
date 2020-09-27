@@ -1,5 +1,6 @@
 /*
-	MK3S_Full.h - Object collection for the standard visuals.
+	OBJCollection.h - Base class wrangler for a collection of OBJs that comprise a
+	set of visuals for a single printer.
 
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
@@ -19,23 +20,47 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 
+#include "OBJCollection.h"
 #include "GLObj.h"
-#include "MK3S_Lite.h"
-#include "gsl-lite.hpp"
+#include <map>
 #include <memory>
 
-class MK3S_Full: public MK3S_Lite
+void OBJCollection::Load()
 {
-	public:
-		explicit MK3S_Full(bool bMMU);
+	for (auto &sets : m_mObjs)
+	{
+		for (auto &obj : sets.second)
+		{
+			obj->Load();
+		}
+	}
+	OnLoadComplete();
+};
 
-		inline void SetNozzleCam(bool bOn) override { m_pE->SetSubobjectVisible(0,!bOn); }
 
-		inline void OnLoadComplete() override {};
+void OBJCollection::Draw(const ObjClass type)
+{
+	if (m_mObjs.count(type)==0)
+	{
+		return;
+	}
 
-		inline float GetScaleFactor() override { return m_pBaseObj->GetScaleFactor();};
+	for (auto &obj : m_mObjs.at(type))
+	{
+		obj->Draw();
+	}
 
-		inline void GetBaseCenter(gsl::span<float>fTrans) override {m_pBaseObj->GetCenteringTransform(fTrans);}
+}
+
+
+void OBJCollection::SetMaterialMode(GLenum type)
+{
+	for (auto &sets : m_mObjs)
+	{
+		for (auto &obj : sets.second)
+		{
+			obj->SetMaterialMode(type);
+		}
+	}
 };

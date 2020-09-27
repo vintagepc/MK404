@@ -18,15 +18,20 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "Prusa_MK3.h"     // for Prusa_MK3
+#include "LED.h"       // for LED
+#include "PinNames.h"  // for Pin::IR_SENSOR_PIN, Pin::SWI2C_SCL, Pin::SWI2C...
+#include "TMC2130.h"   // for TMC2130
+#include "sim_irq.h"   // for avr_raise_irq
+#include <iostream>    // for operator<<, cout, ostream
 
-#include "PAT9125.h"
-#include "Prusa_MK3S.h"     // for Prusa_MK3S
-
-class Prusa_MK3: public Prusa_MK3S
+void Prusa_MK3::SetupIR()
 {
-	protected:
-		void SetupIR() override;
+	avr_raise_irq(GetDIRQ(IR_SENSOR_PIN),1);
+	std::cout << "MK3 - adding laser sensor\n";
+	AddHardware(LaserSensor, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
+	lIR.ConnectFrom(LaserSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
 
-		PAT9125 LaserSensor;
-};
+	LaserSensor.ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT), PAT9125::E_IN);
+	LaserSensor.Set(PAT9125::FS_FILAMENT_PRESENT);
+}; // Overridde to setup the PAT.

@@ -21,22 +21,100 @@
  */
 
 #include "Board.h"
+#include "KeyController.h"  // for KeyController
+#include "ScriptHost.h"     // for ScriptHost
 #include "TelemetryHost.h"
+#include "Util.h"           // for CXXDemangle
+#include "avr_extint.h"     // for avr_extint_set_strict_lvl_trig
 #include "avr_uart.h"
 #include "gsl-lite.hpp"
+#include "sim_avr_types.h"  // for avr_regbit_t
 #include "sim_elf.h"  // for avr_load_firmware, elf_firmware_t, elf_read_fir...
 #include "sim_gdb.h"  // for avr_gdb_init
 #include "sim_hex.h"  // for read_ihex_file
 #include "sim_io.h"         // for avr_io_getirq
+#include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_set
+#include "uart_pty.h"       // for uart_pty
 #include <cstdint>
 #include <cstdlib>   // for exit, free
 #include <cstring>    // for memcpy, NULL
 #include <fstream>		// IWYU pragma: keep
+#include <iomanip>          // for operator<<, setw
 #include <iostream>
 #include <memory>
+#include <typeinfo>         // for type_info
+#include <unistd.h>         // for usleep
 
 namespace Boards {
 	using string = std::string;
+
+	Board::Board(const Wirings::Wiring &wiring,uint32_t uiFreqHz):Scriptable("Board"),m_wiring(wiring),m_uiFreq(uiFreqHz)
+	{
+		RegisterActionAndMenu("Quit", "Sends the quit signal to the AVR",ScriptAction::Quit);
+		RegisterActionAndMenu("Reset","Resets the board by resetting the AVR.", ScriptAction::Reset);
+		RegisterActionAndMenu("Pause","Pauses the simulated AVR execution.", ScriptAction::Pause);
+		RegisterActionAndMenu("Resume","Resumes simulated AVR execution.", ScriptAction::Unpause);
+		RegisterAction("WaitMs","Waits the specified number of milliseconds (in AVR-clock time)", ScriptAction::Wait,{ArgType::Int});
+
+		RegisterKeyHandler('r', "Resets the AVR/board");
+		RegisterKeyHandler('z', "Pauses/resumes AVR execution");
+		RegisterKeyHandler('q', "Shuts down the board and exits");
+
+	}
+
+	Board::~Board()
+	{
+		if (m_thread) std::cerr << "PROGRAMMING ERROR: " << m_strBoard << " THREAD NOT STOPPED BEFORE DESTRUCTION.\n";
+	}
+
+	void Board::AddSerialPty(uart_pty *UART, const char chrNum)
+	{
+		UART->Init(m_pAVR);
+		UART->Connect(chrNum);
+	}
+
+	bool Board::TryConnect(avr_irq_t *src, PinNames::Pin ePin)
+	{
+		if (m_wiring.IsPin(ePin))
+		{
+			avr_connect_irq(src, m_wiring.DIRQLU(m_pAVR,ePin));
+			return true;
+		}
+		return _PinNotConnectedMsg(ePin);
+	}
+
+	avr_irq_t* Board::GetDIRQ(PinNames::Pin ePin)
+	{
+		if (m_wiring.IsPin(ePin))
+		{
+			return m_wiring.DIRQLU(m_pAVR,ePin);
+		}
+		return nullptr;
+	}
+
+	Board::MCUPin Board::GetPinNumber(PinNames::Pin ePin)
+	{
+		if (m_wiring.IsPin(ePin))
+		{
+			return m_wiring.GetPin(ePin);
+		}
+		return -1;
+	}
+
+	avr_irq_t* Board::GetPWMIRQ(PinNames::Pin ePin)
+	{
+		if (m_wiring.IsPin(ePin))
+		{
+			return m_wiring.DPWMLU(m_pAVR,ePin);
+		}
+		return nullptr;
+	}
+
+	bool Board::_PinNotConnectedMsg(PinNames::Pin ePin)
+	{
+		std:: cout << "Requested connection w/ Digital pin " << ePin << " on " << m_strBoard << ", but it is not defined!\n";;
+		return false;
+	}
 
 	void Board::CreateAVR()
 	{
@@ -232,5 +310,113 @@ namespace Boards {
 			}
 		}
 		return 0;
+	}
+
+	void Board::DisableInterruptLevelPoll(uint8_t uiNumIntLins)
+	{
+		for (int i=0; i<uiNumIntLins; i++)
+		{
+			avr_extint_set_strict_lvl_trig(m_pAVR,i,false);
+		}
+
+	}
+
+	IScriptable::LineStatus Board::ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs)
+	{
+		switch (ID)
+		{
+			case Quit:
+				SetQuitFlag();
+				return LineStatus::Finished;
+			case Reset:
+				SetResetFlag();
+				return LineStatus::Finished;
+			case Wait:
+				if (m_uiWtCycleCount >0)
+				{
+					if (--m_uiWtCycleCount==0)
+					{
+						return LineStatus::Finished;
+					}
+					else
+					{
+						return LineStatus::Waiting;
+					}
+				}
+				else
+				{
+					m_uiWtCycleCount = (m_uiFreq/1000)*stoi(vArgs.at(0));
+					return LineStatus::Waiting;
+				}
+				break;
+			case Pause:
+				std::cout << "Pause\n";
+				m_bPaused.store(true);
+				return LineStatus::Finished;
+			case Unpause:
+				m_bPaused.store(false);
+				return LineStatus::Finished;
+		}
+		return LineStatus::Unhandled;
+	}
+
+
+	void* Board::RunAVR()
+	{
+		avr_regbit_t MCUSR = m_pAVR->reset_flags.porf;
+		MCUSR.mask =0xFF;
+		MCUSR.bit = 0;
+		std::cout << "Starting " << m_wiring.GetMCUName() << " execution...\n";
+		int state = cpu_Running;
+		while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){
+					// Re init the special workarounds we need after a reset.
+			if (m_bIsPrimary) // Only one board should be scripting.
+			{
+				ScriptHost::DispatchMenuCB();
+				KeyController::GetController().OnAVRCycle(); // Handle/dispatch any pressed keys.
+			}
+			if (m_bIsPrimary && ScriptHost::IsInitialized())
+			{
+				ScriptHost::OnAVRCycle();
+			}
+			if (m_bPaused)
+			{
+				usleep(100000);
+				continue;
+			}
+			int8_t uiMCUSR = avr_regbit_get(m_pAVR,MCUSR);
+			if (uiMCUSR != m_uiLastMCUSR)
+			{
+				std::cout << "MCUSR: " << std::setw(2) << std::hex << (m_uiLastMCUSR = uiMCUSR) << '\n';
+				if (uiMCUSR) // only run on change and not changed to 0
+				{
+					OnAVRReset();
+				}
+			}
+			OnAVRCycle();
+
+			if (m_bReset)
+			{
+				m_bReset = false;
+				avr_reset(m_pAVR);
+				avr_regbit_set(m_pAVR, m_pAVR->reset_flags.extrf);
+			}
+			state = avr_run(m_pAVR);
+		}
+		std::cout << m_wiring.GetMCUName() << "finished (" << state << ").\n";
+		avr_terminate(m_pAVR);
+		return nullptr;
+	};
+
+
+	std::string Board::GetStorageFileName(const std::string &strType)
+	{
+		std::string strFN {CXXDemangle(typeid(*this).name())};//= m_strBoard;
+		//strFN.append("_").append(m_wiring.GetMCUName()).append("_").append(strType).append(".bin");
+		strFN.append("_").append(strType).append(".bin");
+#ifdef TEST_MODE // Creates special files in test mode that don't clobber your existing stuff.
+			strFN.append("_test");
+#endif
+		return strFN;
 	}
 }; // namespace Boards

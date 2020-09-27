@@ -143,6 +143,7 @@ set(H_FILES
 
 set(MK404_SOURCES
 	parts/Board.cpp
+	parts/I2CPeripheral.cpp
 	parts/boards/EinsyRambo.cpp
 	parts/boards/MiniRambo.cpp
 	parts/boards/MM_Control_01.cpp
@@ -153,6 +154,7 @@ set(MK404_SOURCES
 	parts/components/Button.cpp
 	parts/components/EEPROM.cpp
 	parts/components/Fan.cpp
+	parts/components/GLHelper.cpp
 	parts/components/GCodeSniffer.cpp
 	parts/components/HC595.cpp
 	parts/components/HD44780.cpp
@@ -162,6 +164,7 @@ set(MK404_SOURCES
 	parts/components/LED.cpp
 	parts/components/MMU1.cpp
 	parts/components/MMU2.cpp
+	parts/components/PAT9125.cpp
 	parts/components/PINDA.cpp
 	parts/components/RotaryEncoder.cpp
 	parts/components/SDCard.cpp
@@ -177,16 +180,27 @@ set(MK404_SOURCES
 	parts/printers/Prusa_MK25_13.cpp
 	parts/printers/Prusa_MK25S_13.cpp
 	parts/printers/Prusa_MK2MMU_13.cpp
+	parts/printers/Prusa_MK3.cpp
+	parts/printers/Prusa_MK3MMU2.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
 	parts/printers/Test_Printer.cpp
+	parts/IScriptable.cpp
+	parts/Printer.cpp
+	parts/PrinterFactory.cpp
+	parts/Scriptable.cpp
 	parts/ScriptHost.cpp
+	parts/SoftPWMable.cpp
 	parts/TelemetryHost.cpp
+	utility/MK3S_Bear.cpp
+	utility/MK3S_Full.cpp
+	utility/MK3S_Lite.cpp
 	utility/MK3SGL.cpp
 	utility/GLObj.cpp
 	utility/FatImage.cpp
 	utility/GLPrint.cpp
 	utility/Color.cpp
+	utility/OBJCollection.cpp
 	utility/SerialPipe.cpp
 	3rdParty/arcball/Camera.cpp
 	parts/IKeyClient.cpp

@@ -29,8 +29,6 @@
 #include "sim_irq.h"         // for avr_irq_t
 #include "sim_vcd_file.h"    // for avr_vcd_init, avr_vcd_start, avr_vcd_stop
 #include <cstdint>          // for uint32_t, uint8_t
-#include <cstring>          // for memset
-#include <iostream>
 #include <map>               // for map
 #include <string>            // for string
 #include <vector>            // for vector
@@ -86,11 +84,7 @@ class TelemetryHost: public BasePeripheral, public Scriptable, private IKeyClien
 		}
 
 		// Inits the VCD file at the specified rate (in us)
-		void Init(avr_t *pAVR, const std::string &strVCDFile, uint32_t uiRateUs = 100)
-		{
-			_Init(pAVR, this);
-			avr_vcd_init(m_pAVR,strVCDFile.c_str(),&m_trace,uiRateUs);
-		}
+		void Init(avr_t *pAVR, const std::string &strVCDFile, uint32_t uiRateUs = 100);
 
 		inline void StartTrace()
 		{
@@ -117,42 +111,15 @@ class TelemetryHost: public BasePeripheral, public Scriptable, private IKeyClien
 
 		void AddTrace(avr_irq_t *pIRQ, std::string strName, TelCats vCats, uint8_t uiBits = 1);
 
-		void Shutdown()
+		inline void Shutdown()
 		{
 			StopTrace();
 		}
 
-		void OnKeyPress(const Key& key) override
-		{
-			switch (key)
-			{
-				case '+':
-					TelemetryHost::GetHost().StartTrace();
-					std::cout << "Enabled VCD trace." << '\n';
-					break;
-				case '-':
-					TelemetryHost::GetHost().StopTrace();
-					std::cout << "Stopped VCD trace" << '\n';
-					break;
-			}
-		}
+		void OnKeyPress(const Key& key) override;
+
 	private:
-		TelemetryHost():Scriptable("TelHost"),IKeyClient()
-		{
-			memset(&m_trace, 0, sizeof(m_trace));
-#ifdef __CYGWIN__
-            std::cout << "Cygwin detected - skipping TelHost action registration...\n";
-#else
-            // Sorry, this segfaults on win32 for some reason...
-			RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::uint32});
-			RegisterAction("WaitForGT","Waits for a specified telemetry value to be greater than specified",ActWaitForGT, {ArgType::String,ArgType::uint32});
-			RegisterAction("WaitForLT","Waits for a specified telemetry value to be less than specified",ActWaitForLT, {ArgType::String,ArgType::uint32});
-			RegisterActionAndMenu("StartTrace", "Starts the telemetry trace. You must have set a category or set of items with the -t option",ActStartTrace);
-			RegisterActionAndMenu("StopTrace", "Stops a running telemetry trace.",ActStopTrace);
-#endif
-			RegisterKeyHandler('+',"Start VCD trace");
-			RegisterKeyHandler('-',"Stop VCD trace");
-		}
+		TelemetryHost();
 
 		enum Actions
 		{

@@ -78,6 +78,7 @@ class PAT9125: public I2CPeripheral, public Scriptable, private IKeyClient
 		void Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)
 		{
 			_Init(pAVR, pSDA, pSCL, this);
+			_Init(pAVR,this);
 			std::cout << "\n\n--------- Your attention please! ----------\n";
 			std::cout << "NOTE: PAT9125 is minimally functional. If you encounter issues or need advanced functionality \n feel free to contribute or open an issue.\n";
 			std::cout << "--------- Your attention please! ----------\n\n\n";

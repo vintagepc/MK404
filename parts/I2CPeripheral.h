@@ -65,6 +65,8 @@ class I2CPeripheral: public BasePeripheral
 
 
     private:
+		// This is the bitbanged message structure.
+		// Native I2C uses one that's not directly compatible.
 		using I2CMsg_t = union {
 			void I2CMsg_t(uint32_t uiRaw = 0){raw = uiRaw;}; // Convenience constructor
 			void I2CMsg_t(const unsigned int &uiMsg, const unsigned &uiAddr, const unsigned &uiData){ raw = uiMsg<<16u | uiAddr << 8u | uiData;}
@@ -78,10 +80,57 @@ class I2CPeripheral: public BasePeripheral
 			};
 		};
 
+		using NativeI2CMsg_t = union
+		{
+			void NativeI2CMsg_t(uint32_t uiRaw = 0){raw = uiRaw;};
+			uint32_t raw;
+			struct {
+				uint8_t :8;
+				uint8_t cond;
+				uint8_t isWrite :1; // Write bit on address. IDK if this is used given msgBits.isWrite.
+				uint8_t address :7;
+				uint8_t data;
+			};
+		};
+
 		// I2C transaction handler.
 		template<class C>
-		void _OnI2CTx(avr_irq_t */*irq*/, I2CMsg_t /*msg*/)
+		void _OnI2CTx(avr_irq_t */*irq*/, uint32_t value)
 		{
+			std::cout << "TX_IN:" << std::hex << value << '\n';
+			NativeI2CMsg_t msg = {value};
+
+			if (msg.cond & TWI_COND_STOP)
+			{
+				m_state = State::Idle;
+			}
+			else if (msg.cond & TWI_COND_START)
+			{
+				if (msg.address == m_uiDevAddr)
+				{
+					m_state = State::AddrIn;
+					RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_ACK, m_uiDevAddr, 1));
+				}
+			}
+
+			if (m_state == State::Idle)
+			{
+				return;
+			}
+
+			if (msg.cond & TWI_COND_WRITE)
+			{
+				//uint8_t uiReply = GetRegVal(msg.writeRegAddr);
+				//RaiseIRQ(C::TX_REPLY, uiReply);
+				std::cout << "WRITE\n";// << std::to_string(uiReply) << '\n';
+				// This should end up calling SetRegVal() and ACK.
+			}
+			if (msg.cond & TWI_COND_READ)
+			{
+				std::cout << "READ\n";
+				// Todo - should call GetRegVal() and send the reply on TX_REPLY
+			}
+
 			// TODO(vintagepc) - I don't have any real "hardware" i2c items to simulate at the moment.
 		}
 

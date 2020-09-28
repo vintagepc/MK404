@@ -29,6 +29,7 @@
 #include "avr_twi.h"
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <iostream>
+#include <iomanip>
 
 class I2CPeripheral: public BasePeripheral
 {
@@ -77,7 +78,7 @@ class I2CPeripheral: public BasePeripheral
 				uint8_t writeRegAddr;
 				uint8_t isAddrRead :1; // Write bit on address. IDK if this is used given msgBits.isWrite.
 				uint8_t address :7;
-			};
+			}__attribute__ ((__packed__));
 		};
 
 		using NativeI2CMsg_t = union
@@ -86,30 +87,33 @@ class I2CPeripheral: public BasePeripheral
 			uint32_t raw;
 			struct {
 				uint8_t :8;
-				uint8_t cond;
+				uint8_t cond :8;
 				uint8_t isWrite :1; // Write bit on address. IDK if this is used given msgBits.isWrite.
 				uint8_t address :7;
-				uint8_t data;
-			};
+				uint8_t data :8 ;
+			} __attribute__ ((__packed__));
 		};
 
 		// I2C transaction handler.
 		template<class C>
 		void _OnI2CTx(avr_irq_t */*irq*/, uint32_t value)
 		{
-			std::cout << "TX_IN:" << std::hex << value << '\n';
+			std::cout << "TX_IN:" << std::setw(8) << std::setfill('0') << std::hex << value << '\n';
 			NativeI2CMsg_t msg = {value};
 
 			if (msg.cond & TWI_COND_STOP)
 			{
+				std::cout << "STOP\n";
 				m_state = State::Idle;
+				msgIn.address = 0;
 			}
 			else if (msg.cond & TWI_COND_START)
 			{
+				std::cout << "START\n";
 				if (msg.address == m_uiDevAddr)
 				{
 					m_state = State::AddrIn;
-					RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_ACK, m_uiDevAddr, 1));
+					RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_ACK, msg.address, 1));
 				}
 			}
 
@@ -122,13 +126,25 @@ class I2CPeripheral: public BasePeripheral
 			{
 				//uint8_t uiReply = GetRegVal(msg.writeRegAddr);
 				//RaiseIRQ(C::TX_REPLY, uiReply);
-				std::cout << "WRITE\n";// << std::to_string(uiReply) << '\n';
 				// This should end up calling SetRegVal() and ACK.
+				if (msgIn.address!=m_uiDevAddr)
+				{
+					std::cout << "ADDRESS " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
+					msgIn.address = m_uiDevAddr; // used as a flag.
+					msgIn.writeRegAddr = msg.data;
+				}
+				else // Continuing a write.
+				{
+					std::cout << "Set " << std::to_string(msgIn.writeRegAddr) << " to " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
+					SetRegVal(msgIn.writeRegAddr++, msg.data);
+				}
+				RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_ACK, msg.address, 1));
+
 			}
 			if (msg.cond & TWI_COND_READ)
 			{
-				std::cout << "READ\n";
-				// Todo - should call GetRegVal() and send the reply on TX_REPLY
+				std::cout << "READ " << std::to_string(msgIn.writeRegAddr) <<"\n";
+				RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_READ, m_uiDevAddr, GetRegVal(msgIn.writeRegAddr++)));
 			}
 
 			// TODO(vintagepc) - I don't have any real "hardware" i2c items to simulate at the moment.

@@ -44,8 +44,6 @@ class I2CPeripheral: public BasePeripheral
         template<class C>
         void _Init(avr_t *avr, C *p, const char** IRQNAMES = nullptr) {
             BasePeripheral::_Init(avr,p, IRQNAMES);
-
-			std::cerr << "WARNING: UNIMPLEMENTED FEATURE - HARDWARE I2C\n";
             RegisterNotify(C::TX_IN, MAKE_C_CALLBACK(I2CPeripheral,_OnI2CTx<C>), this);
             ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0),TWI_IRQ_OUTPUT), C::TX_IN); //NOLINT - complaint in external macro
             ConnectTo(C::TX_REPLY,avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT)); //NOLINT - complaint in external macro
@@ -101,18 +99,18 @@ class I2CPeripheral: public BasePeripheral
 		template<class C>
 		void _OnI2CTx(avr_irq_t */*irq*/, uint32_t value)
 		{
-			std::cout << "TX_IN:" << std::setw(8) << std::setfill('0') << std::hex << value << '\n';
+		//	std::cout << "TX_IN:" << std::setw(8) << std::setfill('0') << std::hex << value << '\n';
 			NativeI2CMsg_t msg = {value};
 
 			if (msg.cond & TWI_COND_STOP)
 			{
-				std::cout << "STOP\n";
+		//		std::cout << "STOP\n";
 				m_state = State::Idle;
 				msgIn.address = 0;
 			}
 			else if (msg.cond & TWI_COND_START)
 			{
-				std::cout << "START\n";
+				//std::cout << "START\n";
 				if (msg.address == m_uiDevAddr)
 				{
 					m_state = State::AddrIn;
@@ -127,18 +125,16 @@ class I2CPeripheral: public BasePeripheral
 
 			if (msg.cond & TWI_COND_WRITE)
 			{
-				//uint8_t uiReply = GetRegVal(msg.writeRegAddr);
-				//RaiseIRQ(C::TX_REPLY, uiReply);
 				// This should end up calling SetRegVal() and ACK.
 				if (msgIn.address!=m_uiDevAddr)
 				{
-					std::cout << "ADDRESS " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
+					//std::cout << "ADDRESS " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
 					msgIn.address = m_uiDevAddr; // used as a flag.
 					msgIn.writeRegAddr = msg.data;
 				}
 				else // Continuing a write.
 				{
-					std::cout << "Set " << std::to_string(msgIn.writeRegAddr) << " to " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
+					//std::cout << "Set " << std::to_string(msgIn.writeRegAddr) << " to " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
 					SetRegVal(msgIn.writeRegAddr++, msg.data);
 				}
 				RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_ACK, msg.address, 1));
@@ -146,11 +142,9 @@ class I2CPeripheral: public BasePeripheral
 			}
 			if (msg.cond & TWI_COND_READ)
 			{
-				std::cout << "READ " << std::to_string(msgIn.writeRegAddr) <<"\n";
+				//std::cout << "READ " << std::to_string(msgIn.writeRegAddr) <<"\n";
 				RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_READ, m_uiDevAddr, GetRegVal(msgIn.writeRegAddr++)));
 			}
-
-			// TODO(vintagepc) - I don't have any real "hardware" i2c items to simulate at the moment.
 		}
 
 		// Called on a read request of uiReg. You don't need to worry about tracking/incrementing the address on multi-reads.

@@ -57,6 +57,7 @@ class GLHelper: public Scriptable
 			St_Idle,
 			St_Done, // DO NOT REORDER
 			St_Queued, // we check against >=QUEUED to determine if a snapshot is in progress.
+			St_Queued2, // Used to delay 2 frames before taking a snap.
 			St_Busy
 		};
 		std::string m_strFile;

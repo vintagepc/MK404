@@ -51,10 +51,10 @@ GLHelper::GLHelper(const std::string &strName):Scriptable(strName)
 // Function for running the GL stuff inside the GL context.
 void GLHelper::OnDraw()
 {
-	auto width = glutGet(GLUT_WINDOW_WIDTH);
-	auto height = glutGet(GLUT_WINDOW_HEIGHT);
-	if (m_iState == St_Queued)
+	if (m_iState == St_Queued2)
 	{
+		auto width = glutGet(GLUT_WINDOW_WIDTH);
+		auto height = glutGet(GLUT_WINDOW_HEIGHT);
 		m_iState = St_Busy;
 		if (m_vBuffer.size()!=(4u*width*height))
 		{
@@ -88,6 +88,10 @@ void GLHelper::OnDraw()
 			}
 		}
 
+	}
+	if (m_iState == St_Queued)
+	{
+		m_iState = St_Queued2;
 	}
 }
 

@@ -27,7 +27,7 @@
 #pragma once
 
 #include "BasePeripheral.h"
-#include <avr_spi.h>
+#include "avr_spi.h"
 
 class SPIPeripheral: public BasePeripheral
 {
@@ -42,7 +42,7 @@ class SPIPeripheral: public BasePeripheral
         virtual void OnCSELIn(struct avr_irq_t * irq, uint32_t value) = 0;
 
         // Sets the flag that you have and want to send a reply.
-        void SetSendReplyFlag(){m_bSendReply = true;}
+        inline void SetSendReplyFlag(){m_bSendReply = true;}
 
         // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
         template<class C>
@@ -61,7 +61,7 @@ class SPIPeripheral: public BasePeripheral
         bool m_bCSel = true; // Chipselect, active low.
         bool m_bSendReply = false;
 
-        void _OnCSELIn(struct avr_irq_t * irq, uint32_t value)
+        inline void _OnCSELIn(struct avr_irq_t * irq, uint32_t value)
         {
             m_bCSel = value;
             OnCSELIn(irq,value);

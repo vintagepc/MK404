@@ -171,7 +171,7 @@ void timerCB(int i)
 	{
 		glutReshapeWindow(iWinW, iWinH);
 	}
-	glutTimerFunc(50, timerCB, i);
+	glutTimerFunc(25, timerCB, i);
 	glutPostRedisplay();
 }
 

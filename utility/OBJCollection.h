@@ -23,9 +23,12 @@
 #pragma once
 
 #include "GLObj.h"
+#include "gsl-lite.hpp"  // for span
+#include <GL/glew.h>     // for GLenum
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>       // for move
 #include <vector>
 
 class OBJCollection
@@ -35,17 +38,7 @@ class OBJCollection
 		explicit OBJCollection(std::string strName):m_strName(std::move(strName)){};
 		~OBJCollection() = default; // pragma: LCOV_EXCL_LINE
 
-		void Load()
-		{
-			for (auto &sets : m_mObjs)
-			{
-				for (auto &obj : sets.second)
-				{
-					obj->Load();
-				}
-			}
-			OnLoadComplete();
-		};
+		void Load();
 
 		// Note: class reference is for the motion, e.g.
 		// an object of class "X" is moved when X changes.
@@ -62,23 +55,11 @@ class OBJCollection
 		};
 
 
-		inline void Draw(const ObjClass type)
-		{
-			if (m_mObjs.count(type)==0)
-			{
-				return;
-			}
-
-			for (auto &obj : m_mObjs.at(type))
-			{
-				obj->Draw();
-			}
-
-		};
+		void Draw(const ObjClass type);
 
 		virtual inline void ApplyPLEDTransform() {}; // pragma: LCOV_EXCL_START  - these lines are not reachable if derivatives are properly implemented.
 
-		virtual void GetBaseCenter(gsl::span<float> fTrans)
+		virtual inline void GetBaseCenter(gsl::span<float> fTrans)
 		{
 			m_pBaseObj->GetCenteringTransform(fTrans);
 		};
@@ -89,7 +70,7 @@ class OBJCollection
 		virtual inline void ApplyLCDTransform() {};
 		virtual inline void ApplyPrintTransform(){};
 
-		virtual float GetScaleFactor(){return 1.f;};
+		virtual inline float GetScaleFactor(){return 1.f;};
 
 		virtual inline void SetNozzleCam(bool /*bOn*/) {};
 
@@ -102,7 +83,7 @@ class OBJCollection
 
 		// pragma: LCOV_EXCL_STOP
 
-		virtual bool SupportsMMU() { return false; }
+		virtual inline bool SupportsMMU() { return false; }
 
 		inline const std::string GetName() { return m_strName;}
 
@@ -118,16 +99,7 @@ class OBJCollection
 		static constexpr float MM_TO_M = 1.f/1000.f;
 		static constexpr float CM_TO_M = 1.f/100.f;
 
-		void SetMaterialMode(GLenum type)
-		{
-			for (auto &sets : m_mObjs)
-			{
-				for (auto &obj : sets.second)
-				{
-					obj->SetMaterialMode(type);
-				}
-			}
-		};
+		void SetMaterialMode(GLenum type);
 
 		std::shared_ptr<GLObj> m_pBaseObj = nullptr;
 

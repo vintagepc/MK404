@@ -1,6 +1,5 @@
 /*
-	MK3S_Full.h - Object collection for the standard visuals.
-
+	Printer.h - Printer interface for printer assemblies.
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
@@ -19,23 +18,29 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "Printer.h"
 
-#include "GLObj.h"
-#include "MK3S_Lite.h"
-#include "gsl-lite.hpp"
-#include <memory>
+#include "Scriptable.h"
+#include <string>
 
-class MK3S_Full: public MK3S_Lite
+
+Printer::Printer():Scriptable("Printer")
 {
-	public:
-		explicit MK3S_Full(bool bMMU);
+	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state)", ActMouseBtn, {ArgType::Int,ArgType::Int});
+}
 
-		inline void SetNozzleCam(bool bOn) override { m_pE->SetSubobjectVisible(0,!bOn); }
+void Printer::SetVisualType(const std::string &visType) {
+	m_visType = visType; OnVisualTypeSet(visType);
+}
 
-		inline void OnLoadComplete() override {};
-
-		inline float GetScaleFactor() override { return m_pBaseObj->GetScaleFactor();};
-
-		inline void GetBaseCenter(gsl::span<float>fTrans) override {m_pBaseObj->GetCenteringTransform(fTrans);}
-};
+IScriptable::LineStatus Printer::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
+{
+	switch (iAct)
+	{
+		case ActMouseBtn:
+			OnMousePress(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)),0,0);
+			return LineStatus::Finished;
+		default:
+			return LineStatus::Unhandled;
+	}
+}

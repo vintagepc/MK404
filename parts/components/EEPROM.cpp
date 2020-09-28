@@ -31,6 +31,19 @@
 using std::ifstream;
 using std::ofstream;
 
+EEPROM::EEPROM():Scriptable("EEPROM")
+{
+	RegisterAction("Poke","Pokes a value into the EEPROM. Args are (address,value)", ActPoke, {ArgType::Int, ArgType::Int});
+	RegisterActionAndMenu("Save", "Saves EEPROM contents to disk.", ActSave);
+	RegisterActionAndMenu("Clear", "Clears EEPROM to 0xFF", ActClear);
+	RegisterActionAndMenu("Load", "Loads the last-used file again", ActLoad);
+};
+// Loads EEPROM from a file or initializes the file for the first time.
+EEPROM::EEPROM(struct avr_t * avr, const std::string &strFile):EEPROM()
+{
+	Load(avr, strFile);
+};
+
 void EEPROM::Load(struct avr_t *avr, const std::string &strFile)
 {
 	m_strFile = strFile;

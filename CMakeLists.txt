@@ -246,6 +246,17 @@ ExternalProject_Add(simavr
 
 )
 
+add_custom_target(clean-simavr
+	COMMAND cd ${PROJECT_SOURCE_DIR}/3rdParty/simavr && make clean
+)
+
+add_custom_target(clean-all
+	  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	  COMMAND make clean
+	  DEPENDS clean-simavr
+)
+
+
 add_dependencies(MK404 simavr)
 
 set (LIBSIMAVR ${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/obj-${SIMAVR_BIN_DIR}/libsimavr.a)

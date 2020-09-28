@@ -26,7 +26,6 @@
 #include <cstdint>  // for uint32_t, uint8_t
 #include <map>       // for _Rb_tree_const_iterator, map
 #include <string>    // for string
-#include <utility>   // for pair
 #include <vector>    // for vector
 
 class FatImage
@@ -44,17 +43,9 @@ class FatImage
 			G2 = 2048
 		};
 
-		static bool MakeFatImage(const std::string &strFile, const std::string &strSize);
+		static std::vector<std::string> GetSizes();
 
-		static std::vector<std::string> GetSizes()
-		{
-			std::vector<std::string> strSize;
-			for(auto &c : GetNameToSize())
-			{
-				strSize.push_back(c.first);
-			}
-			return strSize;
-		}
+		static bool MakeFatImage(const std::string &strFile, const std::string &strSize);
 
 	private:
 		static inline constexpr uint32_t Sector2Bytes(uint32_t val) { return val<<9u; } // <<9 = 512 bytes/sector.
@@ -62,35 +53,15 @@ class FatImage
 
 		static constexpr uint32_t FirstFATAddr = 0x4000;
 
-		static inline uint8_t GetSectorsPerCluster(Size imgSize) { return imgSize>Size::M256 ? 8 : 1; }
+		static uint8_t GetSectorsPerCluster(Size imgSize);
 
-		static uint32_t GetSizeInBytes(Size imgSize) { return static_cast<uint32_t>(imgSize)<<20u; } // 20 = 1024*1024
+		static uint32_t GetSizeInBytes(Size imgSize);
 
-		static uint32_t GetSecondFatAddr(Size imgSize) {return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize)));}
+		static uint32_t GetSecondFatAddr(Size imgSize);
 
-		static uint32_t GetDataStartAddr(Size imgSize) { return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize))<<1u); } // <<10 = 2*512, 2*bytespersector.
+		static uint32_t GetDataStartAddr(Size imgSize);
 
-		static uint32_t SectorsPerFat(Size size)
-		{
-			switch (size)
-			{
-				case Size::M32:
-					return 505;
-				case Size::M64:
-					return 1009;
-				case Size::M128:
-					return 2017;
-				case Size::M256:
-					return 4033;
-				case Size::M512:
-					return 1022;
-				case Size::G1:
-					return 2044;
-				case Size::G2:
-					return 4088;
-			}
-			return 0;
-		};
+		static uint32_t SectorsPerFat(Size size);
 
 		static const std::map<std::string, Size>& GetNameToSize();
 

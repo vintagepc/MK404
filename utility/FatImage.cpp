@@ -27,6 +27,7 @@
 #include <cstring>
 #include <fstream> // IWYU pragma: keep
 #include <iostream>
+#include <utility>
 #include <vector>       // for vector
 
 // const map<FatImage::Size, uint32_t>FatImage::SectorsPerFat =
@@ -73,6 +74,57 @@ const std::map<std::string, FatImage::Size>& FatImage::GetNameToSize()
 	return m;
 };
 
+uint8_t FatImage::GetSectorsPerCluster(Size imgSize)
+{
+	return imgSize>Size::M256 ? 8 : 1;
+}
+
+uint32_t FatImage::GetSizeInBytes(Size imgSize)
+{
+	return static_cast<uint32_t>(imgSize)<<20u; // 20 = 1024*1024
+}
+
+uint32_t FatImage::GetSecondFatAddr(Size imgSize)
+{
+	return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize)));
+}
+
+uint32_t FatImage::GetDataStartAddr(Size imgSize)
+{
+	return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize))<<1u); // <<10 = 2*512, 2*bytespersector.
+}
+
+uint32_t FatImage::SectorsPerFat(Size size)
+{
+	switch (size)
+	{
+		case Size::M32:
+			return 505;
+		case Size::M64:
+			return 1009;
+		case Size::M128:
+			return 2017;
+		case Size::M256:
+			return 4033;
+		case Size::M512:
+			return 1022;
+		case Size::G1:
+			return 2044;
+		case Size::G2:
+			return 4088;
+	}
+	return 0;
+};
+
+std::vector<std::string> FatImage::GetSizes()
+{
+	std::vector<std::string> strSize;
+	for(auto &c : GetNameToSize())
+	{
+		strSize.push_back(c.first);
+	}
+	return strSize;
+}
 
 bool FatImage::MakeFatImage(const std::string &strFile, const std::string &strSize)
 {

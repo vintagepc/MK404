@@ -40,7 +40,7 @@ class Prusa_MK3SMMU2 : public Prusa_MK3S
 		void Draw() override;
 		void OnVisualTypeSet(const std::string &type) override;
 
-		bool GetHasMMU() override {return true;}
+		inline bool GetHasMMU() override {return true;}
 
 		std::pair<int,int> GetWindowSize() override;
 

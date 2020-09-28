@@ -86,7 +86,7 @@ class HC595: public BasePeripheral
 		// Registers with SimAVR
 		void Init(avr_t *avr);
 
-		std::string GetName(){return "HC595";}
+		inline const std::string GetName(){return "HC595";}
 
 	private:
 		// IRQ handlers.

@@ -23,11 +23,9 @@
 #pragma once
 
 #include "IScriptable.h"
-#include "ScriptHost.h"
-#include <cstdlib>
-#include <map>
 #include <string>
 #include <vector>
+class ScriptHost;
 
 class Scriptable: public IScriptable
 {
@@ -39,39 +37,13 @@ class Scriptable: public IScriptable
 		// Registers a new no-argument Scriptable action with the given function, description, and an ID that will be
 		// provided in ProcessAction. This lets you set up an internal enum and switch() on actions
 		// instead of needing to make a string-comparison if-else conditional.
-		inline bool RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID) final
-		{
-			if (IScriptable::RegisterAction(strAct,strDesc,ID))
-			{
-				ScriptHost::AddScriptable(m_strName,this);
-				m_bRegistered = true;
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
+		bool RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID) final;
 
 		// Convenience wrapper that also adds the action as a context menu entry.
-		inline bool RegisterActionAndMenu(const std::string &strAct, const std::string& strDesc, unsigned int ID)
-		{
-			if (RegisterAction(strAct, strDesc, ID))
-			{
-				RegisterMenu(strAct, ID);
-				return true;
-			}
-			return false;
-		}
+		bool RegisterActionAndMenu(const std::string &strAct, const std::string& strDesc, unsigned int ID);
 
-		void RegisterMenu(const std::string &strLabel, unsigned uiID)
-		{
-			ScriptHost::AddMenuEntry(strLabel, uiID, this);
-		}
+		void RegisterMenu(const std::string &strLabel, unsigned uiID);
 
 		//Forwarder:
-		inline void RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID, const std::vector<ArgType>& vTypes)
-		{
-			IScriptable::RegisterAction(strAct,strDesc,ID, vTypes);
-		}
+		void RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID, const std::vector<ArgType>& vTypes);
 };

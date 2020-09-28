@@ -22,9 +22,33 @@
 #include "TelemetryHost.h"
 #include "sim_vcd_file.h"  // for avr_vcd_add_signal
 #include <algorithm>       // for find
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <utility>
+
+TelemetryHost::TelemetryHost():Scriptable("TelHost"),IKeyClient()
+{
+	memset(&m_trace, 0, sizeof(m_trace));
+#ifdef __CYGWIN__
+	std::cout << "Cygwin detected - skipping TelHost action registration...\n";
+#else
+	// Sorry, this segfaults on win32 for some reason...
+	RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::uint32});
+	RegisterAction("WaitForGT","Waits for a specified telemetry value to be greater than specified",ActWaitForGT, {ArgType::String,ArgType::uint32});
+	RegisterAction("WaitForLT","Waits for a specified telemetry value to be less than specified",ActWaitForLT, {ArgType::String,ArgType::uint32});
+	RegisterActionAndMenu("StartTrace", "Starts the telemetry trace. You must have set a category or set of items with the -t option",ActStartTrace);
+	RegisterActionAndMenu("StopTrace", "Stops a running telemetry trace.",ActStopTrace);
+#endif
+	RegisterKeyHandler('+',"Start VCD trace");
+	RegisterKeyHandler('-',"Stop VCD trace");
+}
+
+void TelemetryHost::Init(avr_t *pAVR, const std::string &strVCDFile, uint32_t uiRateUs)
+{
+	_Init(pAVR, this);
+	avr_vcd_init(m_pAVR,strVCDFile.c_str(),&m_trace,uiRateUs);
+}
 
 void TelemetryHost::AddTrace(avr_irq_t *pIRQ, std::string strName, TelCats vCats, uint8_t uiBits)
 {
@@ -67,6 +91,21 @@ void TelemetryHost::AddTrace(avr_irq_t *pIRQ, std::string strName, TelCats vCats
 	else
 	{
 		std::cerr << "ERROR: Trying to add the same IRQ "<<  strName <<" to a VCD trace multiple times!\n";
+	}
+}
+
+void TelemetryHost::OnKeyPress(const Key& key)
+{
+	switch (key)
+	{
+		case '+':
+			TelemetryHost::GetHost().StartTrace();
+			std::cout << "Enabled VCD trace." << '\n';
+			break;
+		case '-':
+			TelemetryHost::GetHost().StopTrace();
+			std::cout << "Stopped VCD trace" << '\n';
+			break;
 	}
 }
 

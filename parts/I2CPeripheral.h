@@ -32,7 +32,7 @@
 #include "sim_irq.h"         // for avr_irq_t, avr_irq_register_notify
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <iostream>
-#include <iomanip>
+//#include <iomanip>
 
 class I2CPeripheral: public BasePeripheral
 {
@@ -44,6 +44,7 @@ class I2CPeripheral: public BasePeripheral
         template<class C>
         void _Init(avr_t *avr, C *p, const char** IRQNAMES = nullptr) {
             BasePeripheral::_Init(avr,p, IRQNAMES);
+			std::cout << "Note: Hardwae I2C in use. If you see quirks it may be fallout from hacks related to #248\n";
             RegisterNotify(C::TX_IN, MAKE_C_CALLBACK(I2CPeripheral,_OnI2CTx<C>), this);
             ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0),TWI_IRQ_OUTPUT), C::TX_IN); //NOLINT - complaint in external macro
             ConnectTo(C::TX_REPLY,avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT)); //NOLINT - complaint in external macro

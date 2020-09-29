@@ -423,12 +423,6 @@ add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
                             && avr-objdump -d assets/Firmware/MK3S.afx > assets/Firmware/MK3S.txt)
 
 
-add_custom_target(FAT32.img COMMAND MK404 --sdimage FAT32.img --image-size 256M)
-add_dependencies(FAT32.img MK404)
-add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PROJECT_SOURCE_DIR}/SDCard/* ::
-                                                COMMAND mv FAT32.img Einsy_atmega2560_SDcard.bin)
-add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)
-
 SET(PRINTERS
 	Prusa_MK3
 	Prusa_MK3MMU2
@@ -440,6 +434,8 @@ SET(PRINTERS
 	Prusa_MK2_mR13
 	Prusa_MK1_mR13
 )
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/SDCard)
 
 add_custom_target(UpdateDocs
 	COMMAND echo '```' > ${PROJECT_SOURCE_DIR}/ref/autogen/Command-Line.md

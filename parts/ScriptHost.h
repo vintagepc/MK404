@@ -39,22 +39,10 @@ class ScriptHost: public IScriptable
 		{
 			return m_bIsInitialized;
 		}
-		static bool Init()
-		{
-			GetHost()._Init();
-			m_bIsInitialized = true;
-			return true;
-		}
 
-		static bool Setup(const std::string &strScript,unsigned uiFreq)
-		{
-			m_uiAVRFreq = uiFreq;
-			if (!strScript.empty())
-			{
-				LoadScript(strScript);
-			}
-			return ValidateScript();
-		}
+		static bool Init();
+
+		static bool Setup(const std::string &strScript,unsigned uiFreq);
 
 		static void AddScriptable(const std::string &strName, IScriptable* src);
 
@@ -107,23 +95,15 @@ class ScriptHost: public IScriptable
 		//We can't register ourselves as a scriptable so just fake it with a processing func.
 		LineStatus ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs) override;
 
-		ScriptHost():IScriptable("ScriptHost"){
-		}
+		ScriptHost():IScriptable("ScriptHost"){}
 
-		void _Init()
-		{
-			RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{ArgType::Int});
-			RegisterAction("SetQuitOnTimeout","If 1, quits when a timeout occurs. Exit code will be non-zero.",ActSetQuitOnTimeout,{ArgType::Bool});
-			RegisterAction("Log","Print the std::string to stdout",ActLog,{ArgType::String});
-			m_clients[m_strName] = this;
-		}
+		void _Init();
 
 		static ScriptHost& GetHost()
 		{
 			static ScriptHost h;
 			return h;
 		}
-
 
 		using linestate_t = struct{
 			std::string strCtxt {""};
@@ -155,18 +135,12 @@ class ScriptHost: public IScriptable
 
 		static std::atomic_uint m_uiQueuedMenu;
 
-
-
-
-
 		enum Actions
 		{
 			ActSetTimeoutMs,
 			ActSetQuitOnTimeout,
 			ActLog
 		};
-
-
 
 		static int m_iTimeoutCycles, m_iTimeoutCount;
 

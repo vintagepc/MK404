@@ -22,6 +22,12 @@
 #pragma once
 
 #include "BasePeripheral.h"
+#include "sim_avr.h"           // for avr_t
+#include "sim_avr_types.h"     // for avr_cycle_count_t
+#include "sim_cycle_timers.h"  // for avr_cycle_timer_t
+#include "sim_irq.h"           // for avr_irq_t
+#include <cstdint>            // for uint32_t, uint16_t
+
 
 class SoftPWMable : public BasePeripheral
 {
@@ -47,33 +53,7 @@ class SoftPWMable : public BasePeripheral
 		// pragma: LCOV_EXCL_STOP
 
 		// Binding for soft PWM digital input register notify.
-		inline void OnDigitalInSPWM(avr_irq_t *irq, uint32_t value)
-		{
-			if (!m_bIsSoftPWM) // For softpwm,
-			{
-				OnDigitalChange(irq,value);
-				return;
-			}
-			if (value) // Was off, start at full, we'll update rate later.
-			{
-				RegisterTimerUsec(m_fcnSoftTimeout,m_uiSoftTimeoutUs,this);
-				if (m_cntTOn>m_cntSoftPWM)
-				{
-					uint32_t uiTTotal = m_pAVR->cycle - m_cntSoftPWM;
-					OnWaveformChange(m_cntTOn-m_cntSoftPWM,uiTTotal);
-				}
-				m_cntSoftPWM = m_pAVR->cycle;
-			}
-			else if (!value)
-			{
-				uint64_t uiCycleDelta = m_pAVR->cycle - m_cntSoftPWM;
-				//TRACE(printf("New soft PWM delta: %d\n",uiCycleDelta/1000));
-				uint16_t uiSoftPWM = ((uiCycleDelta/m_uiPrescale)-1); //62.5 Hz means full on is ~256k cycles.
-				OnPWMChange(irq,uiSoftPWM);
-				m_cntTOn = m_pAVR->cycle;
-				RegisterTimerUsec(m_fcnSoftTimeout,m_uiSoftTimeoutUs,this);
-			}
-		}
+		void OnDigitalInSPWM(avr_irq_t *irq, uint32_t value);
 
 		// Callback for handling full on/off states with softPWM tracking.
 		template<class C>

@@ -23,6 +23,7 @@
 #include "IKeyClient.h"
 #include "IScriptable.h"
 #include <iostream>
+#include <scoped_allocator>  // for allocator_traits<>::value_type
 #include <string>
 #include <utility>
 #include <vector>

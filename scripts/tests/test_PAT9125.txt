@@ -49,4 +49,5 @@ KeyCtl::Key(j)
 Serial0::NextLineMustBe(RD 14: 05)
 PAT9125::Resume Auto()
 PAT9125::Toggle()
+Serial0::NextLineMustBe(READ ERR)
 Board::Quit();

@@ -1,0 +1,14 @@
+# This script is a component test script for use with the test firmware and printer.
+ScriptHost::SetTimeoutMs(2000)
+ScriptHost::SetQuitOnTimeout(1)
+Serial0::NextLineMustBe(READY)
+Serial0::NextLineMustBe(RD 00: 31)
+Serial0::NextLineMustBe(RD 01: 91)
+Serial0::NextLineMustBe(RD 02: 00)
+Serial0::NextLineMustBe(RD 04: 00)
+Serial0::NextLineMustBe(RD 0d: 00)
+Serial0::NextLineMustBe(RD 0e: f0)
+Serial0::NextLineMustBe(RD 14: 14)
+Serial0::NextLineMustBe(RD 17: 28)
+Serial0::NextLineMustBe(READ ERR)
+Board::Quit();

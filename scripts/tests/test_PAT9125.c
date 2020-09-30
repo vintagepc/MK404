@@ -262,6 +262,17 @@ int main()
 
 	ReadReg(0x14);
 
+	uint8_t bytein;
+	// Make sure we don't get a reply to a different address.
+	if (!swi2c_readByte_A8(0x61, 0x00, &bytein))
+	{
+		printf("READ ERR\n");
+	}
+	else
+	{
+		printf("READ: %02x\n", bytein);
+	}
+
 	cli();
 
 	printf("FINISHED\n");

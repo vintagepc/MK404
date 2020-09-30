@@ -32,6 +32,7 @@
 #include "sim_irq.h"         // for avr_irq_t, avr_irq_register_notify
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <iostream>
+//#include <iomanip>
 
 class I2CPeripheral: public BasePeripheral
 {
@@ -43,8 +44,7 @@ class I2CPeripheral: public BasePeripheral
         template<class C>
         void _Init(avr_t *avr, C *p, const char** IRQNAMES = nullptr) {
             BasePeripheral::_Init(avr,p, IRQNAMES);
-
-			std::cerr << "WARNING: UNIMPLEMENTED FEATURE - HARDWARE I2C\n";
+			std::cout << "Note: Hardwae I2C in use. If you see quirks it may be fallout from hacks related to #248\n";
             RegisterNotify(C::TX_IN, MAKE_C_CALLBACK(I2CPeripheral,_OnI2CTx<C>), this);
             ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0),TWI_IRQ_OUTPUT), C::TX_IN); //NOLINT - complaint in external macro
             ConnectTo(C::TX_REPLY,avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT)); //NOLINT - complaint in external macro
@@ -68,6 +68,8 @@ class I2CPeripheral: public BasePeripheral
 
 
     private:
+		// This is the bitbanged message structure.
+		// Native I2C uses one that's not directly compatible.
 		using I2CMsg_t = union {
 			void I2CMsg_t(uint32_t uiRaw = 0){raw = uiRaw;}; // Convenience constructor
 			void I2CMsg_t(const unsigned int &uiMsg, const unsigned &uiAddr, const unsigned &uiData){ raw = uiMsg<<16u | uiAddr << 8u | uiData;}
@@ -78,14 +80,72 @@ class I2CPeripheral: public BasePeripheral
 				uint8_t writeRegAddr;
 				uint8_t isAddrRead :1; // Write bit on address. IDK if this is used given msgBits.isWrite.
 				uint8_t address :7;
-			};
+			}__attribute__ ((__packed__));
+		};
+
+		using NativeI2CMsg_t = union
+		{
+			void NativeI2CMsg_t(uint32_t uiRaw = 0){raw = uiRaw;};
+			uint32_t raw;
+			struct {
+				uint8_t :8;
+				uint8_t cond :8;
+				uint8_t isWrite :1; // Write bit on address. IDK if this is used given msgBits.isWrite.
+				uint8_t address :7;
+				uint8_t data :8 ;
+			} __attribute__ ((__packed__));
 		};
 
 		// I2C transaction handler.
 		template<class C>
-		void _OnI2CTx(avr_irq_t */*irq*/, I2CMsg_t /*msg*/)
+		void _OnI2CTx(avr_irq_t */*irq*/, uint32_t value)
 		{
-			// TODO(vintagepc) - I don't have any real "hardware" i2c items to simulate at the moment.
+		//	std::cout << "TX_IN:" << std::setw(8) << std::setfill('0') << std::hex << value << '\n';
+			NativeI2CMsg_t msg = {value};
+
+			if (msg.cond & TWI_COND_STOP)
+			{
+		//		std::cout << "STOP\n";
+				m_state = State::Idle;
+				msgIn.address = 0;
+			}
+			else if (msg.cond & TWI_COND_START)
+			{
+				//std::cout << "START\n";
+				if (msg.address == m_uiDevAddr)
+				{
+					m_state = State::AddrIn;
+					RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_ACK, msg.address, 1));
+				}
+			}
+
+			if (m_state == State::Idle)
+			{
+				return;
+			}
+
+			if (msg.cond & TWI_COND_WRITE)
+			{
+				// This should end up calling SetRegVal() and ACK.
+				if (msgIn.address!=m_uiDevAddr)
+				{
+					//std::cout << "ADDRESS " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
+					msgIn.address = m_uiDevAddr; // used as a flag.
+					msgIn.writeRegAddr = msg.data;
+				}
+				else // Continuing a write.
+				{
+					//std::cout << "Set " << std::to_string(msgIn.writeRegAddr) << " to " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
+					SetRegVal(msgIn.writeRegAddr++, msg.data);
+				}
+				RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_ACK, msg.address, 1));
+
+			}
+			if (msg.cond & TWI_COND_READ)
+			{
+				//std::cout << "READ " << std::to_string(msgIn.writeRegAddr) <<"\n";
+				RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_READ, m_uiDevAddr, GetRegVal(msgIn.writeRegAddr++)));
+			}
 		}
 
 		// Called on a read request of uiReg. You don't need to worry about tracking/incrementing the address on multi-reads.

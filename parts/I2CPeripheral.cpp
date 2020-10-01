@@ -24,11 +24,27 @@
 
 
 #include "I2CPeripheral.h"
+#include "avr_twi.h"  // for avr_twi_irq_msg, ::TWI_COND_ACK, ::TWI_COND_READ
+#include "sim_io.h"   // for avr_io_getirq
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
+#include <iostream>   // for operator<<, cout, ostream
 
 I2CPeripheral::I2CPeripheral(uint8_t uiAddress):m_uiDevAddr(uiAddress)
 {
 
+}
+
+void I2CPeripheral::OnPostInit(avr_t *avr) {
+	std::cout << "Note: Hardwae I2C in use. If you see quirks it may be fallout from hacks related to #248\n";
+	avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_TWI_GETIRQ(0),TWI_IRQ_OUTPUT), MAKE_C_CALLBACK(I2CPeripheral,_OnI2CTx),this); //NOLINT - complaint in external macro
+	m_pI2CReply = avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT); //NOLINT - complaint in external macro
+}
+
+void I2CPeripheral::PostInitSetupBitbang(avr_irq_t *irqSDA, avr_irq_t *irqSCL) {
+	m_pSCL = irqSCL;
+	m_pSDA = irqSDA;
+	avr_irq_register_notify(irqSCL, MAKE_C_CALLBACK(I2CPeripheral,_OnSCL),this);
+	avr_irq_register_notify(irqSDA, MAKE_C_CALLBACK(I2CPeripheral,_OnSDA),this);
 }
 
 bool I2CPeripheral::ProcessByte(const uint8_t &value)
@@ -170,5 +186,55 @@ void I2CPeripheral::_OnSDA(avr_irq_t */*irq*/, uint32_t value)
 			m_uiByte = 0;
 		}
 		//printf("I2C TX %s\n",value?"Stop" : "Start");
+	}
+}
+
+void I2CPeripheral::_OnI2CTx(avr_irq_t */*irq*/, uint32_t value)
+{
+//	std::cout << "TX_IN:" << std::setw(8) << std::setfill('0') << std::hex << value << '\n';
+	NativeI2CMsg_t msg = {value};
+
+	if (msg.cond & TWI_COND_STOP)
+	{
+//		std::cout << "STOP\n";
+		m_state = State::Idle;
+		msgIn.address = 0;
+	}
+	else if (msg.cond & TWI_COND_START)
+	{
+		//std::cout << "START\n";
+		if (msg.address == m_uiDevAddr)
+		{
+			m_state = State::AddrIn;
+			avr_raise_irq(m_pI2CReply, avr_twi_irq_msg(TWI_COND_ACK, msg.address, 1));
+		}
+	}
+
+	if (m_state == State::Idle)
+	{
+		return;
+	}
+
+	if (msg.cond & TWI_COND_WRITE)
+	{
+		// This should end up calling SetRegVal() and ACK.
+		if (msgIn.address!=m_uiDevAddr)
+		{
+			//std::cout << "ADDRESS " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
+			msgIn.address = m_uiDevAddr; // used as a flag.
+			msgIn.writeRegAddr = msg.data;
+		}
+		else // Continuing a write.
+		{
+			//std::cout << "Set " << std::to_string(msgIn.writeRegAddr) << " to " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
+			SetRegVal(msgIn.writeRegAddr++, msg.data);
+		}
+		avr_raise_irq(m_pI2CReply, avr_twi_irq_msg(TWI_COND_ACK, msg.address, 1));
+
+	}
+	if (msg.cond & TWI_COND_READ)
+	{
+		//std::cout << "READ " << std::to_string(msgIn.writeRegAddr) <<"\n";
+		avr_raise_irq(m_pI2CReply, avr_twi_irq_msg(TWI_COND_READ, m_uiDevAddr, GetRegVal(msgIn.writeRegAddr++)));
 	}
 }

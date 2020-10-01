@@ -103,7 +103,11 @@ class BasePeripheral
                 _m_pIrq = avr_alloc_irq(&avr->irq_pool,0,p->COUNT,static_cast<const char**>(p->_IRQNAMES));
 			}
 			m_pIrq = {_m_pIrq,p->COUNT};
+			OnPostInit(avr);
          };
+
+		// Called after the init routine, you can do custom attachments here.
+		virtual void inline OnPostInit(avr_t* /*avr*/) {}; // pragma LCOV_EXCL_LINE
 
         // Raises your own IRQ
         void inline RaiseIRQ(unsigned int eDest, uint32_t value) { avr_raise_irq(m_pIrq.begin() + eDest, value);}

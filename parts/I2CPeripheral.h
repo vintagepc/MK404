@@ -26,13 +26,9 @@
 #pragma once
 
 #include "BasePeripheral.h"
-#include "avr_twi.h"
 #include "sim_avr.h"         // for avr_t
-#include "sim_io.h"          // for avr_io_getirq
 #include "sim_irq.h"         // for avr_irq_t, avr_irq_register_notify
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
-#include <iostream>
-//#include <iomanip>
 
 class I2CPeripheral: public BasePeripheral
 {
@@ -40,26 +36,12 @@ class I2CPeripheral: public BasePeripheral
 		explicit I2CPeripheral(uint8_t uiAddress);
 		~I2CPeripheral() = default;
 
-        // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
-        template<class C>
-        void _Init(avr_t *avr, C *p, const char** IRQNAMES = nullptr) {
-            BasePeripheral::_Init(avr,p, IRQNAMES);
-			std::cout << "Note: Hardwae I2C in use. If you see quirks it may be fallout from hacks related to #248\n";
-            RegisterNotify(C::TX_IN, MAKE_C_CALLBACK(I2CPeripheral,_OnI2CTx<C>), this);
-            ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0),TWI_IRQ_OUTPUT), C::TX_IN); //NOLINT - complaint in external macro
-            ConnectTo(C::TX_REPLY,avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT)); //NOLINT - complaint in external macro
-        }
+        // Setup for automatic connections.
+        void OnPostInit(avr_t *avr) override;
 
-		// For bitbanged I2C connections. They are routed through standard TX/REPLY irqs so
+		// For bitbanged I2C connections. They are routed through standard read/write register requests so
 		// your derived device doesn't have to care if it is on "real" I2C
-		template<class C>
-        void _Init(avr_t *avr, avr_irq_t *irqSDA, avr_irq_t *irqSCL, C *p, const char** IRQNAMES = nullptr) {
-			BasePeripheral::_Init(avr,p, IRQNAMES);
-			m_pSCL = irqSCL;
-			m_pSDA = irqSDA;
-			avr_irq_register_notify(irqSCL, MAKE_C_CALLBACK(I2CPeripheral,_OnSCL),this);
-			avr_irq_register_notify(irqSDA, MAKE_C_CALLBACK(I2CPeripheral,_OnSDA),this);
-		}
+        void PostInitSetupBitbang(avr_irq_t *irqSDA, avr_irq_t *irqSCL);
 
 		// Override these for read and write operations on your device's registers.
 		virtual uint8_t GetRegVal(uint8_t /*uiAddr*/){return 0;}; // pragma: LCOV_EXCL_LINE
@@ -97,56 +79,7 @@ class I2CPeripheral: public BasePeripheral
 		};
 
 		// I2C transaction handler.
-		template<class C>
-		void _OnI2CTx(avr_irq_t */*irq*/, uint32_t value)
-		{
-		//	std::cout << "TX_IN:" << std::setw(8) << std::setfill('0') << std::hex << value << '\n';
-			NativeI2CMsg_t msg = {value};
-
-			if (msg.cond & TWI_COND_STOP)
-			{
-		//		std::cout << "STOP\n";
-				m_state = State::Idle;
-				msgIn.address = 0;
-			}
-			else if (msg.cond & TWI_COND_START)
-			{
-				//std::cout << "START\n";
-				if (msg.address == m_uiDevAddr)
-				{
-					m_state = State::AddrIn;
-					RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_ACK, msg.address, 1));
-				}
-			}
-
-			if (m_state == State::Idle)
-			{
-				return;
-			}
-
-			if (msg.cond & TWI_COND_WRITE)
-			{
-				// This should end up calling SetRegVal() and ACK.
-				if (msgIn.address!=m_uiDevAddr)
-				{
-					//std::cout << "ADDRESS " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
-					msgIn.address = m_uiDevAddr; // used as a flag.
-					msgIn.writeRegAddr = msg.data;
-				}
-				else // Continuing a write.
-				{
-					//std::cout << "Set " << std::to_string(msgIn.writeRegAddr) << " to " << std::to_string(msg.data) <<"\n";// << std::to_string(uiReply) << '\n';
-					SetRegVal(msgIn.writeRegAddr++, msg.data);
-				}
-				RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_ACK, msg.address, 1));
-
-			}
-			if (msg.cond & TWI_COND_READ)
-			{
-				//std::cout << "READ " << std::to_string(msgIn.writeRegAddr) <<"\n";
-				RaiseIRQ(C::TX_REPLY,avr_twi_irq_msg(TWI_COND_READ, m_uiDevAddr, GetRegVal(msgIn.writeRegAddr++)));
-			}
-		}
+		void _OnI2CTx(avr_irq_t */*irq*/, uint32_t value);
 
 		// Called on a read request of uiReg. You don't need to worry about tracking/incrementing the address on multi-reads.
 		bool ProcessByte(const uint8_t &value);
@@ -179,6 +112,8 @@ class I2CPeripheral: public BasePeripheral
 
 		SCLS m_SCLState = SCLS::Idle;
 		State m_state = State::Idle;
+
+		avr_irq_t * m_pI2CReply = nullptr;
 
 		uint8_t m_uiBitCt = 0;
 };

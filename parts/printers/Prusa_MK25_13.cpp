@@ -22,6 +22,7 @@
 #include "3rdParty/MK3/thermistortables.h"  // for temptable_1, OVERSAMPLENR
 #include "A4982.h"                          // for A4982
 #include "Fan.h"                            // for Fan
+#include "Heater.h"
 #include "LED.h"                            // for LED
 #include "PAT9125.h"                        // for PAT9125, A4982::IRQ::POSI...
 #include "PINDA.h"                          // for PINDA, PINDA::XYCalMap
@@ -43,6 +44,8 @@ void Prusa_MK25_13::SetupHardware()
 	SetupFilamentSensor();
 
 	pinda.Reconfigure(23.f, 5.f, PINDA::XYCalMap::MK25);
+
+	hBed.SetSoftPWM(true);
 
 }
 

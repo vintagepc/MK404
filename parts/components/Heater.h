@@ -61,6 +61,9 @@ public:
 	// Draws the heater status
 	void Draw();
 
+	// Change SoftPWM mode after creation
+	inline void SetSoftPWM(bool bVal) { m_bIsBed = bVal; }
+
 	protected:
 		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
 

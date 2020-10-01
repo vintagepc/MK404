@@ -91,8 +91,8 @@ class BasePeripheral
     protected:
 
         // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
-        template<class C>
-        void _Init(avr_t *avr, C *p, const char** IRQNAMES = nullptr) {
+        template<class C, typename... Args>
+        void _InitWithArgs(avr_t *avr, C *p,  const char** IRQNAMES, Args... args) {
             m_pAVR = avr;
             if (IRQNAMES)
 			{
@@ -103,11 +103,22 @@ class BasePeripheral
                 _m_pIrq = avr_alloc_irq(&avr->irq_pool,0,p->COUNT,static_cast<const char**>(p->_IRQNAMES));
 			}
 			m_pIrq = {_m_pIrq,p->COUNT};
-			OnPostInit(avr);
+			p->OnPostInit(avr, args...);
          };
 
-		// Called after the init routine, you can do custom attachments here.
-		virtual void inline OnPostInit(avr_t* /*avr*/) {}; // pragma LCOV_EXCL_LINE
+		template<class C>
+			void _Init(avr_t *avr, C *p, const char** IRQNAMES = nullptr) {
+				m_pAVR = avr;
+				if (IRQNAMES)
+				{
+					_m_pIrq = avr_alloc_irq(&avr->irq_pool,0,p->COUNT,IRQNAMES);
+				}
+				else
+				{
+					_m_pIrq = avr_alloc_irq(&avr->irq_pool,0,p->COUNT,static_cast<const char**>(p->_IRQNAMES));
+				}
+				m_pIrq = {_m_pIrq,p->COUNT};
+			};
 
         // Raises your own IRQ
         void inline RaiseIRQ(unsigned int eDest, uint32_t value) { avr_raise_irq(m_pIrq.begin() + eDest, value);}

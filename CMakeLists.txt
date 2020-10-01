@@ -191,6 +191,7 @@ set(MK404_SOURCES
 	parts/Scriptable.cpp
 	parts/ScriptHost.cpp
 	parts/SoftPWMable.cpp
+	parts/SPIPeripheral.cpp
 	parts/TelemetryHost.cpp
 	utility/MK3S_Bear.cpp
 	utility/MK3S_Full.cpp

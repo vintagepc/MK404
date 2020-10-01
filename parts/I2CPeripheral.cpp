@@ -34,18 +34,19 @@ I2CPeripheral::I2CPeripheral(uint8_t uiAddress):m_uiDevAddr(uiAddress)
 
 }
 
-void I2CPeripheral::OnPostInit(avr_t *avr) {
+void I2CPeripheral::OnPostInit(avr_t *avr, avr_irq_t *irqSDA, avr_irq_t *irqSCL) {
 	std::cout << "Note: Hardwae I2C in use. If you see quirks it may be fallout from hacks related to #248\n";
 	avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_TWI_GETIRQ(0),TWI_IRQ_OUTPUT), MAKE_C_CALLBACK(I2CPeripheral,_OnI2CTx),this); //NOLINT - complaint in external macro
 	m_pI2CReply = avr_io_getirq(avr,AVR_IOCTL_TWI_GETIRQ(0), TWI_IRQ_INPUT); //NOLINT - complaint in external macro
+	if (irqSCL && irqSDA)
+	{
+		m_pSCL = irqSCL;
+		m_pSDA = irqSDA;
+		avr_irq_register_notify(irqSCL, MAKE_C_CALLBACK(I2CPeripheral,_OnSCL),this);
+		avr_irq_register_notify(irqSDA, MAKE_C_CALLBACK(I2CPeripheral,_OnSDA),this);
+	}
 }
 
-void I2CPeripheral::PostInitSetupBitbang(avr_irq_t *irqSDA, avr_irq_t *irqSCL) {
-	m_pSCL = irqSCL;
-	m_pSDA = irqSDA;
-	avr_irq_register_notify(irqSCL, MAKE_C_CALLBACK(I2CPeripheral,_OnSCL),this);
-	avr_irq_register_notify(irqSDA, MAKE_C_CALLBACK(I2CPeripheral,_OnSDA),this);
-}
 
 bool I2CPeripheral::ProcessByte(const uint8_t &value)
 {

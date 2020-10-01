@@ -32,16 +32,16 @@
 
 class I2CPeripheral: public BasePeripheral
 {
+	friend BasePeripheral;
+
     protected:
 		explicit I2CPeripheral(uint8_t uiAddress);
 		~I2CPeripheral() = default;
 
         // Setup for automatic connections.
-        void OnPostInit(avr_t *avr) override;
-
-		// For bitbanged I2C connections. They are routed through standard read/write register requests so
+		// For bitbanged I2C connections, set the two IRQs. They are routed through standard read/write register requests so
 		// your derived device doesn't have to care if it is on "real" I2C
-        void PostInitSetupBitbang(avr_irq_t *irqSDA, avr_irq_t *irqSCL);
+        void OnPostInit(avr_t *avr,  avr_irq_t *irqSDA = nullptr, avr_irq_t *irqSCL = nullptr);
 
 		// Override these for read and write operations on your device's registers.
 		virtual uint8_t GetRegVal(uint8_t /*uiAddr*/){return 0;}; // pragma: LCOV_EXCL_LINE

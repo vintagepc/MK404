@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 set(CMAKE_DEBUG_POSTFIX d)
 
 include(ExternalProject)
 
-project(MK404 VERSION 0.1)
+project(MK404 VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,6 +16,7 @@ option(ENABLE_GCOV "Enables gcov coverage")
 option(ENABLE_GPERF "Enables gperf profiling")
 option(RUNNER_ENV, "Adjust commands for github runner")
 option(SANITY_TESTS, "Run general sanity tests in addition to explicit component tests")
+option(ENABLE_PCH "Enables a precompiled header for faster compile times" 1)
 
 
 if (ENABLE_GCOV)
@@ -143,6 +144,7 @@ set(H_FILES
 
 set(MK404_SOURCES
 	parts/Board.cpp
+	parts/I2CPeripheral.cpp
 	parts/boards/EinsyRambo.cpp
 	parts/boards/MiniRambo.cpp
 	parts/boards/MM_Control_01.cpp
@@ -153,6 +155,7 @@ set(MK404_SOURCES
 	parts/components/Button.cpp
 	parts/components/EEPROM.cpp
 	parts/components/Fan.cpp
+	parts/components/GLHelper.cpp
 	parts/components/GCodeSniffer.cpp
 	parts/components/HC595.cpp
 	parts/components/HD44780.cpp
@@ -162,6 +165,7 @@ set(MK404_SOURCES
 	parts/components/LED.cpp
 	parts/components/MMU1.cpp
 	parts/components/MMU2.cpp
+	parts/components/PAT9125.cpp
 	parts/components/PINDA.cpp
 	parts/components/RotaryEncoder.cpp
 	parts/components/SDCard.cpp
@@ -177,16 +181,28 @@ set(MK404_SOURCES
 	parts/printers/Prusa_MK25_13.cpp
 	parts/printers/Prusa_MK25S_13.cpp
 	parts/printers/Prusa_MK2MMU_13.cpp
+	parts/printers/Prusa_MK3.cpp
+	parts/printers/Prusa_MK3MMU2.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
 	parts/printers/Test_Printer.cpp
+	parts/IScriptable.cpp
+	parts/Printer.cpp
+	parts/PrinterFactory.cpp
+	parts/Scriptable.cpp
 	parts/ScriptHost.cpp
+	parts/SoftPWMable.cpp
+	parts/SPIPeripheral.cpp
 	parts/TelemetryHost.cpp
+	utility/MK3S_Bear.cpp
+	utility/MK3S_Full.cpp
+	utility/MK3S_Lite.cpp
 	utility/MK3SGL.cpp
 	utility/GLObj.cpp
 	utility/FatImage.cpp
 	utility/GLPrint.cpp
 	utility/Color.cpp
+	utility/OBJCollection.cpp
 	utility/SerialPipe.cpp
 	3rdParty/arcball/Camera.cpp
 	parts/IKeyClient.cpp
@@ -197,6 +213,10 @@ if (ENABLE_TIDY)
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${FIRMWARE})
 else()
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
+endif()
+
+if (ENABLE_PCH AND NOT ENABLE_TIDY)
+	target_precompile_headers(MK404 PRIVATE utility/PCH.h)
 endif()
 
 if (ENABLE_GPERF)
@@ -231,6 +251,17 @@ ExternalProject_Add(simavr
     BUILD_ALWAYS 1
 
 )
+
+add_custom_target(clean-simavr
+	COMMAND cd ${PROJECT_SOURCE_DIR}/3rdParty/simavr && make clean
+)
+
+add_custom_target(clean-all
+	  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	  COMMAND make clean
+	  DEPENDS clean-simavr
+)
+
 
 add_dependencies(MK404 simavr)
 
@@ -423,12 +454,6 @@ add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
                             && avr-objdump -d assets/Firmware/MK3S.afx > assets/Firmware/MK3S.txt)
 
 
-add_custom_target(FAT32.img COMMAND MK404 --sdimage FAT32.img --image-size 256M)
-add_dependencies(FAT32.img MK404)
-add_custom_target(Einsy_atmega2560_SDcard.bin COMMAND mcopy -vsi FAT32.img ${PROJECT_SOURCE_DIR}/SDCard/* ::
-                                                COMMAND mv FAT32.img Einsy_atmega2560_SDcard.bin)
-add_dependencies(Einsy_atmega2560_SDcard.bin FAT32.img)
-
 SET(PRINTERS
 	Prusa_MK3
 	Prusa_MK3MMU2
@@ -440,6 +465,8 @@ SET(PRINTERS
 	Prusa_MK2_mR13
 	Prusa_MK1_mR13
 )
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/SDCard)
 
 add_custom_target(UpdateDocs
 	COMMAND echo '```' > ${PROJECT_SOURCE_DIR}/ref/autogen/Command-Line.md

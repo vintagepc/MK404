@@ -297,7 +297,7 @@ void w25x20cl::OnCSELIn(struct avr_irq_t *, uint32_t value)
 
 void w25x20cl::Init(struct avr_t * avr, avr_irq_t* irqCS)
 {
-	_Init(avr,this);
+	_InitWithArgs(avr,this,nullptr, SPI_CSEL);
 	ConnectFrom(irqCS, SPI_CSEL);
 
 	auto &TH = TelemetryHost::GetHost();

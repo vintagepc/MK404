@@ -35,7 +35,7 @@
 void Prusa_MK3SMMU2::SetupHardware()
 {
 	Prusa_MK3S::SetupHardware();
-	TryConnect(MMU_HWRESET,m_MMU,MMU2::RESET);
+	TryConnect(MMU_HWRESET,&m_MMU,MMU2::RESET);
 	IR.Set(IRSensor::IR_AUTO);
 	avr_irq_register_notify(m_MMU.GetIRQ(MMU2::FEED_DISTANCE), MAKE_C_CALLBACK(Prusa_MK3SMMU2,OnMMUFeed),this);
 

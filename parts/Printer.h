@@ -21,10 +21,11 @@
 #pragma once
 
 #include "GLHelper.h"
+#include "IScriptable.h"
 #include "Scriptable.h"
-#include <cstdlib>
 #include <string>
 #include <utility>
+#include <vector>
 
 class Printer: public Scriptable
 {
@@ -36,10 +37,7 @@ class Printer: public Scriptable
 			ADVANCED = 0x2,
 		};
 
-		Printer():Scriptable("Printer")
-		{
-			RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state)", ActMouseBtn, {ArgType::Int,ArgType::Int});
-		}
+		Printer();
 
 		// GL methods, use these to render your printer visuals and
 		virtual void Draw(){}; // pragma: LCOV_EXCL_START
@@ -55,26 +53,16 @@ class Printer: public Scriptable
 
 		virtual std::pair<int,int> GetWindowSize() = 0; // pragma: LCOV_EXCL_STOP
 
-		std::string GetVisualType() { return m_visType; }
-		void SetVisualType(const std::string &visType) {m_visType = visType; OnVisualTypeSet(visType);}
+		inline std::string GetVisualType() { return m_visType; }
+
+		void SetVisualType(const std::string &visType);
 
 		inline void SetConnectSerial(bool bVal){m_bConnectSerial = bVal;}
 
 	protected:
-		bool GetConnectSerial(){return m_bConnectSerial;}
+		inline bool GetConnectSerial(){return m_bConnectSerial;}
 
-		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override
-		{
-			switch (iAct)
-			{
-				case ActMouseBtn:
-					OnMousePress(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)),0,0);
-					return LineStatus::Finished;
-				default:
-					return LineStatus::Unhandled;
-			}
-		}
-
+		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 		GLHelper m_gl{};
 

@@ -21,27 +21,12 @@
 #pragma once
 
 #include "PAT9125.h"
-#include "Prusa_MK3.h"    // for Prusa_MK3
 #include "Prusa_MK3SMMU2.h"     // for Prusa_MK3SMMU2
-#include <iostream>
-
-class SerialPipe;
-
 
 class Prusa_MK3MMU2 : public Prusa_MK3SMMU2
 {
 	protected:
-		void SetupIR() override
-		{
-			avr_raise_irq(GetDIRQ(IR_SENSOR_PIN),1);
-			std::cout << "MK3 - adding laser sensor\n";
-			AddHardware(LaserSensor, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
-			lIR.ConnectFrom(LaserSensor.GetIRQ(PAT9125::LED_OUT),LED::LED_IN);
-
-			LaserSensor.ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT), PAT9125::E_IN);
-			LaserSensor.ConnectFrom(m_MMU.GetIRQ(MMU2::FEED_DISTANCE), PAT9125::P_IN);
-			LaserSensor.Set(PAT9125::FS_AUTO); // No filament - but this just updates the LED.
-		}; // Overridde to setup the PAT.
+		void SetupIR() override;
 
 		PAT9125 LaserSensor;
 };

@@ -78,6 +78,31 @@ void ScriptHost::LoadScript(const std::string &strFile)
 	std::cout << "ScriptHost: Loaded " << m_script.size() << " lines from " << strFile << '\n';
 }
 
+bool ScriptHost::Init()
+{
+	GetHost()._Init();
+	m_bIsInitialized = true;
+	return true;
+}
+
+bool ScriptHost::Setup(const std::string &strScript,unsigned uiFreq)
+{
+	m_uiAVRFreq = uiFreq;
+	if (!strScript.empty())
+	{
+		LoadScript(strScript);
+	}
+	return ValidateScript();
+}
+
+void ScriptHost::_Init()
+{
+	RegisterAction("SetTimeoutMs","Sets a timeout for actions that wait for an event",ActSetTimeoutMs,{ArgType::Int});
+	RegisterAction("SetQuitOnTimeout","If 1, quits when a timeout occurs. Exit code will be non-zero.",ActSetQuitOnTimeout,{ArgType::Bool});
+	RegisterAction("Log","Print the std::string to stdout",ActLog,{ArgType::String});
+	m_clients[m_strName] = this;
+}
+
 // Parse line in the format Context::Action(arg1, arg2,...)
 ScriptHost::LineParts_t ScriptHost::GetLineParts(const std::string &strLine)
 {

@@ -28,7 +28,7 @@ class ADCPeripheral: public BasePeripheral
 {
     protected:
         // Returns the current mux number for this peripheral
-        uint8_t GetMuxNumber() { return m_uiMux; }
+        inline uint8_t GetMuxNumber() { return m_uiMux; }
 
         // Override this with your own ADC implementation. You don't need to worry abouy
         // verifying you are the current ADC channel.

@@ -56,7 +56,7 @@ class Prusa_MK3S : public Boards::EinsyRambo, public Printer
 
 		void OnAVRCycle() override;
 
-		virtual bool GetHasMMU() {return false;}
+		inline virtual bool GetHasMMU() {return false;}
 
 		std::unique_ptr<MK3SGL> m_pVis {nullptr};
 

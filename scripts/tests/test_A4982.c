@@ -138,6 +138,7 @@ int main()
 	for (int i=0; i<64; i++)
 		step();
 
+	_delay_ms(25);
 	printf("STEP64 1\n");
 
 	while(1);

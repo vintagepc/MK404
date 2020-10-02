@@ -332,7 +332,7 @@ void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)
 
 void TMC2130::Init(struct avr_t * avr)
 {
-    _Init(avr, this);
+    _InitWithArgs(avr, this, nullptr, SPI_CSEL);
 
     RegisterNotify(DIR_IN,      MAKE_C_CALLBACK(TMC2130,OnDirIn), this);
     RegisterNotify(STEP_IN,     MAKE_C_CALLBACK(TMC2130,OnStepIn), this);

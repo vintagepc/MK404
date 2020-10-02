@@ -93,11 +93,15 @@ void A4982::_Draw(bool bIsSimple)
 				glVertex3f(-2,2,0);
 				glVertex3f(-2,8,0);
 				glVertex3f(0,8,0);
+			glEnd();
+			glBegin(GL_QUADS);
 				glVertex3f(m_fEnd,2,0);
 				glVertex3f(m_fEnd+2,2,0);
 				glVertex3f(m_fEnd+2,8,0);
 				glVertex3f(m_fEnd,8,0);
+			glEnd();
 				glColor3f(0,1,1);
+			glBegin(GL_QUADS);
 				glVertex3f(m_fCurPos-0.5,2,0);
 				glVertex3f(m_fCurPos+0.5,2,0);
 				glVertex3f(m_fCurPos+0.5,8,0);
@@ -294,7 +298,7 @@ void A4982::Init(struct avr_t * avr)
 float A4982::StepToPos(int32_t step)
 {
 	// Position is always in 16ths of a step.
-	return (static_cast<float>(step)/16.f)/static_cast<float>(m_cfg.uiStepsPerMM);
+	return static_cast<float>(step)/16.f/static_cast<float>(m_cfg.uiStepsPerMM);
 }
 
 int32_t A4982::PosToStep(float pos)

@@ -36,7 +36,7 @@ void PINDA::CheckTriggerNoSheet()
 {
     float fEdist = 100;
     bool bFound = false;
-    printf("PINDA: X: %f Y: %f\n", m_fPos[0], m_fPos[1]);
+    //printf("PINDA: X: %f Y: %f\n", m_fPos[0], m_fPos[1]);
 	if (m_fPos[2]<10.f)
 	{
 		for (auto i=0U; i<GetXYCalPoints().size()/2; i++)
@@ -55,7 +55,7 @@ void PINDA::CheckTriggerNoSheet()
     {
 		bool bHasSheet = m_XYCalType != XYCalMap::MK2;
         float fTrigZ = (1.0*(1-pow(fEdist/5,2))) + (bHasSheet? 3.0 : 0.0) ;
-        printf("fTZ:%f fZ: %f\n",fTrigZ, this->m_fPos[2]);
+        //printf("fTZ:%f fZ: %f\n",fTrigZ, this->fPos[2]);
         if (m_fPos[2]<=fTrigZ)
 		{
             RaiseIRQ(TRIGGER_OUT,1);

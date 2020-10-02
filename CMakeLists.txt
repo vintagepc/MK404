@@ -3,7 +3,7 @@ set(CMAKE_DEBUG_POSTFIX d)
 
 include(ExternalProject)
 
-project(MK404 VERSION 0.1)
+project(MK404 VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,6 +16,7 @@ option(ENABLE_GCOV "Enables gcov coverage")
 option(ENABLE_GPERF "Enables gperf profiling")
 option(RUNNER_ENV, "Adjust commands for github runner")
 option(SANITY_TESTS, "Run general sanity tests in addition to explicit component tests")
+option(ENABLE_PCH "Enables a precompiled header for faster compile times" 1)
 
 
 if (ENABLE_GCOV)
@@ -214,7 +215,9 @@ else()
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
 endif()
 
-target_precompile_headers(MK404 PRIVATE utility/PCH.h)
+if (ENABLE_PCH AND NOT ENABLE_TIDY)
+	target_precompile_headers(MK404 PRIVATE utility/PCH.h)
+endif()
 
 if (ENABLE_GPERF)
 	target_link_libraries(MK404 -lprofiler)

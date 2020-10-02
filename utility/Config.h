@@ -34,14 +34,14 @@ class Config
 
 		// High-res extrusion parameter.
 		inline void SetExtrusionMode(unsigned int iVal){ m_iExtrusion = iVal;}
-		inline bool GetExtrusionMode(){ return m_iExtrusion;}
+		inline unsigned int GetExtrusionMode(){ return m_iExtrusion;}
 
 		// Should extrusion be coloured by width?.
 		inline void SetColourE(bool bVal){ m_bColorExtrusion = bVal;}
 		inline bool GetColourE(){ return m_bColorExtrusion;}
 
 	private:
-		bool m_iExtrusion = false;
+		unsigned int m_iExtrusion = false;
 		bool m_bColorExtrusion = false;
 
 };

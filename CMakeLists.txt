@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 set(CMAKE_DEBUG_POSTFIX d)
 
 include(ExternalProject)
@@ -213,6 +213,8 @@ if (ENABLE_TIDY)
 else()
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
 endif()
+
+target_precompile_headers(MK404 PRIVATE utility/PCH.h)
 
 if (ENABLE_GPERF)
 	target_link_libraries(MK404 -lprofiler)

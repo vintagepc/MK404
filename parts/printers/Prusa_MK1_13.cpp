@@ -31,7 +31,7 @@ void Prusa_MK1_13::SetupHardware()
 	X.ReparseConfig();
 	Y.GetConfig().iMaxMM = 198;
 	Y.ReparseConfig();
-	TryConnect(Z,A4982::MIN_OUT,	Z_MIN_PIN);
+	TryConnect(&Z,A4982::MIN_OUT,	Z_MIN_PIN);
 	Z.GetConfig().iMaxMM = 201;
 	Z.GetConfig().uiStepsPerMM = 4000;
 	Z.ReparseConfig();

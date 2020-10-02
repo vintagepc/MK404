@@ -39,20 +39,20 @@ namespace Boards
 		AddHardware(m_Monitor,'0');
 
 		AddHardware(encoder);
-		TryConnect(encoder, RotaryEncoder::OUT_A, BTN_EN2);
-		TryConnect(encoder, RotaryEncoder::OUT_B, BTN_EN1);
-		TryConnect(encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
+		TryConnect(&encoder, RotaryEncoder::OUT_A, BTN_EN2);
+		TryConnect(&encoder, RotaryEncoder::OUT_B, BTN_EN1);
+		TryConnect(&encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
 
 		AddHardware(m_btn);
-		TryConnect(m_btn, Button::BUTTON_OUT, BTN_ENC);
+		TryConnect(&m_btn, Button::BUTTON_OUT, BTN_ENC);
 
 		AddHardware(m_IR,0);
-		TryConnect(m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
+		TryConnect(&m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
 
 		AddHardware(m_spiFlash, GetDIRQ(W25X20CL_PIN_CS));
 
 		AddHardware(m_vSrc,1);
-		TryConnect(m_vSrc,VoltageSrc::DIGITAL_OUT, VOLT_PWR_PIN);
+		TryConnect(&m_vSrc,VoltageSrc::DIGITAL_OUT, VOLT_PWR_PIN);
 
 		AddHardware(m_btns,2);
 		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
@@ -68,18 +68,18 @@ namespace Boards
 		m_TMC.SetConfig(cfg);
 		AddHardware(m_TMC);
 
-		TryConnect(X_TMC2130_CS, 	m_TMC, TMC2130::SPI_CSEL);
-		TryConnect(X_DIR_PIN,		m_TMC, TMC2130::DIR_IN);
-		TryConnect(X_STEP_PIN,		m_TMC, TMC2130::STEP_IN);
-		TryConnect(X_ENABLE_PIN,	m_TMC, TMC2130::ENABLE_IN);
-		TryConnect(m_TMC,TMC2130::DIAG_OUT, X_TMC2130_DIAG);
+		TryConnect(X_TMC2130_CS, 	&m_TMC, TMC2130::SPI_CSEL);
+		TryConnect(X_DIR_PIN,		&m_TMC, TMC2130::DIR_IN);
+		TryConnect(X_STEP_PIN,		&m_TMC, TMC2130::STEP_IN);
+		TryConnect(X_ENABLE_PIN,	&m_TMC, TMC2130::ENABLE_IN);
+		TryConnect(&m_TMC,TMC2130::DIAG_OUT, X_TMC2130_DIAG);
 
 		AddHardware(m_shift);
-		TryConnect(SHIFT_LATCH,		m_shift, HC595::IN_LATCH);
-		TryConnect(SHIFT_CLOCK,		m_shift, HC595::IN_CLOCK);
-		TryConnect(SHIFT_DATA,		m_shift, HC595::IN_DATA);
+		TryConnect(SHIFT_LATCH,		&m_shift, HC595::IN_LATCH);
+		TryConnect(SHIFT_CLOCK,		&m_shift, HC595::IN_CLOCK);
+		TryConnect(SHIFT_DATA,		&m_shift, HC595::IN_DATA);
 		// Cheat and reuse a line (driver doesn't care, EN is off)
-		TryConnect(X_DIR_PIN, m_shift, HC595::IN_RESET);
+		TryConnect(X_DIR_PIN, &m_shift, HC595::IN_RESET);
 
 
 
@@ -90,56 +90,56 @@ namespace Boards
 		AddHardware(m_Sniff,'0');
 
 		AddHardware(m_pinda, nullptr, nullptr, nullptr);
-		TryConnect(m_pinda, PINDA::TRIGGER_OUT, Z_MIN_PIN);
+		TryConnect(&m_pinda, PINDA::TRIGGER_OUT, Z_MIN_PIN);
 
 		AddHardware(m_lcd);
 		std::vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
 		for (int i = 0; i < 4; i++) {
-			TryConnect(vePins.at(i),m_lcd, HD44780::D4+i);
+			TryConnect(vePins.at(i),&m_lcd, HD44780::D4+i);
 		}
-		TryConnect(LCD_PINS_RS,m_lcd, HD44780::RS);
-		TryConnect(LCD_PINS_ENABLE, m_lcd,HD44780::E);
+		TryConnect(LCD_PINS_RS,&m_lcd, HD44780::RS);
+		TryConnect(LCD_PINS_ENABLE, &m_lcd,HD44780::E);
 
 		// SD card
 		std::string strSD = GetSDCardFile();
 		m_card.SetImage(strSD);
 		AddHardware(m_card);
-		TryConnect(SDSS,m_card, SDCard::SPI_CSEL);
-		TryConnect(m_card, SDCard::CARD_PRESENT, SDCARDDETECT);
+		TryConnect(SDSS, &m_card, SDCard::SPI_CSEL);
+		TryConnect(&m_card, SDCard::CARD_PRESENT, SDCARDDETECT);
 
 		AddHardware(m_pat, GetDIRQ(SWI2C_SCL), GetDIRQ(SWI2C_SDA));
 
 		AddHardware(m_LED);
 		AddHardware(m_LED2);
-		TryConnect(LCD_BL_PIN, m_LED, LED::LED_IN);
+		TryConnect(LCD_BL_PIN, &m_LED, LED::LED_IN);
 		m_LED.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), LED::PWM_IN);
-		TryConnect(LCD_BL_PIN, m_LED2, LED::LED_IN);
+		TryConnect(LCD_BL_PIN, &m_LED2, LED::LED_IN);
 		m_LED2.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), LED::PWM_IN);
-		TryConnect(LCD_BL_PIN,m_lcd, HD44780::BRIGHTNESS_IN);
+		TryConnect(LCD_BL_PIN, &m_lcd, HD44780::BRIGHTNESS_IN);
 		m_lcd.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), HD44780::BRIGHTNESS_PWM_IN);
 
 		AddHardware(m_buzzer);
 		m_buzzer.ConnectFrom(GetDIRQ(BEEPER), Beeper::DIGITAL_IN);
 
 		AddHardware(m_MM1);
-		TryConnect(E_MUX0_PIN, m_MM1, MMU1::MUX0);
-		TryConnect(E_MUX1_PIN, m_MM1, MMU1::MUX1);
-		TryConnect(X_STEP_PIN, m_MM1, MMU1::STEP_IN);
+		TryConnect(E_MUX0_PIN, &m_MM1, MMU1::MUX0);
+		TryConnect(E_MUX1_PIN, &m_MM1, MMU1::MUX1);
+		TryConnect(X_STEP_PIN, &m_MM1, MMU1::STEP_IN);
 
 
 		m_Allg.GetConfig().iMaxMM = 20;
 		m_Allg.GetConfig().fStartPos = 10.f;
 		m_Allg.GetConfig().uiStepsPerMM = 10;
 		AddHardware(m_Allg);
-		TryConnect(X_DIR_PIN, m_Allg, A4982::DIR_IN);
-		TryConnect(X_STEP_PIN, m_Allg, A4982::STEP_IN);
-		TryConnect(X_ENABLE_PIN, m_Allg, A4982::ENABLE_IN);
-		TryConnect(E_MUX0_PIN, m_Allg, A4982::MS1_IN);
-		TryConnect(E_MUX1_PIN, m_Allg, A4982::MS2_IN);
-		TryConnect(X_RST_PIN, m_Allg, A4982::RESET_IN);
-		TryConnect(X_SLP_PIN, m_Allg, A4982::SLEEP_IN);
-		TryConnect(m_Allg, A4982::MAX_OUT, X_MAX_PIN);
-		TryConnect(m_Allg, A4982::MIN_OUT, X_MAX_PIN);
+		TryConnect(X_DIR_PIN, &m_Allg, A4982::DIR_IN);
+		TryConnect(X_STEP_PIN, &m_Allg, A4982::STEP_IN);
+		TryConnect(X_ENABLE_PIN, &m_Allg, A4982::ENABLE_IN);
+		TryConnect(E_MUX0_PIN, &m_Allg, A4982::MS1_IN);
+		TryConnect(E_MUX1_PIN, &m_Allg, A4982::MS2_IN);
+		TryConnect(X_RST_PIN, &m_Allg, A4982::RESET_IN);
+		TryConnect(X_SLP_PIN, &m_Allg, A4982::SLEEP_IN);
+		TryConnect(&m_Allg, A4982::MAX_OUT, X_MAX_PIN);
+		TryConnect(&m_Allg, A4982::MIN_OUT, X_MAX_PIN);
 
 	}
 

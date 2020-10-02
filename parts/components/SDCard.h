@@ -40,8 +40,6 @@ class SDCard:public SPIPeripheral, public Scriptable, private IKeyClient
 {
 	public:
 	#define IRQPAIRS \
-	        _IRQ(SPI_BYTE_IN,       "8<SD.byte_in") \
-	        _IRQ(SPI_BYTE_OUT,  	"8>SD.byte_out") \
             _IRQ(SPI_CSEL,          "<SD.cs_in") \
 			_IRQ(CARD_PRESENT,		">SD.card_present")
 		#include "IRQHelper.h"

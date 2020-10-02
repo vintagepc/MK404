@@ -39,6 +39,7 @@
 
 using namespace PinNames; //NOLINT - because proper using declarations don't support enums.
 class uart_pty;
+class BasePeripheral;
 
 namespace Boards
 {
@@ -61,33 +62,9 @@ namespace Boards
 			// Returns the AVR core.
 			inline avr_t * GetAVR(){return m_pAVR;}
 
-			template <class HW>
-			bool TryConnect(PinNames::Pin ePin, HW &hw, unsigned int eDest)
-			{
-				if (m_wiring.IsPin(ePin))
-				{
-					hw.ConnectFrom(m_wiring.DIRQLU(m_pAVR,ePin),eDest);
-					return true;
-				}
-				else
-				{
-					return _PinNotConnectedMsg(ePin);
-				}
-			};
+			bool TryConnect(PinNames::Pin ePin, BasePeripheral* hw, unsigned int eDest);
 
-			template <class HW>
-			bool TryConnect(HW &hw, unsigned int eDest,PinNames::Pin ePin)
-			{
-				if (m_wiring.IsPin(ePin))
-				{
-					hw.ConnectTo(eDest,m_wiring.DIRQLU(m_pAVR,ePin));
-					return true;
-				}
-				else
-				{
-					return _PinNotConnectedMsg(ePin);
-				}
-			};
+			bool TryConnect(BasePeripheral* hw, unsigned int eDest,PinNames::Pin ePin);
 
 			bool TryConnect(avr_irq_t *src, PinNames::Pin ePin);
 

@@ -42,16 +42,16 @@ namespace Boards
 		// D4-D7,
 		std::vector<PinNames::Pin> vePins = {LCD_PINS_D4,LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7};
 		for (int i = 0; i < 4; i++) {
-			TryConnect(vePins.at(i),lcd, HD44780::D4+i);
-			TryConnect(lcd, HD44780::D4+i,vePins.at(i));
+			TryConnect(vePins.at(i),&lcd, HD44780::D4+i);
+			TryConnect(&lcd, HD44780::D4+i,vePins.at(i));
 		}
-		TryConnect(LCD_PINS_RS,lcd, HD44780::RS);
-		TryConnect(LCD_PINS_ENABLE, lcd,HD44780::E);
+		TryConnect(LCD_PINS_RS,&lcd, HD44780::RS);
+		TryConnect(LCD_PINS_ENABLE, &lcd,HD44780::E);
 
 		AddHardware(encoder);
-		TryConnect(encoder, RotaryEncoder::OUT_A, BTN_EN2);
-		TryConnect(encoder, RotaryEncoder::OUT_B, BTN_EN1);
-		TryConnect(encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
+		TryConnect(&encoder, RotaryEncoder::OUT_A, BTN_EN2);
+		TryConnect(&encoder, RotaryEncoder::OUT_B, BTN_EN1);
+		TryConnect(&encoder, RotaryEncoder::OUT_BUTTON, BTN_ENC);
 
 		AddHardware(tExtruder,GetPinNumber(TEMP_0_PIN));
 		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
@@ -80,23 +80,23 @@ namespace Boards
 		X.GetConfig().bInverted = true;
 		X.GetConfig().iMaxMM = 255;
 		AddHardware(X);
-		TryConnect(X_DIR_PIN, 		X, A4982::DIR_IN);
-		TryConnect(X_STEP_PIN, 		X, A4982::STEP_IN);
-		TryConnect(X_ENABLE_PIN, 	X, A4982::ENABLE_IN);
-		TryConnect(X_MS1_PIN, 		X, A4982::MS1_IN);
-		TryConnect(X_MS2_PIN, 		X, A4982::MS2_IN);
-		TryConnect(X,A4982::MIN_OUT,	X_MIN_PIN);
+		TryConnect(X_DIR_PIN, 		&X, A4982::DIR_IN);
+		TryConnect(X_STEP_PIN, 		&X, A4982::STEP_IN);
+		TryConnect(X_ENABLE_PIN, 	&X, A4982::ENABLE_IN);
+		TryConnect(X_MS1_PIN, 		&X, A4982::MS1_IN);
+		TryConnect(X_MS2_PIN, 		&X, A4982::MS2_IN);
+		TryConnect(&X,A4982::MIN_OUT,	X_MIN_PIN);
 		//TryConnect(X,A4982::MAX_OUT,	X_MAX_PIN);
 
 		Y.GetConfig().bInverted = true;
 		Y.GetConfig().iMaxMM = 210;
 		AddHardware(Y);
-		TryConnect(Y_DIR_PIN, 		Y, A4982::DIR_IN);
-		TryConnect(Y_STEP_PIN, 		Y, A4982::STEP_IN);
-		TryConnect(Y_ENABLE_PIN, 	Y, A4982::ENABLE_IN);
-		TryConnect(Y_MS1_PIN, 		Y, A4982::MS1_IN);
-		TryConnect(Y_MS2_PIN, 		Y, A4982::MS2_IN);
-		TryConnect(Y,A4982::MIN_OUT,	Y_MIN_PIN);
+		TryConnect(Y_DIR_PIN, 		&Y, A4982::DIR_IN);
+		TryConnect(Y_STEP_PIN, 		&Y, A4982::STEP_IN);
+		TryConnect(Y_ENABLE_PIN, 	&Y, A4982::ENABLE_IN);
+		TryConnect(Y_MS1_PIN, 		&Y, A4982::MS1_IN);
+		TryConnect(Y_MS2_PIN, 		&Y, A4982::MS2_IN);
+		TryConnect(&Y,A4982::MIN_OUT,	Y_MIN_PIN);
 		//TryConnect(Y,A4982::MAX_OUT,	Y_MAX_PIN);
 
 		Z.GetConfig().bInverted = true;
@@ -104,21 +104,21 @@ namespace Boards
 		Z.GetConfig().iMaxMM = 210;
 		Z.GetConfig().fStartPos = 10.f;
 		AddHardware(Z);
-		TryConnect(Z_DIR_PIN, 		Z, A4982::DIR_IN);
-		TryConnect(Z_STEP_PIN, 		Z, A4982::STEP_IN);
-		TryConnect(Z_ENABLE_PIN, 	Z, A4982::ENABLE_IN);
-		TryConnect(Z_MS1_PIN, 		Z, A4982::MS1_IN);
-		TryConnect(Z_MS2_PIN, 		Z, A4982::MS2_IN);
+		TryConnect(Z_DIR_PIN, 		&Z, A4982::DIR_IN);
+		TryConnect(Z_STEP_PIN, 		&Z, A4982::STEP_IN);
+		TryConnect(Z_ENABLE_PIN, 	&Z, A4982::ENABLE_IN);
+		TryConnect(Z_MS1_PIN, 		&Z, A4982::MS1_IN);
+		TryConnect(Z_MS2_PIN, 		&Z, A4982::MS2_IN);
 		//TryConnect(Z,A4982::MIN_OUT,	Z_MIN_PIN);
 		//TryConnect(Z,A4982::MAX_OUT,	Z_MAX_PIN);
 
 		E.GetConfig().bHasNoEndStops = true;
 		AddHardware(E);
-		TryConnect(E0_DIR_PIN, 		E, A4982::DIR_IN);
-		TryConnect(E0_STEP_PIN,		E, A4982::STEP_IN);
-		TryConnect(E0_ENABLE_PIN, 	E, A4982::ENABLE_IN);
-		TryConnect(E0_MS1_PIN, 		E, A4982::MS1_IN);
-		TryConnect(E0_MS2_PIN, 		E, A4982::MS2_IN);
+		TryConnect(E0_DIR_PIN, 		&E, A4982::DIR_IN);
+		TryConnect(E0_STEP_PIN,		&E, A4982::STEP_IN);
+		TryConnect(E0_ENABLE_PIN, 	&E, A4982::ENABLE_IN);
+		TryConnect(E0_MS1_PIN, 		&E, A4982::MS1_IN);
+		TryConnect(E0_MS2_PIN, 		&E, A4982::MS2_IN);
 
 		AddUARTTrace('0'); // External
 
@@ -126,14 +126,14 @@ namespace Boards
 		std::string strSD = GetSDCardFile();
 		sd_card.SetImage(strSD);
 		AddHardware(sd_card);
-		TryConnect(PinNames::Pin::SDSS, sd_card, SDCard::SPI_CSEL);
+		TryConnect(PinNames::Pin::SDSS, &sd_card, SDCard::SPI_CSEL);
 
 		// wire up the SD present signal.
-		TryConnect(sd_card, SDCard::CARD_PRESENT, SDCARDDETECT);
+		TryConnect(&sd_card, SDCard::CARD_PRESENT, SDCARDDETECT);
 
 		// Add indicator first so it captures the mount IRQ
 		AddHardware(lSD);
-		TryConnect(SDCARDDETECT, lSD, LED::LED_IN);
+		TryConnect(SDCARDDETECT, &lSD, LED::LED_IN);
 
 		int mount_error = sd_card.Mount();
 

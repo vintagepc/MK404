@@ -100,7 +100,7 @@ void A4982::_Draw(bool bIsSimple)
 				glVertex3f(m_fEnd+2,8,0);
 				glVertex3f(m_fEnd,8,0);
 			glEnd();
-			glColor3f(0,1,1);
+				glColor3f(0,1,1);
 			glBegin(GL_QUADS);
 				glVertex3f(m_fCurPos-0.5,2,0);
 				glVertex3f(m_fCurPos+0.5,2,0);
@@ -230,8 +230,8 @@ void A4982::OnMSIn(avr_irq_t *irq, uint32_t value)
 		uiM1 = GetIRQ(MS1_IN)->value;
 		uiM2 = value;
 	}
-	uint8_t m_uiNewShift = (static_cast<unsigned>(uiM1)<<1U | static_cast<unsigned>(uiM2));
-	std::cout << "MS changed: " << std::to_string(m_uiNewShift) << '\n';
+	uint8_t m_uiNewShift = (static_cast<unsigned>(uiM2)<<1U | static_cast<unsigned>(uiM1));
+	std::cout << m_cAxis << " MS changed: " << std::to_string(m_uiNewShift) << '\n';
 	switch (m_uiNewShift)
 	{
 		case 0:

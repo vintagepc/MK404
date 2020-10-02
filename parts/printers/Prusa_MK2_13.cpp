@@ -115,7 +115,7 @@ void Prusa_MK2_13::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
 void Prusa_MK2_13:: SetupPINDA()
 {
 	AddHardware(pinda, X.GetIRQ(A4982::POSITION_OUT),  Y.GetIRQ(A4982::POSITION_OUT),  Z.GetIRQ(A4982::POSITION_OUT));
-	TryConnect(pinda, PINDA::TRIGGER_OUT ,Z_MIN_PIN);
+	TryConnect(&pinda, PINDA::TRIGGER_OUT ,Z_MIN_PIN);
 	AddHardware(lPINDA);
 	lPINDA.ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), LED::LED_IN);
 }

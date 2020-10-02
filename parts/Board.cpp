@@ -21,6 +21,7 @@
  */
 
 #include "Board.h"
+#include "BasePeripheral.h"  // for BasePeripheral
 #include "KeyController.h"  // for KeyController
 #include "ScriptHost.h"     // for ScriptHost
 #include "TelemetryHost.h"
@@ -82,6 +83,32 @@ namespace Boards {
 		}
 		return _PinNotConnectedMsg(ePin);
 	}
+
+	bool Board::TryConnect(PinNames::Pin ePin, BasePeripheral* hw, unsigned int eDest)
+	{
+		if (m_wiring.IsPin(ePin))
+		{
+			hw->ConnectFrom(m_wiring.DIRQLU(m_pAVR,ePin),eDest);
+			return true;
+		}
+		else
+		{
+			return _PinNotConnectedMsg(ePin);
+		}
+	};
+
+	bool Board::TryConnect(BasePeripheral* hw, unsigned int eDest,PinNames::Pin ePin)
+	{
+		if (m_wiring.IsPin(ePin))
+		{
+			hw->ConnectTo(eDest,m_wiring.DIRQLU(m_pAVR,ePin));
+			return true;
+		}
+		else
+		{
+			return _PinNotConnectedMsg(ePin);
+		}
+	};
 
 	avr_irq_t* Board::GetDIRQ(PinNames::Pin ePin)
 	{

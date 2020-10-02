@@ -36,8 +36,6 @@ class PAT9125: public I2CPeripheral, public Scriptable, private IKeyClient
 
 	public:
 		#define IRQPAIRS \
-	        _IRQ(TX_IN,       "32<PAT9125.i2c_in") \
-	        _IRQ(TX_REPLY,  	"8>PAT9125.byte_out") \
 			_IRQ(E_IN, "f<e_distance.in") \
 			_IRQ(P_IN, "p_distance.in") \
 			_IRQ(LED_OUT, "<presence.out")

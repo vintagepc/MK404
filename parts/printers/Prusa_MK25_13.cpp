@@ -34,7 +34,7 @@
 void Prusa_MK25_13::SetupHardware()
 {
 	Prusa_MK2_13::SetupHardware();
-	TryConnect(fExtruder, Fan::TACH_OUT, X_MAX_PIN);
+	TryConnect(&fExtruder, Fan::TACH_OUT, X_MAX_PIN);
 
 	AddHardware(tPinda, GetPinNumber(TEMP_PINDA_PIN));
 	//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.

@@ -27,10 +27,13 @@
 #pragma once
 
 #include "BasePeripheral.h"
-#include "avr_spi.h"
+#include "sim_avr.h"         // for avr_t
+#include "sim_irq.h"         // for avr_irq_t
+#include <cstdint>          // for uint32_t, uint8_t
 
 class SPIPeripheral: public BasePeripheral
 {
+	friend BasePeripheral;
     protected:
 
         // SPI input helper. Overload this in your SPI class.
@@ -44,41 +47,16 @@ class SPIPeripheral: public BasePeripheral
         // Sets the flag that you have and want to send a reply.
         inline void SetSendReplyFlag(){m_bSendReply = true;}
 
-        // Sets up the IRQs on "avr" for this class. Optional name override IRQNAMES.
-        template<class C>
-        void _Init(avr_t *avr, C *p, const char** IRQNAMES = nullptr) {
-            BasePeripheral::_Init(avr,p, IRQNAMES);
-
-            RegisterNotify(C::SPI_BYTE_IN, MAKE_C_CALLBACK(SPIPeripheral,_OnSPIIn<C>), this);
-
-            ConnectFrom(avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0),SPI_IRQ_OUTPUT), C::SPI_BYTE_IN); //NOLINT - complaint in external macro
-            ConnectTo(C::SPI_BYTE_OUT,avr_io_getirq(avr,AVR_IOCTL_SPI_GETIRQ(0), SPI_IRQ_INPUT)); //NOLINT - complaint in external macro
-
-            RegisterNotify(C::SPI_CSEL, MAKE_C_CALLBACK(SPIPeripheral,_OnCSELIn), this);
-        }
+        // Sets up the IRQs on "avr" for this class
+		void OnPostInit(avr_t* avr, unsigned int eCSEL);
 
     private:
         bool m_bCSel = true; // Chipselect, active low.
         bool m_bSendReply = false;
 
-        inline void _OnCSELIn(struct avr_irq_t * irq, uint32_t value)
-        {
-            m_bCSel = value;
-            OnCSELIn(irq,value);
-        };
+        void _OnCSELIn(struct avr_irq_t * irq, uint32_t value);
 
+        void _OnSPIIn(struct avr_irq_t * irq, uint32_t value);
 
-        template<class C>
-        void _OnSPIIn(struct avr_irq_t * irq, uint32_t value)
-        {
-            if (!m_bCSel)
-            {
-                m_bSendReply = false;
-                uint8_t uiByteOut = OnSPIIn(irq, value);
-                if (m_bSendReply)
-				{
-                    RaiseIRQ(C::SPI_BYTE_OUT,uiByteOut);
-				}
-            }
-        }
+		avr_irq_t* m_pSPIReply = nullptr;
 };

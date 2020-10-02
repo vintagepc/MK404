@@ -52,8 +52,7 @@ PAT9125::PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125"),IKeyClient()
 
 void PAT9125::Init(avr_t *pAVR, avr_irq_t *pSCL, avr_irq_t *pSDA)
 {
-	_Init(pAVR, pSDA, pSCL, this);
-	_Init(pAVR,this);
+	_InitWithArgs(pAVR,this,nullptr, pSDA, pSCL);
 	std::cout << "\n\n--------- Your attention please! ----------\n";
 	std::cout << "NOTE: PAT9125 is minimally functional. If you encounter issues or need advanced functionality \n feel free to contribute or open an issue.\n";
 	std::cout << "--------- Your attention please! ----------\n\n\n";

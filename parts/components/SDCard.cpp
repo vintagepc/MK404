@@ -504,15 +504,13 @@ void SDCard::SetCSDCSize(off_t c_size)
 
 void SDCard::Init(struct avr_t *avr)
 {
-	_Init(avr,this);
+	_InitWithArgs(avr,this,nullptr, SPI_CSEL);
 
 	m_ocr |= 1U << 30U; //SDHC
 	m_ocr |= 1U << 31U; //Card power up status bit
 
 	InitCSD();
 	auto &TH = TelemetryHost::GetHost();
-	TH.AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Storage},8);
-	TH.AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Storage},8);
 	TH.AddTrace(this, SPI_CSEL, {TC::SPI, TC::Storage, TC::OutputPin});
 	TH.AddTrace(this, CARD_PRESENT, {TC::InputPin, TC::Storage});
 	RaiseIRQ(CARD_PRESENT,1);

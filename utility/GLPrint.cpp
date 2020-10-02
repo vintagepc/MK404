@@ -49,9 +49,11 @@ static void Normalize(gsl::span<float>fA)
 GLPrint::GLPrint(float fR, float fG, float fB):m_fColR(fR),m_fColG(fG),m_fColB(fB)
 {
 	Clear();
-	m_bHRE = Config::Get().GetHRE();
+	m_iVisType = Config::Get().GetExtrusionMode();
 	m_bColExt = Config::Get().GetColourE();
-	m_b3DExt = Config::Get().Get3DE();
+	m_bHRE = m_iVisType == PrintVisualType::QUAD_HIGHRES || m_iVisType == PrintVisualType::TUBE_HIGHRES;
+	m_iBaseMode = m_iVisType;
+	if (m_bHRE) m_iBaseMode = m_iBaseMode-1;
 }
 
 void GLPrint::Clear()
@@ -84,7 +86,7 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 	bool bColinear = iArea == 0;
 	bool bSamePos = (m_uiX == m_uiExtrEnd[0]) && (m_uiY == m_uiExtrEnd[2]);
 	bool bExtruding; // Extruding if we are > than the highest E value previously observed
-	if (!m_b3DExt)
+	if (m_iVisType == PrintVisualType::LINE)
 	{
 		bExtruding = (uiE+(m_iStepsPerMM[3]/10))>=(m_iEMax); // the 224 is 0.1mm in steps.
 	}
@@ -168,7 +170,7 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 				m_fCurZ/= m_ivCount.back();
 			}
 			//printf("Ended extrusion %u (%u vertices)\n", m_ivCount.size(), m_ivCount.back());
-			if (m_b3DExt)
+			if (m_iVisType>PrintVisualType::LINE)
 			{
 				if (m_fCurZ>(m_fPrevZ+0.0001))
 				{
@@ -288,53 +290,88 @@ void GLPrint::AddSegment()
 		auto fCrossRev = fCross;
 		fCrossRev[0]= -fCross[0];
 		fCrossRev[2]= -fCross[2];
+		auto iTStart = m_fvTri.size()/3;
+		switch (m_iBaseMode)
 		{
-			auto iTStart = m_fvTri.size()/3;
-			std::lock_guard<std::mutex> lock(m_lock);
-			m_fvTri.reserve(m_fvTri.size()+30);
-			m_fvTriNorm.reserve(m_fvTri.size());
-
-			m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
-
-			m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
-
-			m_fvTri.insert(m_fvTri.end(), {fXN, fZ+fLayerZRad, fYN});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), {0,1,0});
-
-			m_fvTri.insert(m_fvTri.end(), {fX, fZ+fLayerZRad, fY});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), {0,1,0});
-
-			m_fvTri.insert(m_fvTri.end(), {fXN-(fCross[0]*fExtRad), fZ, fYN-(fCross[2]*fExtRad)});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
-
-			m_fvTri.insert(m_fvTri.end(), {fX-(fCross[0]*fExtRad), fZ, fY-(fCross[2]*fExtRad)});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
-
-			m_fvTri.insert(m_fvTri.end(), {fXN, fZ-fLayerZRad, fYN});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), {0,-1,0});
-
-			m_fvTri.insert(m_fvTri.end(), {fX, fZ-fLayerZRad, fY});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), {0,-1,0});
-
-			m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
-
-			m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
-			m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
-
-			if (m_bColExt)
+			case PrintVisualType::TUBE:
 			{
-				m_vfTriColor.reserve(m_fvTri.size());
-				for (int i=0; i<10; i++)
-				{
-					m_vfTriColor.insert(m_vfTriColor.end(), {colW[0], colW[1], colW[2]});
-				}
-			}
+				std::lock_guard<std::mutex> lock(m_lock);
+				m_fvTri.reserve(m_fvTri.size()+30);
+				m_fvTriNorm.reserve(m_fvTri.size());
 
-			m_ivTStart.push_back(iTStart);
-			m_ivTCount.push_back((m_fvTri.size()/3) - iTStart);
+				m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+				m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+				m_fvTri.insert(m_fvTri.end(), {fXN, fZ+fLayerZRad, fYN});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), {0,1,0});
+
+				m_fvTri.insert(m_fvTri.end(), {fX, fZ+fLayerZRad, fY});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), {0,1,0});
+
+				m_fvTri.insert(m_fvTri.end(), {fXN-(fCross[0]*fExtRad), fZ, fYN-(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
+
+				m_fvTri.insert(m_fvTri.end(), {fX-(fCross[0]*fExtRad), fZ, fY-(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
+
+				m_fvTri.insert(m_fvTri.end(), {fXN, fZ-fLayerZRad, fYN});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), {0,-1,0});
+
+				m_fvTri.insert(m_fvTri.end(), {fX, fZ-fLayerZRad, fY});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), {0,-1,0});
+
+				m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+				m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+				if (m_bColExt)
+				{
+					m_vfTriColor.reserve(m_fvTri.size());
+					for (int i=0; i<10; i++)
+					{
+						m_vfTriColor.insert(m_vfTriColor.end(), {colW[0], colW[1], colW[2]});
+					}
+				}
+
+				m_ivTStart.push_back(iTStart);
+				m_ivTCount.push_back((m_fvTri.size()/3) - iTStart);
+			}
+			break;
+			case PrintVisualType::QUAD:
+			{
+				std::lock_guard<std::mutex> lock(m_lock);
+				m_fvTri.reserve(m_fvTri.size()+12);
+				m_fvTriNorm.reserve(m_fvTri.size());
+
+				m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+				m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
+
+				m_fvTri.insert(m_fvTri.end(), {fXN-(fCross[0]*fExtRad), fZ, fYN-(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
+
+				m_fvTri.insert(m_fvTri.end(), {fX-(fCross[0]*fExtRad), fZ, fY-(fCross[2]*fExtRad)});
+				m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
+
+				if (m_bColExt)
+				{
+					m_vfTriColor.reserve(m_fvTri.size());
+					for (int i=0; i<4; i++)
+					{
+						m_vfTriColor.insert(m_vfTriColor.end(), {colW[0], colW[1], colW[2]});
+					}
+				}
+
+				m_ivTStart.push_back(iTStart);
+				m_ivTCount.push_back((m_fvTri.size()/3) - iTStart);
+			}
 		}
 	}
 }
@@ -355,7 +392,7 @@ void GLPrint::Draw()
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
 		{
 			std::lock_guard<std::mutex> lock(m_lock);
-			if (m_b3DExt)
+			if (m_iVisType >= PrintVisualType::LINE)
 			{
 				glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
 				glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
@@ -374,7 +411,7 @@ void GLPrint::Draw()
 			}
 			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
 			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
-			if (!m_b3DExt)	glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
+			if (m_iVisType == PrintVisualType::LINE) glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
 
 
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());

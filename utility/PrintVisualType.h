@@ -1,6 +1,7 @@
 /*
-	Conifg.h - Wrangler for command line parameters that need to make it to internal
-	objects that are not printers/boards.
+
+    PrintVisualType.h - Enum for the type of print visualization.
+
 	Copyright 2020 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
@@ -21,27 +22,43 @@
 
 #pragma once
 
-#include "PrintVisualType.h"
+#include <string>
+#include <vector>
+#include <map>
 
-class Config
+class PrintVisualType
 {
 	public:
-		inline static Config& Get()
+
+		enum
 		{
-			static Config c;
-			return c;
+			LINE,
+			QUAD,
+			QUAD_HIGHRES,
+			TUBE,
+			TUBE_HIGHRES
 		};
 
-		// High-res extrusion parameter.
-		inline void SetExtrusionMode(unsigned int iVal){ m_iExtrusion = iVal;}
-		inline bool GetExtrusionMode(){ return m_iExtrusion;}
+		static inline std::vector<std::string> GetOpts()
+		{
+			std::vector<std::string> strTypes;
+			for(auto &c : GetNameToType())
+			{
+				strTypes.push_back(c.first);
+			}
+			return strTypes;
+		}
 
-		// Should extrusion be coloured by width?.
-		inline void SetColourE(bool bVal){ m_bColorExtrusion = bVal;}
-		inline bool GetColourE(){ return m_bColorExtrusion;}
-
-	private:
-		bool m_iExtrusion = false;
-		bool m_bColorExtrusion = false;
+		static const std::map<std::string, unsigned int>& GetNameToType()
+		{
+			static const std::map<std::string, unsigned int> m {
+				{"Line",LINE},
+				{"Quad_Avg",QUAD},
+				{"Quad_HR",QUAD_HIGHRES},
+				{"Tube_Avg",TUBE},
+				{"Tube_HR",TUBE_HIGHRES},
+			};
+			return m;
+		};
 
 };

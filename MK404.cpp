@@ -25,6 +25,7 @@
 #include "KeyController.h"
 #include "Macros.h"
 #include "Printer.h"                  // for Printer, Printer::VisualType
+#include "PrintVisualType.h"
 #include "PrinterFactory.h"           // for PrinterFactory
 #include "ScriptHost.h"               // for ScriptHost
 #include "TelemetryHost.h"
@@ -284,12 +285,14 @@ int main(int argc, char *argv[])
 	std::vector<string> vstrSizes = FatImage::GetSizes();
 	ValuesConstraint<string> vcSizes(vstrSizes);
 	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes,cmd);
-	SwitchArg argHRE("","highres-extrusion","Enables high accuracy extrusion simulation. Creates a LOT of triangles, do not use for large prints!", cmd, false);
 	SwitchArg argGDB("","gdb","Enable SimAVR's GDB support",cmd);
 	std::vector<string> vstrGfx = {"none","lite","fancy", "bear"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed, cmd);
 	ValueArg<string> argFW("f","firmware","hex/afx/elf Firmware file to load (default MK3S.afx)",false,"MK3S.afx","filename", cmd);
+	std::vector<string> vstrExts = PrintVisualType::GetOpts();
+	ValuesConstraint<string> vcPrintOpts(vstrExts);
+	ValueArg<string> argExtrusion("","extrusion","Set Print visual type. HR options create a LOT of triangles, do not use for large prints!",false, "Line", &vcPrintOpts, cmd);
 	MultiSwitchArg argDebug("d","debug","Increases debugging output, where supported.", cmd);
 	SwitchArg argColourE("", "colour-extrusion", "Colours extrusion by width (for advanced step/extrusion debugging.", cmd, false);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.",cmd);
@@ -330,9 +333,8 @@ int main(int argc, char *argv[])
 
 	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
-	Config::Get().SetHRE(argHRE.isSet());
+	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
 	Config::Get().SetColourE(argColourE.isSet());
-	Config::Get().Set3DE(arg3D.isSet());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 

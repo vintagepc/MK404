@@ -24,8 +24,8 @@
 #include "FatImage.h"                 // for FatImage
 #include "KeyController.h"
 #include "Macros.h"
-#include "Printer.h"                  // for Printer, Printer::VisualType
 #include "PrintVisualType.h"
+#include "Printer.h"                  // for Printer, Printer::VisualType
 #include "PrinterFactory.h"           // for PrinterFactory
 #include "ScriptHost.h"               // for ScriptHost
 #include "TelemetryHost.h"

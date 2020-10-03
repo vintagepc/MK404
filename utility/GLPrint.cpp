@@ -67,6 +67,34 @@ void GLPrint::Clear()
 	m_bFirst = true;
 }
 
+uint32_t GLPrint::GetAdjustedStep(uint32_t uiStep)
+{
+
+	return uiStep;
+
+	auto cyclePos = uiStep%256;
+	if (cyclePos<112 || cyclePos > 160) return uiStep;
+
+	if (cyclePos>=144 || cyclePos<=128)
+	{
+		return uiStep-32; // lag behind 2 microstep;
+	}
+	else
+	{
+		return uiStep-64; // Lag 2 microsteps right at the midpoint.
+	}
+
+	// switch(uiStep%256)
+	// {
+	// 	case 0:
+	// 	case 1:
+	// 	case 2:
+	// 	1
+	// 	case 15:
+	// 	case 16:
+	// }
+}
+
 void GLPrint::OnEStep(const uint32_t& uiE)
 {
 	m_uiE = uiE;

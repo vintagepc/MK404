@@ -44,7 +44,7 @@ class GLPrint
 
 	// Function to receive new coordinate updates from your simulated printer's stepper drivers.
 	//void NewCoord(float fX, float fY, float fZ, float fE);
-	inline void OnXStep(const uint32_t &value) { m_uiX = value;}
+	inline void OnXStep(const uint32_t &value) { m_uiX = GetAdjustedStep(value);}
 	inline void OnYStep(const uint32_t &value) { m_uiY = value;}
 	inline void OnZStep(const uint32_t &value) { m_uiZ = value;}
 	void OnEStep(const uint32_t &value);
@@ -58,7 +58,9 @@ class GLPrint
 
 		void AddSegment();//(const std::array<float, 4> &fvEnd, gsl::span<float> &fvPrev);
 
-		uint32_t m_uiX = 0, m_uiY = 0, m_uiZ = 0, m_uiE = 0;
+		static uint32_t GetAdjustedStep(uint32_t uiStep);
+
+		std::atomic_uint32_t m_uiX {0}, m_uiY {0}, m_uiZ {0}, m_uiE {0};
 
 		std::array<uint32_t,4> m_uiExtrEnd = {{0,0,0,0}}, m_uiExtrStart = {{0,0,0,0}};
 

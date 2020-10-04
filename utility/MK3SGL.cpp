@@ -686,8 +686,12 @@ void MK3SGL::DrawMMU()
 	}
 
 
-void MK3SGL::MouseCB(int button, int action, int, int)
+void MK3SGL::MouseCB(int button, int action, int x, int y)
 {
+	auto w = glutGet(GLUT_WINDOW_WIDTH);
+	auto h = glutGet(GLUT_WINDOW_HEIGHT);
+	m_camera.setWindowSize(w, h);
+	m_camera.setCurrentMousePos(x,y);
  	if (button == GLUT_LEFT_BUTTON) {
 		if (action == GLUT_DOWN)
 		{

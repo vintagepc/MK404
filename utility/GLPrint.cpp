@@ -58,11 +58,18 @@ GLPrint::GLPrint(float fR, float fG, float fB):m_fColR(fR),m_fColG(fG),m_fColB(f
 
 void GLPrint::Clear()
 {
+	std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 	m_uiExtrStart = m_uiExtrEnd = {{0,0,0,0}};
 	m_ivCount.clear();
 	m_ivStart.clear();
 	m_fvDraw.clear();
 	m_fvNorms.clear();
+	m_vPath.clear();
+	m_fvTri.clear();
+	m_fvTriNorm.clear();
+	m_ivTCount.clear();
+	m_ivTStart.clear();
+	m_vfTriColor.clear();
 	m_bExtruding = false;
 	m_bFirst = true;
 }

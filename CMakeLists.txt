@@ -434,6 +434,9 @@ if(SANITY_TESTS)
 	add_test(Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
 	add_test(Keys env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
 	add_test(Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint.txt)
+	add_test(Print_HRQ env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_HRQ.txt --extrusion Quad_HR --colour-extrusion)
+	add_test(Print_TAvg env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_AvgT.txt --extrusion Tube_Avg)
+
 endif()
 
 # This is a bit meaningless if your system doesn't generate the same renderings as the BR.

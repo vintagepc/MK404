@@ -67,7 +67,7 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
 	RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);
 	RegisterActionAndMenu("ResetCamera","Resets camera view to default",ActResetView);
-	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state)", ActMouse, {ArgType::Int,ArgType::Int});
+	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state,x,y)", ActMouse, {ArgType::Int,ArgType::Int,ArgType::Int,ArgType::Int});
 	RegisterAction("MouseMove", "Simulates a mouse move (x,y)", ActMouseMove, {ArgType::Int,ArgType::Int});
 
 	RegisterKeyHandler('`', "Reset camera view to default");
@@ -247,27 +247,47 @@ void MK3SGL::Init(avr_t *avr)
 
 Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
+	if (m_iQueuedAct>=0) // Don't clobber a queued item...
+	{
+		return LineStatus::Waiting;
+	}
+	else if (m_iQueuedAct == -2)
+	{
+		m_iQueuedAct = -1;
+		return LineStatus::Finished;
+	}
 	switch (iAct)
 	{
+		case ActMouse:
+		case ActMouseMove:
+			m_vArgs = vArgs;
 		case ActResetView:
-			ResetCamera();
-			return LineStatus::Finished;
+			m_iQueuedAct = iAct;
+			return LineStatus::Waiting;
 		case ActToggleNCam:
 			m_bFollowNozzle = !m_bFollowNozzle;
 			return LineStatus::Finished;
 		case ActClear:
 			ClearPrint();
 			return LineStatus::Finished;
-		case ActMouse:
-			MouseCB(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)),0,0);
-			return LineStatus::Finished;
-		case ActMouseMove:
-			MotionCB(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)));
-			return LineStatus::Finished;
 		default:
 			return LineStatus::Unhandled;
 
 	}
+}
+
+void MK3SGL::ProcessAction_GL()
+{
+	switch (m_iQueuedAct)
+	{
+		case ActResetView:
+			ResetCamera();
+		case ActMouse:
+			MouseCB(std::stoi(m_vArgs.at(0)),std::stoi(m_vArgs.at(1)),std::stoi(m_vArgs.at(2)),std::stoi(m_vArgs.at(3)));
+		case ActMouseMove:
+			MotionCB(std::stoi(m_vArgs.at(0)),std::stoi(m_vArgs.at(1)));
+	}
+	m_iQueuedAct = -2;
 }
 
 void MK3SGL::TwistKnob(bool bDir)
@@ -423,6 +443,12 @@ void MK3SGL::Draw()
 	{
 		for (int i=0; i<5; i++) m_vPrints[i]->Clear();
 		m_bClearPrints = false;
+	}
+	if (m_iQueuedAct>=0)
+	{
+		// This may have issues if draw() is reentrant but I don't think it is as GLUT
+		// waits for the draw call to finish before it kicks off another one from PostRedisplay
+		ProcessAction_GL();
 	}
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 	glClearDepth(1.0f);

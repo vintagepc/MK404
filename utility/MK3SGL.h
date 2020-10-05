@@ -108,6 +108,11 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
 		void OnKeyPress(const Key& key) override;
 
+		// Stuff needed for the mouse events to happen in the GL context.
+		void ProcessAction_GL();
+		std::atomic_int16_t m_iQueuedAct{-1};
+		std::vector<std::string> m_vArgs;
+
         GLObj m_EVis {"assets/Triangles.obj"};
         GLObj m_MMUBase {"assets/MMU_stationary.obj"};
         GLObj m_MMUSel {"assets/MMU_Selector.obj"};

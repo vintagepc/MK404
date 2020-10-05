@@ -278,7 +278,7 @@ Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vecto
 
 void MK3SGL::ProcessAction_GL()
 {
-	switch (m_iQueuedAct)
+	switch (m_iQueuedAct.load())
 	{
 		case ActResetView:
 			ResetCamera();

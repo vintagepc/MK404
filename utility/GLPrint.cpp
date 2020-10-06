@@ -30,8 +30,7 @@
 #include <iostream>
 #include <iterator>
 
-
-static void CrossProduct(const std::vector<float>&fA, const std::vector<float>&fB, gsl::span<float>fOut)
+static void CrossProduct(const std::array<float, 3>&fA, const std::array<float, 3>&fB, gsl::span<float>fOut)
 {
 	fOut[0] = (fA[1]*fB[2]) - (fA[2]*fB[1]);
 	fOut[1] = (fA[2]*fB[0]) - (fA[0]*fB[2]);
@@ -60,16 +59,20 @@ void GLPrint::Clear()
 {
 	std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 	m_uiExtrStart = m_uiExtrEnd = {{0,0,0,0}};
-	m_ivCount.clear();
-	m_ivStart.clear();
-	m_fvDraw.clear();
-	m_fvNorms.clear();
-	m_vPath.clear();
-	m_fvTri.clear();
-	m_fvTriNorm.clear();
-	m_ivTCount.clear();
-	m_ivTStart.clear();
-	m_vfTriColor.clear();
+
+	// 3x float item vectors
+	m_fvDraw.clear(); m_fvDraw.reserve(VectorPrealoc3);
+	m_fvTriNorm.clear(); m_fvTriNorm.reserve(VectorPrealoc3);
+	m_fvNorms.clear(); m_fvNorms.reserve(VectorPrealoc3);
+	m_fvTri.clear(); m_fvTri.reserve(VectorPrealoc3);
+	m_vfTriColor.clear(); m_vfTriColor.reserve(VectorPrealoc3);
+
+	// 1x float item vectors
+	m_ivStart.clear(); m_ivStart.reserve(VectorPrealoc);
+	m_vPath.clear(); m_vPath.reserve(VectorPrealoc);
+	m_ivCount.clear(); m_ivCount.reserve(VectorPrealoc);
+	m_ivTCount.clear(); m_ivTCount.reserve(VectorPrealoc);
+	m_ivTStart.clear(); m_ivTStart.reserve(VectorPrealoc);
 	m_bExtruding = false;
 	m_bFirst = true;
 }
@@ -159,12 +162,12 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 		// We don't need to track co-linearity if not extruding.
 		bColinear = true;
 	}
-	std::vector<float> fExtrEnd = {
+	const std::array<float, 3> fExtrEnd = {
 		static_cast<float>(m_uiExtrEnd[0])/static_cast<float>(m_iStepsPerMM[0]*1000),
 		static_cast<float>(m_uiExtrEnd[1])/static_cast<float>(m_iStepsPerMM[2]*1000),
 		static_cast<float>(m_uiExtrEnd[2])/static_cast<float>(m_iStepsPerMM[1]*1000),
 		};
-	std::array<float,3> vfPos =
+	const std::array<float,3> vfPos =
 	{{
 		static_cast<float>(m_uiX)/static_cast<float>(m_iStepsPerMM[0]*1000),
 		static_cast<float>(m_uiZ)/static_cast<float>(m_iStepsPerMM[2]*1000),
@@ -177,7 +180,7 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 		{
 			//printf("New extrusion %u at index %u\n",m_ivStart.size(),m_ivStart.back());
 			// Add a temporary normal vertex
-			std::vector<float> fCross = {0,0,0}, fA = {0,0,0}, fB = {0,-1,0};
+			std::array<float, 3> fCross = {0,0,0}, fA = {0,0,0}, fB = {0,-1,0};
 			std::transform(vfPos.begin(), vfPos.end(), fExtrEnd.data(), fA.data(), std::minus<float>());
 			CrossProduct(fA,fB,{fCross.data(),3});
 			Normalize({fCross.data(),3});
@@ -220,7 +223,7 @@ void GLPrint::OnEStep(const uint32_t& uiE)
 	else if (!bColinear)
 	{
 		// First, update the previous normal with the new vertex info.
-		std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
+		std::array<float, 3> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
 		auto itPrev = m_fvNorms.end()-3;
 		std::transform(itPrev, itPrev+3, vfPos.data(), fA.data(), std::minus<float>()); // Length from p->curr
 		CrossProduct(fA,fB,{fCross.data(),3});
@@ -273,7 +276,7 @@ void GLPrint::AddSegment()
 	const float fLayerZRad = m_fZHt/2; //0.5*layer height. TODO (vintagepc): Sort this out based on guessed z height.
 
 	//std::cout << "Adding segment from: " << extPrev[0] << " " << fZ << " " << fY << " to " << m_fExtrEnd[0] << " " << m_fExtrEnd[1] << " " << m_fExtrEnd[2] << '\n';
-	std::vector<float> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-2,0};
+	std::array<float, 3> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-2,0};
 
 	auto pStart = m_vPath.begin();
 	bool bIsSkipping = false;
@@ -411,11 +414,11 @@ void GLPrint::AddSegment()
 
 void GLPrint::Draw()
 {
-	std::vector<float> fColor = {m_fColR,m_fColG,m_fColB,1};
+	static const std::array<float, 4> fColor = {m_fColR,m_fColG,m_fColB,1};
 	//std::vector<float> fG[4] = {0,0.5,0,1};
-	std::vector<float> fY = {1,1,0,1};
-	std::vector<float> fK = {0,0,0,1};
-	std::vector<float> fSpec = {1,1,1,1};
+	static const std::array<float, 4> fY = {1,1,0,1};
+	//static const std::array<float, 4> fK = {0,0,0,1};
+	static const std::array<float, 4> fSpec = {1,1,1,1};
 	glLineWidth(1.0);
 
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,fSpec.data());

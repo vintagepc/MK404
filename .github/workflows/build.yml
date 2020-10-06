@@ -166,7 +166,8 @@ jobs:
         shell: cmd
       - name: Set ENV
         run: |
-          echo "PATH=C:\tools\cygwin\bin;C:\tools\cygwin\usr\bin" >> $GITHUB_ENV
+          echo "C:\tools\cygwin\usr\bin" >> $GITHUB_PATH
+          echo "C:\tools\cygwin\bin" >> $GITHUB_PATH
       - name: Checkout ${{ github.event.pull_request.head.ref }}
         uses: actions/checkout@v2.2.0
         if: ${{ github.event.pull_request }}

@@ -13,7 +13,9 @@ Remaining To-Dos of note:
 Be sure to check out the [Historical timeline](https://github.com/vintagepc/MK404/wiki/Historical-Timeline) to get a peek at the growth of MK404.
 
 - ![CI Build](https://github.com/vintagepc/MK404/workflows/CI%20Build/badge.svg) ![Code Lint](https://github.com/vintagepc/MK404/workflows/Code%20Lint/badge.svg) ![Automated Tests](https://github.com/vintagepc/MK404/workflows/Automated%20Tests/badge.svg) (Don't be alarmed if the tests are failing, they are relatively new and it's possible they are more fragile than we'd like...)
-- **The simulator can complete a self test!**
+
+
+For a detailed list of features, see [Features And Capabilities](https://github.com/vintagepc/MK404/wiki/Features-and-Capabilities-Summary). The below is a brief summary of the more visually appealing entries.
 
 
 ![](https://user-images.githubusercontent.com/53943260/80157964-63404880-8595-11ea-9bfe-55668a0d4807.png)
@@ -22,21 +24,6 @@ Be sure to check out the [Historical timeline](https://github.com/vintagepc/MK40
 
 ![](https://github.com/vintagepc/MK404/wiki/images/Advanced_gfx.png)
 
-- Bootloader works
-- LCD works. Brightness support has been fixed.
-- Encoder and buttons are simulated
-- Power panic (fake button) is wired up
-- 2 UARTS are defined but not attached externally by default. Can be enabled by passing "-s" to access the primary serial port. UART2 is used for the MMU.
-- Thermistors are defined for the bed, PINDA, ambient and hotend. Bed/PINDA read higher than expected over 40C due to code in the official firmware (prusa3d#2601)
-- Fans have been attached, and can be controlled by the PWM output (or manually overridden to simulate conditions).
-- Heater behaviour has been implemented. A Hotend heater is attached and appears functional. Same goes for the heatbed.
-- PINDA simulation is present for both MBL and xyz cal. Toggle "sheet on bed" flag with the 'Y' key.
-- Simulated SD card
-- TMC2130s are sufficiently simulated for general operations.
-- Motor/positioning tracking present.
-- SPI flash for language support works, but because PTYs lack DTR it must be done either in two stages, or using the example script to trigger a reset at the right time.
-- The timer bug has been resolved using a customized build of SimAVR.
-- Flash/eeprom is persisted between reboots.
 - Virtual MMU support:
 
 ![](https://github.com/vintagepc/MK404/wiki/images/MMU2.png)

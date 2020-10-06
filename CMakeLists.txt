@@ -31,7 +31,6 @@ endif()
 
 add_subdirectory(3rdParty/tinyobjloader)
 add_subdirectory(3rdParty/gsl)
-
 add_subdirectory(scripts/tests)
 
 if (ENABLE_IWYU)
@@ -122,6 +121,7 @@ set(H_FILES
 	parts/wiring/MM_Control_01.h
 	parts/wiring/Test_Wiring.h
 	utility/Color.h
+	utility/Config.h
 	utility/GLPrint.h
 	utility/FatImage.h
 	utility/MK3SGL.h
@@ -431,9 +431,12 @@ if(SANITY_TESTS)
 	add_test(Fancy_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancy_gfx.txt)
 	add_test(Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404  Prusa_MK3SMMU2 -g lite -f MK3S.afx --script ../scripts/tests/test_litemmu_gfx.txt)
 	add_test(Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
-	add_test(KeyPress env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
-	add_test(Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
+	add_test(Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
+	add_test(Keys env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
 	add_test(Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint.txt)
+	add_test(Print_HRQ env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_HRQ.txt --extrusion Quad_HR --colour-extrusion)
+	add_test(Print_TAvg env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_AvgT.txt --extrusion Tube_Avg)
+
 endif()
 
 # This is a bit meaningless if your system doesn't generate the same renderings as the BR.

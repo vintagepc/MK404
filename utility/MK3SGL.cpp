@@ -67,7 +67,7 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
 	RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);
 	RegisterActionAndMenu("ResetCamera","Resets camera view to default",ActResetView);
-	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state)", ActMouse, {ArgType::Int,ArgType::Int});
+	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state,x,y)", ActMouse, {ArgType::Int,ArgType::Int,ArgType::Int,ArgType::Int});
 	RegisterAction("MouseMove", "Simulates a mouse move (x,y)", ActMouseMove, {ArgType::Int,ArgType::Int});
 
 	RegisterKeyHandler('`', "Reset camera view to default");
@@ -75,6 +75,14 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterKeyHandler('l',"Clears any print on the bed. May cause graphical glitches if used while printing.");
 	RegisterKeyHandler('w',"");
 	RegisterKeyHandler('s',"");
+
+	// RegisterKeyHandler('5',"");
+	// RegisterKeyHandler('6',"");
+	// RegisterKeyHandler('7',"");
+	// RegisterKeyHandler('8',"");
+	// RegisterKeyHandler('9',"");
+	// RegisterKeyHandler('0',"");
+
 
 	glewInit();
 #ifdef TEST_MODE
@@ -173,25 +181,24 @@ void MK3SGL::OnKeyPress(const Key& key)
 		case 's':
 			TwistKnob(key=='w');
 			break;
+		case '5':
+		case '6':
+			m_flDbg = m_flDbg + (key=='5'?0.001f:-0.001f);
+			break;
+		case '7':
+		case '8':
+			m_flDbg2 = m_flDbg2 + (key=='7'?0.001f:-0.001f);
+			break;
+		case '9':
+		case '0':
+			m_flDbg3 = m_flDbg3 + (key=='9'?0.001f:-0.001f);
+			break;
+
 	}
 	// Decomment this block and use the flDbg variables
 	// as your position translation. Then, you can move the
 	// object into place using the numpad, and just read off
 	// the correct position values to use when finished.
-	// if (c =='+')
-	// 	m_flDbg = m_flDbg+0.001f;
-	// else if (c == '-')
-	// 	m_flDbg = m_flDbg-0.001f;
-	// if (c =='*')
-	// 	m_flDbg2 = m_flDbg2+0.001f;
-	// else if (c == '/')
-	// 	m_flDbg2 = m_flDbg2-0.001f;
-	// if (c =='3')
-	// 	m_flDbg3 = m_flDbg3+0.001f;
-	// else if (c == '9')
-	// 	m_flDbg3 = m_flDbg3-0.001f;
-	// else if (c == '7')
-	// {
 	// 	m_iDbg ++;
 	// 	m_MMUBase.SetSubobjectVisible(m_iDbg,false);
 	// }
@@ -201,7 +208,7 @@ void MK3SGL::OnKeyPress(const Key& key)
 	// 	m_iDbg --;
 	// }
 	// printf("Int: %d\n",m_iDbg.load());
-	// printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
+	//printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
 }
 
 void MK3SGL::Init(avr_t *avr)
@@ -215,6 +222,12 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(FEED_IN,fcnCB,this);
 	RegisterNotify(SEL_IN,fcnCB,this);
 	RegisterNotify(IDL_IN,fcnCB,this);
+
+	auto fcnMotor = MAKE_C_CALLBACK(MK3SGL, OnMotorStep);
+	RegisterNotify(X_STEP_IN, fcnMotor, this);
+	RegisterNotify(Y_STEP_IN, fcnMotor, this);
+	RegisterNotify(Z_STEP_IN, fcnMotor, this);
+	RegisterNotify(E_STEP_IN, fcnMotor, this);
 
 	auto fcnBoolCB = MAKE_C_CALLBACK(MK3SGL,OnBoolChanged);
 	RegisterNotify(SHEET_IN, 	fcnBoolCB, 	this);
@@ -234,27 +247,47 @@ void MK3SGL::Init(avr_t *avr)
 
 Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs)
 {
+	if (m_iQueuedAct>=0) // Don't clobber a queued item...
+	{
+		return LineStatus::Waiting;
+	}
+	else if (m_iQueuedAct == -2)
+	{
+		m_iQueuedAct = -1;
+		return LineStatus::Finished;
+	}
 	switch (iAct)
 	{
+		case ActMouse:
+		case ActMouseMove:
+			m_vArgs = vArgs;
 		case ActResetView:
-			ResetCamera();
-			return LineStatus::Finished;
+			m_iQueuedAct = iAct;
+			return LineStatus::Waiting;
 		case ActToggleNCam:
 			m_bFollowNozzle = !m_bFollowNozzle;
 			return LineStatus::Finished;
 		case ActClear:
 			ClearPrint();
 			return LineStatus::Finished;
-		case ActMouse:
-			MouseCB(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)),0,0);
-			return LineStatus::Finished;
-		case ActMouseMove:
-			MotionCB(std::stoi(vArgs.at(0)),std::stoi(vArgs.at(1)));
-			return LineStatus::Finished;
 		default:
 			return LineStatus::Unhandled;
 
 	}
+}
+
+void MK3SGL::ProcessAction_GL()
+{
+	switch (m_iQueuedAct.load())
+	{
+		case ActResetView:
+			ResetCamera();
+		case ActMouse:
+			MouseCB(std::stoi(m_vArgs.at(0)),std::stoi(m_vArgs.at(1)),std::stoi(m_vArgs.at(2)),std::stoi(m_vArgs.at(3)));
+		case ActMouseMove:
+			MotionCB(std::stoi(m_vArgs.at(0)),std::stoi(m_vArgs.at(1)));
+	}
+	m_iQueuedAct = -2;
 }
 
 void MK3SGL::TwistKnob(bool bDir)
@@ -341,6 +374,25 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 	m_bDirty = true;
 }
 
+void MK3SGL::OnMotorStep(avr_irq_t *irq, uint32_t value)
+{
+		switch (irq->irq)
+	{
+		case IRQ::X_STEP_IN:
+			m_vPrints[m_iCurTool]->OnXStep(value);
+			break;
+		case IRQ::Y_STEP_IN:
+			m_vPrints[m_iCurTool]->OnYStep(value);
+			break;
+		case IRQ::Z_STEP_IN:
+			m_vPrints[m_iCurTool]->OnZStep(value);
+			break;
+		case IRQ::E_STEP_IN:
+			m_vPrints[m_iCurTool]->OnEStep(value);
+			break;
+	}
+}
+
 void MK3SGL::OnPosChanged(avr_irq_t *irq, uint32_t value)
 {
 	float fPos;
@@ -358,7 +410,6 @@ void MK3SGL::OnPosChanged(avr_irq_t *irq, uint32_t value)
 			break;
 		case IRQ::E_IN:
 			m_fEPos = fPos/1000.f;
-			m_vPrints[m_iCurTool]->NewCoord(m_fXPos,m_fYPos,m_fZPos,m_fEPos);
 			break;
 		case IRQ::FEED_IN:
 			m_fPPos = fPos/1000.f;
@@ -392,6 +443,12 @@ void MK3SGL::Draw()
 	{
 		for (int i=0; i<5; i++) m_vPrints[i]->Clear();
 		m_bClearPrints = false;
+	}
+	if (m_iQueuedAct>=0)
+	{
+		// This may have issues if draw() is reentrant but I don't think it is as GLUT
+		// waits for the draw call to finish before it kicks off another one from PostRedisplay
+		ProcessAction_GL();
 	}
 	glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
 	glClearDepth(1.0f);
@@ -655,8 +712,12 @@ void MK3SGL::DrawMMU()
 	}
 
 
-void MK3SGL::MouseCB(int button, int action, int, int)
+void MK3SGL::MouseCB(int button, int action, int x, int y)
 {
+	auto w = glutGet(GLUT_WINDOW_WIDTH);
+	auto h = glutGet(GLUT_WINDOW_HEIGHT);
+	m_camera.setWindowSize(w, h);
+	m_camera.setCurrentMousePos(x,y);
  	if (button == GLUT_LEFT_BUTTON) {
 		if (action == GLUT_DOWN)
 		{

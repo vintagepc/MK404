@@ -259,6 +259,7 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     uint32_t posOut;
 	std::memcpy (&posOut, &m_fCurPos, 4);
     RaiseIRQ(POSITION_OUT, posOut);
+	RaiseIRQ(STEP_POS_OUT, m_iCurStep);
     TRACE(printf("cur pos: %f (%u)\n",m_fCurPos,m_iCurStep));
 	bStall |= m_bStall;
     if (bStall)

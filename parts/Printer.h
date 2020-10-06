@@ -64,7 +64,6 @@ class Printer: public Scriptable
 
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
-
 		GLHelper m_gl{};
 
 	private:

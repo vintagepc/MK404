@@ -48,7 +48,8 @@ class TMC2130: public SPIPeripheral, public Scriptable
             _IRQ(ENABLE_IN,         "<tmc2130.en_in") \
             _IRQ(DIAG_OUT,          ">tmc2130.diag_out") \
             _IRQ(MIN_OUT,           ">tmc2130.min_out") \
-            _IRQ(POSITION_OUT,      ">tmc2130.pos_out")
+            _IRQ(POSITION_OUT,      ">tmc2130.pos_out") \
+			_IRQ(STEP_POS_OUT, 		">tmc2130.step_out")
         #include "IRQHelper.h"
 
         using TMC2130_cfg_t = struct
@@ -65,6 +66,8 @@ class TMC2130: public SPIPeripheral, public Scriptable
 
         // Sets the configuration to the provided values. (inversion, positions, etc)
         void SetConfig(TMC2130_cfg_t cfg);
+
+		inline const TMC2130_cfg_t& GetConfig() { return cfg; }
 
         // Registers with SimAVR.
         void Init(avr_t *avr);

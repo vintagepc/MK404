@@ -432,8 +432,17 @@ void ScriptHost::OnAVRCycle()
 					if (m_clients.count("Board") && m_clients.at("Board")->m_ActionIDs.count("Resume"))
 					{
 						int ID = m_clients.at("Board")->m_ActionIDs.at("Resume");
-						m_clients.at("Board")->ProcessAction(ID,{});
+						LS lsUnpause = m_clients.at("Board")->ProcessAction(ID,{});
+						if (lsUnpause !=LS::Finished)
+						{
+							std::cerr << "Client failed to resume after ExecHold - ID " << std::to_string(ID) << '\n';
+						}
 					}
+					else
+					{
+						std::cerr << "Failed to resume after ExecHold!\n";
+					}
+
 				}
 				m_iLine++; // This line is done, mobe on.
 				m_iTimeoutCount = 0;

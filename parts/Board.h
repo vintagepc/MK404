@@ -27,6 +27,7 @@
 #include "IScriptable.h"    // for ArgType, IScriptable::LineStatus, IScript...
 #include "PinNames.h"       // for Pin
 #include "Scriptable.h"     // for Scriptable
+#include "Util.h"
 #include "Wiring.h"         // for Wiring
 #include "sim_avr.h"        // for avr_t, avr_flashaddr_t, avr_reset, avr_run
 #include "sim_irq.h"        // for avr_connect_irq, avr_irq_t, avr_raise_irq

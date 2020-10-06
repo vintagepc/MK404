@@ -21,11 +21,12 @@
 
 #pragma once
 
-#include "gsl-lite.hpp"
+#include "PrintVisualType.h"
 #include <array>   // for array
 #include <atomic>
-#include <cmath>   // for sqrt
+#include <cstdint>
 #include <mutex>
+#include <tuple>
 #include <vector>  // for vector
 
 class GLPrint
@@ -41,44 +42,57 @@ class GLPrint
 	// Draws the print within the current GL matrix context.
 	void Draw();
 
-	// Function to receive new coordinate updates from your simulated printer's stepper drivers.
-	void NewCoord(float fX, float fY, float fZ, float fE);
+	// Functions to receive new coordinate updates from your simulated printer's stepper drivers.
+
+	// Swap these two to enable simulated nonlinearity on X.
+//	inline void OnXStep(const uint32_t &value) { m_uiX = GetAdjustedStep(value);}
+	inline void OnXStep(const uint32_t &value) { m_uiX = value;}
+
+	inline void OnYStep(const uint32_t &value) { m_uiY = value;}
+	inline void OnZStep(const uint32_t &value) { m_uiZ = value;}
+	void OnEStep(const uint32_t &value);
+
+	inline void SetStepsPerMM(int16_t iX, int16_t iY, int16_t iZ, int16_t iE)
+	{
+		m_iStepsPerMM = {iX, iY, iZ, iE};
+	}
 
 	private:
 
-		static inline void CrossProduct(const std::vector<float>&fA, const std::vector<float>&fB, gsl::span<float>fOut)
-		{
-			fOut[0] = (fA[1]*fB[2]) - (fA[2]*fB[1]);
-			fOut[1] = (fA[2]*fB[0]) - (fA[0]*fB[2]);
-			fOut[2] = (fA[0]*fB[1]) - (fA[1]*fB[0]);
-		};
-
-		static inline void Normalize(gsl::span<float>fA)
-		{
-			float fNorm = std::sqrt((fA[0]*fA[0]) + (fA[1]*fA[1]) + (fA[2]*fA[2]));
-			fA[0]/=fNorm;
-			fA[1]/=fNorm;
-			fA[2]/=fNorm;
-		}
-
-		//void FindNearest(const float fVec[3]);
+		void AddSegment();//(const std::array<float, 4> &fvEnd, gsl::span<float> &fvPrev);
 
 
-		std::array<int,4> m_iExtrEnd = {{0,0,0,0}}, m_iExtrStart = {{0,0,0,0}};
-		std::array<float,4> m_fExtrEnd = {{0,0,0,0}}, m_fExtrStart = {{0,0,0,0}};
+		// This is a function to calculate simulated stepper non linearity
+		static uint32_t GetAdjustedStep(uint32_t uiStep);
+
+		std::atomic_uint32_t m_uiX {0}, m_uiY {0}, m_uiZ {0}, m_uiE {0};
+
+		std::array<uint32_t,4> m_uiExtrEnd = {{0,0,0,0}}, m_uiExtrStart = {{0,0,0,0}};
+
+		std::array<float, 3> m_fExtrEnd = {{0,0,0}};
+
+		std::vector<int16_t> m_iStepsPerMM = {0,0,0};
+
 		std::vector<int> m_ivStart, m_ivTStart;
 		std::vector<int> m_ivCount, m_ivTCount;
 		std::vector<float> m_fvDraw, m_fvNorms;
-		std::vector<float> m_fvTri;
+		std::vector<float> m_fvTri, m_fvTriNorm, m_vfTriColor;
 		// Layer vertex tracking.
 		std::vector<float*> m_vpfLayer1, m_vpfLayer2;
 		// std::vector<float*> *m_pCurLayer = &m_vpfLayer1;   // not used
 		// std::vector<float*> *m_pPrevLayer = &m_vpfLayer2;  // not used
-		float m_fCurZ = -1;
+		float m_fPrevZ = -1, m_fCurZ = 0, m_fZHt = 1.001;
 		// float m_fLastZ = -1;                          // not used
-		float m_fEMax = 0;
+		uint64_t m_iEMax = 0;
+		bool m_bFirst = true;
+		float m_fLastERate = 0;
 		const float m_fColR, m_fColG, m_fColB;
 		std::atomic_bool m_bExtruding = {false};
+		std::vector<std::tuple<uint32_t,uint32_t,uint32_t>> m_vPath;
 
 		std::mutex m_lock;
+
+		unsigned int m_iVisType = PrintVisualType::LINE, m_iBaseMode = PrintVisualType::QUAD;
+
+		bool m_bHRE = false, m_bColExt = false;
 };

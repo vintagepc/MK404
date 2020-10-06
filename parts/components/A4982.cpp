@@ -54,18 +54,16 @@ void A4982::_Draw(bool bIsSimple)
 			glVertex3f(350,0,0);
 			glVertex3f(350,10,0);
 			glVertex3f(0,10,0);
-		glEnd();
-        glColor3f(1,1,1);
-        if (m_bEnable)
-        {
-            glBegin(GL_QUADS);
+        	glColor3f(1,1,1);
+			if (m_bEnable)
+			{
                 glVertex3f(3,8,0);
                 glVertex3f(13,8,0);
                 glVertex3f(13,1,0);
                 glVertex3f(3,1,0);
-            glEnd();
-            glColor3f(0,0,0);
-        }
+            	glColor3f(0,0,0);
+			}
+		glEnd();
         glPushMatrix();
             glTranslatef(3,7,0);
             glScalef(0.09,-0.05,0);
@@ -93,15 +91,11 @@ void A4982::_Draw(bool bIsSimple)
 				glVertex3f(-2,2,0);
 				glVertex3f(-2,8,0);
 				glVertex3f(0,8,0);
-			glEnd();
-			glBegin(GL_QUADS);
 				glVertex3f(m_fEnd,2,0);
 				glVertex3f(m_fEnd+2,2,0);
 				glVertex3f(m_fEnd+2,8,0);
 				glVertex3f(m_fEnd,8,0);
-			glEnd();
 				glColor3f(0,1,1);
-			glBegin(GL_QUADS);
 				glVertex3f(m_fCurPos-0.5,2,0);
 				glVertex3f(m_fCurPos+0.5,2,0);
 				glVertex3f(m_fCurPos+0.5,8,0);

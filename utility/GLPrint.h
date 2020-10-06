@@ -42,9 +42,12 @@ class GLPrint
 	// Draws the print within the current GL matrix context.
 	void Draw();
 
-	// Function to receive new coordinate updates from your simulated printer's stepper drivers.
-	//void NewCoord(float fX, float fY, float fZ, float fE);
-	inline void OnXStep(const uint32_t &value) { m_uiX = GetAdjustedStep(value);}
+	// Functions to receive new coordinate updates from your simulated printer's stepper drivers.
+
+	// Swap these two to enable simulated nonlinearity on X.
+//	inline void OnXStep(const uint32_t &value) { m_uiX = GetAdjustedStep(value);}
+	inline void OnXStep(const uint32_t &value) { m_uiX = value;}
+
 	inline void OnYStep(const uint32_t &value) { m_uiY = value;}
 	inline void OnZStep(const uint32_t &value) { m_uiZ = value;}
 	void OnEStep(const uint32_t &value);
@@ -58,6 +61,8 @@ class GLPrint
 
 		void AddSegment();//(const std::array<float, 4> &fvEnd, gsl::span<float> &fvPrev);
 
+
+		// This is a function to calculate simulated stepper non linearity
 		static uint32_t GetAdjustedStep(uint32_t uiStep);
 
 		std::atomic_uint32_t m_uiX {0}, m_uiY {0}, m_uiZ {0}, m_uiE {0};

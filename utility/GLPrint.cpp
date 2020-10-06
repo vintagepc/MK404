@@ -77,8 +77,6 @@ void GLPrint::Clear()
 uint32_t GLPrint::GetAdjustedStep(uint32_t uiStep)
 {
 
-	return uiStep;
-
 	auto cyclePos = uiStep%256;
 	if (cyclePos<112 || cyclePos > 160) return uiStep;
 

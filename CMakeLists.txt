@@ -53,7 +53,7 @@ set (FIRMWARE
     assets/Firmware/stk500boot_v2_mega2560.hex
     )
 
-set(H_FILES
+set(H_FILES_base
 	parts/ADCPeripheral.h
 	parts/BasePeripheral.h
 	parts/Board.h
@@ -129,20 +129,26 @@ set(H_FILES
 	utility/OBJCollection.h
 	utility/SerialPipe.h
 	utility/Macros.h
+	utility/Util.h
+	parts/IKeyClient.h
+	parts/KeyController.h
+)
+
+
+set(H_FILES_3rdParty
 	3rdParty/MK3/thermistortables.h
 	3rdParty/MK3/Configuration_prusa.h
 	3rdParty/MK3/eeprom.h
-	utility/Util.h
 	3rdParty/arcball/Camera.hpp
 	3rdParty/arcball/Matrix.hpp
 	3rdParty/arcball/Vectors.hpp
 	3rdParty/arcball/ArcBall.hpp
 	3rdParty/arcball/Quaternion.hpp
-	parts/IKeyClient.h
-	parts/KeyController.h
 )
 
-set(MK404_SOURCES
+set(H_FILES ${H_FILES_base} ${H_FILES_3rdParty})
+
+set(MK404_SOURCES_base
 	parts/Board.cpp
 	parts/I2CPeripheral.cpp
 	parts/boards/EinsyRambo.cpp
@@ -204,10 +210,15 @@ set(MK404_SOURCES
 	utility/Color.cpp
 	utility/OBJCollection.cpp
 	utility/SerialPipe.cpp
-	3rdParty/arcball/Camera.cpp
 	parts/IKeyClient.cpp
 	parts/KeyController.cpp
 )
+
+set(MK404_SOURCES_3rdparty
+	3rdParty/arcball/Camera.cpp
+)
+
+set(MK404_SOURCES ${MK404_SOURCES_base} ${MK404_SOURCES_3rdparty})
 
 if (ENABLE_TIDY)
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${FIRMWARE})
@@ -444,8 +455,7 @@ if(RUNNER_ENV)
 	add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)
 endif()
 
-
-add_custom_target(CPPCheck COMMAND cppcheck --error-exitcode=2 --std=c++11 --language=c++ ${MK404_SOURCES} ${H_FILES}
+add_custom_target(CPPCheck COMMAND cppcheck --template='::{severity} file={file},line={line}::{message}' --enable=warning --std=c++11 --language=c++ MK404.cpp ${MK404_SOURCES_base} ${H_FILES_base}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 add_custom_target(Build_Run COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 &)

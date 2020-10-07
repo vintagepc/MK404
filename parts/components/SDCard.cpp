@@ -168,7 +168,7 @@ SDCard::State SDCard::ProcessCommand()
 {
 	SDCard::State next_state = State::IDLE;
 
-	DEBUG ("Processing command %u.", m_CmdIn.bits.cmd);
+	DEBUG ("Processing command %d.", m_CmdIn.bits.cmd);
 
 	switch (m_CmdIn.bits.cmd) {
 		case Command::CMD0:
@@ -311,7 +311,7 @@ void SDCard::OnCSELIn (struct avr_irq_t *, uint32_t value)
 
 uint8_t SDCard::OnSPIIn(struct avr_irq_t *, uint32_t value)
 {
-	DEBUG ("Received byte %x (in state %u).", value, m_state);
+	DEBUG ("Received byte %x (in state %d).", value, m_state);
 	uint8_t uiReply = 0xFF;
 	/* Handle the command. */
 	switch (m_state) {

@@ -109,7 +109,6 @@ extern "C" {
 
 static std::string GetBaseTitle()
 {
-	int c=5/0;
 	static std::string strTitle;
 	if (strTitle.empty())
 	{

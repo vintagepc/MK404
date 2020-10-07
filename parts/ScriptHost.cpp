@@ -286,17 +286,21 @@ bool ScriptHost::CheckArg(const ArgType &type, const std::string &val)
 		switch (type)
 		{
 			case ArgType::Int:
+				// cppcheck-suppress ignoredReturnValue
 				std::stoi(val);
 				return true;
 			case ArgType::Float:
+				// cppcheck-suppress ignoredReturnValue
 				std::stof(val);
 				return true;
 			case ArgType::Bool:
+				// cppcheck-suppress ignoredReturnValue
 				std::stoi(val);
 				return true;
 			case ArgType::String:
 				return true;
 			case ArgType::uint32:
+				// cppcheck-suppress ignoredReturnValue
 				std::stoul(val);
 				return true;
 		}

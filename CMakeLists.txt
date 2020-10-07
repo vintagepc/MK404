@@ -455,7 +455,7 @@ if(RUNNER_ENV)
 	add_test(Image_compare diff -qr ../scripts/tests/snaps tests/snaps -x .directory)
 endif()
 
-add_custom_target(CPPCheck COMMAND cppcheck --template='::{severity} file={file},line={line}::{message}' --enable=warning --std=c++11 --language=c++ MK404.cpp ${MK404_SOURCES_base} ${H_FILES_base}
+add_custom_target(CPPCheck COMMAND cppcheck --template='::{severity} file={file},line={line}::{message}' --error-exitcode=2 --inline-suppr --enable=warning --std=c++11 --language=c++ MK404.cpp ${MK404_SOURCES_base} ${H_FILES_base}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 add_custom_target(Build_Run COMMAND cd ${PROJECT_BINARY_DIR} && ./MK404 &)

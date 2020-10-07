@@ -210,9 +210,9 @@ class TMC2130: public SPIPeripheral, public Scriptable
         int32_t m_iCurStep = 0;
         int32_t m_iMaxPos = 0;
         std::atomic<float> m_fCurPos = {0}, m_fEnd = {0}; // Tracks position in float for gl
-        tmc2130_cmd_t m_cmdIn;
-        tmc2130_cmd_t m_cmdProc;
-        tmc2130_cmd_t m_cmdOut; // the previous data for output.
+        tmc2130_cmd_t m_cmdIn {};
+        tmc2130_cmd_t m_cmdProc {};
+        tmc2130_cmd_t m_cmdOut {}; // the previous data for output.
         tmc2130_registers_t m_regs{};
 		std::atomic_char m_cAxis;
 		bool m_bStall = false;

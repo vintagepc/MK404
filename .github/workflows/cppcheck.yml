@@ -78,5 +78,7 @@ jobs:
     - name : Final status
       id: tidy_status
       run: |
+        cd ${{ runner.workspace }}/MK404
+        cat build/tidy.txt | python3 3rdParty/clang-tidy-to-github.py `pwd`
         grep -v "jobserver unavailable" ${{ runner.workspace }}/MK404/build/tidy.txt > ${{ runner.workspace }}/MK404/build/tidy2.txt
         ! grep -q "warning:" ${{ runner.workspace }}/MK404/build/tidy2.txt

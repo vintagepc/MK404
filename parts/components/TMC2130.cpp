@@ -285,6 +285,8 @@ void TMC2130::OnEnableIn(struct avr_irq_t *, uint32_t value)
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
+// needed because cppcheck doesn't seem to do bitfield unions correctly.
+// cppcheck-suppress uninitMemberVar
 TMC2130::TMC2130(char cAxis):Scriptable(std::string("") + cAxis),m_cAxis(cAxis)
 {
 		// Check register packing/sizes:

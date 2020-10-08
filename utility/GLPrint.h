@@ -29,6 +29,10 @@
 #include <tuple>
 #include <vector>  // for vector
 
+#define NONLINEAR_X
+#define NONLINEAR_Y
+#define NONLINEAR_E
+
 class GLPrint
 {
 	public:
@@ -45,10 +49,17 @@ class GLPrint
 	// Functions to receive new coordinate updates from your simulated printer's stepper drivers.
 
 	// Swap these two to enable simulated nonlinearity on X.
-//	inline void OnXStep(const uint32_t &value) { m_uiX = GetAdjustedStep(value);}
+#ifdef NONLINEAR_X
+	inline void OnXStep(const uint32_t &value) { m_uiX = GetAdjustedStep(value);}
+#else
 	inline void OnXStep(const uint32_t &value) { m_uiX = value;}
+#endif
 
+#ifdef NONLINEAR_Y
+	inline void OnYStep(const uint32_t &value) { m_uiY = GetAdjustedStep(value);}
+#else
 	inline void OnYStep(const uint32_t &value) { m_uiY = value;}
+#endif
 	inline void OnZStep(const uint32_t &value) { m_uiZ = value;}
 	void OnEStep(const uint32_t &value);
 

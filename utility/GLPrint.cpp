@@ -103,14 +103,9 @@ uint32_t GLPrint::GetAdjustedStep(uint32_t uiStep)
 	// }
 }
 
-void GLPrint::OnEStep(const uint32_t& uiE1)
+void GLPrint::OnEStep(const uint32_t& value)
 {
-	uint32_t uiE;
-#ifdef NONLINEAR_E
-	uiE = GetAdjustedStep(uiE1);
-#else
-	uiE = uiE1;
-#endif
+	uint32_t uiE = m_bNLE ? GetAdjustedStep(value) : value;
 	m_uiE = uiE;
 	if (m_bFirst) // First cycle/extrusion.
 	{

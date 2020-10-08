@@ -188,7 +188,11 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 			ActToggleNCam,
 			ActResetView,
 			ActMouse,
-			ActMouseMove
+			ActMouseMove,
+			ActNonLinearX,
+			ActNonLinearY,
+			ActNonLinearZ,
+			ActNonLinearE
 		};
 
 		static MK3SGL *g_pMK3SGL;

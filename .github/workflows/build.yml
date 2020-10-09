@@ -145,7 +145,7 @@ jobs:
     steps:
       - uses: actions/cache@v1
         with:
-          path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+          path: C:\tools\chococache
           key: ${{ runner.os }}-cygwin-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-cygwin-
@@ -158,7 +158,7 @@ jobs:
             ${{ runner.os }}-cygwinpkgs-
       - name: Install cygwin
         run: |
-          choco config get cacheLocation
+          choco config set cacheLocation C:\tools\chococache
           choco install --no-progress cygwin
       - name: Install cygwin dependencies
         run: |

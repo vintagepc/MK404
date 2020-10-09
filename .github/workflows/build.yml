@@ -145,7 +145,7 @@ jobs:
     steps:
       - uses: actions/cache@v1
         with:
-          path: C:\tools\cygcache
+          path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
           key: ${{ runner.os }}-cygwin-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-cygwin-

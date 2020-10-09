@@ -162,7 +162,7 @@ jobs:
           choco install --no-progress cygwin
       - name: Install cygwin dependencies
         run: |
-          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -l C:/tools/cygcache -L -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL-devel,avr-gcc,python2,libpng-devel
+          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -l C:/tools/cygcache -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL-devel,avr-gcc,python2,libpng-devel
         shell: cmd
 
       - name: Checkout ${{ github.event.pull_request.head.ref }}
@@ -183,6 +183,7 @@ jobs:
 
       - name: Configure build
         run: |
+          echo %USERPROFILE%
           cd MK404
           mkdir build
           cd build

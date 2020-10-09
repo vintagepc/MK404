@@ -155,7 +155,7 @@ jobs:
           path: C:\tools\cygcache
           key: ${{ runner.os }}-cygwinpkgs-1_1
           restore-keys: |
-            ${{ runner.os }}-cygwinkgs-
+            ${{ runner.os }}-cygwinpkgs-
       - name: Install cygwin
         run: |
           choco config get cacheLocation

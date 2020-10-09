@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
 	}
 
 	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,
-		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),""); // this line is the CreateBoard() args.
+		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),"stk500boot_v2_mega2560.hex"); // this line is the CreateBoard() args.
 
 	pBoard->SetPrimary(true); // This is the primary board, responsible for scripting/dispatch. Blocks contention from sub-boards, e.g. MMU.
 

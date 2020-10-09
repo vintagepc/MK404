@@ -131,7 +131,7 @@ namespace Boards
 
 		m_Allg.GetConfig().iMaxMM = 20;
 		m_Allg.GetConfig().fStartPos = 10.f;
-		m_Allg.GetConfig().uiStepsPerMM = 10;
+		m_Allg.GetConfig().uiStepsPerMM = 10*16;
 		AddHardware(m_Allg);
 		TryConnect(X_DIR_PIN, &m_Allg, A4982::DIR_IN);
 		TryConnect(X_STEP_PIN, &m_Allg, A4982::STEP_IN);

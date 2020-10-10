@@ -15,7 +15,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  tests:
+  part_tests:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -71,24 +71,113 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Run tests
+      id: test_pts
       continue-on-error: true
       run: |
         cd ${{ runner.workspace }}/MK404/build
-        make Coverage.tar.gz
+        make Test_Parts
 
-    - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps.tar.gz tests/snaps/
+    - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_core.tar.gz tests/snaps/
 
     - name: Upload report
       uses: actions/upload-artifact@v2
       with:
         name: Report
         path: |
-          ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
-          ${{ runner.workspace }}/MK404/build/snaps.tar.gz
+          ${{ runner.workspace }}/MK404/build/snaps_core.tar.gz
+#          ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
 
-    - name: Comment on PR
+    - name: Upload to codecov.io
+      run: |
+        cd ${{ runner.workspace }}/MK404/build
+        bash <(curl -s https://codecov.io/bash) -f parts.info
+
+    - name: Report failure
+      if: steps.test_pts.outcome == 'failure'
+      run: test -n ""
+    # - name: Comment on PR
+    #   if: ${{ github.event.pull_request }}
+    #   uses: marocchino/sticky-pull-request-comment@v1
+    #   with:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     path: ${{ runner.workspace }}/MK404/build/summary.txt
+  # This workflow contains a single job called "build"
+  ext1_tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: Checkout ${{ github.event.pull_request.head.ref }}
+      uses: actions/checkout@v2.2.0
       if: ${{ github.event.pull_request }}
-      uses: marocchino/sticky-pull-request-comment@v1
       with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        path: ${{ runner.workspace }}/MK404/build/summary.txt
+        repository: vintagepc/MK404.git
+        ref: ${{ github.event.pull_request.head.sha }}
+        submodules: true
+
+    - name: Checkout ${{ github.event.ref }}
+      uses: actions/checkout@v2.2.0
+      if: ${{ !github.event.pull_request }}
+      with:
+        repository: vintagepc/MK404.git
+        ref: ${{ github.event.ref }}
+        submodules: true
+
+    - name: Cache packages
+      uses: actions/cache@v1.0.3
+      id: cache-pkgs
+      with:
+          path: "packages"
+          key: "pkgs-1_0_1-test"
+          restore-keys: "pkgs-1_0_1-test"
+
+    - name: Setup cache dir
+      if:  ${{ ! steps.cache-valgrind.outputs.cache-hit }}
+      run: mkdir -p packages/partial
+
+    - name: Install packages
+      run: |
+          sudo apt-get update
+          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov xvfb
+
+    - name: Cache permissions
+      run: sudo chmod -R 744 packages
+
+    - uses: openrndr/setup-opengl@21a61c3
+    - run: |
+        xvfb-run glxinfo
+        ls -l
+        echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
+
+    - name: Prepare CMake build
+      run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DENABLE_GCOV=1 -DSANITY_TESTS=1 -DRUNNER_ENV=1 ..
+
+    - name: Build Einsy
+      run: cd ${{ runner.workspace }}/MK404/build && make -j2
+
+    - name: Run tests
+      id: tests_ext
+      continue-on-error: true
+      run: |
+        cd ${{ runner.workspace }}/MK404/build
+        make Test_ext1
+
+    - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_ext1.tar.gz tests/snaps/
+
+    - name: Upload report
+      uses: actions/upload-artifact@v2
+      with:
+        name: Report
+        path: |
+          ${{ runner.workspace }}/MK404/build/snaps_ext1.tar.gz
+
+    - name: Upload to codecov.io
+      run: |
+        cd ${{ runner.workspace }}/MK404/build
+        bash <(curl -s https://codecov.io/bash) -f ext1.info
+
+    - name: Report failure
+      if: steps.tests_ext.outcome == 'failure'
+      run: echo ${{ steps.tests_ext.outcome  }} && test -n ""

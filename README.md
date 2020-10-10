@@ -12,7 +12,12 @@ Remaining To-Dos of note:
 
 Be sure to check out the [Historical timeline](https://github.com/vintagepc/MK404/wiki/Historical-Timeline) to get a peek at the growth of MK404.
 
-- ![CI Build](https://github.com/vintagepc/MK404/workflows/CI%20Build/badge.svg) ![Code Lint](https://github.com/vintagepc/MK404/workflows/Code%20Lint/badge.svg) ![Automated Tests](https://github.com/vintagepc/MK404/workflows/Automated%20Tests/badge.svg) (Don't be alarmed if the tests are failing, they are relatively new and it's possible they are more fragile than we'd like...)
+- ![CI Build](https://github.com/vintagepc/MK404/workflows/CI%20Build/badge.svg)
+- ![Code Lint](https://github.com/vintagepc/MK404/workflows/Code%20Lint/badge.svg)
+- [![Coverage](https://codecov.io/gh/vintagepc/MK404/branch/master/graph/badge.svg)](https://codecov.io/gh/vintagepc/MK404)
+- ![Automated Tests](https://github.com/vintagepc/MK404/workflows/Automated%20Tests/badge.svg)
+
+(Don't be alarmed if the tests are failing, they are relatively new and it's possible they are more fragile than we'd like...)
 
 
 For a detailed list of features, see [Features And Capabilities](https://github.com/vintagepc/MK404/wiki/Features-and-Capabilities-Summary). The below is a brief summary of the more visually appealing entries.

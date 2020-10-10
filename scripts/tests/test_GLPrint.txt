@@ -4,6 +4,8 @@ ScriptHost::SetQuitOnTimeout(1)
 # skip wizard/cal
 EEPROM::Poke(3935,0)
 EEPROM::Poke(4087,1)
+EEPROM::PeekVerify(4087,1)
+EEPROM::PeekVerify(3935,0)
 LCD::WaitForText(Prusa i3 MK3S OK,3)
 3DVisuals::ToggleNozzleCam()
 IRSensor::Set(2)

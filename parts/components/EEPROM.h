@@ -65,7 +65,8 @@ class EEPROM: public BasePeripheral, public Scriptable {
 			ActPoke,
 			ActSave,
 			ActLoad,
-			ActClear
+			ActClear,
+			ActPeekVerify
 		};
 
 };

@@ -292,11 +292,11 @@ void A4982::Init(struct avr_t * avr)
 float A4982::StepToPos(int32_t step)
 {
 	// Position is always in 16ths of a step.
-	return static_cast<float>(step)/16.f/static_cast<float>(m_cfg.uiStepsPerMM);
+	return static_cast<float>(step)/static_cast<float>(m_cfg.uiStepsPerMM);
 }
 
 int32_t A4982::PosToStep(float pos)
 {
 	// Position is always 16ths of a step...
-	return pos*16.f*static_cast<float>(m_cfg.uiStepsPerMM);
+	return pos*static_cast<float>(m_cfg.uiStepsPerMM);
 }

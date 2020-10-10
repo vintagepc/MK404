@@ -407,6 +407,7 @@ void MK3SGL::OnMotorStep(avr_irq_t *irq, uint32_t value)
 			// The narrow will assert if there is an overflow/underflow condition.
 			// Time should never be negative...
 			m_vPrints[m_iCurTool]->OnEStep(value, gsl::narrow<uint32_t>(m_pAVR->cycle - m_lastETick));
+			m_lastETick = m_pAVR->cycle;
 			break;
 	}
 }

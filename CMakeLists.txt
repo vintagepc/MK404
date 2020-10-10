@@ -469,7 +469,7 @@ add_test(ext1_Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_
 add_test(ext1_Keys env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
 
 # TODO- move these images out of parts and to their own ext2 dir...
-add_test(ext2_Print_prep env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -f MK3S.afx --sdimage Test.img --script ../scripts/tests/test_GLPrint_Prep.txt)
+add_test(ext2_Print_prep cp ../scripts/tests/Prusa_MK3S_eeprom.bin_test ${PROJECT_BINARY_DIR})
 add_test(ext2_Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -f MK3S.afx -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint.txt)
 add_test(ext2_Print_HRQ env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -f MK3S.afx -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_HRQ.txt --extrusion Quad_HR --colour-extrusion)
 add_test(ext2_Print_TAvg env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -f MK3S.afx -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_AvgT.txt --extrusion Tube_Avg)

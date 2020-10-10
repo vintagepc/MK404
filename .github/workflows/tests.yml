@@ -86,6 +86,11 @@ jobs:
           ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
           ${{ runner.workspace }}/MK404/build/snaps.tar.gz
 
+    - name: Upload to codecov.io
+      run: |
+        cd ${{ runner.workspace }}/MK404/build
+        bash <(curl -s https://codecov.io/bash) -f coverage.info
+
     - name: Comment on PR
       if: ${{ github.event.pull_request }}
       uses: marocchino/sticky-pull-request-comment@v1

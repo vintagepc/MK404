@@ -71,6 +71,7 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Run tests
+      id: test_pts
       continue-on-error: true
       run: |
         cd ${{ runner.workspace }}/MK404/build
@@ -92,7 +93,7 @@ jobs:
         bash <(curl -s https://codecov.io/bash) -f parts.info
 
     - name: Report failure
-      if: ${{ failure() }}
+      if: ${{ steps.test_pts.outcome == failure }}
       run: test -n ""
     # - name: Comment on PR
     #   if: ${{ github.event.pull_request }}
@@ -178,5 +179,5 @@ jobs:
         bash <(curl -s https://codecov.io/bash) -f ext1.info
 
     - name: Report failure
-      if: ${{ failure() }}
+      if: ${{ steps.test_pts.outcome == failure }}
       run: test -n ""

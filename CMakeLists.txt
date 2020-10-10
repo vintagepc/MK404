@@ -355,15 +355,15 @@ add_custom_target(Coverage.tar.gz
 add_custom_target(Test_Parts
 	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|part' --timeout 120
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/parts.info
-	COMMAND lcov --remove coverage.info '/usr/*' -o parts.info
-	COMMAND lcov --remove coverage.info '*/3rdParty/*' -o parts.info
+	COMMAND lcov --remove parts.info '/usr/*' -o parts.info
+	COMMAND lcov --remove parts.info '*/3rdParty/*' -o parts.info
 	DEPENDS Test_Common Test_firmwares
 )
 add_custom_target(Test_ext1
 	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|ext1' --timeout 180
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/ext1.info
-	COMMAND lcov --remove coverage.info '/usr/*' -o ext1.info
-	COMMAND lcov --remove coverage.info '*/3rdParty/*' -o ext1.info
+	COMMAND lcov --remove ext1.info '/usr/*' -o ext1.info
+	COMMAND lcov --remove ext1.info '*/3rdParty/*' -o ext1.info
 	DEPENDS Test_Common
 )
 
@@ -451,7 +451,7 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 	)
 endforeach()
 if(RUNNER_ENV)
-	add_test(core_Image_compare diff -qr ../scripts/tests/snaps/parts tests/snaps -x .directory)
+	add_test(parts_Image_compare diff -qr ../scripts/tests/snaps/parts tests/snaps -x .directory)
 endif()
 
 add_test(ext1_MK1_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK1_mR13 -f ../assets/Firmware/MK1-mR13a.hex --script ../scripts/tests/test_boot_MK1.txt)

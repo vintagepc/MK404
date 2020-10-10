@@ -14,7 +14,7 @@ Be sure to check out the [Historical timeline](https://github.com/vintagepc/MK40
 
 - ![CI Build](https://github.com/vintagepc/MK404/workflows/CI%20Build/badge.svg)
 - ![Code Lint](https://github.com/vintagepc/MK404/workflows/Code%20Lint/badge.svg)
-- ![Coverage](https://codecov.io/gh/vintagepc/MK404/branch/master/graph/badge.svg)](https://codecov.io/gh/vintagepc/MK404)
+- [![Coverage](https://codecov.io/gh/vintagepc/MK404/branch/master/graph/badge.svg)](https://codecov.io/gh/vintagepc/MK404)
 - ![Automated Tests](https://github.com/vintagepc/MK404/workflows/Automated%20Tests/badge.svg)
 
 (Don't be alarmed if the tests are failing, they are relatively new and it's possible they are more fragile than we'd like...)

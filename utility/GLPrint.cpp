@@ -103,7 +103,7 @@ uint32_t GLPrint::GetAdjustedStep(uint32_t uiStep)
 	// }
 }
 
-void GLPrint::OnEStep(const uint32_t& value, const uint32_t& deltaT)
+void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 {
 	uint32_t uiE = m_bNLE ? GetAdjustedStep(value) : value;
 	m_uiE = uiE;

@@ -1,0 +1,8 @@
+# Checks the 3d visuals behaviour
+ScriptHost::SetTimeoutMs(1000)
+ScriptHost::SetQuitOnTimeout(1)
+# skip wizard/cal
+EEPROM::Poke(3935,0)
+EEPROM::Poke(4087,1)
+Board::WaitMs(20)
+Board::Quit()

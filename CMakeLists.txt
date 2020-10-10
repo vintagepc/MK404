@@ -357,7 +357,7 @@ add_custom_target(Test_Parts
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/parts.info
 	COMMAND lcov --remove coverage.info '/usr/*' -o parts.info
 	COMMAND lcov --remove coverage.info '*/3rdParty/*' -o parts.info
-	DEPENDS Test_Common
+	DEPENDS Test_Common Test_firmwares
 )
 add_custom_target(Test_ext1
 	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|ext1' --timeout 180

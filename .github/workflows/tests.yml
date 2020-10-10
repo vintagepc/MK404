@@ -158,7 +158,7 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Run tests
-      id: tests
+      id: tests_ext
       continue-on-error: true
       run: |
         cd ${{ runner.workspace }}/MK404/build
@@ -179,5 +179,5 @@ jobs:
         bash <(curl -s https://codecov.io/bash) -f ext1.info
 
     - name: Report failure
-      if: ${{ steps.test_pts.outcome == failure }}
+      if: ${{ steps.tests_ext.outcome == failure }}
       run: test -n ""

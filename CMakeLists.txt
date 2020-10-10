@@ -353,14 +353,14 @@ add_custom_target(Coverage.tar.gz
 	DEPENDS Test_Common
 )
 add_custom_target(Test_Parts
-	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|part' --timeout 120
+	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|part|ext2' --timeout 180
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/parts.info
 	COMMAND lcov --remove parts.info '/usr/*' -o parts.info
 	COMMAND lcov --remove parts.info '*/3rdParty/*' -o parts.info
 	DEPENDS Test_Common Test_firmwares
 )
 add_custom_target(Test_ext1
-	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|ext1' --timeout 180
+	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|ext1' --timeout 120
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/ext1.info
 	COMMAND lcov --remove ext1.info '/usr/*' -o ext1.info
 	COMMAND lcov --remove ext1.info '*/3rdParty/*' -o ext1.info
@@ -450,9 +450,6 @@ foreach (TEST_SRC IN LISTS TESTS_SOURCES)
 		COMMAND env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -f tests/${TEST_BASE}.afx --script tests/${TEST_BASE}.txt Test_Printer
 	)
 endforeach()
-if(RUNNER_ENV)
-	add_test(parts_Image_compare diff -qr ../scripts/tests/snaps/parts tests/snaps -x .directory)
-endif()
 
 add_test(ext1_MK1_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK1_mR13 -f ../assets/Firmware/MK1-mR13a.hex --script ../scripts/tests/test_boot_MK1.txt)
 add_test(ext1_MK2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2_mR13 -f ../assets/Firmware/MK2-mR13a.hex --script ../scripts/tests/test_boot_MK2.txt)
@@ -470,13 +467,17 @@ add_test(ext1_Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404
 add_test(ext1_Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
 add_test(ext1_Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
 add_test(ext1_Keys env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
-add_test(ext1_Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint.txt)
-add_test(ext1_Print_HRQ env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_HRQ.txt --extrusion Quad_HR --colour-extrusion)
-add_test(ext1_Print_TAvg env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_AvgT.txt --extrusion Tube_Avg)
+
+# TODO- move these images out of parts and to their own ext2 dir...
+add_test(ext2_Print env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint.txt)
+add_test(ext2_Print_HRQ env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_HRQ.txt --extrusion Quad_HR --colour-extrusion)
+add_test(ext2_Print_TAvg env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --sdimage Test.img --script ../scripts/tests/test_GLPrint_AvgT.txt --extrusion Tube_Avg)
 
 # This is a bit meaningless if your system doesn't generate the same renderings as the BR.
 if(RUNNER_ENV)
+	add_test(parts_Image_compare diff -qr ../scripts/tests/snaps/parts tests/snaps -x .directory)
 	add_test(ext1_Image_compare diff -qr ../scripts/tests/snaps/ext1 tests/snaps -x .directory)
+#	add_test(ext2_Image_compare diff -qr ../scripts/tests/snaps/ext2 tests/snaps -x .directory)
 endif()
 
 add_custom_target(CPPCheck COMMAND cppcheck --template='::{severity} file={file},line={line}::{message}' --error-exitcode=2 --inline-suppr --enable=warning --std=c++11 --language=c++ MK404.cpp ${MK404_SOURCES_base} ${H_FILES_base}

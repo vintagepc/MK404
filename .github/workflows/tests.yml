@@ -88,7 +88,6 @@ jobs:
 #          ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
 
     - name: Upload coverage artifact
-      if: ${{ !github.event.pull_request }}
       uses: actions/upload-artifact@v2
       with:
         name: Coverage
@@ -176,7 +175,6 @@ jobs:
           ${{ runner.workspace }}/MK404/build/snaps_ext1.tar.gz
 
     - name: Upload coverage artifact
-      if: ${{ !github.event.pull_request }}
       uses: actions/upload-artifact@v2
       with:
         name: Coverage

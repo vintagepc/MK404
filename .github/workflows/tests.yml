@@ -91,7 +91,9 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Coverage
-        path: ${{ runner.workspace }}/MK404/build/parts.info
+        path: |
+          ${{ runner.workspace }}/MK404/build/parts.info
+          ${{ runner.workspace }}/MK404/build/MK404.dir
 
     - name: Report failure
       if: steps.test_pts.outcome == 'failure'
@@ -177,8 +179,10 @@ jobs:
     - name: Upload coverage artifact
       uses: actions/upload-artifact@v2
       with:
-        name: Coverage
-        path: ${{ runner.workspace }}/MK404/build/ext1.info
+        name: Coverage2
+        path: |
+          ${{ runner.workspace }}/MK404/build/ext1.info
+          ${{ runner.workspace }}/MK404/build/MK404.dir
 
     - name: Report failure
       if: steps.tests_ext.outcome == 'failure'
@@ -194,7 +198,15 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: Coverage
+        path: parts
+
+    - name: Retrieve coverage reports
+      uses: actions/download-artifact@v2
+      with:
+        name: Coverage2
+        path: ext1
+
 
     - name: Upload to codecov.io
       run: |
-        bash <(curl -s https://codecov.io/bash) -f "*.info"
+        bash <(curl -s https://codecov.io/bash)

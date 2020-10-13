@@ -154,7 +154,6 @@ void TMC2130::ProcessCommand()
 		switch (m_cmdProc.bitsIn.address)
 		{
 			case 0x00: // GCONF
-				printf("REG %c %02x set to: %010x\n", m_cAxis.load(), m_cmdIn.bitsIn.address, m_cmdIn.bitsIn.data);
 				RaiseDiag(m_regs.defs.DRV_STATUS.stallGuard); // Adjust DIAG out, it mayhave  been reconfigured.
 				break;
 			case 0x6C: // Chopconf

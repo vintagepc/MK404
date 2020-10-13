@@ -395,8 +395,14 @@ namespace Boards {
 		MCUSR.bit = 0;
 		std::cout << "Starting " << m_wiring.GetMCUName() << " execution...\n";
 		int state = cpu_Running;
+		avr_cycle_count_t cnt = 0;
 		while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){
 					// Re init the special workarounds we need after a reset.
+			if (m_pAVR->cycle > cnt+2000)
+			{
+				usleep(10);
+				cnt = m_pAVR->cycle;
+			}
 			if (m_bIsPrimary) // Only one board should be scripting.
 			{
 				ScriptHost::DispatchMenuCB();

@@ -105,6 +105,11 @@ namespace Boards
 		AddHardware(hBed, nullptr, GetDIRQ(HEATER_BED_PIN));
 		hBed.ConnectTo(Heater::TEMP_OUT, tBed.GetIRQ(Thermistor::TEMP_IN));
 
+		if ( m_bNoHacks )
+		{
+			hBed.SetSoftPWM(false);
+		}
+
 		AddHardware(hExtruder, nullptr, GetDIRQ(HEATER_0_PIN));
 		hExtruder.ConnectTo(Heater::TEMP_OUT, tExtruder.GetIRQ(Thermistor::TEMP_IN));
 

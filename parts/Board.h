@@ -145,6 +145,9 @@ namespace Boards
 
 			std::atomic_uint8_t m_bPaused = {false};
 
+			// Whether any vendor-specific hackery should be disabled.
+			bool m_bNoHacks = false;
+
 		private:
 			void CreateAVR();
 
@@ -158,7 +161,7 @@ namespace Boards
 
 			std::atomic_bool m_bQuit = {false}, m_bReset = {false};
 			bool m_bIsPrimary = false;
-			bool m_bNoHacks = false;
+
 			pthread_t m_thread = 0;
 			const Wirings::Wiring &m_wiring;
 			std::string m_strBoard = "";

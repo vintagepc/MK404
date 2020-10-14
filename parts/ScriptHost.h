@@ -28,6 +28,7 @@
 
 #include <atomic>         // for atomic_uint
 #include <map>            // for map
+#include <mutex>
 #include <string>         // for std::string
 #include <utility>        // for pair
 #include <vector>         // for vector
@@ -59,9 +60,18 @@ class ScriptHost: public IScriptable
 
 		static void MenuCB(int iID);
 
+		static void KeyCB(char key);
+
 		static void PrintScriptHelp(bool bMarkdown);
 
 		static void OnAVRCycle();
+
+		// Called to draw the terminal line.
+		static void Draw();
+
+		// Change focus. GL THREAD ONLY!
+		inline static void SetFocus(bool bVal) { m_bFocus = bVal;}
+
 
 		enum class State
 		{
@@ -98,7 +108,6 @@ class ScriptHost: public IScriptable
 		ScriptHost():IScriptable("ScriptHost"){}
 
 		void _Init();
-
 		static ScriptHost& GetHost()
 		{
 			static ScriptHost h;
@@ -125,15 +134,21 @@ class ScriptHost: public IScriptable
 		static std::map<std::string, unsigned> m_mClient2MenuBase;
 		static std::map<unsigned, IScriptable*> m_mMenuBase2Client;
 		static std::map<std::string, std::vector<std::pair<std::string,int>>> m_mClientEntries; // Stores client entries for when GLUT is ready.
-		static std::vector<std::string> m_script;
+		static std::vector<std::string> m_script, m_scriptGL;
 		static unsigned int m_iLine, m_uiAVRFreq;
 		static ScriptHost::State m_state;
 		static bool m_bQuitOnTimeout;
 		static bool m_bMenuCreated;
 		static bool m_bIsInitialized;
 		static bool m_bIsExecHold;
+		static std::atomic_bool m_bCanAcceptInput;
+		static std::string m_strCmd;
 
 		static std::atomic_uint m_uiQueuedMenu;
+		// GL focus tracker. GL THREAD ONLY!
+		static bool m_bFocus;
+
+		static std::mutex m_lckString, m_lckScript;
 
 		enum Actions
 		{

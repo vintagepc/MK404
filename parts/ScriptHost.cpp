@@ -32,7 +32,7 @@
 
 std::map<std::string, IScriptable*> ScriptHost::m_clients;
 
-std::vector<std::string> ScriptHost::m_script;
+std::vector<std::string> ScriptHost::m_script, ScriptHost::m_scriptGL;
 unsigned int ScriptHost::m_iLine, ScriptHost::m_uiAVRFreq;
 std::map<std::string, int> ScriptHost::m_mMenuIDs;
 std::map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
@@ -45,6 +45,14 @@ bool ScriptHost::m_bMenuCreated = false;
 bool ScriptHost::m_bIsInitialized = false;
 bool ScriptHost::m_bIsExecHold = false;
 std::atomic_uint ScriptHost::m_uiQueuedMenu {0};
+
+bool ScriptHost::m_bFocus = false;
+std::atomic_bool ScriptHost::m_bCanAcceptInput;
+std::string ScriptHost::m_strCmd;
+
+// String mutex... if interactive, for terminal->host,
+// if running a script, for host->terminal.
+std::mutex ScriptHost::m_lckString;
 
 void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
@@ -75,12 +83,17 @@ void ScriptHost::LoadScript(const std::string &strFile)
 		m_script.push_back(strLn);
 	}
 	m_iLine = 0;
+	{
+		std::lock_guard<std::mutex> lck(m_lckScript);
+		m_scriptGL = m_script;
+	}
 	std::cout << "ScriptHost: Loaded " << m_script.size() << " lines from " << strFile << '\n';
 }
 
 bool ScriptHost::Init()
 {
 	GetHost()._Init();
+	GetHost().m_strCmd.reserve(200);
 	m_bIsInitialized = true;
 	return true;
 }
@@ -90,6 +103,7 @@ bool ScriptHost::Setup(const std::string &strScript,unsigned uiFreq)
 	m_uiAVRFreq = uiFreq;
 	if (!strScript.empty())
 	{
+		m_bCanAcceptInput = false;
 		LoadScript(strScript);
 	}
 	return ValidateScript();
@@ -215,6 +229,59 @@ bool ScriptHost::ValidateScript()
 	return bClean;
 }
 
+void ScriptHost::KeyCB(char key)
+{
+	if (!ScriptHost::m_bCanAcceptInput)
+	{
+		return;
+	}
+	auto &strCmd = GetHost().m_strCmd;
+	switch (key)
+	{
+		case 0x7F: // Delete, backspace
+		case 0x08:
+			if (strCmd.size()>0)
+			{
+				strCmd.pop_back();
+			}
+			break;
+		case 0x0d: // return;
+			strCmd.clear();
+			break;
+		case 0x9: // tab
+		break;
+		default:
+			strCmd.push_back(key);
+	}
+}
+
+void ScriptHost::Draw()
+{
+	glPushMatrix();
+		glTranslatef(3,7,0);
+		glScalef(0.09,-0.05,0);
+		glColor3f(1,1,1);
+		glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'>');
+		{
+			std::lock_guard<std::mutex> m_lck(m_lckString);
+			for (auto &c : m_strCmd)
+			{
+				glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
+			}
+		}
+		if (!ScriptHost::m_bCanAcceptInput)
+		{
+			return;
+		}
+		glColor3f(0.5,0.5,0.5);
+		// TODO - autocomplete
+		if (m_bFocus)
+		{
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'|');
+		}
+	glPopMatrix();
+}
+
 // Called from the execution context to process the menu action.
 void ScriptHost::DispatchMenuCB()
 {
@@ -224,7 +291,6 @@ void ScriptHost::DispatchMenuCB()
 		m_uiQueuedMenu.store(0);
 		IScriptable *pClient = m_mMenuBase2Client[(iID - iID%100)];
 		pClient->ProcessMenu(iID%100);
-
 	}
 }
 
@@ -422,6 +488,10 @@ void ScriptHost::OnAVRCycle()
 	{
 		m_state = State::Running;
 		std::cout << "ScriptHost: Executing line " << m_script.at(m_iLine) << "\n";
+		{
+			std::lock_guard<std::mutex> lck(m_lckString);
+			m_strCmd = m_script.at(m_iLine);
+		}
 		ParseLine(m_iLine);
 	}
 	if (GetLineState().isValid)
@@ -511,6 +581,7 @@ void ScriptHost::OnAVRCycle()
 		if (m_iLine==m_script.size())
 		{
 			std::cout << "ScriptHost: Script FINISHED\n";
+			m_bCanAcceptInput = true;
 			m_state = State::Finished;
 		}
 	}

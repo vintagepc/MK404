@@ -69,7 +69,7 @@ bool m_bTestMode = false;
 // GL context stuff for FPS counting...
 
 int m_iTic =0, m_iLast = 0, m_iFrCount = 0;
-
+int m_iTermHeight = 0;
 
 // pragma: LCOV_EXCL_START
 // Exit cleanly on ^C
@@ -122,6 +122,19 @@ static std::string GetBaseTitle()
 
 std::atomic_bool bIsQuitting {false};
 
+void KeyCB(unsigned char key, int /*x*/, int y)
+{
+	if (y<m_iTermHeight)
+	{
+		KeyController::GLKeyReceiver(key,0,0);
+	}
+	else
+	{
+		ScriptHost::SetFocus(true);
+		ScriptHost::KeyCB(key);
+	}
+}
+
 void displayCB()		/* function called whenever redisplay needed */
 {
 	if (bIsQuitting || pBoard->GetQuitFlag()) // Stop drawing if shutting down.
@@ -135,7 +148,8 @@ void displayCB()		/* function called whenever redisplay needed */
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
 	int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	printer->Draw();
-
+	glTranslatef(0,(printer->GetWindowSize().second),0);
+	ScriptHost::Draw();
 	m_iFrCount++;
 	m_iTic=glutGet(GLUT_ELAPSED_TIME);
 	auto iDiff = m_iTic - m_iLast;
@@ -184,6 +198,11 @@ void MouseCB(int button, int action, int x, int y)	/* called on key press */
 	printer->OnMousePress(button,action,x,y);
 }
 
+void PassiveMotionCB(int x, int y)
+{
+	ScriptHost::SetFocus(y>m_iTermHeight);
+}
+
 void MotionCB(int x, int y)
 {
 	printer->OnMouseMove(x,y);
@@ -209,11 +228,13 @@ void timerCB(int i)
 void ResizeCB(int w, int h)
 {
 	std::pair<int,int> winSize = printer->GetWindowSize();
+	winSize.second+=10;
 	float fWS = static_cast<float>(w)/static_cast<float>(winSize.first*4);
 	float fHS = static_cast<float>(h)/static_cast<float>(winSize.second*4);
 	float fScale = std::max(fWS,fHS);
 	int iW = 4.f*static_cast<float>(winSize.first)*fScale;
 	int iH = 4.f*static_cast<float>(winSize.second)*fScale;
+	m_iTermHeight = iH - (fScale*40.f);
 	if (iW!=w || iH !=h)
 	{
 		iWinH = iH;
@@ -234,8 +255,9 @@ int initGL()
 {
 	// Set up projection matrix
 	glutDisplayFunc(displayCB);		/* set window's display callback */
-	glutKeyboardFunc(KeyController::GLKeyReceiver);		/* set window's key callback */
+	glutKeyboardFunc(KeyCB);		/* set window's key callback */
 	glutMouseFunc(MouseCB);
+	glutPassiveMotionFunc(PassiveMotionCB);
 	glutMotionFunc(MotionCB);
 	glutTimerFunc(1000, timerCB, 0);
 	glutReshapeFunc(ResizeCB);
@@ -361,7 +383,8 @@ int main(int argc, char *argv[])
 		std::pair<int,int> winSize = printer->GetWindowSize();
 		int pixsize = 4;
 		iWinW = winSize.first * pixsize;
-		iWinH = winSize.second * pixsize;
+		iWinH = (winSize.second +10)*pixsize;
+		m_iTermHeight = winSize.second*pixsize;
 		glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 #ifndef TEST_MODE
 		glutSetOption(GLUT_MULTISAMPLE,2);

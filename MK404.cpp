@@ -130,7 +130,7 @@ void KeyCB(unsigned char key, int /*x*/, int y)
 	{
 		KeyController::GLKeyReceiver(key,0,0);
 	}
-	else
+	else if (m_bTerminal)
 	{
 		ScriptHost::SetFocus(true);
 		ScriptHost::KeyCB(key);

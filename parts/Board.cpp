@@ -35,6 +35,7 @@
 #include "sim_hex.h"  // for read_ihex_file
 #include "sim_io.h"         // for avr_io_getirq
 #include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_set
+#include "sim_time.h"
 #include "uart_pty.h"       // for uart_pty
 #include <chrono>
 #include <cstdint>
@@ -292,8 +293,21 @@ namespace Boards {
 		switch (key)
 		{
 			case 'z':
+			{
 				m_bPaused ^= true;
 				std::cout <<  "Pause: " << m_bPaused << '\n';
+				auto tWall = avr_get_time_stamp(m_pAVR);
+				auto tSim = avr_cycles_to_nsec(m_pAVR, m_pAVR->cycle);
+				if (tWall<tSim)
+				{
+					std::cout << "Sim is ahead by" << std::to_string(tSim - tWall)/1000 << "us!\n";
+				}
+				else
+				{
+					std::cout << "Sim is behind by" << std::to_string((tWall-tSim)/1000) << "us!\n";
+				}
+
+			}
 			break;
 			case 'q':
 				SetQuitFlag();
@@ -396,44 +410,17 @@ namespace Boards {
 		MCUSR.bit = 0;
 		std::cout << "Starting " << m_wiring.GetMCUName() << " execution...\n";
 		int state = cpu_Running;
-		avr_cycle_count_t cnt = 0, sleepCnt = 0;
-		auto tLast = std::chrono::high_resolution_clock::now();
-		uint32_t uiSkew = 0, uiSlpCnt = 0;
-		auto clockCheck = m_pAVR->frequency/100;
 		while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){
-			// Re init the special workarounds we need after a reset.
 			// Check the timing every 10k cycles, ~10 ms
-			if (m_bCorrectSkew)
+			if (m_bCorrectSkew && m_pAVR->cycle%500==0)
 			{
-				if ((m_pAVR->cycle - cnt) > clockCheck)
+				auto tWall = avr_get_time_stamp(m_pAVR);
+				auto tSim = avr_cycles_to_nsec(m_pAVR, m_pAVR->cycle);
+				if (tWall<tSim)
 				{
-					auto tNow = std::chrono::high_resolution_clock::now();
-					auto tDeltaUs = std::chrono::duration_cast<std::chrono::microseconds>(tNow - tLast);
-					if (tDeltaUs.count()<10000)
-					{
-						// Running fast, 10ms of sim time was less than 10ms of real time.
-						uiSkew = 10000 - tDeltaUs.count();
-						uiSlpCnt += uiSkew;
-						//std::cout << "skew:" << std::to_string(uiSlpCnt) << '\n';
-					}
-					// Else - slow or on time; don't do anything.
-					tLast = tNow;
-					cnt = m_pAVR->cycle;
-				}
-				// Slew the added sleep time over several cycles.
-				if (uiSlpCnt>0 && ((m_pAVR->cycle-sleepCnt)>1000))
-				{
-					if (uiSlpCnt>100)
-					{
-						usleep(100);
-						uiSlpCnt-=100;
-					}
-					else
-					{
-						usleep(uiSlpCnt);
-						uiSlpCnt = 0;
-					}
-					sleepCnt = m_pAVR->cycle;
+					auto tDiff = tSim - tWall;
+					if (tDiff>200000) usleep(tDiff/1000);
+					//std::cout << "Sim is ahead by" << std::to_string(tSim - tWall) << "ns!\n";
 				}
 			}
 			if (m_bIsPrimary) // Only one board should be scripting.
@@ -448,9 +435,6 @@ namespace Boards {
 			if (m_bPaused)
 			{
 				usleep(100000);
-				// Update skew clocks or we'll get a weird value.
-				tLast = std::chrono::high_resolution_clock::now();
-				cnt = m_pAVR->cycle;
 				continue;
 			}
 			int8_t uiMCUSR = avr_regbit_get(m_pAVR,MCUSR);

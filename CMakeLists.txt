@@ -353,7 +353,7 @@ add_custom_target(Coverage.tar.gz
 	DEPENDS Test_Common
 )
 add_custom_target(Test_Parts
-	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|part|ext2' --timeout 180
+	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|part|ext2' --timeout 360
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/parts.info
 	COMMAND lcov --remove parts.info '/usr/*' -o parts.info
 	COMMAND lcov --remove parts.info '*/3rdParty/*' -o parts.info

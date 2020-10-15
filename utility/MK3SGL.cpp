@@ -392,7 +392,7 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 
 void MK3SGL::OnMotorStep(avr_irq_t *irq, uint32_t value)
 {
-		switch (irq->irq)
+	switch (irq->irq)
 	{
 		case IRQ::X_STEP_IN:
 			m_vPrints[m_iCurTool]->OnXStep(value);
@@ -404,7 +404,10 @@ void MK3SGL::OnMotorStep(avr_irq_t *irq, uint32_t value)
 			m_vPrints[m_iCurTool]->OnZStep(value);
 			break;
 		case IRQ::E_STEP_IN:
-			m_vPrints[m_iCurTool]->OnEStep(value);
+			// The narrow will assert if there is an overflow/underflow condition.
+			// Time should never be negative...
+			m_vPrints[m_iCurTool]->OnEStep(value, gsl::narrow<uint32_t>(m_pAVR->cycle - m_lastETick));
+			m_lastETick = m_pAVR->cycle;
 			break;
 	}
 }

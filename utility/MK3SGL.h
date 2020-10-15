@@ -172,6 +172,8 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 			m_bSDCard = {true},
 			m_bPrintSurface = {true};
 
+		avr_cycle_count_t m_lastETick = 0;
+
 
         int m_iWindow = 0;
 

@@ -203,7 +203,7 @@ void MouseCB(int button, int action, int x, int y)	/* called on key press */
 	printer->OnMousePress(button,action,x,y);
 }
 
-void PassiveMotionCB(int x, int y)
+void PassiveMotionCB(int /*x*/, int y)
 {
 	ScriptHost::SetFocus(y>m_iTermHeight);
 }

@@ -328,14 +328,10 @@ void ScriptHost::Draw()
 		{
 			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
 		}
-		if (ScriptHost::m_bCanAcceptInput)
+		if (m_bFocus && ScriptHost::m_bCanAcceptInput)
 		{
 			glColor3f(0.5,0.5,0.5);
-			// TODO - autocomplete
-			if (m_bFocus)
-			{
-				glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'_');
-			}
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'_');
 		}
 	glPopMatrix();
 }
@@ -384,7 +380,7 @@ void ScriptHost::SetupAutocomplete()
 			{
 				strArgFmt.push_back(')');
 			}
-			m_strGLAutoC.insert(strName + "::" +strArgFmt);
+			m_strGLAutoC.insert(strName + "::" + strArgFmt); // NOLINT - only incurred once at startup.
 		}
 	}
 }

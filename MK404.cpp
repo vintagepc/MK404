@@ -66,6 +66,8 @@ bool m_bStopping = false;
 
 bool m_bTestMode = false;
 
+bool m_bTerminal = false;
+
 // GL context stuff for FPS counting...
 
 int m_iTic =0, m_iLast = 0, m_iFrCount = 0;
@@ -148,8 +150,11 @@ void displayCB()		/* function called whenever redisplay needed */
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
 	int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	printer->Draw();
-	glTranslatef(0,(printer->GetWindowSize().second),0);
-	ScriptHost::Draw();
+	if (m_bTerminal)
+	{
+		glTranslatef(0,(printer->GetWindowSize().second),0);
+		ScriptHost::Draw();
+	}
 	m_iFrCount++;
 	m_iTic=glutGet(GLUT_ELAPSED_TIME);
 	auto iDiff = m_iTic - m_iLast;
@@ -228,7 +233,10 @@ void timerCB(int i)
 void ResizeCB(int w, int h)
 {
 	std::pair<int,int> winSize = printer->GetWindowSize();
-	winSize.second+=10;
+	if (m_bTerminal)
+	{
+		winSize.second+=10;
+	}
 	float fWS = static_cast<float>(w)/static_cast<float>(winSize.first*4);
 	float fHS = static_cast<float>(h)/static_cast<float>(winSize.second*4);
 	float fScale = std::max(fWS,fHS);
@@ -295,6 +303,7 @@ int main(int argc, char *argv[])
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.",cmd);
 	ValueArg<int> argVCDRate("","tracerate", "Sets the logging frequency of the VCD trace (default 100uS)",false, 100,"integer",cmd);
 	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string",cmd);
+	SwitchArg argTerm("","terminal","Enable an in-UI terminal for interactive scripting (--EXPERIMENTAL!!--)", cmd);
 	SwitchArg argTest("","test","Run it test mode (no graphics, don't auto-exit.", cmd);
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img", cmd);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.", cmd);
@@ -352,6 +361,8 @@ int main(int argc, char *argv[])
 	}
 	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue()=="none");
 
+	m_bTerminal = argTerm.isSet();
+
 	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
 	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
@@ -382,8 +393,12 @@ int main(int argc, char *argv[])
 
 		std::pair<int,int> winSize = printer->GetWindowSize();
 		int pixsize = 4;
+		if (m_bTerminal)
+		{
+			winSize.second +=10;
+		}
 		iWinW = winSize.first * pixsize;
-		iWinH = (winSize.second +10)*pixsize;
+		iWinH = (winSize.second)*pixsize;
 		m_iTermHeight = winSize.second*pixsize;
 		glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 #ifndef TEST_MODE
@@ -456,6 +471,10 @@ int main(int argc, char *argv[])
 	if (!bNoGraphics)
 	{
 		ScriptHost::CreateRootMenu(window);
+		if (argTerm.isSet())
+		{
+			ScriptHost::SetupAutocomplete();
+		}
 	}
 
 	// This is a little lazy, I know. Figure it out once we have non-einsy printers.

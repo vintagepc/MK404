@@ -33,7 +33,7 @@
 std::map<std::string, IScriptable*> ScriptHost::m_clients;
 
 std::vector<std::string> ScriptHost::m_script, ScriptHost::m_scriptGL;
-unsigned int ScriptHost::m_iLine, ScriptHost::m_uiAVRFreq;
+unsigned int ScriptHost::m_uiAVRFreq;
 std::map<std::string, int> ScriptHost::m_mMenuIDs;
 std::map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
 std::map<std::string, unsigned> ScriptHost::m_mClient2MenuBase;
@@ -46,13 +46,17 @@ bool ScriptHost::m_bIsInitialized = false;
 bool ScriptHost::m_bIsExecHold = false;
 std::atomic_uint ScriptHost::m_uiQueuedMenu {0};
 
+std::atomic_uint ScriptHost::m_iLine {0};
+
 bool ScriptHost::m_bFocus = false;
-std::atomic_bool ScriptHost::m_bCanAcceptInput;
+std::atomic_bool ScriptHost::m_bCanAcceptInput, ScriptHost::m_bIncomingCommand {false};
 std::string ScriptHost::m_strCmd;
+
+std::set<std::string> ScriptHost::m_strGLAutoC;
 
 // String mutex... if interactive, for terminal->host,
 // if running a script, for host->terminal.
-std::mutex ScriptHost::m_lckString;
+std::mutex ScriptHost::m_lckScript;
 
 void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
@@ -105,6 +109,10 @@ bool ScriptHost::Setup(const std::string &strScript,unsigned uiFreq)
 	{
 		m_bCanAcceptInput = false;
 		LoadScript(strScript);
+	}
+	else
+	{
+		m_bCanAcceptInput = true;
 	}
 	return ValidateScript();
 }
@@ -238,6 +246,8 @@ void ScriptHost::KeyCB(char key)
 	auto &strCmd = GetHost().m_strCmd;
 	switch (key)
 	{
+		case 0x1b: // Esc:
+			strCmd.clear();
 		case 0x7F: // Delete, backspace
 		case 0x08:
 			if (strCmd.size()>0)
@@ -246,9 +256,30 @@ void ScriptHost::KeyCB(char key)
 			}
 			break;
 		case 0x0d: // return;
-			strCmd.clear();
+			m_bCanAcceptInput = false;
+			{
+				m_bIncomingCommand.store(true);
+				m_script.push_back(m_strCmd);
+				m_bIncomingCommand = false;
+			}
+			m_bCanAcceptInput = true;
 			break;
 		case 0x9: // tab
+		{
+			auto pNext = m_strGLAutoC.upper_bound(m_strCmd);
+			if (pNext != m_strGLAutoC.end())
+			{
+				auto posTrim = pNext->find_first_of('(');
+				if (posTrim!=std::string::npos)
+				{
+					m_strCmd = pNext->substr(0,posTrim+1);
+				}
+				else
+				{
+					m_strCmd = *pNext;
+				}
+			}
+		}
 		break;
 		default:
 			strCmd.push_back(key);
@@ -257,27 +288,54 @@ void ScriptHost::KeyCB(char key)
 
 void ScriptHost::Draw()
 {
+	const std::string* strStatus = nullptr;
 	glPushMatrix();
-		glTranslatef(3,7,0);
-		glScalef(0.09,-0.05,0);
+		glTranslatef(3,2,0);
+		glScalef(0.09,-0.03,0);
+		glPushMatrix();
+			glColor3f(1,.7,.7);
+			if (m_iLine<m_scriptGL.size())
+			{
+				strStatus = &m_scriptGL.at(m_iLine);
+			}
+			if (strStatus)
+			{
+				for (auto &c : *strStatus)
+				{
+					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
+				}
+			}
+		glPopMatrix();
+		glTranslatef(0,-166,0);
 		glColor3f(1,1,1);
 		glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'>');
-		{
-			std::lock_guard<std::mutex> m_lck(m_lckString);
-			for (auto &c : m_strCmd)
+		glPushMatrix();
+			glColor3f(0.4,0.4,0.4);
+			if (!m_strCmd.empty())
 			{
-				glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
+				auto pNext = m_strGLAutoC.upper_bound(m_strCmd);
+				if (pNext != m_strGLAutoC.end())
+				{
+					for (auto &c : *pNext)
+					{
+						glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
+					}
+				}
 			}
-		}
-		if (!ScriptHost::m_bCanAcceptInput)
+		glPopMatrix();
+		glColor3f(1,1,1);
+		for (auto &c : m_strCmd)
 		{
-			return;
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
 		}
-		glColor3f(0.5,0.5,0.5);
-		// TODO - autocomplete
-		if (m_bFocus)
+		if (ScriptHost::m_bCanAcceptInput)
 		{
-			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'|');
+			glColor3f(0.5,0.5,0.5);
+			// TODO - autocomplete
+			if (m_bFocus)
+			{
+				glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'_');
+			}
 		}
 	glPopMatrix();
 }
@@ -299,6 +357,36 @@ void ScriptHost::MenuCB(int iID)
 {
 	//printf("Menu CB %d\n",iID);
 	m_uiQueuedMenu.store(iID);
+}
+
+// Prefills/configures the autocompletion helper for the UI.
+void ScriptHost::SetupAutocomplete()
+{
+	for (auto &c: m_clients)
+	{
+		const std::string& strName = c.first;
+		// Insert just the prefix so that we don't show actions until *after* - for better tab-complete.
+		m_strGLAutoC.insert(strName + "::");
+		for (auto &ActID : c.second->m_ActionIDs)
+		{
+			unsigned int ID = ActID.second;
+			std::string strArgFmt = ActID.first;
+			strArgFmt.push_back('(');
+			if (c.second->m_ActionArgs[ID].size()>0)
+			{
+				for (auto &Arg : c.second->m_ActionArgs[ID])
+				{
+					strArgFmt += GetArgTypeNames().at(Arg) + ", ";
+				}
+				strArgFmt[strArgFmt.size()-2] = ')';
+			}
+			else
+			{
+				strArgFmt.push_back(')');
+			}
+			m_strGLAutoC.insert(strName + "::" +strArgFmt);
+		}
+	}
 }
 
 void ScriptHost::CreateRootMenu(int iWinID)
@@ -480,7 +568,7 @@ void ScriptHost::AddScriptable(const std::string &strName, IScriptable* src)
 using LS = IScriptable::LineStatus;
 void ScriptHost::OnAVRCycle()
 {
-	if (m_iLine>=m_script.size())
+	if (m_bIncomingCommand || m_iLine>=m_script.size())
 	{
 		return; // Done.
 	}
@@ -488,10 +576,6 @@ void ScriptHost::OnAVRCycle()
 	{
 		m_state = State::Running;
 		std::cout << "ScriptHost: Executing line " << m_script.at(m_iLine) << "\n";
-		{
-			std::lock_guard<std::mutex> lck(m_lckString);
-			m_strCmd = m_script.at(m_iLine);
-		}
 		ParseLine(m_iLine);
 	}
 	if (GetLineState().isValid)

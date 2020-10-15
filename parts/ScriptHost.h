@@ -29,6 +29,7 @@
 #include <atomic>         // for atomic_uint
 #include <map>            // for map
 #include <mutex>
+#include <set>
 #include <string>         // for std::string
 #include <utility>        // for pair
 #include <vector>         // for vector
@@ -55,6 +56,8 @@ class ScriptHost: public IScriptable
 		}
 
 		static void CreateRootMenu(int iWinID);
+
+		static void SetupAutocomplete();
 
 		static void DispatchMenuCB();
 
@@ -135,20 +138,24 @@ class ScriptHost: public IScriptable
 		static std::map<unsigned, IScriptable*> m_mMenuBase2Client;
 		static std::map<std::string, std::vector<std::pair<std::string,int>>> m_mClientEntries; // Stores client entries for when GLUT is ready.
 		static std::vector<std::string> m_script, m_scriptGL;
-		static unsigned int m_iLine, m_uiAVRFreq;
+
+		// The autocomplete helper.
+		static std::set<std::string> m_strGLAutoC;
+
+		static unsigned int m_uiAVRFreq;
 		static ScriptHost::State m_state;
 		static bool m_bQuitOnTimeout;
 		static bool m_bMenuCreated;
 		static bool m_bIsInitialized;
 		static bool m_bIsExecHold;
-		static std::atomic_bool m_bCanAcceptInput;
+		static std::atomic_bool m_bCanAcceptInput, m_bIncomingCommand;
 		static std::string m_strCmd;
 
-		static std::atomic_uint m_uiQueuedMenu;
+		static std::atomic_uint m_uiQueuedMenu, m_iLine;
 		// GL focus tracker. GL THREAD ONLY!
 		static bool m_bFocus;
 
-		static std::mutex m_lckString, m_lckScript;
+		static std::mutex m_lckCmdIn, m_lckScript;
 
 		enum Actions
 		{

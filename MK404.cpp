@@ -175,8 +175,8 @@ void displayCB()		/* function called whenever redisplay needed */
 		glBegin(GL_QUADS);
 			glVertex2f(0,0);
 			glVertex2f(iW,0);
-			glVertex2f(iW,m_iTermHeight/4);
-			glVertex2f(0,m_iTermHeight/4);
+			glVertex2f(iW,static_cast<float>(m_iTermHeight)/4.f);
+			glVertex2f(0, static_cast<float>(m_iTermHeight)/4.f);
 		glEnd();
 		glColor3f(1,0,0);
 		glPushMatrix();

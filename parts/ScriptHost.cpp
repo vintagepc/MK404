@@ -287,15 +287,19 @@ void ScriptHost::KeyCB(char key)
 	}
 }
 
-static constexpr char strOK[] = "Success";
-static constexpr char strFailed[] = "Error";
-static constexpr char strWait[] = "Waiting";
-static constexpr char strTimeout[] = "Timed out";
-static constexpr char strSyntax[] = "Syntax/Argument Error";
-static constexpr const char* pStatus[] = {strOK, strFailed, strWait, strTimeout, strSyntax};
+static constexpr char strOK[8] = "Success";
+static constexpr char strFailed[6] = "Error";
+static constexpr char strWait[8] = "Waiting";
+static constexpr char strTimeout[10] = "Timed out";
+static constexpr char strSyntax[22] = "Syntax/Argument Error";
 
 void ScriptHost::Draw()
 {
+	static const gsl::span<const char> pStatus[] = {strOK,
+												strFailed,
+												strWait,
+												strTimeout,
+												strSyntax};
 	glPushMatrix();
 		glTranslatef(3,12,0);
 		glScalef(0.09,-0.14,0);
@@ -311,11 +315,9 @@ void ScriptHost::Draw()
 			}
 			else if (m_eCmdStatus != TermIdle) // Show result of last user command.
 			{
-				const char* str = gsl::at(pStatus,m_eCmdStatus-1);
-				size_t i=0;
-				while (str[i])
+				for (auto &c : pStatus[m_eCmdStatus-1])
 				{
-					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN, str[i++]);
+					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN, c);
 				}
 			}
 		glPopMatrix();

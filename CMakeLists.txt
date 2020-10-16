@@ -328,6 +328,13 @@ else()
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE OFF)
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+	message(STATUS "Build type is release, adding extra flags.")
+	target_compile_options(MK404 PRIVATE -flto -mtune=native)
+	target_link_libraries(MK404 -flto)
+endif()
+
+
 add_custom_target(Test_Clean
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 	COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_BINARY_DIR}/*.bin_test

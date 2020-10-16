@@ -148,13 +148,15 @@ void displayCB()		/* function called whenever redisplay needed */
 	glLoadIdentity();
 	glClear(US(GL_COLOR_BUFFER_BIT) | US(GL_DEPTH_BUFFER_BIT));
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
-	int iH = glutGet(GLUT_WINDOW_HEIGHT);
-	printer->Draw();
+	//int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	if (m_bTerminal)
 	{
-		glTranslatef(0,(printer->GetWindowSize().second),0);
-		ScriptHost::Draw();
+		glPushMatrix();
+			glTranslatef(0,m_iTermHeight,0);
+			ScriptHost::Draw();
+		glPopMatrix();
 	}
+	printer->Draw();
 	m_iFrCount++;
 	m_iTic=glutGet(GLUT_ELAPSED_TIME);
 	auto iDiff = m_iTic - m_iLast;
@@ -173,8 +175,8 @@ void displayCB()		/* function called whenever redisplay needed */
 		glBegin(GL_QUADS);
 			glVertex2f(0,0);
 			glVertex2f(iW,0);
-			glVertex2f(iW,iH);
-			glVertex2f(0,iH);
+			glVertex2f(iW,m_iTermHeight/4);
+			glVertex2f(0,m_iTermHeight/4);
 		glEnd();
 		glColor3f(1,0,0);
 		glPushMatrix();
@@ -242,7 +244,14 @@ void ResizeCB(int w, int h)
 	float fScale = std::max(fWS,fHS);
 	int iW = 4.f*static_cast<float>(winSize.first)*fScale;
 	int iH = 4.f*static_cast<float>(winSize.second)*fScale;
-	m_iTermHeight = iH - (fScale*40.f);
+	if (m_bTerminal)
+	{
+		m_iTermHeight = iH - (fScale*40.f);
+	}
+	else
+	{
+		m_iTermHeight = iH;
+	}
 	if (iW!=w || iH !=h)
 	{
 		iWinH = iH;

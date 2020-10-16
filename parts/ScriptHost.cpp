@@ -44,12 +44,13 @@ bool ScriptHost::m_bQuitOnTimeout = false;
 bool ScriptHost::m_bMenuCreated = false;
 bool ScriptHost::m_bIsInitialized = false;
 bool ScriptHost::m_bIsExecHold = false;
+bool ScriptHost::m_bIsTerminalEnabled = false;
 std::atomic_uint ScriptHost::m_uiQueuedMenu {0};
-
+std::atomic_uint ScriptHost::m_eCmdStatus {TermIdle};
 std::atomic_uint ScriptHost::m_iLine {0};
 
 bool ScriptHost::m_bFocus = false;
-std::atomic_bool ScriptHost::m_bCanAcceptInput, ScriptHost::m_bIncomingCommand {false};
+std::atomic_bool ScriptHost::m_bCanAcceptInput;
 std::string ScriptHost::m_strCmd;
 
 std::set<std::string> ScriptHost::m_strGLAutoC;
@@ -257,10 +258,10 @@ void ScriptHost::KeyCB(char key)
 			break;
 		case 0x0d: // return;
 			m_bCanAcceptInput = false;
+			m_eCmdStatus = TermIdle;
 			{
-				m_bIncomingCommand.store(true);
+				std::lock_guard<std::mutex> lck (m_lckScript);
 				m_script.push_back(m_strCmd);
-				m_bIncomingCommand = false;
 			}
 			m_bCanAcceptInput = true;
 			break;
@@ -286,27 +287,39 @@ void ScriptHost::KeyCB(char key)
 	}
 }
 
+static constexpr char strOK[] = "Success";
+static constexpr char strFailed[] = "Error";
+static constexpr char strWait[] = "Waiting";
+static constexpr char strTimeout[] = "Timed out";
+static constexpr char strSyntax[] = "Syntax/Argument Error";
+static constexpr const char* pStatus[] = {strOK, strFailed, strWait, strTimeout, strSyntax};
+
 void ScriptHost::Draw()
 {
-	const std::string* strStatus = nullptr;
 	glPushMatrix();
-		glTranslatef(3,2,0);
-		glScalef(0.09,-0.03,0);
+		glTranslatef(3,12,0);
+		glScalef(0.09,-0.14,0);
 		glPushMatrix();
-			glColor3f(1,.7,.7);
+			// Show executing script, if in progress.
+			glColor3f(.7,.7,1);
 			if (m_iLine<m_scriptGL.size())
 			{
-				strStatus = &m_scriptGL.at(m_iLine);
-			}
-			if (strStatus)
-			{
-				for (auto &c : *strStatus)
+				for (auto &c : m_scriptGL.at(m_iLine))
 				{
 					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
 				}
 			}
+			else if (m_eCmdStatus != TermIdle) // Show result of last user command.
+			{
+				const char* str = gsl::at(pStatus,m_eCmdStatus-1);
+				size_t i=0;
+				while (str[i])
+				{
+					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN, str[i++]);
+				}
+			}
 		glPopMatrix();
-		glTranslatef(0,-166,0);
+		glTranslatef(0,-150,0);
 		glColor3f(1,1,1);
 		glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'>');
 		glPushMatrix();
@@ -358,6 +371,7 @@ void ScriptHost::MenuCB(int iID)
 // Prefills/configures the autocompletion helper for the UI.
 void ScriptHost::SetupAutocomplete()
 {
+	m_bIsTerminalEnabled = true;
 	for (auto &c: m_clients)
 	{
 		const std::string& strName = c.first;
@@ -466,7 +480,11 @@ bool ScriptHost::CheckArg(const ArgType &type, const std::string &val)
 void ScriptHost::ParseLine(unsigned int iLine)
 {
 	GetLineState().isValid = false;
-	LineParts_t sLine = ScriptHost::GetLineParts(m_script.at(iLine));
+	LineParts_t sLine;
+	{
+		std::lock_guard<std::mutex> lck(m_lckScript);
+		sLine = ScriptHost::GetLineParts(m_script.at(iLine));
+	}
 	if (!sLine.isValid)
 	{
 		std::cout << "Failed to get parts\n";
@@ -564,14 +582,31 @@ void ScriptHost::AddScriptable(const std::string &strName, IScriptable* src)
 using LS = IScriptable::LineStatus;
 void ScriptHost::OnAVRCycle()
 {
-	if (m_bIncomingCommand || m_iLine>=m_script.size())
+	std::string strLine; // Local copy to reduce mutex lock time.
+	size_t scriptSize = 0;
+	if (!m_bIsTerminalEnabled)
 	{
-		return; // Done.
+		scriptSize = m_script.size();
+		if (m_iLine>=scriptSize)
+		{
+			return; // Done.
+		}
+		strLine = m_script.at(m_iLine);
+	}
+	else
+	{
+		std::lock_guard<std::mutex> lck(m_lckScript);
+		scriptSize = m_script.size();
+		if (m_iLine>=scriptSize)
+		{
+			return; // Done.
+		}
+		strLine = m_script.at(m_iLine);
 	}
 	if (GetLineState().iLine != m_iLine || m_state == State::Idle)
 	{
 		m_state = State::Running;
-		std::cout << "ScriptHost: Executing line " << m_script.at(m_iLine) << "\n";
+		std::cout << "ScriptHost: Executing line " << strLine << "\n";
 		ParseLine(m_iLine);
 	}
 	if (GetLineState().isValid)
@@ -600,6 +635,7 @@ void ScriptHost::OnAVRCycle()
 				}
 				m_iLine++; // This line is done, mobe on.
 				m_iTimeoutCount = 0;
+				m_eCmdStatus = TermSuccess;
 				break;
 			case LS::Unhandled:
 				std::cout << "ScriptHost: Unhandled action, considering this an error.\n";
@@ -610,7 +646,8 @@ void ScriptHost::OnAVRCycle()
 				m_state = State::Error;
 				int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
 				m_clients.at("Board")->ProcessAction(ID,{});
-				m_iLine = m_script.size(); // Error, end scripting.
+				m_iLine = scriptSize; // Error, end scripting.
+				m_eCmdStatus = TermFailed;
 				return;
 			}
 			case LS::HoldExec: // like waiting, but pauses board.
@@ -628,6 +665,7 @@ void ScriptHost::OnAVRCycle()
 			{
 				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount<=m_iTimeoutCycles)
 				{
+					m_eCmdStatus = TermWaiting;
 					break;
 				}
 				else
@@ -641,24 +679,25 @@ void ScriptHost::OnAVRCycle()
 				m_state = State::Timeout;
 				if (m_bQuitOnTimeout)
 				{
-					std::cout << "ScriptHost: Script TIMED OUT on " << m_script.at(m_iLine) << ". Quitting...\n";
+					std::cout << "ScriptHost: Script TIMED OUT on " << strLine << ". Quitting...\n";
 					int ID = m_clients.at("Board")->m_ActionIDs.at("Resume");
 					m_clients.at("Board")->ProcessAction(ID,{});
 					ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
 					m_clients.at("Board")->ProcessAction(ID,{});
-					m_iLine = m_script.size();
+					m_iLine = scriptSize;
 					return;
 				}
-				std::cout << "ScriptHost: Script TIMED OUT on #" << m_iLine << ": " << m_script.at(m_iLine) << '\n';
+				std::cout << "ScriptHost: Script TIMED OUT on #" << m_iLine << ": " << strLine << '\n';
 				m_iLine++;
 				m_iTimeoutCount = 0;
+				m_eCmdStatus = TermTimedOut;
 			}
 			break;
 			default:
 				break;
 
 		}
-		if (m_iLine==m_script.size())
+		if (m_iLine==scriptSize)
 		{
 			std::cout << "ScriptHost: Script FINISHED\n";
 			m_bCanAcceptInput = true;
@@ -667,8 +706,9 @@ void ScriptHost::OnAVRCycle()
 	}
 	else
 	{
-		std::cout << "ScriptHost: ERROR: Invalid line/unrecognized command: " << m_iLine << ":" << m_script.at(m_iLine) << '\n';
+		std::cout << "ScriptHost: ERROR: Invalid line/unrecognized command: " << m_iLine << ":" << strLine << '\n';
 		m_state = State::Error;
-		m_iLine = m_script.size();
+		m_iLine = scriptSize;
+		m_eCmdStatus = TermSyntax;
 	}
 }

@@ -148,20 +148,31 @@ class ScriptHost: public IScriptable
 		static bool m_bMenuCreated;
 		static bool m_bIsInitialized;
 		static bool m_bIsExecHold;
-		static std::atomic_bool m_bCanAcceptInput, m_bIncomingCommand;
+		static bool m_bIsTerminalEnabled;
+		static std::atomic_bool m_bCanAcceptInput;
 		static std::string m_strCmd;
 
-		static std::atomic_uint m_uiQueuedMenu, m_iLine;
+		static std::atomic_uint m_uiQueuedMenu, m_iLine, m_eCmdStatus;
 		// GL focus tracker. GL THREAD ONLY!
 		static bool m_bFocus;
 
-		static std::mutex m_lckCmdIn, m_lckScript;
+		static std::mutex m_lckScript;
 
 		enum Actions
 		{
 			ActSetTimeoutMs,
 			ActSetQuitOnTimeout,
 			ActLog
+		};
+
+		enum TerminalStatus
+		{
+			TermIdle = 0,
+			TermSuccess,
+			TermFailed,
+			TermWaiting,
+			TermTimedOut,
+			TermSyntax
 		};
 
 		static int m_iTimeoutCycles, m_iTimeoutCount;

@@ -37,7 +37,6 @@
 #include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_set
 #include "sim_time.h"
 #include "uart_pty.h"       // for uart_pty
-#include <chrono>
 #include <cstdint>
 #include <cstdlib>   // for exit, free
 #include <cstring>    // for memcpy, NULL

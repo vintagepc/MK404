@@ -300,11 +300,11 @@ namespace Boards {
 				auto tSim = avr_cycles_to_nsec(m_pAVR, m_pAVR->cycle);
 				if (tWall<tSim)
 				{
-					std::cout << "Sim is ahead by" << std::to_string(tSim - tWall)/1000 << "us!\n";
+					std::cout << "Sim is ahead by" << std::to_string((tSim - tWall)/1000) << "us!\n";
 				}
 				else
 				{
-					std::cout << "Sim is behind by" << std::to_string((tWall-tSim)/1000) << "us!\n";
+					std::cout << "Sim is behind by" << std::to_string((tWall - tSim)/1000) << "us!\n";
 				}
 
 			}

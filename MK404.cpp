@@ -114,7 +114,7 @@ static std::string GetBaseTitle()
 	static std::string strTitle;
 	if (strTitle.empty())
 	{
-		strTitle += "Prusa i3 MK404 (PRINTER NOT FOUND) ";
+		strTitle += "MK404 (PRINTER NOT FOUND) ";
 		strTitle += version::GIT_TAG_NAME;
 		strTitle.push_back('+');
 		strTitle+= std::to_string(version::GIT_COMMITS_SINCE_TAG);
@@ -314,13 +314,16 @@ int main(int argc, char *argv[])
 	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string",cmd);
 	SwitchArg argTerm("","terminal","Enable an in-UI terminal for interactive scripting (--EXPERIMENTAL!!--)", cmd);
 	SwitchArg argTest("","test","Run it test mode (no graphics, don't auto-exit.", cmd);
-	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img", cmd);
+	SwitchArg argSkew("","skew-correct","Attempt to correct for fast clock skew of the simulated board", cmd);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.", cmd);
+	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img", cmd);
 	SwitchArg argScriptHelp("","scripthelp", "Prints the available scripting commands for the current printer/context",cmd, false);
 	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "filename.txt", cmd);
 	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.",cmd);
 	SwitchArg argMute("m","mute","Tell a printer to mute any audio it may produce.", cmd);
+	SwitchArg argMarlin("","marlin","Synonym for --no-hacks",cmd,false);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.", cmd);
+	SwitchArg argKlipper("","klipper","Synonym for --skew-correct and --no-hacks",cmd,false);
 	SwitchArg argKeyHelp("k","keys","Prints the list of available keyboard controls",cmd,false);
 	std::vector<string> vstrSizes = FatImage::GetSizes();
 	ValuesConstraint<string> vcSizes(vstrSizes);
@@ -353,6 +356,11 @@ int main(int argc, char *argv[])
 	}
 
 	cmd.parse(argc,argv);
+
+	// Handle the convenience synonyms:
+	// Longer term it'd be neat to have a synonym handler in  TCLAP....
+	bool bArgHacks = argNoHacks.isSet() || argKlipper.isSet() || argMarlin.isSet();
+	bool bArgSkew = argSkew.isSet() || argKlipper.isSet();
 
 	// Make new image.
 	if (argImgSize.isSet())
@@ -391,10 +399,12 @@ int main(int argc, char *argv[])
 		strFW = argFW.getValue();
 	}
 
-	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,
-		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),""); // this line is the CreateBoard() args.
+	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),bArgHacks,argSerial.isSet(), argSD.getValue() ,
+		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),"stk500boot_v2_mega2560.hex"); // this line is the CreateBoard() args.
 
 	pBoard->SetPrimary(true); // This is the primary board, responsible for scripting/dispatch. Blocks contention from sub-boards, e.g. MMU.
+
+	pBoard->SetAdjustSkew(bArgSkew);
 
 	if (!bNoGraphics)
 	{

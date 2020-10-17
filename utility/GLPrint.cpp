@@ -103,7 +103,7 @@ uint32_t GLPrint::GetAdjustedStep(uint32_t uiStep)
 	// }
 }
 
-void GLPrint::OnEStep(const uint32_t& value)
+void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 {
 	uint32_t uiE = m_bNLE ? GetAdjustedStep(value) : value;
 	m_uiE = uiE;
@@ -198,7 +198,7 @@ void GLPrint::OnEStep(const uint32_t& value)
 			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
 
 		}
-		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});
+		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[1], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});
 		if (!bExtruding)
 		{
 			{
@@ -243,7 +243,7 @@ void GLPrint::OnEStep(const uint32_t& value)
 		Normalize({fCross.data(),3});
 				// New segment, push it onto the vertex list and update the segment count
 		//printf("New segment: %d\n",m_vCoords.size());
-		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});
+		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[1], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});
 		m_fCurZ+= vfPos[1];
 		{
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
@@ -289,9 +289,8 @@ void GLPrint::AddSegment()
 			pt = *pStart;
 		}
 		auto ptNext = *std::next(it);
-		float fZ = (static_cast<float>(m_uiExtrEnd[1])/static_cast<float>(m_iStepsPerMM[2]*1000)) - fLayerZRad;
-		auto iX = std::get<0>(pt), iY = std::get<1>(pt), iE = std::get<2>(pt);
-		auto iXN = std::get<0>(ptNext), iYN = std::get<1>(ptNext), iEN = std::get<2>(ptNext);
+		auto iX = std::get<0>(pt), iY = std::get<1>(pt), iZ = std::get<2>(pt), iE = std::get<3>(pt);
+		auto iXN = std::get<0>(ptNext), iYN = std::get<1>(ptNext), iZN = std::get<2>(ptNext), iEN = std::get<3>(ptNext);
 		int32_t idE = gsl::narrow<int32_t>(iEN) - iE; // E linear distance.
 		if (idE <0)
 		{
@@ -307,6 +306,9 @@ void GLPrint::AddSegment()
 		auto fXN = static_cast<float>(iXN)/static_cast<float>(m_iStepsPerMM[0]*1000);
 		auto fY = static_cast<float>(iY)/static_cast<float>(m_iStepsPerMM[1]*1000);
 		auto fYN = static_cast<float>(iYN)/static_cast<float>(m_iStepsPerMM[1]*1000);
+		float fZ = (static_cast<float>(iZ)/static_cast<float>(m_iStepsPerMM[2]*1000)) - fLayerZRad;
+		float fZN = (static_cast<float>(iZN)/static_cast<float>(m_iStepsPerMM[2]*1000)) - fLayerZRad;
+
 		// Approximate the resulting extrusion width with an ellipse.
 		float fdXY = std::sqrt((fA[0]*fA[0])+(fA[2]*fA[2])); // Length of extrusion on print surface.
 		if (!m_bHRE && fdXY<0.0004) // Segment length averaging control for non HRE.
@@ -336,31 +338,31 @@ void GLPrint::AddSegment()
 				m_fvTri.reserve(m_fvTri.size()+30);
 				m_fvTriNorm.reserve(m_fvTri.size());
 
-				m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
+				m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZN, fYN+(fCross[2]*fExtRad)});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
 
 				m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
 
-				m_fvTri.insert(m_fvTri.end(), {fXN, fZ+fLayerZRad, fYN});
+				m_fvTri.insert(m_fvTri.end(), {fXN, fZN+fLayerZRad, fYN});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), {0,1,0});
 
 				m_fvTri.insert(m_fvTri.end(), {fX, fZ+fLayerZRad, fY});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), {0,1,0});
 
-				m_fvTri.insert(m_fvTri.end(), {fXN-(fCross[0]*fExtRad), fZ, fYN-(fCross[2]*fExtRad)});
+				m_fvTri.insert(m_fvTri.end(), {fXN-(fCross[0]*fExtRad), fZN, fYN-(fCross[2]*fExtRad)});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
 
 				m_fvTri.insert(m_fvTri.end(), {fX-(fCross[0]*fExtRad), fZ, fY-(fCross[2]*fExtRad)});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
 
-				m_fvTri.insert(m_fvTri.end(), {fXN, fZ-fLayerZRad, fYN});
+				m_fvTri.insert(m_fvTri.end(), {fXN, fZN-fLayerZRad, fYN});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), {0,-1,0});
 
 				m_fvTri.insert(m_fvTri.end(), {fX, fZ-fLayerZRad, fY});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), {0,-1,0});
 
-				m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
+				m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZN, fYN+(fCross[2]*fExtRad)});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
 
 				m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
@@ -385,13 +387,13 @@ void GLPrint::AddSegment()
 				m_fvTri.reserve(m_fvTri.size()+12);
 				m_fvTriNorm.reserve(m_fvTri.size());
 
-				m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZ, fYN+(fCross[2]*fExtRad)});
+				m_fvTri.insert(m_fvTri.end(), {fXN+(fCross[0]*fExtRad), fZN, fYN+(fCross[2]*fExtRad)});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
 
 				m_fvTri.insert(m_fvTri.end(), {fX+(fCross[0]*fExtRad), fZ, fY+(fCross[2]*fExtRad)});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), fCross.begin(), fCross.end());
 
-				m_fvTri.insert(m_fvTri.end(), {fXN-(fCross[0]*fExtRad), fZ, fYN-(fCross[2]*fExtRad)});
+				m_fvTri.insert(m_fvTri.end(), {fXN-(fCross[0]*fExtRad), fZN, fYN-(fCross[2]*fExtRad)});
 				m_fvTriNorm.insert(m_fvTriNorm.end(), fCrossRev.begin(), fCrossRev.end());
 
 				m_fvTri.insert(m_fvTri.end(), {fX-(fCross[0]*fExtRad), fZ, fY-(fCross[2]*fExtRad)});

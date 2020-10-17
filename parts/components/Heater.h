@@ -100,4 +100,5 @@ public:
 		bool m_bStopTicking = false;
 	    static constexpr Color3fv m_colColdTemp = {0, 1, 1};
 	    static constexpr Color3fv m_colHotTemp = {1, 0, 0};
+		avr_cycle_count_t m_cntOff = 0;
 };

@@ -87,10 +87,13 @@ jobs:
           ${{ runner.workspace }}/MK404/build/snaps_core.tar.gz
 #          ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
 
-    - name: Upload to codecov.io
-      run: |
-        cd ${{ runner.workspace }}/MK404/build
-        bash <(curl -s https://codecov.io/bash) -f parts.info
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Coverage
+        path: |
+          ${{ runner.workspace }}/MK404/build/parts.info
+          ${{ runner.workspace }}/MK404/build/CMakeFiles/MK404.dir/
 
     - name: Report failure
       if: steps.test_pts.outcome == 'failure'
@@ -101,7 +104,7 @@ jobs:
     #   with:
     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     #     path: ${{ runner.workspace }}/MK404/build/summary.txt
-  # This workflow contains a single job called "build"
+
   ext1_tests:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -173,11 +176,54 @@ jobs:
         path: |
           ${{ runner.workspace }}/MK404/build/snaps_ext1.tar.gz
 
-    - name: Upload to codecov.io
-      run: |
-        cd ${{ runner.workspace }}/MK404/build
-        bash <(curl -s https://codecov.io/bash) -f ext1.info
+    - name: Upload coverage artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Coverage2
+        path: |
+          ${{ runner.workspace }}/MK404/build/ext1.info
+          ${{ runner.workspace }}/MK404/build/CMakeFiles/MK404.dir/
 
     - name: Report failure
       if: steps.tests_ext.outcome == 'failure'
       run: echo ${{ steps.tests_ext.outcome  }} && test -n ""
+
+  Upload_Coverage:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    needs: [ext1_tests, part_tests]
+    steps:
+
+    - name: Checkout ${{ github.event.pull_request.head.ref }}
+      uses: actions/checkout@v2.2.0
+      if: ${{ github.event.pull_request }}
+      with:
+        repository: vintagepc/MK404.git
+        ref: ${{ github.event.pull_request.head.sha }}
+        submodules: true
+
+    - name: Checkout ${{ github.event.ref }}
+      uses: actions/checkout@v2.2.0
+      if: ${{ !github.event.pull_request }}
+      with:
+        repository: vintagepc/MK404.git
+        ref: ${{ github.event.ref }}
+        submodules: true
+
+    - name: Retrieve coverage reports
+      uses: actions/download-artifact@v2
+      with:
+        name: Coverage
+        path: parts
+
+    - name: Retrieve coverage reports
+      uses: actions/download-artifact@v2
+      with:
+        name: Coverage2
+        path: ext1
+
+
+    - name: Upload to codecov.io
+      run: |
+        bash <(curl -s https://codecov.io/bash) -f parts/parts.info
+        bash <(curl -s https://codecov.io/bash) -f ext1/ext1.info

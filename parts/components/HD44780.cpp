@@ -333,6 +333,11 @@ uint32_t HD44780::OnCmdReady()
  */
 uint32_t HD44780::ProcessWrite()
 {
+	if (GetFlag(HD44780_FLAG_BUSY))
+	{
+		std::cout << static_cast<const char*>(__FUNCTION__) << " command " << m_uiDataPins << " write when still BUSY" << '\n';
+		return 0;
+	}
 	uint32_t delay = 0; // uS
 	int four = !GetFlag(HD44780_FLAG_D_L);
 	int comp = four && GetFlag(HD44780_FLAG_LOWNIBBLE);
@@ -360,10 +365,6 @@ uint32_t HD44780::ProcessWrite()
 	// write has 8 bits to process
 	if (write)
 	{
-		if (GetFlag(HD44780_FLAG_BUSY))
-		{
-			std::cout << static_cast<const char*>(__FUNCTION__) << " command " << m_uiDataPins << "write when still BUSY" << '\n';
-		}
 		if (m_uiPinState & (1U << RS))	// write data
 		{
 			delay = OnDataReady();
@@ -488,8 +489,8 @@ void HD44780::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
 	m_uiPinState = (m_uiPinState & ~(1U << irq->irq)) | (value << irq->irq);
 	int eo = old & (1U << E);
 	int e = m_uiPinState & (1U << E);
-	// on the E pin rising edge, do stuff otherwise just exit
-	if (!eo && e)
+	// on the E pin falling edge, do stuff otherwise just exit
+	if (eo && !e)
 	{
 		RegisterTimer(m_fcnEPinChanged,1,this);
 	}
@@ -519,6 +520,10 @@ void HD44780::Init(avr_t *avr)
 	TH.AddTrace(this, E, {TC::Display, TC::OutputPin});
 	TH.AddTrace(this, RS, {TC::Display, TC::OutputPin});
 	TH.AddTrace(this, RW, {TC::Display, TC::OutputPin});
+	TH.AddTrace(this, D4, {TC::Display});
+	TH.AddTrace(this, D5, {TC::Display});
+	TH.AddTrace(this, D6, {TC::Display});
+	TH.AddTrace(this, D7, {TC::Display});
 	TH.AddTrace(this, DATA_IN, {TC::Display},8);
 	TH.AddTrace(this, BRIGHTNESS_IN, {TC::Display, TC::OutputPin});
 	TH.AddTrace(this, BRIGHTNESS_PWM_IN, {TC::Display, TC::PWM});

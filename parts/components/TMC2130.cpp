@@ -151,10 +151,14 @@ void TMC2130::ProcessCommand()
     {
         gsl::at(m_regs.raw,m_cmdProc.bitsIn.address) = m_cmdProc.bitsIn.data;
         //printf("REG %c %02x set to: %010x\n", m_cAxis, m_cmdIn.bitsIn.address, m_cmdIn.bitsIn.data);
-
-		if(m_cmdProc.bitsIn.address == 0x6C) // CHOPCONF
+		switch (m_cmdProc.bitsIn.address)
 		{
-			m_uiStepIncrement = std::pow(2,m_regs.defs.CHOPCONF.mres);
+			case 0x00: // GCONF
+				RaiseDiag(m_regs.defs.DRV_STATUS.stallGuard); // Adjust DIAG out, it mayhave  been reconfigured.
+				break;
+			case 0x6C: // Chopconf
+				m_uiStepIncrement = std::pow(2,m_regs.defs.CHOPCONF.mres);
+				break;
 		}
     }
     else
@@ -181,16 +185,19 @@ uint8_t TMC2130::OnSPIIn(struct avr_irq_t *, uint32_t value)
     return byte; // SPIPeripheral takes care of the reply.
 }
 
-// TODO (anyone): Fix the diag output so it respects GCONF
-// void TMC2130::CheckDiagOut()
-// {
-//     bool bDiag = m_regs.defs.DRV_STATUS.stallGuard && m_regs.defs.GCONF.diag0_stall;
-//     //printf("Diag: %01x\n",bDiag);
-//     if (bDiag)
-// 	{
-//         RaiseIRQ(DIAG_OUT, bDiag^ m_regs.defs.GCONF.diag0_int_pushpull);
-// 	}
-// }
+
+void TMC2130::RaiseDiag(uint8_t value)
+{
+	// TODO (anyone) - right now these are tied together because the Einsy board does so.
+	// But in the future we may need to separate this out to toggle DIAG0 and DIAG one separately.
+    bool bDiag = m_regs.defs.GCONF.diag0_stall || m_regs.defs.GCONF.diag1_stall;
+    //printf("%c Diag: %01x SG %d PP %01x %01x \n",m_cAxis.load(), bDiag, m_regs.defs.DRV_STATUS.stallGuard, m_regs.defs.GCONF.diag0_int_pushpull, value );
+    if (bDiag)
+	{
+		//printf("Raised: %d\n", value ==  m_regs.defs.GCONF.diag0_int_pushpull);
+        RaiseIRQ(DIAG_OUT, value == m_regs.defs.GCONF.diag0_int_pushpull);
+	}
+}
 
 // Called when CSEL changes.
 void TMC2130::OnCSELIn(struct avr_irq_t *, uint32_t value)
@@ -264,12 +271,12 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 	bStall |= m_bStall;
     if (bStall)
     {
-        RaiseIRQ(DIAG_OUT, 1);
+        RaiseDiag(1);
         m_regs.defs.DRV_STATUS.SG_RESULT = 0;
     }
     else if (!bStall && m_regs.defs.DRV_STATUS.stallGuard)
     {
-          RaiseIRQ(DIAG_OUT, 0);
+          RaiseDiag(0);
           m_regs.defs.DRV_STATUS.SG_RESULT = 250;
     }
     m_regs.defs.DRV_STATUS.stallGuard = bStall;

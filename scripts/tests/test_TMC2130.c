@@ -109,6 +109,14 @@ int main()
 
 	printf("RP %02x %06lx\n",uiStatus, uiReply);
 
+	TMCTX(0x80,1U<<7U); // DIAG0_stall
+
+	printf("DIAG %02x\n",PINA&0x02);
+
+	TMCTX(0x80,1U<<7U | 1U << 12); // DIAG0_stall && pushpull
+
+	printf("DIAG %02x\n",PINA&0x02);
+
 	for(int i=0; i<160; i++)
 	{
 		step();
@@ -168,6 +176,11 @@ int main()
 	PORTA&=~(1U<<4);
 	step();
 	printf("DIAGDISABLE %02x\n",PINA&0x02);
+
+	TMCTX(0x80,1U<<7U); // DIAG0_stall, Act low
+
+	printf("DIAG %02x\n",PINA&0x02);
+
 
 	cli();
 

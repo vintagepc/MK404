@@ -39,14 +39,14 @@
 #endif
 
 
-avr_cycle_count_t Heater::OnTempTick(avr_t *, avr_cycle_count_t)
+avr_cycle_count_t Heater::OnTempTick(avr_t * pAVR, avr_cycle_count_t)
 {
 	if (m_bStopTicking)
 	{
 		return 0;
 	}
 
-    if (m_uiPWM>0)
+    if (m_uiPWM>0 || (pAVR->cycle-m_cntOff)<(pAVR->frequency/100))
     {
         float fDelta = (m_fThermalMass*(static_cast<float>(m_uiPWM)/255.0f))*0.3f;
         m_fCurrentTemp += fDelta;
@@ -85,6 +85,11 @@ void Heater::OnPWMChanged(struct avr_irq_t *,uint32_t value)
 	{
         RegisterTimerUsec(m_fcnTempTick, 100000, this);
 	}
+	else
+	{
+		m_cntOff = m_pAVR->cycle;
+	}
+
     if (GetIRQ(ON_OUT)->value != (m_uiPWM>0))
 	{
         RaiseIRQ(ON_OUT,m_uiPWM>0);

@@ -35,6 +35,7 @@
 #include "sim_hex.h"  // for read_ihex_file
 #include "sim_io.h"         // for avr_io_getirq
 #include "sim_regbit.h"     // for avr_regbit_get, avr_regbit_set
+#include "sim_time.h"
 #include "uart_pty.h"       // for uart_pty
 #include <cstdint>
 #include <cstdlib>   // for exit, free
@@ -291,8 +292,21 @@ namespace Boards {
 		switch (key)
 		{
 			case 'z':
+			{
 				m_bPaused ^= true;
 				std::cout <<  "Pause: " << m_bPaused << '\n';
+				auto tWall = avr_get_time_stamp(m_pAVR);
+				auto tSim = avr_cycles_to_nsec(m_pAVR, m_pAVR->cycle);
+				if (tWall<tSim)
+				{
+					std::cout << "Sim is ahead by" << std::to_string((tSim - tWall)/1000) << "us!\n";
+				}
+				else
+				{
+					std::cout << "Sim is behind by" << std::to_string((tWall - tSim)/1000) << "us!\n";
+				}
+
+			}
 			break;
 			case 'q':
 				SetQuitFlag();
@@ -396,7 +410,18 @@ namespace Boards {
 		std::cout << "Starting " << m_wiring.GetMCUName() << " execution...\n";
 		int state = cpu_Running;
 		while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){
-					// Re init the special workarounds we need after a reset.
+			// Check the timing every 10k cycles, ~10 ms
+			if (m_bCorrectSkew && m_pAVR->cycle%500==0)
+			{
+				auto tWall = avr_get_time_stamp(m_pAVR);
+				auto tSim = avr_cycles_to_nsec(m_pAVR, m_pAVR->cycle);
+				if (tWall<tSim)
+				{
+					auto tDiff = tSim - tWall;
+					if (tDiff>200000) usleep(tDiff/1000);
+					//std::cout << "Sim is ahead by" << std::to_string(tSim - tWall) << "ns!\n";
+				}
+			}
 			if (m_bIsPrimary) // Only one board should be scripting.
 			{
 				ScriptHost::DispatchMenuCB();

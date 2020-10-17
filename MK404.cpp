@@ -112,7 +112,7 @@ static std::string GetBaseTitle()
 	static std::string strTitle;
 	if (strTitle.empty())
 	{
-		strTitle += "Prusa i3 MK404 (PRINTER NOT FOUND) ";
+		strTitle += "MK404 (PRINTER NOT FOUND) ";
 		strTitle += version::GIT_TAG_NAME;
 		strTitle.push_back('+');
 		strTitle+= std::to_string(version::GIT_COMMITS_SINCE_TAG);

@@ -52,7 +52,7 @@ class GLPrint
 
 	inline void OnZStep(const uint32_t &value) { m_uiZ = m_bNLZ ? GetAdjustedStep(value) : value;}
 
-	void OnEStep(const uint32_t &value);
+	void OnEStep(const uint32_t &value, const uint32_t &deltaT);
 
 	inline void SetStepsPerMM(int16_t iX, int16_t iY, int16_t iZ, int16_t iE)
 	{
@@ -101,7 +101,8 @@ class GLPrint
 		float m_fLastERate = 0;
 		const float m_fColR, m_fColG, m_fColB;
 		std::atomic_bool m_bExtruding = {false}, m_bNLX {false}, m_bNLY {false}, m_bNLZ {false}, m_bNLE {false};
-		std::vector<std::tuple<uint32_t,uint32_t,uint32_t>> m_vPath;
+		// {X, Y, Z, E, dT}
+		std::vector<std::tuple<uint32_t,uint32_t,uint32_t,uint32_t>> m_vPath;
 
 		std::mutex m_lock;
 

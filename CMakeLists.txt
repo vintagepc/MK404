@@ -360,14 +360,14 @@ add_custom_target(Coverage.tar.gz
 	DEPENDS Test_Common
 )
 add_custom_target(Test_Parts
-	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|part|ext2' --timeout 180
+	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|part|ext2' --timeout 180 -j 1
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/parts.info
 	COMMAND lcov --remove parts.info '/usr/*' -o parts.info
 	COMMAND lcov --remove parts.info '*/3rdParty/*' -o parts.info
 	DEPENDS Test_Common Test_firmwares
 )
 add_custom_target(Test_ext1
-	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|ext1' --timeout 120
+	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|ext1' --timeout 120 -j 1
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/ext1.info
 	COMMAND lcov --remove ext1.info '/usr/*' -o ext1.info
 	COMMAND lcov --remove ext1.info '*/3rdParty/*' -o ext1.info

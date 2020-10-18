@@ -328,6 +328,13 @@ else()
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE OFF)
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+	message(STATUS "Build type is release, adding extra flags.")
+	target_compile_options(MK404 PRIVATE -flto -mtune=native)
+	target_link_libraries(MK404 -flto)
+endif()
+
+
 add_custom_target(Test_Clean
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 	COMMAND ${CMAKE_COMMAND} -E remove ${PROJECT_BINARY_DIR}/*.bin_test
@@ -353,14 +360,14 @@ add_custom_target(Coverage.tar.gz
 	DEPENDS Test_Common
 )
 add_custom_target(Test_Parts
-	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|part|ext2' --timeout 360
+	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|part|ext2' --timeout 300 -j 1
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/parts.info
 	COMMAND lcov --remove parts.info '/usr/*' -o parts.info
 	COMMAND lcov --remove parts.info '*/3rdParty/*' -o parts.info
 	DEPENDS Test_Common Test_firmwares
 )
 add_custom_target(Test_ext1
-	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|ext1' --timeout 120
+	COMMAND cd ${PROJECT_BINARY_DIR} && env CTEST_OUTPUT_ON_FAILURE=1 ctest -R 'core|ext1' --timeout 180 -j 1
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/ext1.info
 	COMMAND lcov --remove ext1.info '/usr/*' -o ext1.info
 	COMMAND lcov --remove ext1.info '*/3rdParty/*' -o ext1.info

@@ -75,7 +75,7 @@ jobs:
       continue-on-error: true
       run: |
         cd ${{ runner.workspace }}/MK404/build
-        make Test_Parts
+        make Test_Parts -j1
 
     - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_core.tar.gz tests/snaps/
 
@@ -165,7 +165,7 @@ jobs:
       continue-on-error: true
       run: |
         cd ${{ runner.workspace }}/MK404/build
-        make Test_ext1
+        make Test_ext1 -j1
 
     - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_ext1.tar.gz tests/snaps/
 

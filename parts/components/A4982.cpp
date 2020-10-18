@@ -225,7 +225,7 @@ void A4982::OnMSIn(avr_irq_t *irq, uint32_t value)
 		uiM2 = value;
 	}
 	uint8_t m_uiNewShift = (static_cast<unsigned>(uiM2)<<1U | static_cast<unsigned>(uiM1));
-	std::cout << m_cAxis << " MS changed: " << std::to_string(m_uiNewShift) << '\n';
+	//std::cout << m_cAxis << " MS changed: " << std::to_string(m_uiNewShift) << '\n';
 	switch (m_uiNewShift)
 	{
 		case 0:

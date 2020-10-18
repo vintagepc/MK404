@@ -32,8 +32,8 @@
 
 std::map<std::string, IScriptable*> ScriptHost::m_clients;
 
-std::vector<std::string> ScriptHost::m_script;
-unsigned int ScriptHost::m_iLine, ScriptHost::m_uiAVRFreq;
+std::vector<std::string> ScriptHost::m_script, ScriptHost::m_scriptGL;
+unsigned int ScriptHost::m_uiAVRFreq;
 std::map<std::string, int> ScriptHost::m_mMenuIDs;
 std::map<unsigned,IScriptable*> ScriptHost::m_mMenuBase2Client;
 std::map<std::string, unsigned> ScriptHost::m_mClient2MenuBase;
@@ -44,7 +44,20 @@ bool ScriptHost::m_bQuitOnTimeout = false;
 bool ScriptHost::m_bMenuCreated = false;
 bool ScriptHost::m_bIsInitialized = false;
 bool ScriptHost::m_bIsExecHold = false;
+bool ScriptHost::m_bIsTerminalEnabled = false;
 std::atomic_uint ScriptHost::m_uiQueuedMenu {0};
+std::atomic_uint ScriptHost::m_eCmdStatus {TermIdle};
+std::atomic_uint ScriptHost::m_iLine {0};
+
+bool ScriptHost::m_bFocus = false;
+std::atomic_bool ScriptHost::m_bCanAcceptInput;
+std::string ScriptHost::m_strCmd;
+
+std::set<std::string> ScriptHost::m_strGLAutoC;
+
+// String mutex... if interactive, for terminal->host,
+// if running a script, for host->terminal.
+std::mutex ScriptHost::m_lckScript;
 
 void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
@@ -75,12 +88,17 @@ void ScriptHost::LoadScript(const std::string &strFile)
 		m_script.push_back(strLn);
 	}
 	m_iLine = 0;
+	{
+		std::lock_guard<std::mutex> lck(m_lckScript);
+		m_scriptGL = m_script;
+	}
 	std::cout << "ScriptHost: Loaded " << m_script.size() << " lines from " << strFile << '\n';
 }
 
 bool ScriptHost::Init()
 {
 	GetHost()._Init();
+	GetHost().m_strCmd.reserve(200);
 	m_bIsInitialized = true;
 	return true;
 }
@@ -90,7 +108,12 @@ bool ScriptHost::Setup(const std::string &strScript,unsigned uiFreq)
 	m_uiAVRFreq = uiFreq;
 	if (!strScript.empty())
 	{
+		m_bCanAcceptInput = false;
 		LoadScript(strScript);
+	}
+	else
+	{
+		m_bCanAcceptInput = true;
 	}
 	return ValidateScript();
 }
@@ -215,6 +238,119 @@ bool ScriptHost::ValidateScript()
 	return bClean;
 }
 
+void ScriptHost::KeyCB(char key)
+{
+	if (!ScriptHost::m_bCanAcceptInput)
+	{
+		return;
+	}
+	auto &strCmd = GetHost().m_strCmd;
+	switch (key)
+	{
+		case 0x1b: // Esc:
+			strCmd.clear();
+		case 0x7F: // Delete, backspace
+		case 0x08:
+			if (strCmd.size()>0)
+			{
+				strCmd.pop_back();
+			}
+			break;
+		case 0x0d: // return;
+			m_bCanAcceptInput = false;
+			m_eCmdStatus = TermIdle;
+			{
+				std::lock_guard<std::mutex> lck (m_lckScript);
+				m_script.push_back(m_strCmd);
+			}
+			m_bCanAcceptInput = true;
+			break;
+		case 0x9: // tab
+		{
+			auto pNext = m_strGLAutoC.upper_bound(m_strCmd);
+			if (pNext != m_strGLAutoC.end())
+			{
+				auto posTrim = pNext->find_first_of('(');
+				if (posTrim!=std::string::npos)
+				{
+					m_strCmd = pNext->substr(0,posTrim+1);
+				}
+				else
+				{
+					m_strCmd = *pNext;
+				}
+			}
+		}
+		break;
+		default:
+			strCmd.push_back(key);
+	}
+}
+
+static constexpr char strOK[8] = "Success";
+static constexpr char strFailed[6] = "Error";
+static constexpr char strWait[8] = "Waiting";
+static constexpr char strTimeout[10] = "Timed out";
+static constexpr char strSyntax[22] = "Syntax/Argument Error";
+
+void ScriptHost::Draw()
+{
+	static const gsl::span<const char> pStatus[] = {strOK,
+												strFailed,
+												strWait,
+												strTimeout,
+												strSyntax};
+	glPushMatrix();
+		glTranslatef(3,12,0);
+		glScalef(0.09,-0.14,0);
+		glPushMatrix();
+			// Show executing script, if in progress.
+			glColor3f(.7,.7,1);
+			if (m_iLine<m_scriptGL.size())
+			{
+				for (auto &c : m_scriptGL.at(m_iLine))
+				{
+					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
+				}
+			}
+			else if (m_eCmdStatus != TermIdle) // Show result of last user command.
+			{
+				for (auto &c : pStatus[m_eCmdStatus-1])
+				{
+					glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN, c);
+				}
+			}
+		glPopMatrix();
+		glTranslatef(0,-150,0);
+		glColor3f(1,1,1);
+		glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'>');
+		glPushMatrix();
+			glColor3f(0.4,0.4,0.4);
+			if (!m_strCmd.empty())
+			{
+				auto pNext = m_strGLAutoC.upper_bound(m_strCmd);
+				if (pNext != m_strGLAutoC.end())
+				{
+					for (auto &c : *pNext)
+					{
+						glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
+					}
+				}
+			}
+		glPopMatrix();
+		glColor3f(1,1,1);
+		for (auto &c : m_strCmd)
+		{
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
+		}
+		if (m_bFocus && ScriptHost::m_bCanAcceptInput)
+		{
+			glColor3f(0.5,0.5,0.5);
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'_');
+		}
+	glPopMatrix();
+}
+
 // Called from the execution context to process the menu action.
 void ScriptHost::DispatchMenuCB()
 {
@@ -224,7 +360,6 @@ void ScriptHost::DispatchMenuCB()
 		m_uiQueuedMenu.store(0);
 		IScriptable *pClient = m_mMenuBase2Client[(iID - iID%100)];
 		pClient->ProcessMenu(iID%100);
-
 	}
 }
 
@@ -233,6 +368,37 @@ void ScriptHost::MenuCB(int iID)
 {
 	//printf("Menu CB %d\n",iID);
 	m_uiQueuedMenu.store(iID);
+}
+
+// Prefills/configures the autocompletion helper for the UI.
+void ScriptHost::SetupAutocomplete()
+{
+	m_bIsTerminalEnabled = true;
+	for (auto &c: m_clients)
+	{
+		const std::string& strName = c.first;
+		// Insert just the prefix so that we don't show actions until *after* - for better tab-complete.
+		m_strGLAutoC.insert(strName + "::");
+		for (auto &ActID : c.second->m_ActionIDs)
+		{
+			unsigned int ID = ActID.second;
+			std::string strArgFmt = ActID.first;
+			strArgFmt.push_back('(');
+			if (c.second->m_ActionArgs[ID].size()>0)
+			{
+				for (auto &Arg : c.second->m_ActionArgs[ID])
+				{
+					strArgFmt += GetArgTypeNames().at(Arg) + ", ";
+				}
+				strArgFmt[strArgFmt.size()-2] = ')';
+			}
+			else
+			{
+				strArgFmt.push_back(')');
+			}
+			m_strGLAutoC.insert(strName + "::" + strArgFmt); // NOLINT - only incurred once at startup.
+		}
+	}
 }
 
 void ScriptHost::CreateRootMenu(int iWinID)
@@ -316,7 +482,11 @@ bool ScriptHost::CheckArg(const ArgType &type, const std::string &val)
 void ScriptHost::ParseLine(unsigned int iLine)
 {
 	GetLineState().isValid = false;
-	LineParts_t sLine = ScriptHost::GetLineParts(m_script.at(iLine));
+	LineParts_t sLine;
+	{
+		std::lock_guard<std::mutex> lck(m_lckScript);
+		sLine = ScriptHost::GetLineParts(m_script.at(iLine));
+	}
 	if (!sLine.isValid)
 	{
 		std::cout << "Failed to get parts\n";
@@ -414,14 +584,31 @@ void ScriptHost::AddScriptable(const std::string &strName, IScriptable* src)
 using LS = IScriptable::LineStatus;
 void ScriptHost::OnAVRCycle()
 {
-	if (m_iLine>=m_script.size())
+	std::string strLine; // Local copy to reduce mutex lock time.
+	size_t scriptSize = 0;
+	if (!m_bIsTerminalEnabled)
 	{
-		return; // Done.
+		scriptSize = m_script.size();
+		if (m_iLine>=scriptSize)
+		{
+			return; // Done.
+		}
+		strLine = m_script.at(m_iLine);
+	}
+	else
+	{
+		std::lock_guard<std::mutex> lck(m_lckScript);
+		scriptSize = m_script.size();
+		if (m_iLine>=scriptSize)
+		{
+			return; // Done.
+		}
+		strLine = m_script.at(m_iLine);
 	}
 	if (GetLineState().iLine != m_iLine || m_state == State::Idle)
 	{
 		m_state = State::Running;
-		std::cout << "ScriptHost: Executing line " << m_script.at(m_iLine) << "\n";
+		std::cout << "ScriptHost: Executing line " << strLine << "\n";
 		ParseLine(m_iLine);
 	}
 	if (GetLineState().isValid)
@@ -450,6 +637,7 @@ void ScriptHost::OnAVRCycle()
 				}
 				m_iLine++; // This line is done, mobe on.
 				m_iTimeoutCount = 0;
+				m_eCmdStatus = TermSuccess;
 				break;
 			case LS::Unhandled:
 				std::cout << "ScriptHost: Unhandled action, considering this an error.\n";
@@ -460,7 +648,8 @@ void ScriptHost::OnAVRCycle()
 				m_state = State::Error;
 				int ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
 				m_clients.at("Board")->ProcessAction(ID,{});
-				m_iLine = m_script.size(); // Error, end scripting.
+				m_iLine = scriptSize; // Error, end scripting.
+				m_eCmdStatus = TermFailed;
 				return;
 			}
 			case LS::HoldExec: // like waiting, but pauses board.
@@ -478,6 +667,7 @@ void ScriptHost::OnAVRCycle()
 			{
 				if(m_iTimeoutCycles>=0 && ++m_iTimeoutCount<=m_iTimeoutCycles)
 				{
+					m_eCmdStatus = TermWaiting;
 					break;
 				}
 				else
@@ -491,33 +681,36 @@ void ScriptHost::OnAVRCycle()
 				m_state = State::Timeout;
 				if (m_bQuitOnTimeout)
 				{
-					std::cout << "ScriptHost: Script TIMED OUT on " << m_script.at(m_iLine) << ". Quitting...\n";
+					std::cout << "ScriptHost: Script TIMED OUT on " << strLine << ". Quitting...\n";
 					int ID = m_clients.at("Board")->m_ActionIDs.at("Resume");
 					m_clients.at("Board")->ProcessAction(ID,{});
 					ID = m_clients.at("Board")->m_ActionIDs.at("Quit");
 					m_clients.at("Board")->ProcessAction(ID,{});
-					m_iLine = m_script.size();
+					m_iLine = scriptSize;
 					return;
 				}
-				std::cout << "ScriptHost: Script TIMED OUT on #" << m_iLine << ": " << m_script.at(m_iLine) << '\n';
+				std::cout << "ScriptHost: Script TIMED OUT on #" << m_iLine << ": " << strLine << '\n';
 				m_iLine++;
 				m_iTimeoutCount = 0;
+				m_eCmdStatus = TermTimedOut;
 			}
 			break;
 			default:
 				break;
 
 		}
-		if (m_iLine==m_script.size())
+		if (m_iLine==scriptSize)
 		{
 			std::cout << "ScriptHost: Script FINISHED\n";
+			m_bCanAcceptInput = true;
 			m_state = State::Finished;
 		}
 	}
 	else
 	{
-		std::cout << "ScriptHost: ERROR: Invalid line/unrecognized command: " << m_iLine << ":" << m_script.at(m_iLine) << '\n';
+		std::cout << "ScriptHost: ERROR: Invalid line/unrecognized command: " << m_iLine << ":" << strLine << '\n';
 		m_state = State::Error;
-		m_iLine = m_script.size();
+		m_iLine = scriptSize;
+		m_eCmdStatus = TermSyntax;
 	}
 }

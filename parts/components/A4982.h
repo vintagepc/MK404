@@ -45,7 +45,8 @@ class A4982: public BasePeripheral
 			_IRQ(RESET_IN,			"<A4982.reset") \
 			_IRQ(MIN_OUT,	       	">A4982.min_endstop") \
 			_IRQ(MAX_OUT,	       	">A4982.max_endstop") \
-			_IRQ(POSITION_OUT,		">A4982.position")
+			_IRQ(POSITION_OUT,		">A4982.position") \
+			_IRQ(STEP_POS_OUT,		">A4982.step_out")
 		#include "IRQHelper.h"
 
 		struct A4982_cfg_t {

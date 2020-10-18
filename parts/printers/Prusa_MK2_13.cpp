@@ -42,6 +42,41 @@ Prusa_MK2_13::Prusa_MK2_13():MiniRambo(),Printer()
 {
 }
 
+void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
+{
+	if (type!="lite")
+	{
+		return;
+	}
+
+	m_pVis.reset(new MK3SGL(type,false,this)); //NOLINT - suggestion is c++14.
+
+	AddHardware(*m_pVis);
+
+	m_pVis->ConnectFrom(X.GetIRQ(A4982::POSITION_OUT),MK3SGL::X_IN);
+	m_pVis->ConnectFrom(Y.GetIRQ(A4982::POSITION_OUT),MK3SGL::Y_IN);
+	m_pVis->ConnectFrom(Z.GetIRQ(A4982::POSITION_OUT),MK3SGL::Z_IN);
+	m_pVis->ConnectFrom(E.GetIRQ(A4982::POSITION_OUT),MK3SGL::E_IN);
+	m_pVis->ConnectFrom(X.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::X_STEP_IN);
+	m_pVis->ConnectFrom(Y.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::Y_STEP_IN);
+	m_pVis->ConnectFrom(Z.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::Z_STEP_IN);
+	m_pVis->ConnectFrom(E.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
+	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
+	m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
+	m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
+	m_pVis->ConnectFrom(hBed.GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
+	m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
+	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
+	m_pVis->SetLCD(&lcd);
+
+	m_pVis->SetStepsPerMM(
+		X.GetConfig().uiStepsPerMM,
+		Y.GetConfig().uiStepsPerMM,
+		Z.GetConfig().uiStepsPerMM,
+		E.GetConfig().uiStepsPerMM
+	);
+}
+
 void Prusa_MK2_13::Draw()
 {
 		glPushMatrix();
@@ -95,6 +130,10 @@ void Prusa_MK2_13::Draw()
 		glPopMatrix();
 		// GL snapshot helper
 		m_gl.OnDraw();
+		if ((GetVisualType()!="none") && m_pVis)
+		{
+			m_pVis->FlagForRedraw();
+		}
 }
 
 std::pair<int,int> Prusa_MK2_13::GetWindowSize(){

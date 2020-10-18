@@ -21,12 +21,16 @@
 #pragma once
 
 #include "MiniRambo.h"     // for EinsyRambo
+#include "MK3SGL.h"
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "sim_avr.h"        // for avr_t
 #include "sim_avr_types.h"  // for avr_io_addr_t
 #include <atomic>           // for atomic_int
 #include <cstdint>         // for uint32_t, uint8_t
+#include <memory>           // for unique_ptr
 #include <utility>          // for pair
+
+class MK3SGL;
 
 class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 {
@@ -41,6 +45,8 @@ class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 		void OnMousePress(int button, int action, int x, int y) override;
 		void OnMouseMove(int x,int y) override;
 
+		void OnVisualTypeSet(const std::string &type) override;
+
 		std::pair<int,int> GetWindowSize() override;
 
 	protected:
@@ -49,6 +55,9 @@ class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 		virtual void SetupPINDA();
 
 		void OnAVRCycle() override;
+
+		std::unique_ptr<MK3SGL> m_pVis {nullptr};
+
 
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);

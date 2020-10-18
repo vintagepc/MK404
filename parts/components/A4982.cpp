@@ -145,6 +145,7 @@ void A4982::OnStepIn(struct avr_irq_t * /*irq*/, uint32_t value)
     uint32_t posOut;
 	std::memcpy(&posOut, &m_fCurPos, sizeof(posOut)); // both 32 bits, just mangle it for sending over the wire.
     RaiseIRQ(POSITION_OUT, posOut);
+	RaiseIRQ(STEP_POS_OUT, m_iCurStep);
 }
 
 void A4982::CheckEndstops()

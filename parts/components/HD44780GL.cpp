@@ -149,6 +149,11 @@ void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, ui
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColorHelper(character,bMaterial);
+	glBegin(GL_QUADS);
+		glVertex3i(5, 8, -1);
+		glVertex3i(5, 0, -1);
+		glVertex3i(0, 0, -1);
+		glVertex3i(0, 8, -1);
 		auto uiData = hd44780_ROM_AOO.data.begin();
 		uint8_t iCols=8;
 		if (c<16)
@@ -160,7 +165,6 @@ void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, ui
 			uiData += c*hd44780_ROM_AOO.h;
 			iCols = 7;
 		}
-	glBegin(GL_QUADS);
 		for (int i=0; i < iCols; i++)
 		{
 			TRACE(printf("%u%u%u%u%u\n",
@@ -231,12 +235,12 @@ void HD44780GL::Draw(
 		glVertex3f(iCols * m_uiCharW + (iCols - 1) + border, iRows * m_uiCharH
 				+ (iRows - 1) + border, 0);
 	glEnd();
-	glColorHelper(character,bMaterial);
-	glEnableClientState(GL_VERTEX_ARRAY);
-		glBindBuffer(GL_ARRAY_BUFFER, m_bgVtxBuffer);
-		glVertexPointer(3, GL_FLOAT, 3*sizeof(float), nullptr);
-		glDrawArrays(GL_QUADS, 0, 4*m_uiWidth*m_uiHeight);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	// glColorHelper(character,bMaterial);
+	// glEnableClientState(GL_VERTEX_ARRAY);
+	// 	glBindBuffer(GL_ARRAY_BUFFER, m_bgVtxBuffer);
+	// 	glVertexPointer(3, GL_FLOAT, 3*sizeof(float), nullptr);
+	// 	glDrawArrays(GL_QUADS, 0, 4*m_uiWidth*m_uiHeight);
+	// glDisableClientState(GL_VERTEX_ARRAY);
 	for (int v = 0 ; v < m_uiHeight; v++) {
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {

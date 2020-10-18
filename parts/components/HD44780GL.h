@@ -33,6 +33,7 @@
 #include "IKeyClient.h"
 #include "sim_avr.h"  // for avr_t
 #include "sim_irq.h"  // for avr_irq_t
+#include <GL/glew.h>
 #include <atomic>
 #include <cstdint>   // for uint32_t, uint8_t
 #include <vector>
@@ -65,12 +66,15 @@ class HD44780GL:public HD44780, private IKeyClient
 		void OnBrightnessPWM(avr_irq_t *irq, uint32_t value);
 		void OnBrightnessDigital(avr_irq_t *irq, uint32_t value);
 
+		void GenerateCharQuads();
 
 		uint8_t m_uiCharW = 5, m_uiCharH = 8;
 		std::atomic_uint8_t m_uiBrightness = {255};
 		std::atomic_uint8_t m_uiPWM = {255};
 
 		std::atomic_uint8_t m_iScheme {0};
+
+		GLuint m_bgVtxBuffer = 0;
 		std::vector<uint32_t> m_colors = {
 		0x02c5fbff, 0x8d7ff8ff, 0xFFFFFFff, 0x00000055,
 		0x382200ff, 0x000000ff , 0xFF9900ff, 0x00000055};

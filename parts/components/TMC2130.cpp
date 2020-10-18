@@ -55,34 +55,34 @@ void TMC2130::_Draw(bool bIsSimple)
 		{
             return; // Motors not ready yet.
 		}
+		// Copy atomic to local
+		float fPos = m_fCurPos;
         glColor3f(0,0,0);
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
 			glVertex3f(350,0,0);
 			glVertex3f(350,10,0);
 			glVertex3f(0,10,0);
+			glColor3f(1,1,1);
+			if (m_bEnable)
+			{
+				glVertex3f(3,8,0);
+				glVertex3f(13,8,0);
+				glVertex3f(13,1,0);
+				glVertex3f(3,1,0);
+				glColor3f(0,0,0);
+			}
 		glEnd();
-        glColor3f(1,1,1);
-        if (m_bEnable)
-        {
-            glBegin(GL_QUADS);
-                glVertex3f(3,8,0);
-                glVertex3f(13,8,0);
-                glVertex3f(13,1,0);
-                glVertex3f(3,1,0);
-            glEnd();
-            glColor3f(0,0,0);
-        }
         glPushMatrix();
             glTranslatef(3,7,0);
             glScalef(0.09,-0.05,0);
             glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_cAxis);
-        glPopMatrix();
-        glColor3f(1,1,1);
-        glPushMatrix();
-            glTranslatef(  bIsSimple? 30 : 280 ,7,0);
-            glScalef(0.09,-0.05,0);
-            std::string strPos = std::to_string(m_fCurPos);
+            //glTranslatef(  bIsSimple? 30 : 280 ,7,0);
+            //glScalef(0.09,-0.05,0);
+			// Values translated according to existing Scalef()
+			glTranslatef(bIsSimple? 195 : 2973 ,0,0);
+			glColor3f(1,1,1);
+            std::string strPos = std::to_string(fPos);
             for (int i=0; i<std::min(7,static_cast<int>(strPos.size())); i++)
 			{
                 glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
@@ -100,19 +100,15 @@ void TMC2130::_Draw(bool bIsSimple)
 				glVertex3f(-2,2,0);
 				glVertex3f(-2,8,0);
 				glVertex3f(0,8,0);
-			glEnd();
-			glBegin(GL_QUADS);
 				glVertex3f(m_fEnd,2,0);
 				glVertex3f(m_fEnd+2,2,0);
 				glVertex3f(m_fEnd+2,8,0);
 				glVertex3f(m_fEnd,8,0);
-			glEnd();
-			glColor3f(0,1,1);
-			glBegin(GL_QUADS);
-				glVertex3f(m_fCurPos-0.5,2,0);
-				glVertex3f(m_fCurPos+0.5,2,0);
-				glVertex3f(m_fCurPos+0.5,8,0);
-				glVertex3f(m_fCurPos-0.5,8,0);
+				glColor3f(0,1,1);
+				glVertex3f(fPos-0.5,2,0);
+				glVertex3f(fPos+0.5,2,0);
+				glVertex3f(fPos+0.5,8,0);
+				glVertex3f(fPos-0.5,8,0);
 			glEnd();
 		glPopMatrix();
 }

@@ -227,7 +227,8 @@ void timerCB(int i)
 	{
 		glutReshapeWindow(iWinW, iWinH);
 	}
-	glutTimerFunc(20, timerCB, i);
+	// 16 = 60fps
+	glutTimerFunc(16, timerCB, i);
 	glutPostRedisplay();
 }
 

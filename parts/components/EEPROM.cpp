@@ -34,6 +34,7 @@ using std::ofstream;
 EEPROM::EEPROM():Scriptable("EEPROM")
 {
 	RegisterAction("Poke","Pokes a value into the EEPROM. Args are (address,value)", ActPoke, {ArgType::Int, ArgType::Int});
+	RegisterAction("PeekVerify","Checks and prints the value of (address,expected val)", ActPeekVerify, {ArgType::Int, ArgType::Int});
 	RegisterActionAndMenu("Save", "Saves EEPROM contents to disk.", ActSave);
 	RegisterActionAndMenu("Clear", "Clears EEPROM to 0xFF", ActClear);
 	RegisterActionAndMenu("Load", "Loads the last-used file again", ActLoad);
@@ -131,6 +132,29 @@ Scriptable::LineStatus EEPROM::ProcessAction(unsigned int uiAct, const std::vect
 			{
 				Poke(uiAddr, uiVal);
 				return LineStatus::Finished;
+			}
+		}
+		break;
+		case ActPeekVerify:
+		{
+			unsigned int uiAddr = stoi(vArgs.at(0));
+			uint8_t uiVal = stoi(vArgs.at(1));
+			if (uiAddr>=m_uiSize)
+			{
+				return IssueLineError(std::string("Address ") + std::to_string(uiAddr) + " is out of range [0," + std::to_string(m_uiSize-1) + "]");
+			}
+			else
+			{
+				auto uiStored = Peek(uiAddr);
+				if (uiStored == uiVal)
+				{
+					return LineStatus::Finished;
+				}
+				else
+				{
+					std::cout << "EEPROM Peek mismatch! stored value was: " << std::to_string(uiStored)  << '\n';
+					return LineStatus::Timeout;
+				}
 			}
 		}
 		break;

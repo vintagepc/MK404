@@ -19,7 +19,7 @@ add_definitions(
 	-DF_CPU=${F_CPU}
 )
 
-add_custom_target( Test_all
+add_custom_target( Test_firmwares
 
 )
 
@@ -35,7 +35,7 @@ foreach(TEST_SRC IN LISTS TESTS_SOURCES)
 			-o ${PROJECT_BINARY_DIR}/tests/${TEST_BASE}.afx ${TEST_SRC}
 	)
 
-	add_dependencies(Test_all ${TEST_BASE}.afx)
+	add_dependencies(Test_firmwares ${TEST_BASE}.afx)
 
 	add_custom_command(TARGET ${TEST_BASE}.afx POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/scripts/tests/${TEST_BASE}.txt ${PROJECT_BINARY_DIR}/tests/

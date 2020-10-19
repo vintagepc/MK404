@@ -78,10 +78,10 @@ class GLObj
     private:
 
         using DrawObject = struct {
-            GLuint vb;  // vertex buffer
-            int numTriangles;
-            size_t material_id; // Atomic to allow for cross thread
-            bool bDraw;
+            GLuint vb {0};  // vertex buffer
+            int numTriangles {0};
+            size_t material_id {0}; // Atomic to allow for cross thread
+            bool bDraw {false};
         };
         float m_fMaxExtent = 1.f;
         float _m_extMin[3] = {0,0,0}, _m_extMax[3] = {0,0,0};

@@ -69,6 +69,10 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterActionAndMenu("ResetCamera","Resets camera view to default",ActResetView);
 	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state,x,y)", ActMouse, {ArgType::Int,ArgType::Int,ArgType::Int,ArgType::Int});
 	RegisterAction("MouseMove", "Simulates a mouse move (x,y)", ActMouseMove, {ArgType::Int,ArgType::Int});
+	RegisterActionAndMenu("NonLinearX", "Toggle motor nonlinearity on X", ActNonLinearX);
+	RegisterActionAndMenu("NonLinearY", "Toggle motor nonlinearity on Y", ActNonLinearY);
+	RegisterActionAndMenu("NonLinearZ", "Toggle motor nonlinearity on Z", ActNonLinearZ);
+	RegisterActionAndMenu("NonLinearE", "Toggle motor nonlinearity on E", ActNonLinearE);
 
 	RegisterKeyHandler('`', "Reset camera view to default");
 	RegisterKeyHandler('n',"Toggle Nozzle-Cam Mode");
@@ -270,6 +274,18 @@ Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vecto
 		case ActClear:
 			ClearPrint();
 			return LineStatus::Finished;
+		case ActNonLinearX: // NOTE: we only do this for T0 for now. Not hard to extend with for(auto &print: m_vPrints)...
+			std::cout << "Nonlinear X: " << std::to_string(m_Print.ToggleNLX()) << '\n';
+			return LineStatus::Finished;
+		case ActNonLinearY:
+			std::cout << "Nonlinear Y: " << std::to_string(m_Print.ToggleNLY()) << '\n';
+			return LineStatus::Finished;
+		case ActNonLinearZ: // NOTE: we only do this for T0 for now. Not hard to extend with for(auto &print: m_vPrints)...
+			std::cout << "Nonlinear Z: " << std::to_string(m_Print.ToggleNLZ()) << '\n';
+			return LineStatus::Finished;
+		case ActNonLinearE:
+			std::cout << "Nonlinear E: " << std::to_string(m_Print.ToggleNLE()) << '\n';
+			return LineStatus::Finished;
 		default:
 			return LineStatus::Unhandled;
 
@@ -376,7 +392,7 @@ void MK3SGL::OnMMULedsChanged(avr_irq_t *irq, uint32_t value)
 
 void MK3SGL::OnMotorStep(avr_irq_t *irq, uint32_t value)
 {
-		switch (irq->irq)
+	switch (irq->irq)
 	{
 		case IRQ::X_STEP_IN:
 			m_vPrints[m_iCurTool]->OnXStep(value);
@@ -388,7 +404,10 @@ void MK3SGL::OnMotorStep(avr_irq_t *irq, uint32_t value)
 			m_vPrints[m_iCurTool]->OnZStep(value);
 			break;
 		case IRQ::E_STEP_IN:
-			m_vPrints[m_iCurTool]->OnEStep(value);
+			// The narrow will assert if there is an overflow/underflow condition.
+			// Time should never be negative...
+			m_vPrints[m_iCurTool]->OnEStep(value, gsl::narrow<uint32_t>(m_pAVR->cycle - m_lastETick));
+			m_lastETick = m_pAVR->cycle;
 			break;
 	}
 }

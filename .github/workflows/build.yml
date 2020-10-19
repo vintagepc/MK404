@@ -145,28 +145,26 @@ jobs:
     steps:
       - uses: actions/cache@v1
         with:
-          path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+          path: C:\tools\chococache
           key: ${{ runner.os }}-cygwin-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-cygwin-
-#      - name: Cygwin package cache
-#        uses: actions/cache@v1
-#        with:
-#          path: C:\tools\cygwin
-#          key: ${{ runner.os }}-cygwinpkgs-1_0
-#          restore-keys: |
-#            ${{ runner.os }}-cygwinkgs-
+      - name: Cygwin package cache
+        uses: actions/cache@v1
+        with:
+          path: C:\tools\cygcache
+          key: ${{ runner.os }}-cygwinpkgs-1_1
+          restore-keys: |
+            ${{ runner.os }}-cygwinpkgs-
       - name: Install cygwin
         run: |
-          choco config get cacheLocation
+          choco config set cacheLocation C:\tools\chococache
           choco install --no-progress cygwin
       - name: Install cygwin dependencies
         run: |
-          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL-devel,avr-gcc,python2,libpng-devel
+          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -l C:/tools/cygcache -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL-devel,avr-gcc,python2,libpng-devel
         shell: cmd
-      - name: Set ENV
-        run: |
-          echo '::set-env name=PATH::C:\tools\cygwin\bin;C:\tools\cygwin\usr\bin'
+
       - name: Checkout ${{ github.event.pull_request.head.ref }}
         uses: actions/checkout@v2.2.0
         if: ${{ github.event.pull_request }}
@@ -185,9 +183,11 @@ jobs:
 
       - name: Configure build
         run: |
+          echo %USERPROFILE%
           cd MK404
           mkdir build
           cd build
+          set PATH=C:\tools\cygwin\bin;C:\tools\cygwin\usr\bin
           bash.exe -c "cmake -DCMAKE_BUILD_TYPE=RELEASE .."
         shell: cmd
 
@@ -195,6 +195,7 @@ jobs:
         run: |
           cd ${{runner.workspace}}\MK404\build
           pwd
+          set PATH=C:\tools\cygwin\bin;C:\tools\cygwin\usr\bin
           bash.exe -c "make -j2"
         shell: cmd
 

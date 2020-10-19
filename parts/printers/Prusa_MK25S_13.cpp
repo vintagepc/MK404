@@ -19,9 +19,17 @@
  */
 
 #include "Prusa_MK25S_13.h"
+#include "A4982.h"
 #include "IRSensor.h"  // for IRSensor
 #include "LED.h"       // for LED, LED::IRQ::LED_IN, PAT9125::IRQ::LED_OUT
 #include "PinNames.h"  // for Pin::IR_SENSOR_PIN, Pin::VOLT_IR_PIN
+
+void Prusa_MK25S_13::SetupHardware()
+{
+	Prusa_MK25_13::SetupHardware();
+	Z.GetConfig().iMaxMM = 215;
+	Z.ReparseConfig();
+}
 
 void Prusa_MK25S_13::SetupFilamentSensor()
 {

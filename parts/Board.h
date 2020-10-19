@@ -87,7 +87,11 @@ namespace Boards
 			inline bool IsStopped(){ return m_pAVR->state == cpu_Stopped;}
 			inline bool IsPaused(){ return m_bPaused;}
 
+			// Is this the primary controlling board?
 			inline void SetPrimary(bool bVal) { m_bIsPrimary = bVal;}
+
+			// Should the board attempt to correct clock skew for fast simulation?
+			inline void SetAdjustSkew(bool bVal) { m_bCorrectSkew = bVal;}
 
 		protected:
 			// Define this method and use it to initialize/attach your hardware to the MCU.
@@ -145,6 +149,9 @@ namespace Boards
 
 			std::atomic_uint8_t m_bPaused = {false};
 
+			// Whether any vendor-specific hackery should be disabled.
+			bool m_bNoHacks = false;
+
 		private:
 			void CreateAVR();
 
@@ -157,8 +164,8 @@ namespace Boards
 			avr_flashaddr_t LoadFirmware(const std::string &strFW);
 
 			std::atomic_bool m_bQuit = {false}, m_bReset = {false};
-			bool m_bIsPrimary = false;
-			bool m_bNoHacks = false;
+			bool m_bIsPrimary = false, m_bCorrectSkew = false;
+
 			pthread_t m_thread = 0;
 			const Wirings::Wiring &m_wiring;
 			std::string m_strBoard = "";

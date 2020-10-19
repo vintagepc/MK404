@@ -36,6 +36,7 @@
 #include "sim_avr_types.h"    // for avr_regbit_t
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
 
+#include <GL/glew.h>
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glVertex3f, glBegin, glEnd, glMaterialfv
 #else
@@ -121,6 +122,28 @@ void HD44780GL::OnBrightnessDigital(struct avr_irq_t *,	uint32_t value)
 
 }
 
+void HD44780GL::GenerateCharQuads()
+{
+	uint16_t uiCt = m_uiWidth*m_uiHeight;
+	std::vector<float> vRects;
+	vRects.reserve(uiCt*3*4); //4 points * 3 coords
+	auto xShift = m_uiCharW+1;
+	auto yShift = m_uiCharH+1;
+	for (auto iRow = 0; iRow < m_uiHeight; iRow++)
+	{
+		for (auto iCol = 0; iCol<m_uiWidth; iCol++)
+		{
+			vRects.insert(vRects.end(),{5.f + (xShift*iCol), 8.f + (yShift*iRow), -1});
+			vRects.insert(vRects.end(),{5.f + (xShift*iCol), 0.f + (yShift*iRow), -1});
+			vRects.insert(vRects.end(),{0.f + (xShift*iCol), 0.f + (yShift*iRow), -1});
+			vRects.insert(vRects.end(),{0.f + (xShift*iCol), 8.f + (yShift*iRow), -1});
+		}
+	}
+	glGenBuffers(1, &m_bgVtxBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, m_bgVtxBuffer);
+	glBufferData(GL_ARRAY_BUFFER, vRects.size() * sizeof(float), &vRects.at(0),	GL_STATIC_DRAW);
+}
+
 void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)
 {
 	glEnable(GL_BLEND);
@@ -131,62 +154,60 @@ void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, ui
 		glVertex3i(5, 0, -1);
 		glVertex3i(0, 0, -1);
 		glVertex3i(0, 8, -1);
-	glEnd();
-	auto uiData = hd44780_ROM_AOO.data.begin();
-	uint8_t iCols=8;
-	if (c<16)
-	{
-		uiData = m_cgRam.begin() + ((c & 7U) <<3U);
-	}
-	else
-	{
-		uiData += c*hd44780_ROM_AOO.h;
-		iCols = 7;
-	}
-
-	for (int i=0; i < iCols; i++)
-	{
-		 TRACE(printf("%u%u%u%u%u\n",
-		 	(uiData[i] & 1)==1,
-		 	(uiData[i] & 2)>1,
-		 	(uiData[i] & 4)>1,
-		 	(uiData[i] & 8)>1,
-			(uiData[i] & 16)>1));
-		for (uint8_t j=0; j<5; j++)
+		auto uiData = hd44780_ROM_AOO.data.begin();
+		uint8_t iCols=8;
+		if (c<16)
 		{
-
-			if (*uiData & (16U>>j))
+			uiData = m_cgRam.begin() + ((c & 7U) <<3U);
+		}
+		else
+		{
+			uiData += c*hd44780_ROM_AOO.h;
+			iCols = 7;
+		}
+		for (int i=0; i < iCols; i++)
+		{
+			TRACE(printf("%u%u%u%u%u\n",
+				(uiData[i] & 1)==1,
+				(uiData[i] & 2)>1,
+				(uiData[i] & 4)>1,
+				(uiData[i] & 8)>1,
+				(uiData[i] & 16)>1));
+			for (uint8_t j=0; j<5; j++)
 			{
-				auto x = static_cast<float>(j);
-				auto y = static_cast<float>(i);
-				float inset = 0.85;
-				if (shadow)
+
+				if (*uiData & (16U>>j))
 				{
-					glPushMatrix();
+					auto x = static_cast<float>(j);
+					auto y = static_cast<float>(i);
+					float inset = 0.85;
+
+					if (shadow)
+					{
 						glColorHelper(shadow, bMaterial);
-						glBegin(GL_QUADS);
-							glVertex3f(x,y,		-2);
-							glVertex3f(x,y+1,	-2);
-							glVertex3f(x+1,y+1,	-2);
-							glVertex3f(x+1,y,	-2);
-						glEnd();
-					glPopMatrix();
-				}
-				glColorHelper(text, bMaterial);
-				glBegin(GL_QUADS);
+						glVertex3f(x,y,		-2);
+						glVertex3f(x,y+1,	-2);
+						glVertex3f(x+1,y+1,	-2);
+						glVertex3f(x+1,y,	-2);
+					}
+					glColorHelper(text, bMaterial);
 					glVertex3f(x,y,				-3);
 					glVertex3f(x,y+inset,		-3);
 					glVertex3f(x+inset,y+inset,	-3);
 					glVertex3f(x+inset,y,		-3);
-				glEnd();
+				}
 			}
+			uiData++;
 		}
-		uiData++;
-	}
+	glEnd();
 }
 
 void HD44780GL::Draw(bool bMaterial)
 {
+	if (m_bgVtxBuffer==0)
+	{
+		GenerateCharQuads();
+	}
 	uint8_t iScheme = m_iScheme;
 	Draw(m_colors.at((4*iScheme)), m_colors.at((4*iScheme)+1), m_colors.at((4*iScheme)+2), m_colors.at((4*iScheme)+3), bMaterial);
 }
@@ -214,6 +235,12 @@ void HD44780GL::Draw(
 		glVertex3f(iCols * m_uiCharW + (iCols - 1) + border, iRows * m_uiCharH
 				+ (iRows - 1) + border, 0);
 	glEnd();
+	// glColorHelper(character,bMaterial);
+	// glEnableClientState(GL_VERTEX_ARRAY);
+	// 	glBindBuffer(GL_ARRAY_BUFFER, m_bgVtxBuffer);
+	// 	glVertexPointer(3, GL_FLOAT, 3*sizeof(float), nullptr);
+	// 	glDrawArrays(GL_QUADS, 0, 4*m_uiWidth*m_uiHeight);
+	// glDisableClientState(GL_VERTEX_ARRAY);
 	for (int v = 0 ; v < m_uiHeight; v++) {
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {

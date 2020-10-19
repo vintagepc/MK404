@@ -45,17 +45,25 @@ class GLPrint
 	// Functions to receive new coordinate updates from your simulated printer's stepper drivers.
 
 	// Swap these two to enable simulated nonlinearity on X.
-//	inline void OnXStep(const uint32_t &value) { m_uiX = GetAdjustedStep(value);}
-	inline void OnXStep(const uint32_t &value) { m_uiX = value;}
 
-	inline void OnYStep(const uint32_t &value) { m_uiY = value;}
-	inline void OnZStep(const uint32_t &value) { m_uiZ = value;}
-	void OnEStep(const uint32_t &value);
+	inline void OnXStep(const uint32_t &value) { m_uiX = m_bNLX ? GetAdjustedStep(value) : value;}
+
+	inline void OnYStep(const uint32_t &value) { m_uiY = m_bNLY ? GetAdjustedStep(value) : value;}
+
+	inline void OnZStep(const uint32_t &value) { m_uiZ = m_bNLZ ? GetAdjustedStep(value) : value;}
+
+	void OnEStep(const uint32_t &value, const uint32_t &deltaT);
 
 	inline void SetStepsPerMM(int16_t iX, int16_t iY, int16_t iZ, int16_t iE)
 	{
 		m_iStepsPerMM = {iX, iY, iZ, iE};
 	}
+
+	// Enable/disable NL behaviour. (ab)use assignment returns for return val.
+	inline bool ToggleNLX() { return m_bNLX = !m_bNLX;}
+	inline bool ToggleNLY() { return m_bNLY = !m_bNLY;}
+	inline bool ToggleNLZ() { return m_bNLZ = !m_bNLZ;}
+	inline bool ToggleNLE() { return m_bNLE = !m_bNLE;}
 
 	private:
 
@@ -92,8 +100,9 @@ class GLPrint
 		bool m_bFirst = true;
 		float m_fLastERate = 0;
 		const float m_fColR, m_fColG, m_fColB;
-		std::atomic_bool m_bExtruding = {false};
-		std::vector<std::tuple<uint32_t,uint32_t,uint32_t>> m_vPath;
+		std::atomic_bool m_bExtruding = {false}, m_bNLX {false}, m_bNLY {false}, m_bNLZ {false}, m_bNLE {false};
+		// {X, Y, Z, E, dT}
+		std::vector<std::tuple<uint32_t,uint32_t,uint32_t,uint32_t>> m_vPath;
 
 		std::mutex m_lock;
 

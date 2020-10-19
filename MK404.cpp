@@ -66,10 +66,12 @@ bool m_bStopping = false;
 
 bool m_bTestMode = false;
 
+bool m_bTerminal = false;
+
 // GL context stuff for FPS counting...
 
 int m_iTic =0, m_iLast = 0, m_iFrCount = 0;
-
+int m_iTermHeight = 0;
 
 // pragma: LCOV_EXCL_START
 // Exit cleanly on ^C
@@ -112,7 +114,7 @@ static std::string GetBaseTitle()
 	static std::string strTitle;
 	if (strTitle.empty())
 	{
-		strTitle += "Prusa i3 MK404 (PRINTER NOT FOUND) ";
+		strTitle += "MK404 (PRINTER NOT FOUND) ";
 		strTitle += version::GIT_TAG_NAME;
 		strTitle.push_back('+');
 		strTitle+= std::to_string(version::GIT_COMMITS_SINCE_TAG);
@@ -121,6 +123,19 @@ static std::string GetBaseTitle()
 }
 
 std::atomic_bool bIsQuitting {false};
+
+void KeyCB(unsigned char key, int /*x*/, int y)
+{
+	if (y<m_iTermHeight)
+	{
+		KeyController::GLKeyReceiver(key,0,0);
+	}
+	else if (m_bTerminal)
+	{
+		ScriptHost::SetFocus(true);
+		ScriptHost::KeyCB(key);
+	}
+}
 
 void displayCB()		/* function called whenever redisplay needed */
 {
@@ -133,9 +148,15 @@ void displayCB()		/* function called whenever redisplay needed */
 	glLoadIdentity();
 	glClear(US(GL_COLOR_BUFFER_BIT) | US(GL_DEPTH_BUFFER_BIT));
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
-	int iH = glutGet(GLUT_WINDOW_HEIGHT);
+	//int iH = glutGet(GLUT_WINDOW_HEIGHT);
+	if (m_bTerminal)
+	{
+		glPushMatrix();
+			glTranslatef(0,m_iTermHeight,0);
+			ScriptHost::Draw();
+		glPopMatrix();
+	}
 	printer->Draw();
-
 	m_iFrCount++;
 	m_iTic=glutGet(GLUT_ELAPSED_TIME);
 	auto iDiff = m_iTic - m_iLast;
@@ -154,8 +175,8 @@ void displayCB()		/* function called whenever redisplay needed */
 		glBegin(GL_QUADS);
 			glVertex2f(0,0);
 			glVertex2f(iW,0);
-			glVertex2f(iW,iH);
-			glVertex2f(0,iH);
+			glVertex2f(iW,static_cast<float>(m_iTermHeight)/4.f);
+			glVertex2f(0, static_cast<float>(m_iTermHeight)/4.f);
 		glEnd();
 		glColor3f(1,0,0);
 		glPushMatrix();
@@ -184,6 +205,11 @@ void MouseCB(int button, int action, int x, int y)	/* called on key press */
 	printer->OnMousePress(button,action,x,y);
 }
 
+void PassiveMotionCB(int /*x*/, int y)
+{
+	ScriptHost::SetFocus(y>m_iTermHeight);
+}
+
 void MotionCB(int x, int y)
 {
 	printer->OnMouseMove(x,y);
@@ -201,7 +227,8 @@ void timerCB(int i)
 	{
 		glutReshapeWindow(iWinW, iWinH);
 	}
-	glutTimerFunc(20, timerCB, i);
+	// 16 = 60fps
+	glutTimerFunc(16, timerCB, i);
 	glutPostRedisplay();
 }
 
@@ -209,11 +236,23 @@ void timerCB(int i)
 void ResizeCB(int w, int h)
 {
 	std::pair<int,int> winSize = printer->GetWindowSize();
+	if (m_bTerminal)
+	{
+		winSize.second+=10;
+	}
 	float fWS = static_cast<float>(w)/static_cast<float>(winSize.first*4);
 	float fHS = static_cast<float>(h)/static_cast<float>(winSize.second*4);
 	float fScale = std::max(fWS,fHS);
 	int iW = 4.f*static_cast<float>(winSize.first)*fScale;
 	int iH = 4.f*static_cast<float>(winSize.second)*fScale;
+	if (m_bTerminal)
+	{
+		m_iTermHeight = iH - (fScale*40.f);
+	}
+	else
+	{
+		m_iTermHeight = iH;
+	}
 	if (iW!=w || iH !=h)
 	{
 		iWinH = iH;
@@ -234,8 +273,9 @@ int initGL()
 {
 	// Set up projection matrix
 	glutDisplayFunc(displayCB);		/* set window's display callback */
-	glutKeyboardFunc(KeyController::GLKeyReceiver);		/* set window's key callback */
+	glutKeyboardFunc(KeyCB);		/* set window's key callback */
 	glutMouseFunc(MouseCB);
+	glutPassiveMotionFunc(PassiveMotionCB);
 	glutMotionFunc(MotionCB);
 	glutTimerFunc(1000, timerCB, 0);
 	glutReshapeFunc(ResizeCB);
@@ -273,14 +313,18 @@ int main(int argc, char *argv[])
 	MultiSwitchArg argSpam("v","verbose","Increases verbosity of the output, where supported.",cmd);
 	ValueArg<int> argVCDRate("","tracerate", "Sets the logging frequency of the VCD trace (default 100uS)",false, 100,"integer",cmd);
 	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string",cmd);
+	SwitchArg argTerm("","terminal","Enable an in-UI terminal for interactive scripting (--EXPERIMENTAL!!--)", cmd);
 	SwitchArg argTest("","test","Run it test mode (no graphics, don't auto-exit.", cmd);
-	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img", cmd);
+	SwitchArg argSkew("","skew-correct","Attempt to correct for fast clock skew of the simulated board", cmd);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.", cmd);
+	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img", cmd);
 	SwitchArg argScriptHelp("","scripthelp", "Prints the available scripting commands for the current printer/context",cmd, false);
 	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "filename.txt", cmd);
 	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.",cmd);
 	SwitchArg argMute("m","mute","Tell a printer to mute any audio it may produce.", cmd);
+	SwitchArg argMarlin("","marlin","Synonym for --no-hacks",cmd,false);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.", cmd);
+	SwitchArg argKlipper("","klipper","Synonym for --skew-correct and --no-hacks",cmd,false);
 	SwitchArg argKeyHelp("k","keys","Prints the list of available keyboard controls",cmd,false);
 	std::vector<string> vstrSizes = FatImage::GetSizes();
 	ValuesConstraint<string> vcSizes(vstrSizes);
@@ -297,7 +341,6 @@ int main(int argc, char *argv[])
 	SwitchArg argColourE("", "colour-extrusion", "Colours extrusion by width (for advanced step/extrusion debugging.", cmd, false);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.",cmd);
 	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown",cmd);
-	SwitchArg arg3D("", "3d-extrusion", "Visualize with 3D extrusions (can be GPU intensive for large prints)", cmd);
 
 	std::vector<string> vstrPrinters = PrinterFactory::GetModels();
 	ValuesConstraint<string> vcAllowed(vstrPrinters);
@@ -315,6 +358,11 @@ int main(int argc, char *argv[])
 
 	cmd.parse(argc,argv);
 
+	// Handle the convenience synonyms:
+	// Longer term it'd be neat to have a synonym handler in  TCLAP....
+	bool bArgHacks = argNoHacks.isSet() || argKlipper.isSet() || argMarlin.isSet();
+	bool bArgSkew = argSkew.isSet() || argKlipper.isSet();
+
 	// Make new image.
 	if (argImgSize.isSet())
 	{
@@ -330,6 +378,8 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	bool bNoGraphics = argGfx.isSet() && (argGfx.getValue()=="none");
+
+	m_bTerminal = argTerm.isSet();
 
 	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
@@ -350,10 +400,12 @@ int main(int argc, char *argv[])
 		strFW = argFW.getValue();
 	}
 
-	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),argNoHacks.isSet(),argSerial.isSet(), argSD.getValue() ,
-		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),""); // this line is the CreateBoard() args.
+	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),bArgHacks,argSerial.isSet(), argSD.getValue() ,
+		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),"stk500boot_v2_mega2560.hex"); // this line is the CreateBoard() args.
 
 	pBoard->SetPrimary(true); // This is the primary board, responsible for scripting/dispatch. Blocks contention from sub-boards, e.g. MMU.
+
+	pBoard->SetAdjustSkew(bArgSkew);
 
 	if (!bNoGraphics)
 	{
@@ -361,8 +413,13 @@ int main(int argc, char *argv[])
 
 		std::pair<int,int> winSize = printer->GetWindowSize();
 		int pixsize = 4;
+		if (m_bTerminal)
+		{
+			winSize.second +=10;
+		}
 		iWinW = winSize.first * pixsize;
-		iWinH = winSize.second * pixsize;
+		iWinH = (winSize.second)*pixsize;
+		m_iTermHeight = winSize.second*pixsize;
 		glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 #ifndef TEST_MODE
 		glutSetOption(GLUT_MULTISAMPLE,2);
@@ -434,6 +491,10 @@ int main(int argc, char *argv[])
 	if (!bNoGraphics)
 	{
 		ScriptHost::CreateRootMenu(window);
+		if (argTerm.isSet())
+		{
+			ScriptHost::SetupAutocomplete();
+		}
 	}
 
 	// This is a little lazy, I know. Figure it out once we have non-einsy printers.

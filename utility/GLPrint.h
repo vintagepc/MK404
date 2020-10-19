@@ -96,17 +96,17 @@ class GLPrint
 		// std::vector<float*> *m_pPrevLayer = &m_vpfLayer2;  // not used
 		float m_fPrevZ = -1, m_fCurZ = 0, m_fZHt = 1.001;
 		// float m_fLastZ = -1;                          // not used
-		uint64_t m_iEMax = 0;
+		uint64_t m_iEMax = 0, m_idTSum = 0;
 		bool m_bFirst = true;
 		float m_fLastERate = 0;
 		const float m_fColR, m_fColG, m_fColB;
 		std::atomic_bool m_bExtruding = {false}, m_bNLX {false}, m_bNLY {false}, m_bNLZ {false}, m_bNLE {false};
 		// {X, Y, Z, E, dT}
-		std::vector<std::tuple<uint32_t,uint32_t,uint32_t,uint32_t>> m_vPath;
+		std::vector<std::tuple<uint32_t,uint32_t,uint32_t,uint32_t,uint32_t>> m_vPath;
 
 		std::mutex m_lock;
 
 		unsigned int m_iVisType = PrintVisualType::LINE, m_iBaseMode = PrintVisualType::QUAD;
 
-		bool m_bHRE = false, m_bColExt = false;
+		bool m_bHRE = false, m_bColExt = false, m_bColVolRate = false;
 };

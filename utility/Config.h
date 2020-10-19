@@ -40,8 +40,13 @@ class Config
 		inline void SetColourE(bool bVal){ m_bColorExtrusion = bVal;}
 		inline bool GetColourE(){ return m_bColorExtrusion;}
 
+		// Should extrusion be coloured by perceived volumetric rate?.
+		inline void SetColourEVol(bool bVal){ m_bColorVolRate = bVal;}
+		inline bool GetColourEVol(){ return m_bColorVolRate;}
+
 	private:
 		unsigned int m_iExtrusion = false;
 		bool m_bColorExtrusion = false;
+		bool m_bColorVolRate = false;
 
 };

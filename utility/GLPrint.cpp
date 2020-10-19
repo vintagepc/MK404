@@ -50,6 +50,7 @@ GLPrint::GLPrint(float fR, float fG, float fB):m_fColR(fR),m_fColG(fG),m_fColB(f
 	Clear();
 	m_iVisType = Config::Get().GetExtrusionMode();
 	m_bColExt = Config::Get().GetColourE();
+	m_bColVolRate = Config::Get().GetColourEVol();
 	m_bHRE = m_iVisType == PrintVisualType::QUAD_HIGHRES || m_iVisType == PrintVisualType::TUBE_HIGHRES;
 	m_iBaseMode = m_iVisType;
 	if (m_bHRE) m_iBaseMode = m_iBaseMode-1;
@@ -103,7 +104,7 @@ uint32_t GLPrint::GetAdjustedStep(uint32_t uiStep)
 	// }
 }
 
-void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
+void GLPrint::OnEStep(const uint32_t& value, const uint32_t& deltaT)
 {
 	uint32_t uiE = m_bNLE ? GetAdjustedStep(value) : value;
 	m_uiE = uiE;
@@ -196,9 +197,10 @@ void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
 			m_fvDraw.insert(m_fvDraw.end(),fExtrEnd.begin(), fExtrEnd.end());
 			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
+			m_idTSum = deltaT;
 
 		}
-		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[1], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});
+		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[1], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax),m_idTSum});
 		if (!bExtruding)
 		{
 			{
@@ -243,7 +245,8 @@ void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 		Normalize({fCross.data(),3});
 				// New segment, push it onto the vertex list and update the segment count
 		//printf("New segment: %d\n",m_vCoords.size());
-		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[1], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});
+		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[1], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax),m_idTSum});
+		m_idTSum = 0;
 		m_fCurZ+= vfPos[1];
 		{
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
@@ -260,6 +263,7 @@ void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 	m_uiExtrEnd[2] = m_uiY;
 	m_uiExtrEnd[1] = m_uiZ;
 	m_uiExtrEnd[3] = m_uiE;
+	m_idTSum += deltaT;
 	{
 		std::lock_guard<std::mutex> lock (m_lock);
 		m_fExtrEnd = {{fExtrEnd[0],fExtrEnd[1],fExtrEnd[2]}};
@@ -273,6 +277,10 @@ void GLPrint::AddSegment()
 {
 	static constexpr float FILAMENT_AREA_COEFF = (.00175f*.00175f)/4.f; // No pi because it factors out later anyway.
 	static constexpr float fNarrow[3] = {0,1,1}, fWide[3] = {1,0,0} ;
+	static constexpr float fMaxEVol = 11.5e-9f; // m^3/s
+	static constexpr float fEVCoeff = fMaxEVol/(FILAMENT_AREA_COEFF*3.14153265f); // Max L/T ratio value, aka max linear m/s
+
+	//const float fMaxStepsPerSec = fEVCoeff*m_iStepsPerMM[3]*1000;
 
 	const float fLayerZRad = m_fZHt/2; //0.5*layer height. TODO (vintagepc): Sort this out based on guessed z height.
 
@@ -289,8 +297,11 @@ void GLPrint::AddSegment()
 			pt = *pStart;
 		}
 		auto ptNext = *std::next(it);
-		auto iX = std::get<0>(pt), iY = std::get<1>(pt), iZ = std::get<2>(pt), iE = std::get<3>(pt);
-		auto iXN = std::get<0>(ptNext), iYN = std::get<1>(ptNext), iZN = std::get<2>(ptNext), iEN = std::get<3>(ptNext);
+		uint32_t iX, iY, iZ, iE, iXN, iYN, iZN, iEN, idT;
+		std::tie(iX, iY, iZ, iE, std::ignore) = pt;
+		std::tie(iXN, iYN, iZN, iEN, idT) = ptNext;
+	//	auto iX = std::get<0>(pt), iY = std::get<1>(pt), iZ = std::get<2>(pt), iE = std::get<3>(pt);
+		//auto iXN = std::get<0>(ptNext), iYN = std::get<1>(ptNext), iZN = std::get<2>(ptNext), iEN = std::get<3>(ptNext), idT = std::get<4>(ptNext);
 		int32_t idE = gsl::narrow<int32_t>(iEN) - iE; // E linear distance.
 		if (idE <0)
 		{
@@ -308,6 +319,7 @@ void GLPrint::AddSegment()
 		auto fYN = static_cast<float>(iYN)/static_cast<float>(m_iStepsPerMM[1]*1000);
 		float fZ = (static_cast<float>(iZ)/static_cast<float>(m_iStepsPerMM[2]*1000)) - fLayerZRad;
 		float fZN = (static_cast<float>(iZN)/static_cast<float>(m_iStepsPerMM[2]*1000)) - fLayerZRad;
+		float fdE = (static_cast<float>(idE)/static_cast<float>(m_iStepsPerMM[3]*1000));
 
 		// Approximate the resulting extrusion width with an ellipse.
 		float fdXY = std::sqrt((fA[0]*fA[0])+(fA[2]*fA[2])); // Length of extrusion on print surface.
@@ -318,12 +330,20 @@ void GLPrint::AddSegment()
 			continue;
 		}
 		bIsSkipping = false;
-		float fExtrVol =  FILAMENT_AREA_COEFF *(static_cast<float>(idE)/static_cast<float>(m_iStepsPerMM[3]*1000));
+		float fExtrVol =  FILAMENT_AREA_COEFF* fdE;
 		float fExtRad = (fExtrVol/(fLayerZRad*fdXY)); // Should give us the XY radius of the extrusion ellipse.
 		//std::cout << "Seg: " << fX << " \t" << fY << "\t E:" << idE << "\t R:" << fExtRad << '\n';
-
+		float fMetersPerSec = fdE*(16000000.f/idT);
 		Color3fv colW;
-		colorLerp(fNarrow, fWide, fExtRad/0.002, colW);
+		if (m_bColVolRate)
+		{
+			colorLerp(fNarrow, fWide, fMetersPerSec/fEVCoeff, colW);
+		}
+		else
+		{
+			colorLerp(fNarrow, fWide, fExtRad/0.002, colW);
+		}
+
 		CrossProduct(fB,fA,{fCross.data(),3});
 		Normalize({fCross.data(),3});
 		auto fCrossRev = fCross;

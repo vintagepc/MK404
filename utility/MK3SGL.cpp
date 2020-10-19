@@ -73,6 +73,7 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterActionAndMenu("NonLinearY", "Toggle motor nonlinearity on Y", ActNonLinearY);
 	RegisterActionAndMenu("NonLinearZ", "Toggle motor nonlinearity on Z", ActNonLinearZ);
 	RegisterActionAndMenu("NonLinearE", "Toggle motor nonlinearity on E", ActNonLinearE);
+    RegisterActionAndMenu("ExportPLY", "Export high resolution extrusion print to a PLY file", ActExportPLY);
 
 	RegisterKeyHandler('`', "Reset camera view to default");
 	RegisterKeyHandler('n',"Toggle Nozzle-Cam Mode");
@@ -286,6 +287,10 @@ Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vecto
 		case ActNonLinearE:
 			std::cout << "Nonlinear E: " << std::to_string(m_Print.ToggleNLE()) << '\n';
 			return LineStatus::Finished;
+        case ActExportPLY:
+            std::cout << "ExportPLY\n";
+            m_bExportPLY = !m_bExportPLY;
+            return LineStatus::Finished;
 		default:
 			return LineStatus::Unhandled;
 
@@ -463,6 +468,13 @@ void MK3SGL::Draw()
 		for (int i=0; i<5; i++) m_vPrints[i]->Clear();
 		m_bClearPrints = false;
 	}
+    
+    if( m_bExportPLY ){
+        // export buffered GL structures into PLY - must be done in GL loop for thread safety
+        m_vPrints[0]->ExportPLY();
+        m_bExportPLY = false;
+    }
+    
 	if (m_iQueuedAct>=0)
 	{
 		// This may have issues if draw() is reentrant but I don't think it is as GLUT

@@ -76,6 +76,8 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
         // Clears the displayed print.
         void ClearPrint() { m_bClearPrints = true; }
+        
+        void ExportPLY() { m_bExportPLY = true; }
 
         // Resets the camera view to the starting position.
         void ResetCamera();
@@ -135,6 +137,7 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
         std::atomic_bool m_bFollowNozzle = {false}; // Camera follows nozzle.
 		std::atomic_bool m_bClearPrints = {false};
+        std::atomic_bool m_bExportPLY = {false};
 
         // MMU draw subfunction.
         void DrawMMU();
@@ -194,7 +197,8 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 			ActNonLinearX,
 			ActNonLinearY,
 			ActNonLinearZ,
-			ActNonLinearE
+			ActNonLinearE,
+            ActExportPLY
 		};
 
 		static MK3SGL *g_pMK3SGL;

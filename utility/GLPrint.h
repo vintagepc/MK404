@@ -41,6 +41,8 @@ class GLPrint
 
 	// Draws the print within the current GL matrix context.
 	void Draw();
+    
+    void ExportPLY();
 
 	// Functions to receive new coordinate updates from your simulated printer's stepper drivers.
 

@@ -50,7 +50,6 @@ GLPrint::GLPrint(float fR, float fG, float fB):m_fColR(fR),m_fColG(fG),m_fColB(f
 	Clear();
 	m_iVisType = Config::Get().GetExtrusionMode();
 	m_bColExt = Config::Get().GetColourE();
-	m_bColVolRate = Config::Get().GetColourEVol();
 	m_bHRE = m_iVisType == PrintVisualType::QUAD_HIGHRES || m_iVisType == PrintVisualType::TUBE_HIGHRES;
 	m_iBaseMode = m_iVisType;
 	if (m_bHRE) m_iBaseMode = m_iBaseMode-1;
@@ -277,8 +276,7 @@ void GLPrint::AddSegment()
 {
 	static constexpr float FILAMENT_AREA_COEFF = (.00175f*.00175f)/4.f; // No pi because it factors out later anyway.
 	static constexpr float fNarrow[3] = {0,1,1}, fWide[3] = {1,0,0} ;
-	static constexpr float fMaxEVol = 11.5e-9f; // m^3/s
-	static constexpr float fEVCoeff = fMaxEVol/(FILAMENT_AREA_COEFF*3.14153265f); // Max L/T ratio value, aka max linear m/s
+	static constexpr float fEVCoeff = Config::MaxVolumetricRate/(FILAMENT_AREA_COEFF*3.14153265f); // Max L/T ratio value, aka max linear m/s
 
 	//const float fMaxStepsPerSec = fEVCoeff*m_iStepsPerMM[3]*1000;
 

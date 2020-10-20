@@ -20,6 +20,7 @@
  */
 
 #include "MK3SGL.h"
+#include "Config.h"
 #include "Camera.hpp"         // for Camera
 #include "GLPrint.h"          // for GLPrint
 #include "HD44780GL.h"        // for HD44780GL
@@ -73,6 +74,12 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterActionAndMenu("NonLinearY", "Toggle motor nonlinearity on Y", ActNonLinearY);
 	RegisterActionAndMenu("NonLinearZ", "Toggle motor nonlinearity on Z", ActNonLinearZ);
 	RegisterActionAndMenu("NonLinearE", "Toggle motor nonlinearity on E", ActNonLinearE);
+
+	if (Config::Get().GetColourE())
+	{
+		RegisterActionAndMenu("ColourWidth","Colours any future extrusions by width", ActColourWidth);
+		RegisterActionAndMenu("ColourVolume","Colours any future extrusions by Volumetric rate", ActColourVolumetric);
+	}
 
 	RegisterKeyHandler('`', "Reset camera view to default");
 	RegisterKeyHandler('n',"Toggle Nozzle-Cam Mode");
@@ -285,6 +292,10 @@ Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vecto
 			return LineStatus::Finished;
 		case ActNonLinearE:
 			std::cout << "Nonlinear E: " << std::to_string(m_Print.ToggleNLE()) << '\n';
+			return LineStatus::Finished;
+		case ActColourVolumetric:
+		case ActColourWidth:
+			m_Print.SetColourMode(iAct==ActColourVolumetric);
 			return LineStatus::Finished;
 		default:
 			return LineStatus::Unhandled;

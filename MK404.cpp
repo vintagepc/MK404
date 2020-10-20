@@ -338,8 +338,7 @@ int main(int argc, char *argv[])
 	ValuesConstraint<string> vcPrintOpts(vstrExts);
 	ValueArg<string> argExtrusion("","extrusion","Set Print visual type. HR options create a LOT of triangles, do not use for large prints!",false, "Line", &vcPrintOpts, cmd);
 	MultiSwitchArg argDebug("d","debug","Increases debugging output, where supported.", cmd);
-	SwitchArg argColourEV("", "colour-volume", "Colours extrusion by perceived volumetric rate (for advanced step/extrusion debugging.", cmd, false);
-	SwitchArg argColourE("", "colour-extrusion", "Colours extrusion by width (for advanced step/extrusion debugging.", cmd, false);
+	SwitchArg argColourE("", "colour-extrusion", "Enable Colourizing extrusion by width/v pRawPrinter (for advanced step/extrusion debugging.", cmd, false);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.",cmd);
 	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown",cmd);
 
@@ -385,8 +384,7 @@ int main(int argc, char *argv[])
 	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
 	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
-	Config::Get().SetColourE(argColourE.isSet() || argColourEV.isSet());
-	Config::Get().SetColourEVol(argColourEV.isSet());
+	Config::Get().SetColourE(argColourE.isSet());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 

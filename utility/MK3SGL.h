@@ -194,7 +194,9 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 			ActNonLinearX,
 			ActNonLinearY,
 			ActNonLinearZ,
-			ActNonLinearE
+			ActNonLinearE,
+			ActColourWidth,
+			ActColourVolumetric
 		};
 
 		static MK3SGL *g_pMK3SGL;

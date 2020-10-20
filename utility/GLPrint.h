@@ -65,6 +65,9 @@ class GLPrint
 	inline bool ToggleNLZ() { return m_bNLZ = !m_bNLZ;}
 	inline bool ToggleNLE() { return m_bNLE = !m_bNLE;}
 
+	// Sets colour extrusion mode - T = by volumetric, F = by width.
+	inline void SetColourMode(bool bVal) { m_bColVolRate = bVal; }
+
 	private:
 
 		void AddSegment();//(const std::array<float, 4> &fvEnd, gsl::span<float> &fvPrev);
@@ -100,7 +103,7 @@ class GLPrint
 		bool m_bFirst = true;
 		float m_fLastERate = 0;
 		const float m_fColR, m_fColG, m_fColB;
-		std::atomic_bool m_bExtruding = {false}, m_bNLX {false}, m_bNLY {false}, m_bNLZ {false}, m_bNLE {false};
+		std::atomic_bool m_bExtruding = {false}, m_bNLX {false}, m_bNLY {false}, m_bNLZ {false}, m_bNLE {false}, m_bColVolRate {false};
 		// {X, Y, Z, E, dT}
 		std::vector<std::tuple<uint32_t,uint32_t,uint32_t,uint32_t,uint32_t>> m_vPath;
 
@@ -108,5 +111,5 @@ class GLPrint
 
 		unsigned int m_iVisType = PrintVisualType::LINE, m_iBaseMode = PrintVisualType::QUAD;
 
-		bool m_bHRE = false, m_bColExt = false, m_bColVolRate = false;
+		bool m_bHRE = false, m_bColExt = false;
 };

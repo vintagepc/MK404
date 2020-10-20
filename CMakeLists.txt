@@ -129,6 +129,7 @@ set(H_FILES_base
 	utility/SerialPipe.h
 	utility/Macros.h
 	utility/Util.h
+	utility/PLYExport.h
 	parts/IKeyClient.h
 	parts/KeyController.h
 )
@@ -209,6 +210,7 @@ set(MK404_SOURCES_base
 	utility/Color.cpp
 	utility/OBJCollection.cpp
 	utility/SerialPipe.cpp
+	utility/PLYExport.cpp
 	parts/IKeyClient.cpp
 	parts/KeyController.cpp
 )

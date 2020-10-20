@@ -73,6 +73,8 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterActionAndMenu("NonLinearY", "Toggle motor nonlinearity on Y", ActNonLinearY);
 	RegisterActionAndMenu("NonLinearZ", "Toggle motor nonlinearity on Z", ActNonLinearZ);
 	RegisterActionAndMenu("NonLinearE", "Toggle motor nonlinearity on E", ActNonLinearE);
+    RegisterActionAndMenu("ExportPLY", "Export high resolution extrusion print to a PLY file (Export.ply)", ActExportPLY);
+	RegisterAction("ExportPLYFile", "Export high resolution extrusion print to a PLY file (filename)", ActExportPLYFile, {ArgType::String});
 
 	RegisterKeyHandler('`', "Reset camera view to default");
 	RegisterKeyHandler('n',"Toggle Nozzle-Cam Mode");
@@ -286,6 +288,22 @@ Scriptable::LineStatus MK3SGL::ProcessAction(unsigned int iAct, const std::vecto
 		case ActNonLinearE:
 			std::cout << "Nonlinear E: " << std::to_string(m_Print.ToggleNLE()) << '\n';
 			return LineStatus::Finished;
+		case ActExportPLYFile:
+			m_pExportFN = vArgs.data(); // This *should* be thread safe since the script persists from start to finish, and it's read-only.
+			/* FALLTHRU */
+        case ActExportPLY:
+			if (m_iExportPLYResult > 0 )
+			{
+				auto bResult = m_iExportPLYResult == 1;
+				m_iExportPLYResult = 0;
+				return bResult ? LineStatus::Timeout : LineStatus::Finished;
+			}
+			if (m_iExportPLYResult==0 && !m_bExportPLY)
+			{
+            	std::cout << "ExportPLY...\n";
+            	m_bExportPLY = true;
+			}
+            return LineStatus::HoldExec;
 		default:
 			return LineStatus::Unhandled;
 
@@ -463,6 +481,23 @@ void MK3SGL::Draw()
 		for (int i=0; i<5; i++) m_vPrints[i]->Clear();
 		m_bClearPrints = false;
 	}
+
+    if( m_bExportPLY ){
+        // export buffered GL structures into PLY - must be done in GL loop for thread safety
+		if (m_pExportFN !=nullptr)
+		{
+			bool bResult = m_vPrints[0]->ExportPLY(*m_pExportFN);
+			m_pExportFN = nullptr;
+			m_iExportPLYResult = (bResult? 2 : 1);
+		}
+		else
+		{
+        	bool bResult = m_vPrints[0]->ExportPLY();
+			m_iExportPLYResult = (bResult? 2 : 1);
+		}
+        m_bExportPLY = false;
+    }
+
 	if (m_iQueuedAct>=0)
 	{
 		// This may have issues if draw() is reentrant but I don't think it is as GLUT

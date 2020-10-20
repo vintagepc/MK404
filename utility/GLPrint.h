@@ -42,6 +42,8 @@ class GLPrint
 	// Draws the print within the current GL matrix context.
 	void Draw();
 
+    bool ExportPLY(const std::string& strFN = "Export.ply");
+
 	// Functions to receive new coordinate updates from your simulated printer's stepper drivers.
 
 	// Swap these two to enable simulated nonlinearity on X.

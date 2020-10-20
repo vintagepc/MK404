@@ -490,10 +490,9 @@ void GLPrint::Draw()
 	//glDisable(GL_NORMALIZE);
 }
 
-void GLPrint::ExportPLY(){
-    PLYExporter pe;
+bool GLPrint::ExportPLY(const std::string& strFN){
     // @vintagepc - this can be improved, probably some incremental naming of saved files etc.
     // Please feel free to incorporate the exporter into the UI as you see fit.
     // I was just looking for the easiest way of calling it.
-    pe.Export("test.ply", m_fvTri, m_fvTriNorm, m_vfTriColor, m_ivTStart, m_ivTCount);
+    return PLYExporter::Export(strFN, m_fvTri, m_fvTriNorm, m_vfTriColor, m_ivTStart, m_ivTCount);
 }

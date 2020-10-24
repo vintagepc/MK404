@@ -422,6 +422,12 @@ void MK3SGL::OnMotorStep(avr_irq_t *irq, uint32_t value)
 			m_vPrints[m_iCurTool]->OnZStep(value);
 			break;
 		case IRQ::E_STEP_IN:
+			// Yeah, this is a bit of a kludge; I need to come up with a better way to handle the
+			// scenario where the last E tick is very far in the past (Typically the first tick of a print)
+			if ((m_pAVR->cycle - m_lastETick)>UINT32_MAX)
+			{
+				m_lastETick = m_pAVR->cycle - 10000;
+			}
 			// The narrow will assert if there is an overflow/underflow condition.
 			// Time should never be negative...
 			m_vPrints[m_iCurTool]->OnEStep(value, gsl::narrow<uint32_t>(m_pAVR->cycle - m_lastETick));

@@ -44,12 +44,19 @@ Prusa_MK2_13::Prusa_MK2_13():MiniRambo(),Printer()
 
 void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
 {
-	if (type!="lite")
+	if (type=="lite")
+	{
+		m_pVis.reset(new MK3SGL(type,false,this)); //NOLINT - suggestion is c++14.
+	}
+	else if (type=="fancy")
+	{
+		m_pVis.reset(new MK3SGL("mk2",false,this)); //NOLINT - suggestion is c++14.
+	}
+	else
 	{
 		return;
 	}
 
-	m_pVis.reset(new MK3SGL(type,false,this)); //NOLINT - suggestion is c++14.
 
 	AddHardware(*m_pVis);
 

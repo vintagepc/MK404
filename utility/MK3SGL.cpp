@@ -24,6 +24,7 @@
 #include "GLPrint.h"          // for GLPrint
 #include "HD44780GL.h"        // for HD44780GL
 #include "KeyController.h"
+#include "MK2_Full.h"
 #include "MK3S_Bear.h"        // for MK3S_Bear
 #include "MK3S_Full.h"        // for MK3S_Full
 #include "MK3S_Lite.h"        // for MK3S_Lite
@@ -62,6 +63,10 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	else if (strModel == "bear")
 	{
 		m_Objs = new MK3S_Bear(bMMU);
+	}
+	else if (strModel == "mk2")
+	{
+		m_Objs = new MK2_Full(false);
 	}
 
 	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
@@ -570,7 +575,6 @@ void MK3SGL::Draw()
 			glPopMatrix();
 			if (m_bBedOn)
 			{
-				glTranslatef(m_flDbg,m_flDbg2,m_flDbg3);
 				m_Objs->ApplyBedLEDTransform();
 				DrawLED(1,0,0);
 			}

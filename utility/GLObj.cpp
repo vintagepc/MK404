@@ -90,7 +90,6 @@ void GLObj::SetSubobjectVisible(unsigned iObj, bool bVisible)
 	}
 }
 
-
 void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 {
 	if (iObj<m_DrawObjects.size() && iMat < m_materials.size())
@@ -184,6 +183,7 @@ static std::string GetBaseDir(const std::string &filepath) {
 	return "";
 }
 
+// Calculates a face normal for the given triangle.
 static void CalcNormal(gsl::span<float> N, gsl::span<float> v0, gsl::span<float> v1, gsl::span<float>v2)
 {
 	float _v10[3];
@@ -242,6 +242,14 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 
 	// Append `default` material
 	m_materials.push_back(tinyobj::material_t());
+
+	if (m_bSetDissolve)
+	{
+		for (auto &m : m_materials)
+		{
+			if (m.dissolve == 0.f) m.dissolve = 1.0f;
+		}
+	}
 
 #if TEX_VCOLOR
 	// Load diffuse m_textures
@@ -387,7 +395,14 @@ bool GLObj::LoadObjAndConvert(const char* filename) {
 					}
 				} else {
 					// compute geometric normal
-					CalcNormal(n[0], v[0], v[1], v[2]);
+					if (m_bReverseNormals)
+					{
+						CalcNormal(n[0], v[0], v[2], v[1]);
+					}
+					else
+					{
+						CalcNormal(n[0], v[0], v[1], v[2]);
+					}
 					n[1][0] = n[0][0];
 					n[1][1] = n[0][1];
 					n[1][2] = n[0][2];

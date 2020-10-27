@@ -123,6 +123,10 @@ set(H_FILES_base
 	utility/Config.h
 	utility/GLPrint.h
 	utility/FatImage.h
+	utility/MK2_Full.h
+	utility/MK3S_Bear.h
+	utility/MK3S_Full.h
+	utility/MK3S_Lite.h
 	utility/MK3SGL.h
 	utility/GLObj.h
 	utility/OBJCollection.h
@@ -199,6 +203,7 @@ set(MK404_SOURCES_base
 	parts/SoftPWMable.cpp
 	parts/SPIPeripheral.cpp
 	parts/TelemetryHost.cpp
+	utility/MK2_Full.cpp
 	utility/MK3S_Bear.cpp
 	utility/MK3S_Full.cpp
 	utility/MK3S_Lite.cpp

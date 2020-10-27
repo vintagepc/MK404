@@ -27,12 +27,16 @@
 #include <vector>           // for vector
 
 
-MK2_Full::MK2_Full(bool /*bMMU*/):OBJCollection("MK2Full")
+MK2_Full::MK2_Full(bool /*bMMU*/, bool bPrintBed):OBJCollection("MK2Full")
 {
 	auto pY = AddObject(ObjClass::Y, "assets/MK2_Y.obj",0,0,-0.098);
 	pY->ForceDissolveTo1(true);
 	pY->SetReverseWinding(true);
-	//AddObject(ObjClass::PrintSurface, "assets/SSSheet.obj", 0.060,0.066,0.431 + -0.373);
+
+	if (bPrintBed) // For 2.5 and 2.5S
+	{
+		AddObject(ObjClass::PrintSurface, "assets/SSSheet.obj", 0.060,0.066,0.431 + -0.373);
+	}
 	AddObject(ObjClass::Media, "assets/SDCard.obj",0.034000, -0.015000, -0.238000,MM_TO_M)->SetKeepNormalsIfScaling(true);
 	auto pZ = AddObject(ObjClass::Z, "assets/MK2_Z.obj",0,-0.099,0);
 	pZ->ForceDissolveTo1(true);
@@ -46,8 +50,9 @@ MK2_Full::MK2_Full(bool /*bMMU*/):OBJCollection("MK2Full")
 	m_pPFan = AddObject(ObjClass::Other, "assets/Print-fan_rotor.obj");
 	m_pPShroud = AddObject(ObjClass::Other, "assets/bear21_mk3s_simulator_print_fan.obj", CM_TO_M);
 	m_pPShroud->SetSwapMode(GLObj::SwapMode::YMINUSZ);
-	m_pEFan = AddObject(ObjClass::Other, "assets/E_Fan.obj",MM_TO_M);
+	m_pEFan = AddObject(ObjClass::Other, "assets/MK2_EFan.obj",MM_TO_M);
 	m_pEFan->SetKeepNormalsIfScaling(true);
+	m_pEFan->ForceDissolveTo1(true);
 	m_pEVis = AddObject(ObjClass::Other,"assets/Triangles.obj",MM_TO_M);
 	m_pEVis->SetKeepNormalsIfScaling(true);
 	m_pBaseObj = AddObject(ObjClass::Fixed, "assets/MK2_Base.obj");

@@ -56,6 +56,8 @@ class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 
 		void OnAVRCycle() override;
 
+		virtual bool GetHasSheet() { return false; }
+
 		std::unique_ptr<MK3SGL> m_pVis {nullptr};
 
 

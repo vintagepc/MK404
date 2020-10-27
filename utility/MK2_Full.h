@@ -31,7 +31,7 @@ class GLObj;
 class MK2_Full: public OBJCollection
 {
 	public:
-		explicit MK2_Full(bool /*bMMU*/);
+		explicit MK2_Full(bool /*bMMU*/, bool bPrintBed = false);
 
 
 		void OnLoadComplete() override;

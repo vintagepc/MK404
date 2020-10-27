@@ -32,6 +32,8 @@ class Prusa_MK25_13 : public Prusa_MK2_13
 
 		virtual void SetupFilamentSensor();
 
+		bool GetHasSheet() override { return true; }
+
 		PAT9125 m_fSensor;
 
 };

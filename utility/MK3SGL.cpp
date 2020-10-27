@@ -68,6 +68,10 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	{
 		m_Objs = new MK2_Full(false);
 	}
+	else if (strModel == "mk25")
+	{
+		m_Objs = new MK2_Full(false,true);
+	}
 
 	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
 	RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);

@@ -66,7 +66,8 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	}
 	else if (strModel == "mk2")
 	{
-		m_Objs = new MK2_Full(false);
+		m_Objs = new MK2_Full(bMMU);
+		m_bMMU = false;
 	}
 	else if (strModel == "mk25")
 	{
@@ -194,18 +195,18 @@ void MK3SGL::OnKeyPress(const Key& key)
 		case 's':
 			TwistKnob(key=='w');
 			break;
-		case '5':
-		case '6':
-			m_flDbg = m_flDbg + (key=='5'?0.001f:-0.001f);
-			break;
-		case '7':
-		case '8':
-			m_flDbg2 = m_flDbg2 + (key=='7'?0.001f:-0.001f);
-			break;
-		case '9':
-		case '0':
-			m_flDbg3 = m_flDbg3 + (key=='9'?0.001f:-0.001f);
-			break;
+		// case '5':
+		// case '6':
+		// 	m_flDbg = m_flDbg + (key=='5'?0.001f:-0.001f);
+		// 	break;
+		// case '7':
+		// case '8':
+		// 	m_flDbg2 = m_flDbg2 + (key=='7'?0.001f:-0.001f);
+		// 	break;
+		// case '9':
+		// case '0':
+		// 	m_flDbg3 = m_flDbg3 + (key=='9'?0.001f:-0.001f);
+		// 	break;
 
 	}
 	// Decomment this block and use the flDbg variables
@@ -552,7 +553,6 @@ void MK3SGL::Draw()
 				glPushMatrix();
 					m_Objs->DrawPFan(m_iPFanPos);
 				glPopMatrix();
-
 				glPushMatrix();
 					m_Objs->DrawEFan(m_iFanPos);
 				glPopMatrix();

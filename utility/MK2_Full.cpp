@@ -27,7 +27,7 @@
 #include <vector>           // for vector
 
 
-MK2_Full::MK2_Full(bool /*bMMU*/, bool bMK25):OBJCollection("MK2Full"), m_bMK25(bMK25)
+MK2_Full::MK2_Full(bool bMMU, bool bMK25):OBJCollection("MK2Full"), m_bMK25(bMK25), m_bMMU(bMMU)
 {
 	auto pY = AddObject(ObjClass::Y, "assets/MK2_Y.obj",0,0,-0.098);
 	pY->ForceDissolveTo1(true);
@@ -48,7 +48,17 @@ MK2_Full::MK2_Full(bool /*bMMU*/, bool bMK25):OBJCollection("MK2Full"), m_bMK25(
 	}
 	else
 	{
-		m_pE = AddObject(ObjClass::X, "assets/MK2_E.obj",-.125,-0.099,0);
+		if (bMMU)
+		{
+			auto pTmp = AddObject(ObjClass::Fixed, "assets/MK2MMU_Base.obj");
+			pTmp->ForceDissolveTo1(true);
+			pTmp->SetReverseWinding(true);
+			m_pE = AddObject(ObjClass::X, "assets/MK2MMU_E.obj",-.125,-0.099,0);
+		}
+		else
+		{
+			m_pE = AddObject(ObjClass::X, "assets/MK2_E.obj",-.125,-0.099,0);
+		}
 		m_pE->ForceDissolveTo1(true);
 		m_pE->SetReverseWinding(true);
 		m_pEFan = AddObject(ObjClass::Other, "assets/MK2_EFan.obj",MM_TO_M);
@@ -66,6 +76,8 @@ MK2_Full::MK2_Full(bool /*bMMU*/, bool bMK25):OBJCollection("MK2Full"), m_bMK25(
 	m_pBaseObj = AddObject(ObjClass::Fixed, "assets/MK2_Base.obj");
 	m_pBaseObj->ForceDissolveTo1(true);
 	m_pBaseObj->SetReverseWinding(true);
+
+
 };
 
 void MK2_Full::OnLoadComplete()
@@ -118,6 +130,8 @@ void MK2_Full::DrawKnob(int iRotation)
 
 void MK2_Full::DrawEVis(float fEPos)
 {
+	if (m_bMMU) return;
+
 	float fTransform[3];
 	if (m_bMK25)
 	{
@@ -140,7 +154,7 @@ void MK2_Full::DrawEFan(int iRotation)
 	if (!m_bMK25)
 	{
 	 	glScalef(0.75,0.75,0.75);
-		glTranslatef(0.0557, -0.193, -0.226);
+		glTranslatef(0.0037, -0.193, -0.226);
 	}
 	else
 	{

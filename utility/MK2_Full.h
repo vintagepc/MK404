@@ -31,7 +31,7 @@ class GLObj;
 class MK2_Full: public OBJCollection
 {
 	public:
-		explicit MK2_Full(bool /*bMMU*/, bool bMK25 = false);
+		explicit MK2_Full(bool bMMU, bool bMK25 = false);
 
 
 		void OnLoadComplete() override;
@@ -77,7 +77,7 @@ class MK2_Full: public OBJCollection
 		void DrawPFan(int iRotation) override;
 
 	protected:
-		bool m_bMK25 = false;
+		bool m_bMK25 = false, m_bMMU = false;
 		std::shared_ptr<GLObj> m_pKnob = nullptr, m_pEFan = nullptr, m_pPFan = nullptr, m_pEVis = nullptr, m_pE = nullptr, m_pPShroud = nullptr;
 
 };

@@ -52,7 +52,7 @@ void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
 	{
 		m_pVis.reset(new MK3SGL(
 			GetHasSheet()?"mk25":"mk2",
-			false,this)); //NOLINT - suggestion is c++14.
+			GetHasMMU(),this)); //NOLINT - suggestion is c++14.
 	}
 	else
 	{

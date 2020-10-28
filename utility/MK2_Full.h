@@ -31,7 +31,7 @@ class GLObj;
 class MK2_Full: public OBJCollection
 {
 	public:
-		explicit MK2_Full(bool /*bMMU*/, bool bPrintBed = false);
+		explicit MK2_Full(bool /*bMMU*/, bool bMK25 = false);
 
 
 		void OnLoadComplete() override;
@@ -42,7 +42,16 @@ class MK2_Full: public OBJCollection
 
 		inline void ApplyLCDTransform() override { glTranslatef(0.135,0.0399,0.255); }
 
-		inline void ApplyPLEDTransform() override {	glTranslatef(-0.012000, -0.232000, -0.242000);};
+		inline void ApplyPLEDTransform() override {
+			if (m_bMK25)
+			{
+				glTranslatef(-0.011000, -0.221000, -0.236000);
+			}
+			else
+			{
+				glTranslatef(-0.012000, -0.232000, -0.242000);
+			}
+		};
 
 		inline void ApplyBedLEDTransform() override {glTranslatef(0.076000, 0.066000, -0.185000);};
 
@@ -50,7 +59,7 @@ class MK2_Full: public OBJCollection
 
 		void GetBaseCenter(gsl::span<float> fTrans) override;
 
-		float GetScaleFactor() override { return 0.210874f; }
+		float GetScaleFactor() override { return m_pBaseObj->GetScaleFactor(); }
 
 		void DrawKnob(int iRotation) override;
 
@@ -68,7 +77,7 @@ class MK2_Full: public OBJCollection
 		void DrawPFan(int iRotation) override;
 
 	protected:
-
+		bool m_bMK25 = false;
 		std::shared_ptr<GLObj> m_pKnob = nullptr, m_pEFan = nullptr, m_pPFan = nullptr, m_pEVis = nullptr, m_pE = nullptr, m_pPShroud = nullptr;
 
 };

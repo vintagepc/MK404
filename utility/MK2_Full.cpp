@@ -27,32 +27,40 @@
 #include <vector>           // for vector
 
 
-MK2_Full::MK2_Full(bool /*bMMU*/, bool bPrintBed):OBJCollection("MK2Full")
+MK2_Full::MK2_Full(bool /*bMMU*/, bool bMK25):OBJCollection("MK2Full"), m_bMK25(bMK25)
 {
 	auto pY = AddObject(ObjClass::Y, "assets/MK2_Y.obj",0,0,-0.098);
 	pY->ForceDissolveTo1(true);
 	pY->SetReverseWinding(true);
 
-	if (bPrintBed) // For 2.5 and 2.5S
-	{
-		AddObject(ObjClass::PrintSurface, "assets/SSSheet.obj", 0.060,0.066,0.431 + -0.373);
-	}
 	AddObject(ObjClass::Media, "assets/SDCard.obj",0.034000, -0.015000, -0.238000,MM_TO_M)->SetKeepNormalsIfScaling(true);
 	auto pZ = AddObject(ObjClass::Z, "assets/MK2_Z.obj",0,-0.099,0);
 	pZ->ForceDissolveTo1(true);
 	pZ->SetReverseWinding(true);
-	m_pE = AddObject(ObjClass::X, "assets/MK2_E.obj",-.125,-0.099,0);
-	m_pE->ForceDissolveTo1(true);
-	m_pE->SetReverseWinding(true);
+
+	if (bMK25) // For 2.5 and 2.5S
+	{
+		AddObject(ObjClass::PrintSurface, "assets/SSSheet.obj", 0.060,0.066,0.431 + -0.373);
+		m_pE = AddObject(ObjClass::X, "assets/X_AXIS.obj",-0.011,-0.221,-0.236);
+		AddObject(ObjClass::X, "assets/E_STD.obj",-0.011,-0.221,-0.2360,MM_TO_M)->SetKeepNormalsIfScaling(true);
+		m_pEFan = AddObject(ObjClass::Other, "assets/E_Fan.obj",MM_TO_M);
+		m_pEFan->SetKeepNormalsIfScaling(true);
+	}
+	else
+	{
+		m_pE = AddObject(ObjClass::X, "assets/MK2_E.obj",-.125,-0.099,0);
+		m_pE->ForceDissolveTo1(true);
+		m_pE->SetReverseWinding(true);
+		m_pEFan = AddObject(ObjClass::Other, "assets/MK2_EFan.obj",MM_TO_M);
+		m_pEFan->SetKeepNormalsIfScaling(true);
+		m_pEFan->ForceDissolveTo1(true);
+	}
 	m_pKnob = AddObject(ObjClass::Other, "assets/LCD-knobR2.obj");
 	m_pKnob->ForceDissolveTo1(true);
 	m_pKnob->SetReverseWinding(true);
 	m_pPFan = AddObject(ObjClass::Other, "assets/Print-fan_rotor.obj");
 	m_pPShroud = AddObject(ObjClass::Other, "assets/bear21_mk3s_simulator_print_fan.obj", CM_TO_M);
 	m_pPShroud->SetSwapMode(GLObj::SwapMode::YMINUSZ);
-	m_pEFan = AddObject(ObjClass::Other, "assets/MK2_EFan.obj",MM_TO_M);
-	m_pEFan->SetKeepNormalsIfScaling(true);
-	m_pEFan->ForceDissolveTo1(true);
 	m_pEVis = AddObject(ObjClass::Other,"assets/Triangles.obj",MM_TO_M);
 	m_pEVis->SetKeepNormalsIfScaling(true);
 	m_pBaseObj = AddObject(ObjClass::Fixed, "assets/MK2_Base.obj");
@@ -111,7 +119,14 @@ void MK2_Full::DrawKnob(int iRotation)
 void MK2_Full::DrawEVis(float fEPos)
 {
 	float fTransform[3];
-	glTranslatef(-0.010000, -0.221000, -0.243000);
+	if (m_bMK25)
+	{
+		glTranslatef(-0.011000, -0.221000, -0.236000);
+	}
+	else
+	{
+		glTranslatef(-0.010000, -0.221000, -0.243000);
+	}
 	m_pEVis->GetCenteringTransform(fTransform);
 	fTransform[1] +=.0015f;
 	glTranslatef (-fTransform[0] , -fTransform[1], -fTransform[2]);
@@ -122,9 +137,16 @@ void MK2_Full::DrawEVis(float fEPos)
 
 void MK2_Full::DrawEFan(int iRotation)
 {
-	glScalef(0.75,0.75,0.75);
-	glTranslatef(0.0501, 0.0173, -0.226);
-	glTranslatef(-0.044,-0.210,0.f);
+	if (!m_bMK25)
+	{
+	 	glScalef(0.75,0.75,0.75);
+		glTranslatef(0.0557, -0.193, -0.226);
+	}
+	else
+	{
+		glTranslatef(-0.0117, -0.221, -0.236);
+	}
+
 	float fTransform[3];
 	m_pEFan->GetCenteringTransform(fTransform);
 	glTranslatef (-fTransform[0], -fTransform[1], -fTransform[2]);
@@ -135,12 +157,20 @@ void MK2_Full::DrawEFan(int iRotation)
 
 void MK2_Full::DrawPFan(int iRotation)
 {
-	glTranslatef(.041, .102, .057);
-	glPushMatrix();
-		glRotatef(90,0,1,0);
-		m_pPShroud->Draw();
-	glPopMatrix();
-	glRotatef(90.0,1,0,0);
+	if (m_bMK25)
+	{
+		glTranslatef(.047, .105, .079);
+		glRotatef(180-45.0,1,0,0);
+	}
+	else
+	{
+		glTranslatef(.041, .102, .057);
+		glPushMatrix();
+			glRotatef(90,0,1,0);
+			m_pPShroud->Draw();
+		glPopMatrix();
+		glRotatef(90.0,1,0,0);
+	}
 	glPushMatrix();
 		glTranslatef(.028,0,0);
 		glRotatef(static_cast<float>(360-iRotation),0,1,0);

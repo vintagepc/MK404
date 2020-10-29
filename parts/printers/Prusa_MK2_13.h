@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "MiniRambo.h"     // for EinsyRambo
 #include "MK3SGL.h"
+#include "MiniRambo.h"     // for EinsyRambo
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "sim_avr.h"        // for avr_t
 #include "sim_avr_types.h"  // for avr_io_addr_t

@@ -50,9 +50,9 @@ void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
 	}
 	else if (type=="fancy")
 	{
-		m_pVis.reset(new MK3SGL(
+		m_pVis.reset(new MK3SGL(  //NOLINT - suggestion is c++14.
 			GetHasSheet()?"mk25":"mk2",
-			GetHasMMU(),this)); //NOLINT - suggestion is c++14.
+			GetHasMMU(),this));
 	}
 	else
 	{

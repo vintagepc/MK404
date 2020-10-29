@@ -482,6 +482,7 @@ add_test(ext1_Keys env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_M
 add_test(ext1_MK2_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2_mR13 -g fancy --script ../scripts/tests/test_MK2_fancy.txt)
 add_test(ext1_MK2MMU_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2MMU_mR13 -g fancy --script ../scripts/tests/test_MK2MMU_fancy.txt)
 add_test(ext1_MK25_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -g fancy --script ../scripts/tests/test_MK25_fancy.txt)
+add_test(ext1_MK2_Lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -g lite --script ../scripts/tests/test_MK2_lite.txt)
 
 # TODO- move these images out of parts and to their own ext2 dir...
 add_test(ext2_Print_prep cp ../scripts/tests/Prusa_MK3S_eeprom.bin_test ${PROJECT_BINARY_DIR})

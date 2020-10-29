@@ -207,11 +207,11 @@ void Prusa_MK2_13::OnAVRCycle()
 				break;
 			case 3:
 				encoder.Twist(RotaryEncoder::CCW_CLICK);
-				//if (m_pVis) m_pVis->TwistKnob(true);
+				if (m_pVis) m_pVis->TwistKnob(true);
 				break;
 			case 4:
 				encoder.Twist(RotaryEncoder::CW_CLICK);
-			//	if (m_pVis) m_pVis->TwistKnob(false);
+				if (m_pVis) m_pVis->TwistKnob(false);
 				break;
 		}
 		m_mouseBtn = 0;

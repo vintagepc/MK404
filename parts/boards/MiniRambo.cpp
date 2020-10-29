@@ -113,6 +113,7 @@ namespace Boards
 		//TryConnect(Z,A4982::MAX_OUT,	Z_MAX_PIN);
 
 		E.GetConfig().bHasNoEndStops = true;
+		E.GetConfig().uiStepsPerMM = 140;
 		AddHardware(E);
 		TryConnect(E0_DIR_PIN, 		&E, A4982::DIR_IN);
 		TryConnect(E0_STEP_PIN,		&E, A4982::STEP_IN);

@@ -1,0 +1,9 @@
+# This script just checks that the printer boots by looking for 'start' on the serial line.
+ScriptHost::SetTimeoutMs(10000)
+ScriptHost::SetQuitOnTimeout(1)
+Board::WaitMs(100)
+3DView::Snapshot(tests/snaps/MK25Fancy01)
+3DVisuals::ToggleNozzleCam()
+Board::WaitMs(50)
+3DView::Snapshot(tests/snaps/MK25Fancy02)
+Board::Quit()

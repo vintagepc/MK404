@@ -99,7 +99,10 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
 		inline void SetStepsPerMM(int16_t iX, int16_t iY, int16_t iZ, int16_t iE)
 		{
-			m_Print.SetStepsPerMM(iX,iY,iZ,iE);
+			for (auto p: m_vPrints)
+			{
+				p->SetStepsPerMM(iX,iY,iZ,iE);
+			}
 		}
 
 	protected:

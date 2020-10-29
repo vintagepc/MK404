@@ -42,6 +42,57 @@ Prusa_MK2_13::Prusa_MK2_13():MiniRambo(),Printer()
 {
 }
 
+void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
+{
+	if (type=="lite")
+	{
+		m_pVis.reset(new MK3SGL(type,false,this)); //NOLINT - suggestion is c++14.
+	}
+	else if (type=="fancy")
+	{
+		m_pVis.reset(new MK3SGL(  //NOLINT - suggestion is c++14.
+			GetHasSheet()?"mk25":"mk2",
+			GetHasMMU(),this));
+	}
+	else
+	{
+		return;
+	}
+
+
+	AddHardware(*m_pVis);
+
+	m_pVis->ConnectFrom(X.GetIRQ(A4982::POSITION_OUT),MK3SGL::X_IN);
+	m_pVis->ConnectFrom(Y.GetIRQ(A4982::POSITION_OUT),MK3SGL::Y_IN);
+	m_pVis->ConnectFrom(Z.GetIRQ(A4982::POSITION_OUT),MK3SGL::Z_IN);
+	m_pVis->ConnectFrom(E.GetIRQ(A4982::POSITION_OUT),MK3SGL::E_IN);
+	m_pVis->ConnectFrom(X.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::X_STEP_IN);
+	m_pVis->ConnectFrom(Y.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::Y_STEP_IN);
+	m_pVis->ConnectFrom(Z.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::Z_STEP_IN);
+	m_pVis->ConnectFrom(E.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
+	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
+	m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
+	m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
+	m_pVis->ConnectFrom(hBed.GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
+	m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
+	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
+	if (GetHasMMU())
+	{
+		m_pVis->ConnectFrom(m_mmu.GetIRQ(MMU1::TOOL_OUT),MK3SGL::TOOL_IN);
+		m_pVis->ConnectFrom(E1.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
+		m_pVis->ConnectFrom(E2.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
+		m_pVis->ConnectFrom(E3.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
+	}
+	m_pVis->SetLCD(&lcd);
+
+	m_pVis->SetStepsPerMM(
+		X.GetConfig().uiStepsPerMM,
+		Y.GetConfig().uiStepsPerMM,
+		Z.GetConfig().uiStepsPerMM,
+		E.GetConfig().uiStepsPerMM
+	);
+}
+
 void Prusa_MK2_13::Draw()
 {
 		glPushMatrix();
@@ -95,6 +146,10 @@ void Prusa_MK2_13::Draw()
 		glPopMatrix();
 		// GL snapshot helper
 		m_gl.OnDraw();
+		if ((GetVisualType()!="none") && m_pVis)
+		{
+			m_pVis->FlagForRedraw();
+		}
 }
 
 std::pair<int,int> Prusa_MK2_13::GetWindowSize(){
@@ -152,11 +207,11 @@ void Prusa_MK2_13::OnAVRCycle()
 				break;
 			case 3:
 				encoder.Twist(RotaryEncoder::CCW_CLICK);
-				//if (m_pVis) m_pVis->TwistKnob(true);
+				if (m_pVis) m_pVis->TwistKnob(true);
 				break;
 			case 4:
 				encoder.Twist(RotaryEncoder::CW_CLICK);
-			//	if (m_pVis) m_pVis->TwistKnob(false);
+				if (m_pVis) m_pVis->TwistKnob(false);
 				break;
 		}
 		m_mouseBtn = 0;

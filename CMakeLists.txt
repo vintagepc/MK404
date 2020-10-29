@@ -123,6 +123,10 @@ set(H_FILES_base
 	utility/Config.h
 	utility/GLPrint.h
 	utility/FatImage.h
+	utility/MK2_Full.h
+	utility/MK3S_Bear.h
+	utility/MK3S_Full.h
+	utility/MK3S_Lite.h
 	utility/MK3SGL.h
 	utility/GLObj.h
 	utility/OBJCollection.h
@@ -200,6 +204,7 @@ set(MK404_SOURCES_base
 	parts/SoftPWMable.cpp
 	parts/SPIPeripheral.cpp
 	parts/TelemetryHost.cpp
+	utility/MK2_Full.cpp
 	utility/MK3S_Bear.cpp
 	utility/MK3S_Full.cpp
 	utility/MK3S_Lite.cpp
@@ -476,6 +481,10 @@ add_test(ext1_Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404
 add_test(ext1_Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
 add_test(ext1_Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
 add_test(ext1_Keys env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
+add_test(ext1_MK2_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2_mR13 -g fancy --script ../scripts/tests/test_MK2_fancy.txt)
+add_test(ext1_MK2MMU_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2MMU_mR13 -g fancy --script ../scripts/tests/test_MK2MMU_fancy.txt)
+add_test(ext1_MK25_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -g fancy --script ../scripts/tests/test_MK25_fancy.txt)
+add_test(ext1_MK2_Lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -g lite --script ../scripts/tests/test_MK2_lite.txt)
 
 # TODO- move these images out of parts and to their own ext2 dir...
 add_test(ext2_Print_prep cp ../scripts/tests/Prusa_MK3S_eeprom.bin_test ${PROJECT_BINARY_DIR})

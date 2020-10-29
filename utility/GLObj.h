@@ -74,6 +74,11 @@ class GLObj
         // Gets the transform float you need to center the obj at 0,0,0.
         void GetCenteringTransform(gsl::span<float> fTrans) { for (int i=0; i<3; i++) fTrans[i] = -0.5f * ((m_extMin[i] + m_extMax[i]));}
 
+		// Alters diffuse default to 1.0 for materials without this property.
+		inline void ForceDissolveTo1(bool bVal){ m_bSetDissolve = bVal; }
+
+		// Calculates normals in the opposite direction (for reverse-wound meshes)
+		inline void SetReverseWinding(bool bVal){ m_bReverseNormals = bVal; }
 
     private:
 
@@ -86,7 +91,7 @@ class GLObj
         float m_fMaxExtent = 1.f;
         float _m_extMin[3] = {0,0,0}, _m_extMax[3] = {0,0,0};
 		gsl::span<float> m_extMin {_m_extMin}, m_extMax {_m_extMax};
-        bool m_bLoaded = false, m_bNoNewNormals = false;
+        bool m_bLoaded = false, m_bNoNewNormals = false, m_bSetDissolve = false, m_bReverseNormals = false;
         std::vector<tinyobj::material_t> m_materials;
         std::map<std::string, GLuint> m_textures;
         std::vector<DrawObject> m_DrawObjects;

@@ -24,6 +24,7 @@
 #include "GLPrint.h"          // for GLPrint
 #include "HD44780GL.h"        // for HD44780GL
 #include "KeyController.h"
+#include "MK2_Full.h"
 #include "MK3S_Bear.h"        // for MK3S_Bear
 #include "MK3S_Full.h"        // for MK3S_Full
 #include "MK3S_Lite.h"        // for MK3S_Lite
@@ -62,6 +63,15 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	else if (strModel == "bear")
 	{
 		m_Objs = new MK3S_Bear(bMMU);
+	}
+	else if (strModel == "mk2")
+	{
+		m_Objs = new MK2_Full(bMMU);
+		m_bMMU = false;
+	}
+	else if (strModel == "mk25")
+	{
+		m_Objs = new MK2_Full(false,true);
 	}
 
 	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
@@ -187,18 +197,18 @@ void MK3SGL::OnKeyPress(const Key& key)
 		case 's':
 			TwistKnob(key=='w');
 			break;
-		case '5':
-		case '6':
-			m_flDbg = m_flDbg + (key=='5'?0.001f:-0.001f);
-			break;
-		case '7':
-		case '8':
-			m_flDbg2 = m_flDbg2 + (key=='7'?0.001f:-0.001f);
-			break;
-		case '9':
-		case '0':
-			m_flDbg3 = m_flDbg3 + (key=='9'?0.001f:-0.001f);
-			break;
+		// case '5':
+		// case '6':
+		// 	m_flDbg = m_flDbg + (key=='5'?0.001f:-0.001f);
+		// 	break;
+		// case '7':
+		// case '8':
+		// 	m_flDbg2 = m_flDbg2 + (key=='7'?0.001f:-0.001f);
+		// 	break;
+		// case '9':
+		// case '0':
+		// 	m_flDbg3 = m_flDbg3 + (key=='9'?0.001f:-0.001f);
+		// 	break;
 
 	}
 	// Decomment this block and use the flDbg variables
@@ -584,7 +594,6 @@ void MK3SGL::Draw()
 				glPushMatrix();
 					m_Objs->DrawPFan(m_iPFanPos);
 				glPopMatrix();
-
 				glPushMatrix();
 					m_Objs->DrawEFan(m_iFanPos);
 				glPopMatrix();
@@ -611,7 +620,6 @@ void MK3SGL::Draw()
 			glPopMatrix();
 			if (m_bBedOn)
 			{
-				glTranslatef(m_flDbg,m_flDbg2,m_flDbg3);
 				m_Objs->ApplyBedLEDTransform();
 				DrawLED(1,0,0);
 			}

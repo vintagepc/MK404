@@ -27,4 +27,6 @@ class Prusa_MK2MMU_13 : public Prusa_MK2_13
 	protected:
 		void SetupHardware() override;
 
+		inline bool GetHasMMU() override { return true; }
+
 };

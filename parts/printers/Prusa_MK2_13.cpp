@@ -76,6 +76,10 @@ void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
 	m_pVis->ConnectFrom(hBed.GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
 	m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
 	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
+	m_pVis->ConnectFrom(m_mmu.GetIRQ(MMU1::TOOL_OUT),MK3SGL::TOOL_IN);
+	m_pVis->ConnectFrom(E1.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
+	m_pVis->ConnectFrom(E2.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
+	m_pVis->ConnectFrom(E3.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
 	m_pVis->SetLCD(&lcd);
 
 	m_pVis->SetStepsPerMM(

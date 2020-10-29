@@ -417,7 +417,7 @@ void GLPrint::AddSegment()
 
 void GLPrint::Draw()
 {
-	static const std::array<float, 4> fColor = {m_fColR,m_fColG,m_fColB,1};
+	const std::array<float, 4> fColor = {m_fColR,m_fColG,m_fColB,1};
 	//std::vector<float> fG[4] = {0,0.5,0,1};
 	static const std::array<float, 4> fY = {1,1,0,1};
 	//static const std::array<float, 4> fK = {0,0,0,1};
@@ -440,6 +440,10 @@ void GLPrint::Draw()
 					glEnable(GL_COLOR_MATERIAL);
 					glEnableClientState(GL_COLOR_ARRAY);
 					glColorPointer(3, GL_FLOAT, 3*sizeof(float), m_vfTriColor.data());
+				}
+				else
+				{
+					glColor3fv(fColor.data());
 				}
 				glMultiDrawArrays(GL_TRIANGLE_STRIP,m_ivTStart.data(),m_ivTCount.data(), m_ivTCount.size());
 				if (m_bColExt)

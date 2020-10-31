@@ -30,6 +30,28 @@
 
 namespace Boards
 {
+	MiniRambo::MiniRambo(uint32_t uiFreq):IKeyClient(),Board(m_wiring,uiFreq)
+	{
+		SetBoardName("miniRAMBo");
+		RegisterKeyHandler('t', "Triggers a factory reset (reset + hold encoder");
+	};
+
+	void MiniRambo::OnKeyPress(const Key& key)
+	{
+		switch(key)
+		{
+			case 't':
+				std::cout << "FACTORY_RESET (not implemented yet)\n";
+				//m_bFactoryReset =true;
+				// Hold the button during boot to get factory reset menu
+				SetResetFlag();
+				break;
+			default:
+				Board::OnKeyPress(key); // Pass up because we overrode.
+		}
+	}
+
+
 	void MiniRambo::SetupHardware()
 	{
 		DisableInterruptLevelPoll(8);

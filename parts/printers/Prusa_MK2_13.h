@@ -66,6 +66,6 @@ class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 	private:
 		void FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v);
 
-		std::atomic_int m_key = {0}, m_mouseBtn = {0};
+		std::atomic_int m_mouseBtn = {0};
 
 };

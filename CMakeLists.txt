@@ -378,7 +378,7 @@ add_custom_target(Test_ext1
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/ext1.info
 	COMMAND lcov --remove ext1.info '/usr/*' -o ext1.info
 	COMMAND lcov --remove ext1.info '*/3rdParty/*' -o ext1.info
-	DEPENDS Test_Common Extra_firmwares
+	DEPENDS Test_Common Extra_Firmwares
 )
 
 

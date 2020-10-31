@@ -64,6 +64,6 @@ foreach(TEST_SRC IN LISTS EXTRA_SOURCES)
 			-o ${PROJECT_BINARY_DIR}/tests/${TEST_BASE}.afx ${TEST_SRC}
 	)
 
-	add_dependencies(Extra_firmwares ${TEST_BASE}.afx)
+	add_dependencies(Extra_Firmwares ${TEST_BASE}.afx)
 
 endforeach()

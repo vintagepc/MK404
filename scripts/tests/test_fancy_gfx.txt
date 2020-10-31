@@ -1,7 +1,11 @@
 # This script just checks that the printer boots by looking for 'start' on the serial line.
 ScriptHost::SetTimeoutMs(10000)
 ScriptHost::SetQuitOnTimeout(1)
-Serial0::WaitForLine(start)
-Board::WaitMs(10)
+Serial0::WaitForLine(READY)
 3DView::Snapshot(tests/snaps/GFXFancy01)
+Encoder::Press()
+Serial0::WaitForLineContains(BED)
+3DView::Snapshot(tests/snaps/GFXFancy02)
+3DVisuals::ToggleNozzleCam()
+3DView::Snapshot(tests/snaps/GFXFancy03)
 Board::Quit()

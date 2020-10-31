@@ -105,10 +105,7 @@ void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 }
 
 void GLObj::Draw() {
-	if (!m_bLoaded)
-	{
-		return;
-	}
+	if (!m_bLoaded)	return;
 
 	glPolygonMode(GL_FRONT, GL_FILL);
 	glPolygonMode(GL_BACK, GL_FILL);

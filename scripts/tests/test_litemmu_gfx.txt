@@ -1,9 +1,7 @@
 # This script just checks that the printer boots by looking for 'start' on the serial line.
 ScriptHost::SetTimeoutMs(10000)
 ScriptHost::SetQuitOnTimeout(1)
-Serial0::WaitForLine(adc_init)
-# The bed is briefly on at boot due to how pwm is handled...
-TelHost::WaitFor(Heater_B_<heater.pwm_in,0)
+Serial0::WaitForLine(READY)
 Board::WaitMs(50);
 3DView::Snapshot(tests/snaps/GFXLiteMM01)
 Board::Quit()

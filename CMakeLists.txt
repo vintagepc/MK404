@@ -378,7 +378,7 @@ add_custom_target(Test_ext1
 	COMMAND lcov --capture --gcov-tool="${GCOV_BINARY}" --directory ${PROJECT_BINARY_DIR} --output-file ${PROJECT_BINARY_DIR}/ext1.info
 	COMMAND lcov --remove ext1.info '/usr/*' -o ext1.info
 	COMMAND lcov --remove ext1.info '*/3rdParty/*' -o ext1.info
-	DEPENDS Test_Common
+	DEPENDS Test_Common Extra_Firmwares
 )
 
 
@@ -474,17 +474,17 @@ add_test(ext1_MK3S_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Pr
 add_test(ext1_MK3_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3 -f MK3S.afx --script ../scripts/tests/test_boot_MK3.txt)
 add_test(ext1_MK3SMMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3SMMU2.txt)
 add_test(ext1_MK3MMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3MMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3MMU2.txt)
-add_test(ext1_Lite_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g lite -f MK3S.afx --script ../scripts/tests/test_lite_gfx.txt)
-add_test(ext1_Bear_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g bear -f MK3S.afx --script ../scripts/tests/test_bear_gfx.txt)
-add_test(ext1_Fancy_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancy_gfx.txt)
-add_test(ext1_Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404  Prusa_MK3SMMU2 -g lite -f MK3S.afx --script ../scripts/tests/test_litemmu_gfx.txt)
-add_test(ext1_Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g fancy -f MK3S.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
-add_test(ext1_Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
-add_test(ext1_Keys env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
-add_test(ext1_MK2_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2_mR13 -g fancy --script ../scripts/tests/test_MK2_fancy.txt)
-add_test(ext1_MK2MMU_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2MMU_mR13 -g fancy --script ../scripts/tests/test_MK2MMU_fancy.txt)
-add_test(ext1_MK25_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -g fancy --script ../scripts/tests/test_MK25_fancy.txt)
-add_test(ext1_MK2_Lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -g lite --script ../scripts/tests/test_MK2_lite.txt)
+add_test(ext1_Lite_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g lite -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_lite_gfx.txt)
+add_test(ext1_Bear_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g bear -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_bear_gfx.txt)
+add_test(ext1_Fancy_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 -g fancy -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_fancy_gfx.txt)
+add_test(ext1_Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404  Prusa_MK3SMMU2 -g lite -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_litemmu_gfx.txt)
+add_test(ext1_Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3SMMU2 -g fancy -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_fancymmu_gfx.txt)
+add_test(ext1_Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3S -f tests/extra_EinsyRambo.afx -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt)
+add_test(ext1_Keys env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK3 -f tests/extra_EinsyRambo.afx -g lite --script ../scripts/tests/test_lite_gfx_keys.txt)
+add_test(ext1_MK2_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2_mR13 -f tests/extra_MiniRambo.afx -g fancy --script ../scripts/tests/test_MK2_fancy.txt)
+add_test(ext1_MK2MMU_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2MMU_mR13 -f tests/extra_MiniRambo.afx -g fancy --script ../scripts/tests/test_MK2MMU_fancy.txt)
+add_test(ext1_MK25_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -f tests/extra_MiniRambo.afx -g fancy --script ../scripts/tests/test_MK25_fancy.txt)
+add_test(ext1_MK2_Lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -f tests/extra_MiniRambo.afx -g lite --script ../scripts/tests/test_MK2_lite.txt)
 
 # TODO- move these images out of parts and to their own ext2 dir...
 add_test(ext2_Print_prep cp ../scripts/tests/Prusa_MK3S_eeprom.bin_test ${PROJECT_BINARY_DIR})

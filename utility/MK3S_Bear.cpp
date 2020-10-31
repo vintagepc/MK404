@@ -72,18 +72,17 @@ void MK3S_Bear::GetNozzleCamPos(gsl::span<float> fPos)
 
 void MK3S_Bear::DrawKnob(int iRotation)
 {
-	if (m_pKnob == nullptr)
+	if (m_pKnob != nullptr)
 	{
-		return;
-	}
-	glPushMatrix();
-		glTranslatef(0.060,0.197,0.054);
-		glRotatef(-45.f,1,0,0);
 		glPushMatrix();
-			glRotatef(static_cast<float>(iRotation),0,0,1);
-			m_pKnob->Draw();
+			glTranslatef(0.060,0.197,0.054);
+			glRotatef(-45.f,1,0,0);
+			glPushMatrix();
+				glRotatef(static_cast<float>(iRotation),0,0,1);
+				m_pKnob->Draw();
+			glPopMatrix();
 		glPopMatrix();
-	glPopMatrix();
+	}
 }
 
 void MK3S_Bear::DrawEFan(int iRotation)

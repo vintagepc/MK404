@@ -216,20 +216,6 @@ void Prusa_MK2_13::OnAVRCycle()
 		}
 		m_mouseBtn = 0;
 	}
-	int key = m_key;                            // copy atomic to local
-	if (key)
-	{
-		switch (key) {
-			case 't':
-				cout << "FACTORY_RESET\n";
-				//m_bFactoryReset =true;
-				// Hold the button during boot to get factory reset menu
-				SetResetFlag();
-				break;
-
-		}
-		m_key = 0;
-	}
 }
 
 

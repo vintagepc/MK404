@@ -114,18 +114,17 @@ void MK2_Full::GetBaseCenter(gsl::span<float> fTrans)
 
 void MK2_Full::DrawKnob(int iRotation)
 {
-	if (m_pKnob == nullptr)
+	if (m_pKnob != nullptr)
 	{
-		return;
-	}
-	glPushMatrix();
-		glTranslatef(0.249,0.036,0.263);
-		glRotatef(-45.f,1,0,0);
 		glPushMatrix();
-			glRotatef(static_cast<float>(iRotation),0,0,1);
-			m_pKnob->Draw();
+			glTranslatef(0.249,0.036,0.263);
+			glRotatef(-45.f,1,0,0);
+			glPushMatrix();
+				glRotatef(static_cast<float>(iRotation),0,0,1);
+				m_pKnob->Draw();
+			glPopMatrix();
 		glPopMatrix();
-	glPopMatrix();
+	}
 }
 
 void MK2_Full::DrawEVis(float fEPos)

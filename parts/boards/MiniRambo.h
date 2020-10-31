@@ -26,6 +26,7 @@
 #include "Fan.h"
 #include "HD44780GL.h"                           // for HD44780G
 #include "Heater.h"
+#include "IKeyClient.h"
 #include "LED.h"
 #include "MMU1.h"
 #include "PINDA.h"
@@ -40,11 +41,10 @@
 
 namespace Boards
 {
-	class MiniRambo: public Board
+	class MiniRambo: public Board, virtual private IKeyClient
 	{
 		public:
-			explicit MiniRambo(uint32_t uiFreq = 16000000)
-				:Board(m_wiring,uiFreq){ SetBoardName("miniRAMBo");};
+			explicit MiniRambo(uint32_t uiFreq = 16000000);
 
 			~MiniRambo() override = default;
 
@@ -56,6 +56,8 @@ namespace Boards
 			void OnAVRInit() override;
 
 			void OnAVRDeinit() override;
+
+			void OnKeyPress(const Key& Key) override;
 
 			HD44780GL lcd;
 			Beeper m_buzzer;

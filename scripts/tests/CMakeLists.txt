@@ -25,6 +25,8 @@ add_custom_target( Test_firmwares
 
 )
 
+add_custom_target(Extra_Firmwares)
+
 foreach(TEST_SRC IN LISTS TESTS_SOURCES)
 
 	get_filename_component(TEST_BASE ${TEST_SRC} NAME_WE)
@@ -62,6 +64,6 @@ foreach(TEST_SRC IN LISTS EXTRA_SOURCES)
 			-o ${PROJECT_BINARY_DIR}/tests/${TEST_BASE}.afx ${TEST_SRC}
 	)
 
-	add_dependencies(Test_firmwares ${TEST_BASE}.afx)
+	add_dependencies(Extra_firmwares ${TEST_BASE}.afx)
 
 endforeach()

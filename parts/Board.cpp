@@ -410,7 +410,7 @@ namespace Boards {
 		std::cout << "Starting " << m_wiring.GetMCUName() << " execution...\n";
 		int state = cpu_Running;
 		auto tNext = m_pAVR->cycle;
-		uint64_t uiIdle = 0;
+		uint64_t uiIdle = 400;
 		struct timespec tp, tStart;
 		clock_gettime(CLOCK_MONOTONIC_RAW, &tStart);
 		auto tS = ((tStart.tv_sec * 1E9) + tStart.tv_nsec);
@@ -421,17 +421,11 @@ namespace Boards {
 				clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
 				auto tWall =  ((tp.tv_sec * 1E9) + tp.tv_nsec) - tS; //avr_get_time_stamp(m_pAVR)+500;
 				auto tSim = avr_cycles_to_nsec(m_pAVR, m_pAVR->cycle);
-				tNext = m_pAVR->cycle + 400u;
+				tNext = m_pAVR->cycle + uiIdle;
 				//auto tDiff = (tSim-tWall)/10;
-				if (tWall<tSim)
+				if (tWall<tSim && uiIdle>0)
 				{
-					uiIdle += 1; //tDiff;
-					auto volatile idle = uiIdle;
-					while (idle>0)
-					{
-						asm("");
-						idle--;
-					}
+					uiIdle -= 1; //tDiff;
 
 					// clock_gettime(CLOCK_MONOTONIC_RAW, &tNow);
 					// execns = (tNow.tv_sec * 1E9) + tNow.tv_nsec;
@@ -439,11 +433,18 @@ namespace Boards {
 					// tWall = avr_get_time_stamp(m_pAVR);
 					// //if (tDiff>200000) usleep(tDiff/1000);
 					// //std::cout << "Sim is ahead by" << std::to_string(tSim - tWall) << "ns!\n";
+					// auto volatile idle = uiIdle;
+					// while (idle>0)
+					// {
+					// 	asm("");
+					// 	idle--;
+					// }
 				}
-				else if (uiIdle>= 1)//tDiff)
+				else //if (uiIdle>= 1)//tDiff)
 				{
-					uiIdle-= 1; // tDiff;
+					uiIdle+= 1; // tDiff;
 				}
+
 			}
 			if (m_bIsPrimary) // Only one board should be scripting.
 			{

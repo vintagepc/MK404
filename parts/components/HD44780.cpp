@@ -61,7 +61,6 @@ void HD44780::ResetCursor()
 void HD44780::ClearScreen()
 {
 	{
-		std::lock_guard<std::mutex> lock(m_lock);
     	for (auto &c : m_vRam)
 		{
 			c = ' ';
@@ -218,7 +217,6 @@ uint32_t HD44780::OnDataReady()
 	uint32_t delay = 37; // uS
 	if (m_bInCGRAM)
 	{
-		std::lock_guard<std::mutex> lock(m_lock);
 		m_cgRam[m_uiCGCursor] = m_uiDataPins;
 		TRACE(printf("hd44780_write_data %02x to CGRAM %02x\n",m_uiDataPins,m_uiCGCursor));
 		IncrementCGRAMCursor();
@@ -226,8 +224,7 @@ uint32_t HD44780::OnDataReady()
 	else
 	{
 		{
-			std::lock_guard<std::mutex> lock(m_lock);
-			m_vRam[m_uiCursor] = m_uiDataPins;
+			m_vRam.at(m_uiCursor) = m_uiDataPins;
 		}
 
 		for (unsigned int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
@@ -396,7 +393,6 @@ uint32_t HD44780::ProcessRead()
 		if (m_uiPinState & (1U << RS)) {	// read data
 			delay = 37;
 			{
-				std::lock_guard<std::mutex> lock(m_lock);
 				m_uiReadPins = m_vRam[m_uiCursor];
 			}
 			IncrementCursor();

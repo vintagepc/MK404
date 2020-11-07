@@ -59,7 +59,6 @@
 #include "sim_irq.h"           // for avr_irq_t
 #include <atomic>
 #include <cstdint>            // for uint8_t, uint16_t, uint32_t
-#include <mutex>
 #include <string>              // for string
 #include <vector>              // for vector
 
@@ -100,10 +99,8 @@ class HD44780:public BasePeripheral, public Scriptable
     // The GL draw accesses these:
 		std::atomic_uint8_t m_uiHeight = {4};				// width and height of the LCD
         std::atomic_uint8_t	m_uiWidth = {20};
-		uint8_t _m_vRam[104] {' '};
-        uint8_t _m_cgRam[64] {' '};
-		gsl::span<uint8_t> m_vRam {_m_vRam};
-		gsl::span<uint8_t> m_cgRam {_m_cgRam};
+		std::array<std::atomic_uint8_t,104> m_vRam = {};
+        std::array<std::atomic_uint8_t,64> m_cgRam = {};
 
 		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &args) override;
 
@@ -148,8 +145,6 @@ class HD44780:public BasePeripheral, public Scriptable
 		};
 
 		std::vector<uint8_t> m_lineOffsets = {0, 0x40, 0, 0x40};
-
-		std::mutex m_lock; // Needed for GL thread access to v/cgRAM
 
 	private:
 		enum Actions

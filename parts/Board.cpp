@@ -409,6 +409,8 @@ namespace Boards {
 		// vdC.reserve(10000);
 		// vwall.reserve(10000);
 		// vsim.reserve(10000);
+		// Idle lambda that stops the virtual AVR calling usleep.
+		auto fcnSleep = [](avr_t*, 	avr_cycle_count_t) { return; };
 		avr_regbit_t MCUSR = m_pAVR->reset_flags.porf;
 		MCUSR.mask =0xFF;
 		MCUSR.bit = 0;
@@ -425,6 +427,10 @@ namespace Boards {
 		uint64_t idlens = tp.tv_nsec - tStart.tv_nsec;
 		auto fnsPerIdle = static_cast<float>(idlens)/1e6f;
 		std::cout << "10M idle cycles is " << std::to_string(idlens) << " ns (" << std::to_string(fnsPerIdle) << " ns per tick)\n";
+		if (m_bCorrectSkew)
+		{
+			m_pAVR->sleep = fcnSleep;
+		}
 		int state = cpu_Running;
 		auto tNext = m_pAVR->cycle;
 		uint64_t uiIdle = 10000, uiLost = 0;

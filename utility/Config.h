@@ -40,8 +40,13 @@ class Config
 		inline void SetColourE(bool bVal){ m_bColorExtrusion = bVal;}
 		inline bool GetColourE(){ return m_bColorExtrusion;}
 
+		// Should extrusion be coloured by width?.
+		inline void SetSkewCorrect(bool bVal){ m_bSkew = bVal;}
+		inline bool GetSkewCorrect(){ return m_bSkew;}
+
 	private:
 		unsigned int m_iExtrusion = false;
 		bool m_bColorExtrusion = false;
+		bool m_bSkew = false;
 
 };

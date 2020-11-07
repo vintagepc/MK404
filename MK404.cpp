@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
 	// Longer term it'd be neat to have a synonym handler in  TCLAP....
 	bool bArgHacks = argNoHacks.isSet() || argKlipper.isSet() || argMarlin.isSet();
 	bool bArgSkew = argSkew.isSet() || argKlipper.isSet();
-
+	Config::Get().SetSkewCorrect(bArgSkew);
 	// Make new image.
 	if (argImgSize.isSet())
 	{

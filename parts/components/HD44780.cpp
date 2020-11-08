@@ -101,7 +101,7 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const std::v
 			{
 				return IssueLineError(std::string("ADDR") + std::to_string(iAddr) + " is out of range [0,63]");
 			}
-			if (m_cgRam[iAddr] == stoi(vArgs.at(0)))
+			if (gsl::at(m_cgRam,iAddr) == stoi(vArgs.at(0)))
 			{
 				return LineStatus::Finished;
 			}
@@ -217,7 +217,7 @@ uint32_t HD44780::OnDataReady()
 	uint32_t delay = 37; // uS
 	if (m_bInCGRAM)
 	{
-		m_cgRam[m_uiCGCursor] = m_uiDataPins;
+		gsl::at(m_cgRam,m_uiCGCursor) = m_uiDataPins;
 		TRACE(printf("hd44780_write_data %02x to CGRAM %02x\n",m_uiDataPins,m_uiCGCursor));
 		IncrementCGRAMCursor();
 	}
@@ -393,7 +393,7 @@ uint32_t HD44780::ProcessRead()
 		if (m_uiPinState & (1U << RS)) {	// read data
 			delay = 37;
 			{
-				m_uiReadPins = m_vRam[m_uiCursor];
+				m_uiReadPins = gsl::at(m_vRam,m_uiCursor);
 			}
 			IncrementCursor();
 		} else {	// read 'command' ie status register

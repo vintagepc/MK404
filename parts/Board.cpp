@@ -415,15 +415,15 @@ namespace Boards {
 		MCUSR.mask =0xFF;
 		MCUSR.bit = 0;
 		std::cout << "Starting " << m_wiring.GetMCUName() << " execution...\n";
-		struct timespec tp, tStart;
-		clock_gettime(CLOCK_MONOTONIC_RAW, &tStart);
+		struct timespec tp {0,0}, tStart {0,0};
+		clock_gettime(CLOCK_MONOTONIC, &tStart);
 		volatile uint64_t idle = 1000000;
 		while (idle>0)
 		{
-			asm("");
+			asm(""); // NOLINT - is what it is so that it doesn't get optimized out.
 			idle--;
 		}
-		clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+		clock_gettime(CLOCK_MONOTONIC, &tp);
 		uint64_t idlens = tp.tv_nsec - tStart.tv_nsec;
 		auto fnsPerIdle = static_cast<float>(idlens)/1e6f;
 		std::cout << "10M idle cycles is " << std::to_string(idlens) << " ns (" << std::to_string(fnsPerIdle) << " ns per tick)\n";
@@ -448,7 +448,7 @@ namespace Boards {
 						uint64_t volatile idle = (static_cast<float>(tDiff)/fnsPerIdle);
 						while (idle>0)
 						{
-							asm("");
+							asm(""); // NOLINT - is what it is so that it doesn't get optimized out.
 							idle--;
 						}
 						// auto tSleep = gsl::narrow<int64_t>(avr_get_time_stamp(m_pAVR) - tWall);

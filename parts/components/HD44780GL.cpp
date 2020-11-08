@@ -249,7 +249,7 @@ void HD44780GL::Draw(
 	for (int v = 0 ; v < m_uiHeight; v++) {
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {
-			GLPutChar(m_vRam[m_lineOffsets.at(v) + i], character, text, shadow, bMaterial);
+			GLPutChar(gsl::at(m_vRam,m_lineOffsets.at(v) + i), character, text, shadow, bMaterial);
 			glTranslatef(6, 0, 0);
 		}
 		glPopMatrix();

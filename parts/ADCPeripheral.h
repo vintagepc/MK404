@@ -40,6 +40,7 @@ class ADCPeripheral: public BasePeripheral
             BasePeripheral::_Init(avr,p);
 
             m_uiMux = uiADC;
+			m_bConnected = true;
 
 	        RegisterNotify(C::ADC_TRIGGER_IN, MAKE_C_CALLBACK(ADCPeripheral,_OnADCRead<C>), this);
 
@@ -68,6 +69,8 @@ class ADCPeripheral: public BasePeripheral
                 RaiseIRQFloat(C::DIGITAL_OUT,(m_pIrq.begin() + C::DIGITAL_OUT)->flags | IRQ_FLAG_FLOATING);
 			}
         };
+
+		inline bool IsConnected() { return m_bConnected; }
     private:
         template<class C>
         void _OnADCRead(struct avr_irq_t * irq, uint32_t value)
@@ -95,4 +98,6 @@ class ADCPeripheral: public BasePeripheral
         uint8_t m_uiMux = 0;
 
         uint32_t m_uiLast = 0;
+
+		bool m_bConnected = false;
 };

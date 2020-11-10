@@ -142,7 +142,7 @@ void IRSensor::Toggle()
 void IRSensor::Set(IRState val)
 {
 	m_eCurrent = val;
-	if (!m_bADCRunning)
+	if (!m_bADCRunning && IsConnected())
 	{
 		_SyncDigitalIRQ<VoltageSrc>(GetCurrentValue());
 	}

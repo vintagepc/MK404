@@ -87,6 +87,9 @@ private:
 	// ADC read trigger
  	uint32_t OnADCRead(avr_irq_t *pIRQ, uint32_t value) override;
 
+	// Returns current value based on m_eCurrent
+	uint32_t GetCurrentValue();
+
 	// LUT for states to voltage readouts.
 	std::map<IRState,float> m_mIRVals =
 	{
@@ -101,4 +104,6 @@ private:
 
 	std::atomic_bool m_bExternal {false};
 	IRState m_eCurrent = IR_v4_NO_FILAMENT;
+
+	bool m_bADCRunning = false;
 };

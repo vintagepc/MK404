@@ -27,7 +27,13 @@
 // ADC read trigger.
 uint32_t IRSensor::OnADCRead(struct avr_irq_t *, uint32_t)
 {
-    float fVal;
+	m_bADCRunning = true;
+	return GetCurrentValue();
+}
+
+uint32_t IRSensor::GetCurrentValue()
+{
+	float fVal;
     if (m_eCurrent != IR_AUTO)
 	{
         fVal = m_mIRVals[m_eCurrent];
@@ -118,22 +124,28 @@ void IRSensor::Toggle()
 	{
 		std::cout << "NOTE: Overriding IR Auto setting!" << '\n';
 	}
+	IRSensor::IRState eNew = IR_UNKNOWN;
 	if (m_eCurrent == IR_v4_NO_FILAMENT ||
 		m_eCurrent == IR_v3_NO_FILAMENT)
 	{
 		std::cout << "IRSensor: Filament present!" << '\n';
-		m_eCurrent = (m_eCurrent == IR_v4_NO_FILAMENT ? IR_v4_FILAMENT_PRESENT : IR_v3_FILAMENT_PRESENT);
+		eNew = (m_eCurrent == IR_v4_NO_FILAMENT ? IR_v4_FILAMENT_PRESENT : IR_v3_FILAMENT_PRESENT);
 	}
 	else
 	{
 		std::cout << "IRSensor: No filament present!" << '\n';
-		m_eCurrent = (m_eCurrent == IR_v3_FILAMENT_PRESENT ? IR_v3_NO_FILAMENT : IR_v4_NO_FILAMENT);
+		eNew = (m_eCurrent == IR_v3_FILAMENT_PRESENT ? IR_v3_NO_FILAMENT : IR_v4_NO_FILAMENT);
 	}
+	Set(eNew);
 }
 
 void IRSensor::Set(IRState val)
 {
 	m_eCurrent = val;
+	if (!m_bADCRunning)
+	{
+		_SyncDigitalIRQ<VoltageSrc>(GetCurrentValue());
+	}
 }
 
 void IRSensor::Auto_Input(uint32_t val)

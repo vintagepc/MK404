@@ -40,6 +40,7 @@ class ADCPeripheral: public BasePeripheral
             BasePeripheral::_Init(avr,p);
 
             m_uiMux = uiADC;
+			m_bConnected = true;
 
 	        RegisterNotify(C::ADC_TRIGGER_IN, MAKE_C_CALLBACK(ADCPeripheral,_OnADCRead<C>), this);
 
@@ -51,6 +52,25 @@ class ADCPeripheral: public BasePeripheral
                 ConnectTo(C::ADC_VALUE_OUT, dst);
             }
          };
+
+		template<class C>
+        void _SyncDigitalIRQ(uint32_t uiVOut)
+        {
+            if (uiVOut>2200) // 2.2V, logic H
+			{
+                RaiseIRQ(C::DIGITAL_OUT,1);
+			}
+            else if (uiVOut < 800) // 0.8v. L
+			{
+                RaiseIRQ(C::DIGITAL_OUT,0);
+			}
+            else
+			{
+                RaiseIRQFloat(C::DIGITAL_OUT,(m_pIrq.begin() + C::DIGITAL_OUT)->flags | IRQ_FLAG_FLOATING);
+			}
+        };
+
+		inline bool IsConnected() { return m_bConnected; }
     private:
         template<class C>
         void _OnADCRead(struct avr_irq_t * irq, uint32_t value)
@@ -75,24 +95,9 @@ class ADCPeripheral: public BasePeripheral
             m_uiLast = uiVal;
         };
 
-        template<class C>
-        void _SyncDigitalIRQ(uint32_t uiVOut)
-        {
-            if (uiVOut>2200) // 2.2V, logic H
-			{
-                RaiseIRQ(C::DIGITAL_OUT,1);
-			}
-            else if (uiVOut < 800) // 0.8v. L
-			{
-                RaiseIRQ(C::DIGITAL_OUT,0);
-			}
-            else
-			{
-                RaiseIRQFloat(C::DIGITAL_OUT,(m_pIrq.begin() + C::DIGITAL_OUT)->flags | IRQ_FLAG_FLOATING);
-			}
-        };
-
         uint8_t m_uiMux = 0;
 
         uint32_t m_uiLast = 0;
+
+		bool m_bConnected = false;
 };

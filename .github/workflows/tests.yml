@@ -58,7 +58,7 @@ jobs:
     - name: Cache permissions
       run: sudo chmod -R 744 packages
 
-    - uses: openrndr/setup-opengl@21a61c3
+    - uses: openrndr/setup-opengl@v1.1
     - run: |
         xvfb-run glxinfo
         ls -l
@@ -148,7 +148,7 @@ jobs:
     - name: Cache permissions
       run: sudo chmod -R 744 packages
 
-    - uses: openrndr/setup-opengl@21a61c3
+    - uses: openrndr/setup-opengl@v1.1
     - run: |
         xvfb-run glxinfo
         ls -l

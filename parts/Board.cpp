@@ -404,23 +404,76 @@ namespace Boards {
 
 	void* Board::RunAVR()
 	{
+		// std::vector<uint64_t> vdC, vsim;
+		// std::vector<double> vwall;
+		// vdC.reserve(10000);
+		// vwall.reserve(10000);
+		// vsim.reserve(10000);
+		// Idle lambda that stops the virtual AVR calling usleep.
+		auto fcnSleep = [](avr_t*, 	avr_cycle_count_t) { return; };
 		avr_regbit_t MCUSR = m_pAVR->reset_flags.porf;
 		MCUSR.mask =0xFF;
 		MCUSR.bit = 0;
 		std::cout << "Starting " << m_wiring.GetMCUName() << " execution...\n";
+		struct timespec tp {0,0}, tStart {0,0};
+		clock_gettime(CLOCK_MONOTONIC, &tStart);
+		volatile uint64_t idle = 1000000;
+		while (idle>0)
+		{
+			asm(""); // NOLINT - is what it is so that it doesn't get optimized out.
+			idle--;
+		}
+		clock_gettime(CLOCK_MONOTONIC, &tp);
+		uint64_t idlens = tp.tv_nsec - tStart.tv_nsec;
+		auto fnsPerIdle = static_cast<float>(idlens)/1e6f;
+		std::cout << "10M idle cycles is " << std::to_string(idlens) << " ns (" << std::to_string(fnsPerIdle) << " ns per tick)\n";
+		if (m_bCorrectSkew)
+		{
+			m_pAVR->sleep = fcnSleep;
+		}
 		int state = cpu_Running;
+		auto tNext = m_pAVR->cycle;
+		uint64_t uiIdle = 10000, uiLost = 0;
 		while ((state != cpu_Done) && (state != cpu_Crashed) && !m_bQuit){
 			// Check the timing every 10k cycles, ~10 ms
-			if (m_bCorrectSkew && m_pAVR->cycle%500==0)
+			if (m_bCorrectSkew && m_pAVR->cycle>tNext)
 			{
 				auto tWall = avr_get_time_stamp(m_pAVR);
-				auto tSim = avr_cycles_to_nsec(m_pAVR, m_pAVR->cycle);
+				auto tSim = avr_cycles_to_nsec(m_pAVR, m_pAVR->cycle) + uiLost;
 				if (tWall<tSim)
 				{
-					auto tDiff = tSim - tWall;
-					if (tDiff>200000) usleep(tDiff/1000);
-					//std::cout << "Sim is ahead by" << std::to_string(tSim - tWall) << "ns!\n";
+					auto tDiff = gsl::narrow<int64_t>(tSim - static_cast<uint64_t>(tWall));
+					if (tDiff>100000)
+					{
+						uint64_t volatile idle = (static_cast<float>(tDiff)/fnsPerIdle);
+						while (idle>0)
+						{
+							asm(""); // NOLINT - is what it is so that it doesn't get optimized out.
+							idle--;
+						}
+						// auto tSleep = gsl::narrow<int64_t>(avr_get_time_stamp(m_pAVR) - tWall);
+						// if (tSleep > tDiff+150000) std::cout << "Slept too long! Asked: " <<  std::to_string(tDiff/1000) <<  " got " << std::to_string(tSleep/1000) << "us!\n";
+					}
 				}
+				if (tSim<tWall)
+				{
+					auto tDiff = gsl::narrow<int64_t>(static_cast<uint64_t>(tWall)-tSim);
+					if (tDiff>1000000) // 1 ms
+					{
+						std::cout << "Lost " << std::to_string(tDiff/1000) << " us!\n";
+						if (tDiff>5000000) // If we lose more than 5ms, don't try to catch up.
+						{
+							uiLost += tDiff;
+						}
+					}
+				}
+				// if (vsim.size()<10000)
+				// {
+				// 	vwall.push_back(tWall);
+				// 	vsim.push_back(tSim);
+				// 	vdC.push_back(m_pAVR->cycle);
+				// }
+				tNext = m_pAVR->cycle + uiIdle;
 			}
 			if (m_bIsPrimary) // Only one board should be scripting.
 			{
@@ -457,6 +510,12 @@ namespace Boards {
 		}
 		std::cout << m_wiring.GetMCUName() << "finished (" << state << ").\n";
 		avr_terminate(m_pAVR);
+		// std::cout << "cycles, wall, sim\n";
+		// for (size_t i=0; i<vsim.size(); i++)
+		// {
+		// 	std::cout << std::to_string(vdC.at(i)) << ',' << std::to_string(vwall.at(i)) << ',' << std::to_string(vsim.at(i)) << '\n';
+		// }
+
 		return nullptr;
 	};
 

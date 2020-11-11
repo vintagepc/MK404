@@ -42,7 +42,6 @@
 #else
 # include <GL/gl.h>           // for glVertex3f, glBegin, glEnd, glMaterialfv
 #endif
-#include <mutex>
 #include <vector>
 
 //#define TRACE(_w) _w
@@ -146,6 +145,8 @@ void HD44780GL::GenerateCharQuads()
 
 void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)
 {
+	uint8_t _cgChar[8];
+	gsl::span<uint8_t> pChar {_cgChar};
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColorHelper(character,bMaterial);
@@ -158,7 +159,11 @@ void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, ui
 		uint8_t iCols=8;
 		if (c<16)
 		{
-			uiData = m_cgRam.begin() + ((c & 7U) <<3U);
+			for (int i=0; i<iCols; i++)
+			{
+				pChar[i] = m_cgRam.at(((c & 7U) <<3U)+i);
+			}
+			uiData = pChar.begin(); // m_cgRam.begin() + ((c & 7U) <<3U);
 		}
 		else
 		{
@@ -244,8 +249,7 @@ void HD44780GL::Draw(
 	for (int v = 0 ; v < m_uiHeight; v++) {
 		glPushMatrix();
 		for (int i = 0; i < m_uiWidth; i++) {
-			std::lock_guard<std::mutex> lock(m_lock);
-			GLPutChar(m_vRam[m_lineOffsets.at(v) + i], character, text, shadow, bMaterial);
+			GLPutChar(gsl::at(m_vRam,m_lineOffsets.at(v) + i), character, text, shadow, bMaterial);
 			glTranslatef(6, 0, 0);
 		}
 		glPopMatrix();

@@ -31,19 +31,79 @@
 #define TRACE(_w)
 #endif
 
+// PINDA image definition:
+#ifdef ENABLE_PINDA_IMAGE
+static constexpr char PINDA_IMAGE[] =
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000050c00000000000000000000000000000000"
+"0000000000000000000000000a242f2e200b0000000000000000000000000000"
+"000000000000000000000001133549514b391800000000000000000000000000"
+"0000000000000000000000163f58646254391200000000000000000000000000"
+"0000000000000000000000072d4e646b66543407000000000000000000000000"
+"0000000000000000000000163f58646254391200000000000000000000000000"
+"000000000000000000000001133549514b391800000000000000000000000000"
+"0000000000000000000000000a242f2e200b0000000000000000000000000000"
+"0000000000000000000000000000050c00000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000"
+"0000000000000000000000000000000000000000000000000000000000000000";
+
+void PINDA::ParseStringToMap()
+{
+	Expects(sizeof(PINDA_IMAGE)==2049); //32x32 with trailing null.
+	const gsl::span<const char> cImg { PINDA_IMAGE };
+	for (size_t i=0; i<cImg.size_bytes()-1; i+=2)
+	{
+		char strByte[3] = {cImg.at(i), cImg.at(i+1), '\0'};
+		m_uiScan[i/2] = gsl::narrow<uint8_t>(std::stoul(static_cast<char*>(strByte),0,16));
+	};
+	// std::cout << "Parsed image:\n";
+	// for (size_t i=0; i<1024; i++)
+	// {
+	// 	std::cout << std::width(2) << std::hex << (uint)m_uiScan.at(i);
+	// 	if ((i+1)%32==0) std::cout << '\n';
+
+	// }
+
+}
+
+#endif
+
 // This creates an inverted parabolic trigger zone above the cal point
 void PINDA::CheckTriggerNoSheet()
 {
     float fEdist = 100;
     bool bFound = false;
     //printf("PINDA: X: %f Y: %f\n", m_fPos[0], m_fPos[1]);
+	float fdX = 0, fdY = 0;
+
 	if (m_fPos[2]<10.f)
 	{
 		for (auto i=0U; i<GetXYCalPoints().size()/2; i++)
 		{
-			fEdist = sqrt( pow(m_fPos[0] - GetXYCalPoints().at(2*i),2)  +
-				pow(m_fPos[1] - GetXYCalPoints().at((2*i)+1),2));
-			if (fEdist<10)
+			fdX = m_fPos[0] - GetXYCalPoints().at(2*i);
+			fdY = m_fPos[1] - GetXYCalPoints().at((2*i)+1);
+			fEdist = sqrt( pow(fdX,2) + pow(fdY ,2));
+			if (fEdist<21)
 			{
 				bFound = true;
 				break;  // Stop as soon as we find a near cal point.
@@ -53,8 +113,37 @@ void PINDA::CheckTriggerNoSheet()
     // Now calc z trigger height for the given distance from the point center
     if (bFound)
     {
+#ifdef ENABLE_PINDA_IMAGE
+		// The firmware runs the scan grid 1024 steps to either side of the center.
+		float fTrigZ = 0.f;
+		// There's a search area of 2048 motor steps  (+/- 1024 on each side of the point center)
+		// at 100 steps/mm, hence the 20.48.
+		// We are breaking this up into 32 "pixels", so each (32/20.48) mm = one index in the "image" array.
+		// fdX/Y are offsets from the point center, so should range from -<something> to +<something>; this needs to map to 0->31.
+		// Ew, the +9 on Y is weird, that should be +15 or +16....
+		float fXIdx = 15.5f + ((fdX)*32.f)/20.48f, fYIdx = 9.f + ((fdY)*32.f)/20.48f;
+		int iX = fXIdx, iY = fYIdx;
+		float fDiff = fXIdx - static_cast<float>(iX);
+
+		if ((iX>=0 && iX<32) && (iY>=0 && iY<32))
+		{
+			float fZByte = 0;
+			if (iX==31)
+				fZByte = m_uiScan.at((32*iY)+iX);
+			else
+			{ // Lerp the neighbouring values if inbetween.
+				fZByte = (fDiff*m_uiScan.at((32*iY)+iX+1)) + ((1.f-fDiff)*m_uiScan.at((32*iY)+iX));
+			}
+			// 3.468 is a magic number of some kind determined by trial/error; I suspect the correct value
+			// is obvious to someone more familiar with the search algorithm.
+			if (fZByte>0)
+				fTrigZ = 3.47+(fZByte/400.f);  // Z scaling comes from 255 z steps being the range. 3.468
+		}
+#else
 		bool bHasSheet = m_XYCalType != XYCalMap::MK2;
-        float fTrigZ = (1.0*(1-pow(fEdist/5,2))) + (bHasSheet? 3.0 : 0.0) ;
+		float fTrigZ = + (bHasSheet? 3.0 : 0.0);
+        fTrigZ += (1.0*(1-pow(fEdist/5,2)));
+#endif
         //printf("fTZ:%f fZ: %f\n",fTrigZ, this->fPos[2]);
         if (m_fPos[2]<=fTrigZ)
 		{
@@ -239,7 +328,6 @@ void PINDA::SetMBLMap()
 void PINDA::ToggleSheet()
 {
 	if (m_XYCalType == XYCalMap::MK2) return;
-
     m_bIsSheetPresent=!m_bIsSheetPresent;
     std::cout << "Steel sheet: " << (m_bIsSheetPresent? "INSTALLED\n" : "REMOVED\n");
     RaiseIRQ(SHEET_OUT,m_bIsSheetPresent);
@@ -247,9 +335,13 @@ void PINDA::ToggleSheet()
 
 PINDA::PINDA(float fX, float fY, XYCalMap map):Scriptable("PINDA"),m_fOffset{fX,fY}, m_XYCalType(map)
 {
-	m_bIsSheetPresent = m_XYCalType != XYCalMap::MK2;
+	m_bIsSheetPresent = false; //m_XYCalType != XYCalMap::MK2;
     SetMBLMap();
 	RegisterKeyHandler('y', "Toggles the steel sheet on the heatbed");
+#ifdef ENABLE_PINDA_IMAGE
+	ParseStringToMap();
+#endif
+
 }
 
 void PINDA::OnKeyPress(const Key &key)

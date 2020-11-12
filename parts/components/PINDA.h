@@ -35,6 +35,9 @@
 // Forward declaration:
 namespace gsl { template <class U> class span; }
 
+// Enable this to use a custom PINDA "image" instead of a function/calculation.
+#define ENABLE_PINDA_IMAGE 1
+
 class PINDA:public BasePeripheral,public Scriptable, private IKeyClient {
     public:
         #define IRQPAIRS _IRQ(X_POS_IN,"<pinda.x_in") _IRQ(Y_POS_IN,"<pinda.y_in") _IRQ(Z_POS_IN,"<pinda.Z_in") _IRQ(TRIGGER_OUT,">pinda.out") _IRQ(SHEET_OUT,">sheet.out")
@@ -107,5 +110,14 @@ private:
     MBLMap_t m_mesh = MBLMap_t();// MBL map
     std::atomic_bool m_bIsSheetPresent {true}; // Is the steel sheet present? IF yes, PINDA will attempt to simulate the bed sensing point for selfcal instead.
 	XYCalMap m_XYCalType;
+
+#ifdef ENABLE_PINDA_IMAGE
+	// Parse the image string constant to a uint map we can use.
+	void ParseStringToMap();
+
+	uint8_t _m_uiScan[32*32] {};
+	gsl::span<uint8_t> m_uiScan {_m_uiScan};
+#endif
+
 
 };

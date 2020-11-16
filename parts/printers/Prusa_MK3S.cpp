@@ -162,6 +162,7 @@ void Prusa_MK3S::SetupHardware()
 	if (GetConnectSerial())
 	{
 		UART0.Connect('0');
+		UART0.Connect('1');
 	}
 
 	auto fcnSerial = [](avr_t *avr, avr_io_addr_t addr, uint8_t v, void * param)

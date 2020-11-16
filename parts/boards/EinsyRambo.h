@@ -74,7 +74,7 @@ namespace Boards
 			RotaryEncoder encoder;
 			Button PowerPanic {"Power Panic",'p',"Triggers Power Panic line"};
 			Beeper m_buzzer;
-			uart_pty UART0, UART2;
+			uart_pty UART0, UART1, UART2;
 			SerialLineMonitor m_Mon0 = SerialLineMonitor("Serial0");
 			Thermistor tExtruder, tBed, tPinda, tAmbient;
 			Fan fExtruder {3300,'E'}, fPrint {5000,'P',true};

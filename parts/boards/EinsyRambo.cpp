@@ -54,6 +54,7 @@ namespace Boards
 		AddHardware(UART1);
 
 		AddHardware(m_Mon0,'0');
+		AddHardware(m_Mon1,'1');
 
 		// SD card
 		std::string strSD = GetSDCardFile();

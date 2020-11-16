@@ -76,6 +76,7 @@ namespace Boards
 			Beeper m_buzzer;
 			uart_pty UART0, UART1, UART2;
 			SerialLineMonitor m_Mon0 = SerialLineMonitor("Serial0");
+			SerialLineMonitor m_Mon1 = SerialLineMonitor("Serial1");
 			Thermistor tExtruder, tBed, tPinda, tAmbient;
 			Fan fExtruder {3300,'E'}, fPrint {5000,'P',true};
 			Heater hExtruder = {1.5,25.0,false,'H',30,250},

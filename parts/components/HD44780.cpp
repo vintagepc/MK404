@@ -233,8 +233,11 @@ uint32_t HD44780::OnDataReady()
 			{
 				int iPos =m_uiCursor - m_lineOffsets.at(i);
 				std::string &line = m_vLines[i];
-				line[iPos] = m_uiDataPins;
-				m_uiLineChg |= 1U<<i;
+				if (line[iPos] != m_uiDataPins) // Only if the contents change!
+				{
+					line[iPos] = m_uiDataPins;
+					m_uiLineChg |= 1U<<i;
+				}
 			}
 		}
 		TRACE(printf("hd44780_write_data %02x (%c) to %02x\n", m_uiDataPins, m_uiDataPins, m_uiCursor));

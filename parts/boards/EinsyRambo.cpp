@@ -51,8 +51,10 @@ namespace Boards
 
 		AddSerialPty(&UART2,'2');
 		AddHardware(UART0);
+		AddHardware(UART1);
 
 		AddHardware(m_Mon0,'0');
+		AddHardware(m_Mon1,'1');
 
 		// SD card
 		std::string strSD = GetSDCardFile();
@@ -197,6 +199,7 @@ namespace Boards
 		}
 
 		AddUARTTrace('0'); // External
+		AddUARTTrace('1'); // RPi port
 		AddUARTTrace('2'); // MMU/internal/P3
 
 		//avr_irq_register_notify(GetDIRQ(PAT_INT_PIN), MAKE_C_CALLBACK(EinsyRambo, DebugPin),this);

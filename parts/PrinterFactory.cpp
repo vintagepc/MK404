@@ -30,6 +30,7 @@
 #include "printers/Prusa_MK3S.h"
 #include "printers/Prusa_MK3SMMU2.h"
 #include "printers/Test_Printer.h"
+#include "printers/IPCPrinter.h"
 #include <iostream>
 
 /*
@@ -90,6 +91,7 @@ std::map<std::string,std::pair<Ctor,Dtor>>& PrinterFactory::GetModelMap()
 		{"Prusa_MK3S",			{&PrinterFactory::_CreatePrinter<Prusa_MK3S>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3S>}},
 		{"Prusa_MK3SMMU2",		{&PrinterFactory::_CreatePrinter<Prusa_MK3SMMU2>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3SMMU2>}},
 		{"Prusa_MK3MMU2",		{&PrinterFactory::_CreatePrinter<Prusa_MK3MMU2>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3MMU2>}},
+		{"IPCPrinter",			{&PrinterFactory::_CreatePrinter<IPCPrinter>, 		&PrinterFactory::_DestroyPrinter<IPCPrinter>}},
 		{"Test_Printer",		{&PrinterFactory::_CreatePrinter<Test_Printer>, 	&PrinterFactory::_DestroyPrinter<Test_Printer>}}
 	};
 	return m_Models;

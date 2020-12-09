@@ -215,23 +215,6 @@ void MotionCB(int x, int y)
 	printer->OnMouseMove(x,y);
 }
 // pragma: LCOV_EXCL_STOP
-// gl timer. if the lcd is dirty, refresh display
-void timerCB(int i)
-{
-	if (bIsQuitting)
-	{
-		return;
-	}
-	glutSetWindow(window);
-	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
-	{
-		glutReshapeWindow(iWinW, iWinH);
-	}
-	// 16 = 60fps
-	glutTimerFunc(16, timerCB, i);
-	glutPostRedisplay();
-}
-
 
 void ResizeCB(int w, int h)
 {
@@ -268,6 +251,29 @@ void ResizeCB(int w, int h)
 	glLoadIdentity();
 
 }
+
+// gl timer. if the lcd is dirty, refresh display
+void timerCB(int i)
+{
+	if (bIsQuitting)
+	{
+		return;
+	}
+	glutSetWindow(window);
+	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH) || printer->GetSizeChanged())
+	{
+		if (printer->GetSizeChanged())
+		{
+			ResizeCB(iWinW, iWinH);
+			printer->ClearSizeChanged();
+		}
+		glutReshapeWindow(iWinW, iWinH);
+	}
+	// 16 = 60fps
+	glutTimerFunc(16, timerCB, i);
+	glutPostRedisplay();
+}
+
 
 int initGL()
 {

@@ -49,7 +49,7 @@ void IPCPrinter::SetupHardware()
 		exit(2);
 	}
 	m_ifIn.open(IPC_FILE);
-	// TODO... add motors.
+	_Init(Board::m_pAVR,this);
 }
 
 void IPCPrinter::OnAVRCycle()
@@ -67,6 +67,7 @@ void IPCPrinter::OnAVRCycle()
 			m_ifIn.clear();
 			m_vMotors.clear(); // clear objects.
 			m_vInds.clear();
+			m_vStepIRQs.clear();
 			m_ifIn.open(IPC_FILE);
 		}
 		std::cout << "Truncated message, ignoring.\n";
@@ -84,9 +85,23 @@ void IPCPrinter::OnAVRCycle()
 			{
 				case 'M':
 					m_vMotors.push_back(std::unique_ptr<GLMotor>(new GLMotor()));
+					m_vStepIRQs.push_back(COUNT);
 					break;
 				case 'I':
 					m_vInds.push_back(std::unique_ptr<IPCIndicator>(new IPCIndicator(m_msg.at(2))));
+					switch (m_msg.at(2))
+					{
+						case 'M': // MINDA:
+							m_vIndIRQs.push_back(PINDA_OUT);
+							break;
+						case 'B':
+							m_vIndIRQs.push_back(BED_OUT);
+							break;
+						default:
+							m_vIndIRQs.push_back(COUNT);
+							break;
+					}
+					break;
 			}
 			SetSizeChanged();
 			// std::cout << "Total: " << std::to_m_msgg(m_vMotors.size()) <<  " motors\n";
@@ -102,8 +117,33 @@ void IPCPrinter::OnAVRCycle()
 			break;
 	}
 
+}
 
+void IPCPrinter::OnVisualTypeSet(const std::string &type)
+{
+	if (type!="lite")
+	{
+		return;
+	}
 
+	m_pVis.reset(new MK3SGL(type,false,this)); //NOLINT - suggestion is c++14.
+
+	AddHardware(*m_pVis);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::X_POSITION_OUT),MK3SGL::X_IN);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Y_POSITION_OUT),MK3SGL::Y_IN);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Z_POSITION_OUT),MK3SGL::Z_IN);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::E_POSITION_OUT),MK3SGL::E_IN);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::X_STEP_OUT),MK3SGL::X_STEP_IN);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Y_STEP_OUT),MK3SGL::Y_STEP_IN);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Z_STEP_OUT),MK3SGL::Z_STEP_IN);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::E_STEP_OUT),MK3SGL::E_STEP_IN);
+	// m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
+	// m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
+	// m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::BED_OUT), MK3SGL::BED_IN);
+	// m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
+	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::PINDA_OUT), MK3SGL::PINDA_IN);
+	// m_pVis->SetLCD(&lcd);
 }
 
 void IPCPrinter::UpdateIndicator()
@@ -119,11 +159,28 @@ void IPCPrinter::UpdateIndicator()
 		case 'V': // Value
 		{
 			m_vInds.at(index)->SetValue(m_msg.at(3));
+			if (m_vIndIRQs.at(index)!=COUNT)
+			{
+				printf("IND %c set to %d\n",m_msg.at(1), m_msg.at(3));
+				RaiseIRQ(m_vIndIRQs.at(index),m_msg.at(3)>0);
+			}
 		}
 		break;
 		case 'L': // Label
 		{
 			m_vInds.at(index)->SetLabel(m_msg.at(3));
+			switch (m_msg.at(3))
+			{
+				case 'M': // MINDA:
+					m_vIndIRQs[index] =PINDA_OUT;
+					break;
+				case 'B':
+					m_vIndIRQs[index] = BED_OUT;
+					break;
+				default:
+					m_vIndIRQs[index] = COUNT;
+					break;
+			}
 		}
 		break;
 		case 'C':
@@ -167,6 +224,24 @@ void IPCPrinter::UpdateMotor()
 		case 'L': // Label
 		{
 			m_vMotors.at(index)->SetAxis(m_msg.at(3));
+			switch (m_msg.at(3))
+			{
+				case 'X':
+					m_vStepIRQs[index] = X_STEP_OUT;
+					break;
+				case 'Y':
+					m_vStepIRQs[index] = Y_STEP_OUT;
+					break;
+				case 'Z':
+					m_vStepIRQs[index] = Z_STEP_OUT;
+					break;
+				case 'E':
+					m_vStepIRQs[index] = E_STEP_OUT;
+					break;
+				default:
+					m_vStepIRQs[index] = COUNT;
+					break;
+			}
 			break;
 		}
 		case 'U': // Steps per mm. takes 4 bytes to make a uint32.
@@ -178,6 +253,29 @@ void IPCPrinter::UpdateMotor()
 				steps |= static_cast<uint8_t>(m_msg.at(i));
 			}
 			m_vMotors.at(index)->SetStepsPerMM(steps);
+			bool bUpdate = true;
+			switch (m_vMotors.at(index)->m_cAxis.load())
+			{
+				case 'X':
+					m_vStepsPerMM[0] = steps;
+					break;
+				case 'Y':
+					m_vStepsPerMM[1] = steps;
+					break;
+				case 'Z':
+					m_vStepsPerMM[2] = steps;
+					break;
+				case 'E':
+					m_vStepsPerMM[3] = steps;
+					break;
+				default:
+					bUpdate = false;
+					break;
+			}
+			if (bUpdate && m_pVis)
+			{
+				m_pVis->SetStepsPerMM(m_vStepsPerMM.at(0),m_vStepsPerMM.at(1),m_vStepsPerMM.at(2),m_vStepsPerMM.at(3));
+			}
 			break;
 		}
 		case 'X': // maX - highest possible step count. takes 4 bytes to make an int32.
@@ -205,6 +303,14 @@ void IPCPrinter::UpdateMotor()
 			}
 			// printf("Current step: %d\n",steps);
 			m_vMotors.at(index)->SetCurrentPos(steps);
+			if (m_vStepIRQs.at(index)!=COUNT)
+			{
+				RaiseIRQ(m_vStepIRQs.at(index),steps);
+				float fPos = m_vMotors.at(index)->GetCurrentPos();
+				uint32_t posOut = 0;
+				std::memcpy(&posOut, &fPos, sizeof(posOut)); // both 32 bits, just mangle it for sending over the wire.
+				RaiseIRQ(m_vStepIRQs.at(index)+1, posOut);
+			}
 			break;
 		}
 
@@ -226,4 +332,8 @@ void IPCPrinter::Draw()
 			glTranslatef(30,0,0);
 		}
 		m_gl.OnDraw();
+	if ((GetVisualType()!="none") && m_pVis)
+	{
+		m_pVis->FlagForRedraw();
+	}
 }

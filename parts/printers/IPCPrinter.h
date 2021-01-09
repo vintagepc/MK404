@@ -20,16 +20,26 @@
 
 #pragma once
 
+#include "BasePeripheral.h"
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "IPCBoard.h"     		// for EinsyRambo
+#include "MK3SGL.h"
 #include <gsl-lite.hpp>
 #include <fstream>
 #include <utility>          // for pair
 
-class IPCPrinter : public Boards::IPCBoard, public Printer
+class IPCPrinter : public Boards::IPCBoard, public Printer, public BasePeripheral
 {
-
 	public:
+
+		#define IRQPAIRS _IRQ(PINDA_OUT,">pinda.out") _IRQ(BED_OUT,">bed.out") \
+			 _IRQ(X_STEP_OUT,"x_step_out") _IRQ(X_POSITION_OUT,">x.out") \
+			 _IRQ(Y_STEP_OUT,"y_step_out") _IRQ(Y_POSITION_OUT,">y.out") \
+			 _IRQ(Z_STEP_OUT,"z_step_out") _IRQ(Z_POSITION_OUT,">z.out") \
+			 _IRQ(E_STEP_OUT,"e_step_out") _IRQ(E_POSITION_OUT,">e.out")
+		#include "IRQHelper.h"
+
+
 		IPCPrinter():IPCBoard(),Printer(){};
 
 		~IPCPrinter() override;
@@ -39,6 +49,7 @@ class IPCPrinter : public Boards::IPCBoard, public Printer
 			auto height = 10*(m_vMotors.size()+1);
 			return {125, height};
 		}
+		void OnVisualTypeSet(const std::string &type) override;
 
 		void Draw() override;
 
@@ -52,10 +63,16 @@ class IPCPrinter : public Boards::IPCBoard, public Printer
 		void UpdateMotor();
 		void UpdateIndicator();
 
+		std::unique_ptr<MK3SGL> m_pVis {nullptr};
+
 		std::ifstream m_ifIn;
 
 		char _m_msg[256] {0};
 		gsl::span<char> m_msg {_m_msg};
 		uint16_t m_len = 0;
+
+		std::vector<unsigned int> m_vStepIRQs, m_vIndIRQs;
+
+		std::array<uint32_t,4> m_vStepsPerMM = {100,100,400,280};
 
 };

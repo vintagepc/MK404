@@ -55,6 +55,8 @@ class GLMotor
 		inline void SetStepsPerMM(uint32_t uiVal) { m_uiStepsPerMM = uiVal; }
 		inline void SetAxis(char cVal) { m_cAxis = cVal; }
 
+		inline float GetCurrentPos() { return m_fCurPos.load(); }
+
 	private:
 
 		std::atomic_bool m_bEnable {false}, m_bIsSimple{false};

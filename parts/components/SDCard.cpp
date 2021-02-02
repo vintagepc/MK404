@@ -280,6 +280,29 @@ SDCard::State SDCard::ProcessCommand()
 			/* Application-specific. TODO: No idea what this does. */
 			COMMAND_RESPONSE_R1 (0x00);
 			break;
+		case Command::CMD48:
+		{
+			/* FlashAir specific, just for the IP */
+			extRegRead cmd {.all = m_CmdIn.bits.address};
+			if (cmd.bits.mio == 1 && cmd.bits.function == 0b0010 && cmd.bits.address == 0x550)
+			{
+				if (cmd.bits.length == 3)
+				{
+					// IP request. (12.34.56.78)
+					COMMAND_RESPONSE_R1(0x00);
+					next_state = State::DATA_READ_TOKEN;
+					memset(m_tmpdata.begin(), 0, m_tmpdata.size_bytes());
+					m_tmpdata[0] = 123;
+					m_tmpdata[1] = 45;
+					m_tmpdata[2] = 67;
+					m_tmpdata[3] = 89;
+					m_currOp.SetData(m_tmpdata);
+					break;
+				}
+			}
+			DEBUG("Unimplemented Extension Register (CMD48) request!");
+			break;
+		}
 		case Command::CMD55:
 			/* APP_CMD. Indicates to the card that the next command is an application specific command. */
 			COMMAND_RESPONSE_R1 (0x00);

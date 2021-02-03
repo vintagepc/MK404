@@ -158,7 +158,7 @@ const uint16_t SDCard::m_crctab[256] = {
 /* Debug macros. */
 // #define SD_CARD_DEBUG
 #ifdef SD_CARD_DEBUG
-#define DEBUG(m, ...) fprintf (stderr, "%lu: sdcard: " m "\n", avr->cycle, __VA_ARGS__);
+#define DEBUG(m, ...) fprintf(stderr, "%lu: sdcard:" m "\n", m_pAVR->cycle, __VA_ARGS__ )
 #else
 #define DEBUG(m, ...) do{}while(0)
 #endif
@@ -300,7 +300,7 @@ SDCard::State SDCard::ProcessCommand()
 					break;
 				}
 			}
-			DEBUG("Unimplemented Extension Register (CMD48) request!");
+			DEBUG("Unimplemented Extension Register (CMD48) request! %u", m_CmdIn.bits.address);
 			break;
 		}
 		case Command::CMD55:
@@ -325,7 +325,7 @@ SDCard::State SDCard::ProcessCommand()
 void SDCard::OnCSELIn (struct avr_irq_t *, uint32_t value)
 {
 	m_bSelected = value==0;
-	DEBUG ("SD card selected: %u. In state: %d", m_bSelected, m_state);
+	//DEBUG ("SD card selected: %u. In state: %d", m_bSelected, static_cast<int>(m_state));
 	if (!m_bSelected)
 	{
 		m_state = State::IDLE;
@@ -334,7 +334,7 @@ void SDCard::OnCSELIn (struct avr_irq_t *, uint32_t value)
 
 uint8_t SDCard::OnSPIIn(struct avr_irq_t *, uint32_t value)
 {
-	DEBUG ("Received byte %x (in state %d).", value, m_state);
+	//DEBUG ("Received byte %x (in state %d).", value, static_cast<int>(m_state));
 	uint8_t uiReply = 0xFF;
 	/* Handle the command. */
 	switch (m_state) {
@@ -517,7 +517,7 @@ void SDCard::SetCSDCSize(off_t c_size)
 	m_csd[15] = CRC7(m_csd.subspan(0,m_csd.size()-1));
 #ifdef SD_CARD_DEBUG
 	printf("CSD: ");
-	for (int i = 0; i < sizeof(m_csd); i++)
+	for (auto i = 0u; i < sizeof(m_csd); i++)
 	{
 		printf("%02hX", m_csd[i]);
 	}

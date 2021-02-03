@@ -119,7 +119,7 @@ jobs:
 
     - name: Install packages
       run: |
-          brew cask install xquartz
+          brew install --cask xquartz
           brew tap osx-cross/avr
           brew install libelf freeglut glew SDL avr-gcc libpng
 

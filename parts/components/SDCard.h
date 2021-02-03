@@ -128,6 +128,7 @@ class SDCard:public SPIPeripheral, public Scriptable, private IKeyClient
 			CMD17 = 17,
 			CMD24 = 24,
 			CMD41 = 41,
+			CMD48 = 48,
 			CMD55 = 55,
 			CMD58 = 58,
 		};
@@ -150,6 +151,18 @@ class SDCard:public SPIPeripheral, public Scriptable, private IKeyClient
 		} m_CmdIn {.all = 0};
 
 		uint8_t m_CmdCount = 0;
+
+		using extRegRead = union {
+			uint32_t all;
+			struct {
+				uint32_t length :9;
+				uint32_t address :17;
+				uint32_t rev :1;
+				uint32_t function :4;
+				uint32_t mio :1;
+
+			} __attribute__ ((__packed__)) bits;
+		};
 
 		struct {
 			uint8_t data[5];
@@ -188,6 +201,9 @@ class SDCard:public SPIPeripheral, public Scriptable, private IKeyClient
 		uint16_t m_CRC = 0;
 		uint8_t _m_ByteCRC[2] = {0,0};
 		gsl::span<uint8_t> m_byteCRC {_m_ByteCRC};
+
+		uint8_t _m_tmpdata[512] = {0};
+		gsl::span<uint8_t> m_tmpdata {_m_tmpdata};
 
 		/* Card data. */
 		gsl::span<uint8_t> m_data; /* mmap()ed data */

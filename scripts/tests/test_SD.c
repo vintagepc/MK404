@@ -200,6 +200,9 @@ int main()
 	// Read a block, address OOR
 	SDTX(0x11,0xFFFFFFFFFFULL,1);
 
+	// Get extended register for IP address (flashair)
+	SDTX(48u,0x900AA003ULL,513);
+
 	// Read a block, address misalign
 	SDTX(0x11,0x0ULL,516);
 

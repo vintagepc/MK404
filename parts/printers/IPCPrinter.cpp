@@ -28,16 +28,53 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define PIPE 0
+#define MQ 0
 
-static constexpr char IPC_FILE[] = "MK404.IPC";
+#define SHM 1
+
+static constexpr char IPC_FILE[] = "/MK404IPC";
+static constexpr uint8_t IPC_MSG_LEN = 7;
+#if MQ
+static constexpr mqd_t MQ_ERR = -1;
+#endif
+
+#if SHM
+
+#endif
 
 IPCPrinter::~IPCPrinter()
 {
+#if PIPE
 	unlink(IPC_FILE);
+#endif
+#if MQ
+	if (mq_close(m_queue)!=MQ_ERR)
+	{
+		mq_unlink(IPC_FILE);
+	}
+#endif
+	if (m_queue)
+	{
+		shmemq_destroy(m_queue,1);
+	}
 }
 
 void IPCPrinter::SetupHardware()
 {
+#if MQ
+	m_qAttr.mq_msgsize =7;
+	m_qAttr.mq_maxmsg = 50;
+	m_qAttr.mq_curmsgs = 0;
+	m_qAttr.mq_flags = 0;
+	m_queue = mq_open(IPC_FILE, O_CREAT | O_RDONLY, 0644, &m_qAttr);
+	if (m_queue == MQ_ERR)
+	{
+		std::cerr << " ## Failed to open the message queue! ## \n";
+		perror(IPC_FILE);
+		exit(1);
+	}
+#elif PIPE
 	struct stat tmp;
 	if (stat(IPC_FILE, &tmp)==0)
 	{
@@ -49,12 +86,27 @@ void IPCPrinter::SetupHardware()
 		exit(2);
 	}
 	m_ifIn.open(IPC_FILE);
+#elif SHM
+	m_queue = shmemq_new(IPC_FILE,100, IPC_MSG_LEN);
+#endif
 	_Init(Board::m_pAVR,this);
 }
 
 void IPCPrinter::OnAVRCycle()
 {
 
+
+#if MQ
+	ssize_t len = mq_receive(m_queue, m_msg.data(), m_msg.size_bytes()-1, nullptr);
+	if (len == 0 || m_msg.at(0)=='C')
+	{
+			m_vMotors.clear(); // clear objects.
+			m_vInds.clear();
+			m_vStepIRQs.clear();
+			m_pVis->ClearPrint();
+			return;
+	}
+#elif PIPE
 	uint8_t len = m_ifIn.get();
 	m_len = m_ifIn.readsome(m_msg.data(),len);
 	m_msg[len] = '\0';
@@ -76,9 +128,23 @@ void IPCPrinter::OnAVRCycle()
 	//std::cout << "msg len: " << std::to_string(len) << ':' << m_msg.data() << '\n';
 
 	// std::cout << "Got line:'" <<m_msg << "'\n";
-
+#elif SHM
+	if (!shmemq_try_dequeue(m_queue, m_msg.data(), IPC_MSG_LEN))
+	{
+		usleep(100);
+		return;
+	}
+#endif
 	switch (m_msg.at(0))
 	{
+		case 'M': // Motor directive.
+		{
+			UpdateMotor();
+		}
+		break;
+		case 'I':
+			UpdateIndicator();
+			break;
 		case 'A': // Add directive.
 		{
 			switch (m_msg.at(1))
@@ -107,14 +173,6 @@ void IPCPrinter::OnAVRCycle()
 			// std::cout << "Total: " << std::to_m_msgg(m_vMotors.size()) <<  " motors\n";
 		}
 		break;
-		case 'M': // Motor directive.
-		{
-			UpdateMotor();
-		}
-		break;
-		case 'I':
-			UpdateIndicator();
-			break;
 	}
 
 }
@@ -161,7 +219,7 @@ void IPCPrinter::UpdateIndicator()
 			m_vInds.at(index)->SetValue(m_msg.at(3));
 			if (m_vIndIRQs.at(index)!=COUNT)
 			{
-				printf("IND %c set to %d\n",m_msg.at(1), m_msg.at(3));
+				// printf("IND %c set to %d\n",m_msg.at(1), m_msg.at(3));
 				RaiseIRQ(m_vIndIRQs.at(index),m_msg.at(3)>0);
 			}
 		}
@@ -211,6 +269,31 @@ void IPCPrinter::UpdateMotor()
 	}
 	switch (m_msg.at(2))
 	{
+		case 'P': // Position - takes 4 bytes to make a uint32.
+		{
+			if (m_msg.size()<7)
+			{
+				break;
+			}
+			int32_t steps = 0;
+			// for (int i=3; i<7; i++)
+			// {
+			// 	steps <<=8;
+			// 	steps |= static_cast<uint8_t>(m_msg.at(i));
+			// }
+			std::memcpy(&steps, m_msg.begin()+3, sizeof(steps)); // both 32 bits, just mangle it for sending over the wire.
+			if (index==3) printf("Current step: %d\n",steps);
+			m_vMotors.at(index)->SetCurrentPos(steps);
+			if (m_vStepIRQs.at(index)!=COUNT)
+			{
+				RaiseIRQ(m_vStepIRQs.at(index),steps);
+				float fPos = m_vMotors.at(index)->GetCurrentPos();
+				uint32_t posOut = 0;
+				std::memcpy(&posOut, &fPos, sizeof(posOut)); // both 32 bits, just mangle it for sending over the wire.
+				RaiseIRQ(m_vStepIRQs.at(index)+1, posOut);
+			}
+			break;
+		}
 		case 'E': // Enable - either 0 or 1, e.g. M1E0 or M1E1
 		{
 			m_vMotors.at(index)->SetEnable(m_msg.at(3)=='1');
@@ -289,31 +372,6 @@ void IPCPrinter::UpdateMotor()
 		  	m_vMotors.at(index)->SetMaxPos(steps);
 		 	break;
 		}
-		case 'P': // Position - takes 4 bytes to make a uint32.
-		{
-			if (m_msg.size()<7)
-			{
-				break;
-			}
-			int32_t steps = 0;
-			for (int i=3; i<7; i++)
-			{
-				steps <<=8;
-				steps |= static_cast<uint8_t>(m_msg.at(i));
-			}
-			// printf("Current step: %d\n",steps);
-			m_vMotors.at(index)->SetCurrentPos(steps);
-			if (m_vStepIRQs.at(index)!=COUNT)
-			{
-				RaiseIRQ(m_vStepIRQs.at(index),steps);
-				float fPos = m_vMotors.at(index)->GetCurrentPos();
-				uint32_t posOut = 0;
-				std::memcpy(&posOut, &fPos, sizeof(posOut)); // both 32 bits, just mangle it for sending over the wire.
-				RaiseIRQ(m_vStepIRQs.at(index)+1, posOut);
-			}
-			break;
-		}
-
 	}
 }
 

@@ -13,3 +13,6 @@
 [submodule "3rdParty/pngpp"]
 	path = 3rdParty/pngpp
 	url = https://github.com/sampotter/pngpp.git
+[submodule "3rdParty/shmemq-blog"]
+	path = 3rdParty/shmemq-blog
+	url = https://github.com/goldshtn/shmemq-blog.git

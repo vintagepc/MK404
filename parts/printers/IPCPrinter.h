@@ -26,6 +26,13 @@
 #include "MK3SGL.h"
 #include <gsl-lite.hpp>
 #include <fstream>
+#ifdef MQ
+	#include <mqueue.h>
+#else
+extern "C" {
+	#include "../../3rdParty/shmemq-blog/shmemq.h"
+}
+#endif
 #include <utility>          // for pair
 
 class IPCPrinter : public Boards::IPCBoard, public Printer, public BasePeripheral
@@ -74,5 +81,9 @@ class IPCPrinter : public Boards::IPCBoard, public Printer, public BasePeriphera
 		std::vector<unsigned int> m_vStepIRQs, m_vIndIRQs;
 
 		std::array<uint32_t,4> m_vStepsPerMM = {100,100,400,280};
-
+#ifdef MQ
+		mqd_t m_queue;
+		struct mq_attr m_qAttr;
+#endif
+		shmemq_t *m_queue = nullptr;
 };

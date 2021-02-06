@@ -22,8 +22,10 @@
 
 #pragma once
 
+#include <cstdint>
 #include <cstring>
 #include <cxxabi.h>
+#include <string>
 
 struct _hexColor_t{
 	//NOLINTNEXTLINE - we want the implicit conversion...

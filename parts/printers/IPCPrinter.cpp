@@ -34,7 +34,7 @@
 #define SHM 1
 
 static constexpr char IPC_FILE[] = "/MK404IPC";
-static constexpr uint8_t IPC_MSG_LEN = 7;
+
 #if MQ
 static constexpr mqd_t MQ_ERR = -1;
 #endif
@@ -87,7 +87,7 @@ void IPCPrinter::SetupHardware()
 	}
 	m_ifIn.open(IPC_FILE);
 #elif SHM
-	m_queue = shmemq_new(IPC_FILE,500, IPC_MSG_LEN);
+	m_queue = shmemq_create(IPC_FILE);
 #endif
 	_Init(Board::m_pAVR,this);
 }
@@ -129,7 +129,7 @@ void IPCPrinter::OnAVRCycle()
 
 	// std::cout << "Got line:'" <<m_msg << "'\n";
 #elif SHM
-	if (!shmemq_try_dequeue(m_queue, m_msg.data(), IPC_MSG_LEN))
+	if (!shmemq_try_dequeue(m_queue, &_m_msg))
 	{
 		usleep(100);
 		return;
@@ -137,6 +137,13 @@ void IPCPrinter::OnAVRCycle()
 #endif
 	switch (m_msg.at(0))
 	{
+		case 'C':
+		{
+			m_vMotors.clear(); // clear objects.
+			m_vInds.clear();
+			m_vStepIRQs.clear();
+			m_pVis->ClearPrint();
+		}
 		case 'M': // Motor directive.
 		{
 			UpdateMotor();

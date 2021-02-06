@@ -155,7 +155,7 @@ set(H_FILES_3rdParty
 set(H_FILES ${H_FILES_base} ${H_FILES_3rdParty})
 
 set(MK404_SOURCES_base
-	3rdParty/shmemq-blog/shmemq.c
+	3rdParty/shmemq404/shmemq.c
 	parts/Board.cpp
 	parts/I2CPeripheral.cpp
 	parts/boards/EinsyRambo.cpp

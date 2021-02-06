@@ -30,7 +30,7 @@
 	#include <mqueue.h>
 #else
 extern "C" {
-	#include "../../3rdParty/shmemq-blog/shmemq.h"
+	#include "../../3rdParty/shmemq404/shmemq.h"
 }
 #endif
 #include <utility>          // for pair
@@ -74,7 +74,7 @@ class IPCPrinter : public Boards::IPCBoard, public Printer, public BasePeriphera
 
 		std::ifstream m_ifIn;
 
-		char _m_msg[256] {0};
+		shm404_msg_t _m_msg {0};
 		gsl::span<char> m_msg {_m_msg};
 		uint16_t m_len = 0;
 

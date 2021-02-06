@@ -87,7 +87,7 @@ void IPCPrinter::SetupHardware()
 	}
 	m_ifIn.open(IPC_FILE);
 #elif SHM
-	m_queue = shmemq_new(IPC_FILE,100, IPC_MSG_LEN);
+	m_queue = shmemq_new(IPC_FILE,500, IPC_MSG_LEN);
 #endif
 	_Init(Board::m_pAVR,this);
 }
@@ -282,7 +282,7 @@ void IPCPrinter::UpdateMotor()
 			// 	steps |= static_cast<uint8_t>(m_msg.at(i));
 			// }
 			std::memcpy(&steps, m_msg.begin()+3, sizeof(steps)); // both 32 bits, just mangle it for sending over the wire.
-			if (index==3) printf("Current step: %d\n",steps);
+			// if (index==3) printf("Current step: %d\n",steps);
 			m_vMotors.at(index)->SetCurrentPos(steps);
 			if (m_vStepIRQs.at(index)!=COUNT)
 			{

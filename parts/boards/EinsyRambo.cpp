@@ -253,11 +253,11 @@ namespace Boards
 		//depress encoder knob
 		if (!m_bFactoryReset)
 		{
-			SetPin(BTN_ENC,1);
+			encoder.Push();
 		}
 		else
 		{
-			SetPin(BTN_ENC,0);
+			encoder.MousePush();
 		}
 
 		m_bFactoryReset = false;

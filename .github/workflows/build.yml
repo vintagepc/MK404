@@ -120,7 +120,7 @@ jobs:
     - name: Install packages
       run: |
           brew install --cask xquartz
-          brew tap osx-cross/avr
+          brew tap osx-cross/homebrew-avr
           brew install libelf freeglut glew SDL avr-gcc libpng
 
     - name: Prepare CMake build

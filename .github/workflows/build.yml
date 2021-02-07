@@ -121,7 +121,7 @@ jobs:
       run: |
           brew install --cask xquartz
           brew tap osx-cross/homebrew-avr
-          brew install libelf freeglut glew SDL avr-gcc libpng avr-libc
+          brew install libelf freeglut glew SDL avr-gcc libpng
 
     - name: Prepare CMake build
       run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..

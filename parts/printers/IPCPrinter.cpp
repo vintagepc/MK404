@@ -142,7 +142,9 @@ void IPCPrinter::OnAVRCycle()
 			m_vMotors.clear(); // clear objects.
 			m_vInds.clear();
 			m_vStepIRQs.clear();
-			m_pVis->ClearPrint();
+			if (m_pVis) {
+				m_pVis->ClearPrint();
+			}
 		}
 		case 'M': // Motor directive.
 		{

@@ -218,6 +218,8 @@ class TMC2130: public SPIPeripheral, public Scriptable
 		bool m_bStall = false;
 		uint32_t m_uiStepIncrement = 1;
 
+		std::atomic_bool m_bDrawStall {false};
+
 		// Position helpers
 		float StepToPos(int32_t step);
 		int32_t PosToStep(float step);

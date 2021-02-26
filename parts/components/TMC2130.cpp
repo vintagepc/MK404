@@ -57,7 +57,11 @@ void TMC2130::_Draw(bool bIsSimple)
 		}
 		// Copy atomic to local
 		float fPos = m_fCurPos;
-        glColor3f(0,0,0);
+		if (m_bDrawStall) {
+        	glColor3f(0.7,0,0);
+		} else {
+        	glColor3f(0,0,0);
+		}
 	    glBegin(GL_QUADS);
 			glVertex3f(0,0,0);
 			glVertex3f(350,0,0);
@@ -191,6 +195,7 @@ void TMC2130::RaiseDiag(uint8_t value)
     if (bDiag)
 	{
 		//printf("Raised: %d\n", value ==  m_regs.defs.GCONF.diag0_int_pushpull);
+		m_bDrawStall = value>0;
         RaiseIRQ(DIAG_OUT, value == m_regs.defs.GCONF.diag0_int_pushpull);
 	}
 }

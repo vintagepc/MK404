@@ -112,7 +112,7 @@ namespace Boards
 			virtual void OnAVRCycle(){};
 
 			// For boards that can handle extra chunks in the hex (language)
-			virtual void OnExtraHexChunk(gsl::span<uint8_t> chunk){};
+			virtual void OnExtraHexChunk(gsl::span<uint8_t> /*chunk*/){};
 
 			void OnKeyPress(const Key& key) override;
 

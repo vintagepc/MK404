@@ -321,22 +321,30 @@ namespace Boards {
 
 	avr_flashaddr_t Board::LoadFirmware(const string &strFW)
 	{
-		uint32_t uiFWSize = 0, uiFWStart = 0;
 		if (strFW.size()>4)
 		{
 			if (0==strFW.compare(strFW.size()-4, 4, ".hex"))
 			{
-				gsl::unique_ptr<uint8_t> puiBytes {read_ihex_file(strFW.c_str(),&uiFWSize, &uiFWStart) };
-				if (!puiBytes)
+				ihex_chunk_p pChunks = nullptr;
+				int iCount = read_ihex_chunks(strFW.c_str(), &pChunks);
+				if (iCount==0)
+				{
+					std::cerr << "No chunks found in .hex file. Firmware NOT loaded!\n";
+					return 0;
+				} else if (pChunks[0].data == nullptr)
 				{
 					std::cout << "WARN: Could not load " << strFW << ". MCU will execute existing flash." << '\n';
+					return 0;
 				}
-				else
-				{
-					std::cout << "Loaded "  << uiFWSize << " bytes from HEX file: " << strFW << '\n';
-					gsl::span<uint8_t> flash {m_pAVR->flash, m_pAVR->flashend};
-					memcpy(flash.begin() + uiFWStart, puiBytes.get(), uiFWSize);
+				gsl::span<uint8_t> chunk0 {pChunks[0].data, pChunks[0].size};
+				uint32_t uiFWStart = pChunks[0].baseaddr;
+				if (iCount > 1) {
+					OnExtraHexChunk({pChunks[1].data,pChunks[1].size});
 				}
+				std::cout << "Loaded "  << chunk0.size_bytes() << " bytes from HEX file: " << strFW << '\n';
+				gsl::span<uint8_t> flash {m_pAVR->flash, m_pAVR->flashend};
+				memcpy(flash.data() + uiFWStart, chunk0.begin(), chunk0.size_bytes());
+				free_ihex_chunks(pChunks);
 				m_pAVR->codeend = m_pAVR->flashend;
 				return uiFWStart;
 			}

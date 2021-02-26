@@ -58,6 +58,9 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 	// Loads the flash contents from file. (creates "path" if it does not exit)
 	void Load(const std::string &path);
 
+	// Loads from an array
+	void Load(const gsl::span<uint8_t> data);
+
 	// Reloads the current file.
 	void Load();
 

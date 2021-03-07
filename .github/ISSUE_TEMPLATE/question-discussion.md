@@ -7,4 +7,4 @@ assignees: ''
 
 ---
 
-Look at all this blank space for you to draft your consciousness. Make the most of it!
+## Please create your question under [Discussions](https://github.com/vintagepc/MK404/discussions) instead!

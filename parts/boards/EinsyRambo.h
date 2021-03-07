@@ -66,6 +66,8 @@ namespace Boards
 
 			void OnKeyPress(const Key& key) override;
 
+			void OnExtraHexChunk(gsl::span<uint8_t> chunk) override;
+
 			static constexpr float fScale24v = 1.0f/26.097f; // Based on rSense voltage divider outputting 5v
 
 			bool m_bFactoryReset = false;

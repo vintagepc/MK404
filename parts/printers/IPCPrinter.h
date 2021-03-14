@@ -60,6 +60,9 @@ class IPCPrinter : public Boards::IPCBoard, public Printer, public BasePeriphera
 
 		void Draw() override;
 
+		virtual inline bool GetHasMMU() {return false;}
+
+
 	protected:
 		void SetupHardware() override;
 

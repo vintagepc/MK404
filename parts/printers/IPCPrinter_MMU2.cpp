@@ -27,10 +27,36 @@ void IPCPrinter_MMU2::SetupHardware()
 	m_MMU.StartAVR();
 }
 
+
+std::pair<int,int> IPCPrinter_MMU2::GetWindowSize()
+{
+	auto prSize = IPCPrinter::GetWindowSize();
+	prSize.second +=50;
+	return prSize;
+}
+
+
 void IPCPrinter_MMU2::Draw()
 {
 	glPushMatrix();
 		IPCPrinter::Draw();
 		m_MMU.Draw(static_cast<float>(GetWindowSize().second));
 	glPopMatrix();
+}
+
+void IPCPrinter_MMU2::OnVisualTypeSet(const std::string &type) {
+	if (type=="none")
+	{
+		return;
+	}
+	IPCPrinter::OnVisualTypeSet(type);
+	// Wire up the additional MMU stuff.
+
+	//AddHardware(m_sniffer,'2');
+	//m_pVis->ConnectFrom(m_sniffer.GetIRQ(GCodeSniffer::CODEVAL_OUT),MK3SGL::TOOL_IN);
+	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);
+	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::IDLER_OUT), MK3SGL::IDL_IN);
+	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::LEDS_OUT),MK3SGL::MMU_LEDS_IN);
+	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::FINDA_OUT),MK3SGL::FINDA_IN);
+	m_pVis->ConnectFrom(m_MMU.GetIRQ(MMU2::FEED_DISTANCE), MK3SGL::FEED_IN);
 }

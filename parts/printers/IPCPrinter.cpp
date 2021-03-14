@@ -193,7 +193,7 @@ void IPCPrinter::OnVisualTypeSet(const std::string &type)
 		return;
 	}
 
-	m_pVis.reset(new MK3SGL(type,false,this)); //NOLINT - suggestion is c++14.
+	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
 
 	AddHardware(*m_pVis);
 	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::X_POSITION_OUT),MK3SGL::X_IN);

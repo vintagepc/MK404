@@ -21,6 +21,7 @@
 #pragma once
 
 #include "IPCPrinter.h"
+#include "GCodeSniffer.h"
 #include "MMU2.h"
 #include <gsl-lite.hpp>
 
@@ -30,20 +31,20 @@ class IPCPrinter_MMU2 : public IPCPrinter
 {
 	public:
 
-		inline std::pair<int,int> GetWindowSize() override
-		{
-			auto prSize = IPCPrinter::GetWindowSize();
-			prSize.second +=50;
-			return prSize;
-		}
+		inline std::pair<int,int> GetWindowSize() override;
+
+		void OnVisualTypeSet(const std::string &type) override;
 
 		void SetupHardware() override;
 
 		void Draw() override;
 
+		inline bool GetHasMMU() override {return true;}
+
+
 	protected:
 
 		MMU2 m_MMU;
-
+		GCodeSniffer m_sniffer = GCodeSniffer('T');
 
 };

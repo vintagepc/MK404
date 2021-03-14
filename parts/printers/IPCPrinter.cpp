@@ -388,16 +388,18 @@ void IPCPrinter::Draw()
 {
 		glLoadIdentity();
 		glScalef(500/350,4,1);
-		for (auto &motor : m_vMotors)
-		{
-			motor->Draw();
-			glTranslatef(0,10,0);
-		}
-		for (auto &ind : m_vInds)
-		{
-			ind->Draw();
-			glTranslatef(30,0,0);
-		}
+		glPushMatrix();
+			for (auto &motor : m_vMotors)
+			{
+				motor->Draw();
+				glTranslatef(0,10,0);
+			}
+			for (auto &ind : m_vInds)
+			{
+				ind->Draw();
+				glTranslatef(30,0,0);
+			}
+		glPopMatrix();
 		m_gl.OnDraw();
 	if ((GetVisualType()!="none") && m_pVis)
 	{

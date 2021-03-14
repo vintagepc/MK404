@@ -99,6 +99,7 @@ set(H_FILES_base
 	parts/PrinterFactory.h
 	parts/Printer.h
 	parts/printers/IPCPrinter.h
+	parts/printers/IPCPrinter_MMU2.h
 	parts/printers/Prusa_MK1_13.h
 	parts/printers/Prusa_MK2_13.h
 	parts/printers/Prusa_MK25_13.h
@@ -192,6 +193,7 @@ set(MK404_SOURCES_base
 	parts/components/VoltageSrc.cpp
 	parts/components/w25x20cl.cpp
 	parts/printers/IPCPrinter.cpp
+	parts/printers/IPCPrinter_MMU2.cpp
 	parts/printers/Prusa_MK1_13.cpp
 	parts/printers/Prusa_MK2_13.cpp
 	parts/printers/Prusa_MK25_13.cpp

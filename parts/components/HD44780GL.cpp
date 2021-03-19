@@ -29,9 +29,9 @@
 
 #include "HD44780GL.h"
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
+#include "Config.h"
 #include "Macros.h"
 #include "Util.h"             // for hexColor_t, hexColor_t::(anonymous)
-#include "Config.h"
 #include "gsl-lite.hpp"
 #include "hd44780_charROM.h"  // for (anonymous), hd44780_ROM_AOO
 #include "sim_avr_types.h"    // for avr_regbit_t

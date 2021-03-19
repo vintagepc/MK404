@@ -33,6 +33,8 @@
 #include <scoped_allocator>        // NOLINT for allocator_traits<>::value_type
 #include <solid_pixel_buffer.hpp>  // NOLINT for solid_pixel_buffer
 #endif // SUPPORTS_LIBPNG
+#include <chrono>
+#include <ctime>
 #include <fstream> // IWYU pragma: keep
 #include <iomanip>
 #include <iostream>
@@ -46,6 +48,8 @@ GLHelper::GLHelper(const std::string &strName):Scriptable(strName)
 	RegisterAction("CheckPixel","Checks the pixel color at the given position matches specified (x,y,RGBA).",ActCheckPixel, {ArgType::uint32,ArgType::uint32, ArgType::uint32});
 	RegisterAction("Snapshot", "Takes a snap of the current GL rendering", ActTakeSnapshot, {ArgType::String});
 	RegisterAction("SnapRect", "Takes a snap a region (file,x,y,w,h)", ActTakeSnapshotArea, {ArgType::String,ArgType::Int,ArgType::Int,ArgType::Int,ArgType::Int});
+	RegisterActionAndMenu("AutoSnap", "Takes a snap of the current GL rendering and gives it the current date/time.", ActTakeSnapDT);
+
 }
 
 // Function for running the GL stuff inside the GL context.
@@ -71,6 +75,7 @@ void GLHelper::OnDraw()
 			}
 			break;
 			case ActTakeSnapshot:
+			case ActTakeSnapDT:
 			{
 				m_w = width;
 				m_h = height;
@@ -180,11 +185,19 @@ IScriptable::LineStatus GLHelper::ProcessAction(unsigned int iAct, const std::ve
 		break;
 		case ActTakeSnapshot:
 		case ActTakeSnapshotArea:
+		case ActTakeSnapDT:
 		{
 			bool bIsArea = iAct == ActTakeSnapshotArea;
 			if (m_iState == St_Idle)
 			{
-				m_strFile = vArgs.at(0) + ".png";
+				if (iAct == ActTakeSnapDT) {
+					auto tNow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+					m_strFile = std::ctime(&tNow);
+					m_strFile = m_strFile.substr(0,m_strFile.size()-1);// strip newline.
+					m_strFile += ".png";
+				} else {
+					m_strFile = vArgs.at(0) + ".png";
+				}
 				if (bIsArea)
 				{
 					m_x = std::stoi(vArgs.at(1));

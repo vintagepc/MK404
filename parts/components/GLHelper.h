@@ -50,7 +50,8 @@ class GLHelper: public Scriptable
 		{
 			ActCheckPixel,
 			ActTakeSnapshot,
-			ActTakeSnapshotArea
+			ActTakeSnapshotArea,
+			ActTakeSnapDT
 		};
 		enum ActState
 		{

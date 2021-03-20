@@ -29,6 +29,7 @@
 
 #include "HD44780GL.h"
 #include "BasePeripheral.h"   // for MAKE_C_CALLBACK
+#include "Config.h"
 #include "Macros.h"
 #include "Util.h"             // for hexColor_t, hexColor_t::(anonymous)
 #include "gsl-lite.hpp"
@@ -81,14 +82,14 @@ void HD44780GL::OnKeyPress(const Key& key)
 {
 	if (key =='1')
 	{
-		m_iScheme = (m_iScheme+1)%2;
+		m_iScheme = (m_iScheme+1)%3;
 	}
 }
 
 void HD44780GL::Init(avr_t *avr)
 {
 	HD44780::Init(avr);
-
+	m_iScheme = Config::Get().GetLCDScheme()%3;
 	RegisterNotify(BRIGHTNESS_IN, MAKE_C_CALLBACK(HD44780GL, OnBrightnessDigital),this);
 	RegisterNotify(BRIGHTNESS_PWM_IN, MAKE_C_CALLBACK(HD44780GL, OnBrightnessPWM),this);
 }

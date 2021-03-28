@@ -154,7 +154,10 @@ void TMC2130::ProcessCommand()
 		switch (m_cmdProc.bitsIn.address)
 		{
 			case 0x00: // GCONF
-				RaiseDiag(m_regs.defs.DRV_STATUS.stallGuard); // Adjust DIAG out, it mayhave  been reconfigured.
+			case 0x6D: // COOLCONF
+				// Reset and adjust DIAG out
+				m_regs.defs.DRV_STATUS.stallGuard = false;
+				RaiseDiag(m_regs.defs.DRV_STATUS.stallGuard);
 				break;
 			case 0x6C: // Chopconf
 				m_uiStepIncrement = std::pow(2,m_regs.defs.CHOPCONF.mres);

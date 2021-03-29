@@ -177,10 +177,8 @@ int main()
 	step();
 	printf("DIAGDISABLE %02x\n",PINA&0x02);
 
-	// Keep existing configuration (DIAG0_stall && pushpull),
-	// but ensure DIAG is cleared when GCONF is written to
-	printf("DIAG %02x\n",PINA&0x02);
-	TMCTX(0x80,1U<<7U | 1U << 12);
+	TMCTX(0x80,1U<<7U); // DIAG0_stall, Act low
+
 	printf("DIAG %02x\n",PINA&0x02);
 
 

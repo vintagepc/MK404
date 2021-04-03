@@ -123,7 +123,7 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
         GLObj m_MMUSel {"assets/MMU_Selector.obj"};
         GLObj m_MMUIdl {"assets/Idler_moving.obj"};
 
-		GLHelper m_snap{"3DView"};
+		GLHelper m_snap{"3DView",false};
 
 		OBJCollection *m_Objs = nullptr;
 

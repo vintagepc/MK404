@@ -156,16 +156,16 @@ int main()
 	PORTA |= 1u<<2;
 	printf("DIAGDEDGE %02x\n",PINA&0x02);
 
+	// ensure DIAG is cleared by moving off the endstop
 	PORTA|=(1U<<3); // rev dir
 	PORTA&=~(1U<<2); // step.
-
-	PORTA&=~(1U<<3);
-
-	// DISABLE
-	PORTA|=(1U<<4);
-	printf("DISABLED\n");
+	PORTA&=~(1U<<3); // fwd again
 	if (PINA&0x2)
 			printf("DIAG NOT CLEARED\n");
+
+	// check that DIAG is not raised when disabled
+	PORTA|=(1U<<4);
+	printf("DISABLED\n");
 
 	for(int i=0; i<10; i++)
 	{

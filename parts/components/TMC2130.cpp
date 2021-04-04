@@ -305,6 +305,13 @@ void TMC2130::OnEnableIn(struct avr_irq_t *, uint32_t value)
 {
 	TRACE(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis.load(),value));
     m_bEnable = value==0; // active low, i.e motors off when high.
+
+	if(!m_bEnable)
+	{
+		// transition immediately to standstill
+		CancelTimer(m_fcnStandstill,this);
+		OnStandStillTimeout(m_pAVR, 0);
+	}
 }
 
 // needed because cppcheck doesn't seem to do bitfield unions correctly.

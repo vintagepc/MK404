@@ -184,6 +184,14 @@ int main()
 	_delay_ms(70); // 2^20clk ~ 65ms
 	printf("DIAG %02x\n",PINA&0x02);
 
+	// disabling should clear standstill as well
+	step(); // trigger DIAG again
+	if (PINA&0x2) // ensure it's active
+		printf("DIAG ERR\n");
+	PORTA|=(1U<<4);
+	PORTA&=~(1U<<4);
+	printf("DIAG %02x\n",PINA&0x02);
+
 	printf("FINISHED\n");
 
 	cli();

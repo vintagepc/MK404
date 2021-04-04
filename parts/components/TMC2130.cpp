@@ -200,6 +200,26 @@ void TMC2130::RaiseDiag(uint8_t value)
 	}
 }
 
+void TMC2130::ClearDiag()
+{
+	if (m_regs.defs.DRV_STATUS.stallGuard)
+	{
+		m_regs.defs.DRV_STATUS.SG_RESULT = 250;
+		m_regs.defs.DRV_STATUS.stallGuard = false;
+		RaiseDiag(0);
+	}
+}
+
+void TMC2130::SetDiag()
+{
+	if (!m_regs.defs.DRV_STATUS.stallGuard)
+	{
+		m_regs.defs.DRV_STATUS.SG_RESULT = 0;
+		m_regs.defs.DRV_STATUS.stallGuard = true;
+		RaiseDiag(1);
+	}
+}
+
 // Called when CSEL changes.
 void TMC2130::OnCSELIn(struct avr_irq_t *, uint32_t value)
 {
@@ -221,6 +241,7 @@ void TMC2130::OnDirIn(struct avr_irq_t * , uint32_t value)
 avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *, avr_cycle_count_t)
 {
     m_regs.defs.DRV_STATUS.stst = true;
+	ClearDiag();
     return 0;
 }
 
@@ -271,16 +292,9 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     TRACE(printf("cur pos: %f (%u)\n",m_fCurPos,m_iCurStep));
 	bStall |= m_bStall;
     if (bStall)
-    {
-        RaiseDiag(1);
-        m_regs.defs.DRV_STATUS.SG_RESULT = 0;
-    }
-    else if (!bStall && m_regs.defs.DRV_STATUS.stallGuard)
-    {
-          RaiseDiag(0);
-          m_regs.defs.DRV_STATUS.SG_RESULT = 250;
-    }
-    m_regs.defs.DRV_STATUS.stallGuard = bStall;
+		SetDiag();
+    else
+		ClearDiag();
     m_regs.defs.DRV_STATUS.stst = false;
     // 2^20 comes from the datasheet.
     RegisterTimer(m_fcnStandstill,1U<<20U,this);
@@ -311,6 +325,11 @@ TMC2130::TMC2130(char cAxis):Scriptable(std::string("") + cAxis),m_cAxis(cAxis)
 	RegisterActionAndMenu("ToggleStall","Toggles the stallguard condition on the next step.",ActToggleStall);
 	RegisterActionAndMenu("Stall","Sets the diag flag immediately.",ActSetDiag);
 	RegisterActionAndMenu("Reset","Clears the diag flag immediately",ActResetDiag);
+}
+
+TMC2130::~TMC2130()
+{
+	CancelTimer(m_fcnStandstill,this);
 }
 
 Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const std::vector<std::string> &)

@@ -178,7 +178,10 @@ int main()
 	printf("DIAGDISABLE %02x\n",PINA&0x02);
 
 	TMCTX(0x80,1U<<7U); // DIAG0_stall, Act low
+	printf("DIAG %02x\n",PINA&0x02);
 
+	// transition to standstill should clear DIAG
+	_delay_ms(70); // 2^20clk ~ 65ms
 	printf("DIAG %02x\n",PINA&0x02);
 
 	printf("FINISHED\n");

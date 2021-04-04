@@ -181,11 +181,10 @@ int main()
 
 	printf("DIAG %02x\n",PINA&0x02);
 
+	printf("FINISHED\n");
 
 	cli();
 
-
-	printf("FINISHED\n");
 
 	// this quits the simulator, since interupts are off
 	// this is a "feature" that allows running tests cases and exit

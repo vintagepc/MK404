@@ -156,16 +156,16 @@ int main()
 	PORTA |= 1u<<2;
 	printf("DIAGDEDGE %02x\n",PINA&0x02);
 
+	// ensure DIAG is cleared by moving off the endstop
 	PORTA|=(1U<<3); // rev dir
 	PORTA&=~(1U<<2); // step.
-
-	PORTA&=~(1U<<3);
-
-	// DISABLE
-	PORTA|=(1U<<4);
-	printf("DISABLED\n");
+	PORTA&=~(1U<<3); // fwd again
 	if (PINA&0x2)
 			printf("DIAG NOT CLEARED\n");
+
+	// check that DIAG is not raised when disabled
+	PORTA|=(1U<<4);
+	printf("DISABLED\n");
 
 	for(int i=0; i<10; i++)
 	{
@@ -177,17 +177,25 @@ int main()
 	step();
 	printf("DIAGDISABLE %02x\n",PINA&0x02);
 
-	// Keep existing configuration (DIAG0_stall && pushpull),
-	// but ensure DIAG is cleared when GCONF is written to
-	printf("DIAG %02x\n",PINA&0x02);
-	TMCTX(0x80,1U<<7U | 1U << 12);
+	TMCTX(0x80,1U<<7U); // DIAG0_stall, Act low
 	printf("DIAG %02x\n",PINA&0x02);
 
+	// transition to standstill should clear DIAG
+	_delay_ms(70); // 2^20clk ~ 65ms
+	printf("DIAG %02x\n",PINA&0x02);
+
+	// disabling should clear standstill as well
+	step(); // trigger DIAG again
+	if (PINA&0x2) // ensure it's active
+		printf("DIAG ERR\n");
+	PORTA|=(1U<<4);
+	PORTA&=~(1U<<4);
+	printf("DIAG %02x\n",PINA&0x02);
+
+	printf("FINISHED\n");
 
 	cli();
 
-
-	printf("FINISHED\n");
 
 	// this quits the simulator, since interupts are off
 	// this is a "feature" that allows running tests cases and exit

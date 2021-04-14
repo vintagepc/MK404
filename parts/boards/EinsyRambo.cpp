@@ -240,9 +240,9 @@ namespace Boards
 		sd_card.Unmount();
 	}
 
-	void EinsyRambo::OnExtraHexChunk(gsl::span<uint8_t> chunk)
+	void EinsyRambo::OnExtraHexChunk(gsl::span<uint8_t> chunk, uint32_t uiBase)
 	{
-		spiFlash.Load(chunk);
+		spiFlash.Load(chunk, uiBase);
 	}
 
 	void EinsyRambo::OnAVRReset()

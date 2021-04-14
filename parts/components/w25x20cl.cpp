@@ -358,11 +358,11 @@ void w25x20cl::Load(const std::string &path)
 		Load();
 }
 
-void w25x20cl::Load(const gsl::span<uint8_t> data)
+void w25x20cl::Load(const gsl::span<uint8_t> data, uint32_t uiOffset)
 {
-	size_t bytes = std::min(m_flash.size_bytes(), data.size_bytes());
-	memcpy(m_flash.begin(), data.begin(), bytes);
-	std::cout << "Loaded " << std::to_string(bytes) << " from hex file to xflash\n";
+	size_t bytes = std::min(m_flash.size_bytes() - uiOffset, data.size_bytes());
+	memcpy(m_flash.begin() + uiOffset, data.begin(), bytes);
+	std::cout << "Loaded " << std::to_string(bytes) << " bytes from hex file to xflash\n";
 }
 
 void w25x20cl::Load()

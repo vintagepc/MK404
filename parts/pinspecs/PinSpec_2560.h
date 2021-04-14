@@ -25,6 +25,7 @@
 
 #include "PinSpec.h"
 #include "PinSpec_Helper.h"
+#include "Config.h"
 
 class PinSpec_2560 : public PinSpec
 {
@@ -32,6 +33,8 @@ class PinSpec_2560 : public PinSpec
 
 	public:
 		PinSpec_2560():PinSpec(DPin2Port,DPin2Mask,DPin2Timer,"atmega2560"){};
+
+		std::string GetMCUName() const { return Config::Get().GetDebugCore()?"atmega5120":m_strMCU; };
 
 	private:
 

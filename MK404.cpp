@@ -338,6 +338,7 @@ int main(int argc, char *argv[])
 	std::vector<string> vstrExts = PrintVisualType::GetOpts();
 	ValuesConstraint<string> vcPrintOpts(vstrExts);
 	ValueArg<string> argExtrusion("","extrusion","Set Print visual type. HR options create a LOT of triangles, do not use for large prints!",false, "Line", &vcPrintOpts, cmd);
+	SwitchArg argDebugCore("","debugcore","Uses a debug version of the chip with more flash space. Board-dependent.", cmd);
 	MultiSwitchArg argDebug("d","debug","Increases debugging output, where supported.", cmd);
 	SwitchArg argColourE("", "colour-extrusion", "Colours extrusion by width (for advanced step/extrusion debugging.", cmd, false);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.",cmd);
@@ -364,6 +365,8 @@ int main(int argc, char *argv[])
 	bool bArgHacks = argNoHacks.isSet() || argKlipper.isSet() || argMarlin.isSet();
 	bool bArgSkew = argSkew.isSet() || argKlipper.isSet();
 	Config::Get().SetSkewCorrect(bArgSkew);
+
+	Config::Get().SetDebugCore(argDebugCore.isSet());
 	// Make new image.
 	if (argImgSize.isSet())
 	{

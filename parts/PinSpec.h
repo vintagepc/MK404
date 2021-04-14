@@ -46,7 +46,7 @@ class PinSpec {
 
 		// Returns the MCU this spec is for. Used to designate the
 		// CPU in a board using this pinspec.
-		inline std::string GetMCUName() const { return m_strMCU; }
+		virtual inline std::string GetMCUName() const { return m_strMCU; }
 
 	protected:
 		// Set these in your derived class constructor args to pointer

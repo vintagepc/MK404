@@ -59,7 +59,7 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 	void Load(const std::string &path);
 
 	// Loads from an array
-	void Load(const gsl::span<uint8_t> data);
+	void Load(const gsl::span<uint8_t> data, uint32_t uiOffset = 0);
 
 	// Reloads the current file.
 	void Load();

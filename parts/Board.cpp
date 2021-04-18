@@ -339,7 +339,12 @@ namespace Boards {
 				gsl::span<uint8_t> chunk0 {pChunks[0].data, pChunks[0].size};
 				uint32_t uiFWStart = pChunks[0].baseaddr;
 				if (iCount > 1) {
-					OnExtraHexChunk({pChunks[1].data,pChunks[1].size});
+					pChunks[1].baseaddr = 0; // Want to start at 0 in the flash chip, but after hex read this is end-of-firmware.
+					gsl::span<ihex_chunk_t> spanChunks {pChunks, gsl::narrow<uint32_t>(iCount)};
+					for (int i=1; i<iCount; i++)
+					{
+						OnExtraHexChunk({spanChunks.at(i).data,spanChunks.at(i).size},spanChunks.at(i).baseaddr);
+					}
 				}
 				std::cout << "Loaded "  << chunk0.size_bytes() << " bytes from HEX file: " << strFW << '\n';
 				gsl::span<uint8_t> flash {m_pAVR->flash, m_pAVR->flashend};

@@ -225,5 +225,6 @@ jobs:
 
     - name: Upload to codecov.io
       run: |
+        env
         bash <(curl -s https://codecov.io/bash) -f parts/parts.info
         bash <(curl -s https://codecov.io/bash) -f ext1/ext1.info

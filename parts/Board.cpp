@@ -338,7 +338,8 @@ namespace Boards {
 				}
 				gsl::span<uint8_t> chunk0 {pChunks[0].data, pChunks[0].size};
 				uint32_t uiFWStart = pChunks[0].baseaddr;
-				if (iCount > 1) {
+				if (iCount > 1)
+				{
 					pChunks[1].baseaddr = 0; // Want to start at 0 in the flash chip, but after hex read this is end-of-firmware.
 					gsl::span<ihex_chunk_t> spanChunks {pChunks, gsl::narrow<uint32_t>(iCount)};
 					for (int i=1; i<iCount; i++)

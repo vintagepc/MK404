@@ -67,7 +67,10 @@ void TMC2130::_Draw(bool bIsSimple)
 			glVertex3f(350,0,0);
 			glVertex3f(350,10,0);
 			glVertex3f(0,10,0);
-			glColor3f(1,1,1);
+			if (m_bStealthMode)
+				glColor3f(0.9,1,0.4); // acid green is the new "stealth"
+			else
+				glColor3f(1,1,1);
 			if (m_bEnable)
 			{
 				glVertex3f(3,8,0);
@@ -155,6 +158,7 @@ void TMC2130::ProcessCommand()
 		{
 			case 0x00: // GCONF
 				RaiseDiag(m_regs.defs.DRV_STATUS.stallGuard); // Adjust DIAG out, it mayhave  been reconfigured.
+				m_bStealthMode = m_regs.defs.GCONF.en_pwm_mode;
 				break;
 			case 0x6C: // Chopconf
 				m_uiStepIncrement = std::pow(2,m_regs.defs.CHOPCONF.mres);

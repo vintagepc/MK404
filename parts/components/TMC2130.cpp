@@ -67,7 +67,10 @@ void TMC2130::_Draw(bool bIsSimple)
 			glVertex3f(350,0,0);
 			glVertex3f(350,10,0);
 			glVertex3f(0,10,0);
-			glColor3f(1,1,1);
+			if (m_regs.defs.GCONF.en_pwm_mode)
+				glColor3f(0.9,1,0.4); // acid green is the new "stealth"
+			else
+				glColor3f(1,1,1);
 			if (m_bEnable)
 			{
 				glVertex3f(3,8,0);

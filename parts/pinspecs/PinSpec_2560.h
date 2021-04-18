@@ -24,8 +24,8 @@
 #pragma once
 
 #include "PinSpec.h"
-#include "PinSpec_Helper.h"
 #include "Config.h"
+#include "PinSpec_Helper.h"
 
 class PinSpec_2560 : public PinSpec
 {

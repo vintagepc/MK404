@@ -63,6 +63,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
 
         // Default constructor.
         explicit TMC2130(char cAxis = ' ');
+		~TMC2130();
 
         // Sets the configuration to the provided values. (inversion, positions, etc)
         void SetConfig(TMC2130_cfg_t cfg);
@@ -108,10 +109,13 @@ class TMC2130: public SPIPeripheral, public Scriptable
         void ProcessCommand();
         void CreateReply();
 
+		// Stallguard DIAG handling
         void RaiseDiag(uint8_t value);
+		void SetDiag();
+		void ClearDiag();
 
         bool m_bDir  = false;
-        std::atomic_bool m_bEnable {true}, m_bConfigured {false};
+        std::atomic_bool m_bEnable {true}, m_bConfigured {false}, m_bStealthMode {false};
 
         TMC2130_cfg_t cfg;
         // Register definitions.

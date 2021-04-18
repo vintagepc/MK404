@@ -115,7 +115,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
 		void ClearDiag();
 
         bool m_bDir  = false;
-        std::atomic_bool m_bEnable {true}, m_bConfigured {false};
+        std::atomic_bool m_bEnable {true}, m_bConfigured {false}, m_bStealthMode {false};
 
         TMC2130_cfg_t cfg;
         // Register definitions.

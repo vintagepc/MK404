@@ -43,13 +43,16 @@
 #include <vector>
 
 
-GLHelper::GLHelper(const std::string &strName):Scriptable(strName)
+GLHelper::GLHelper(const std::string &strName, bool bIsPrimary):Scriptable(strName)
 {
 	RegisterAction("CheckPixel","Checks the pixel color at the given position matches specified (x,y,RGBA).",ActCheckPixel, {ArgType::uint32,ArgType::uint32, ArgType::uint32});
 	RegisterAction("Snapshot", "Takes a snap of the current GL rendering", ActTakeSnapshot, {ArgType::String});
 	RegisterAction("SnapRect", "Takes a snap a region (file,x,y,w,h)", ActTakeSnapshotArea, {ArgType::String,ArgType::Int,ArgType::Int,ArgType::Int,ArgType::Int});
 	RegisterActionAndMenu("AutoSnap", "Takes a snap of the current GL rendering and gives it the current date/time.", ActTakeSnapDT);
-
+	//RegisterActionAndMenu("AutoSnapLCD", "Takes a snap of the current LCD window and gives it the current date/time.", ActTakeSnapLCD);
+	if (bIsPrimary) {
+		RegisterKeyHandler('S',"Take a snapshot of the LCD");
+	}
 }
 
 // Function for running the GL stuff inside the GL context.
@@ -82,9 +85,16 @@ void GLHelper::OnDraw()
 			}
 			/* FALLTHRU */
 			case ActTakeSnapshotArea:
+			case ActTakeSnapLCD:
 			{
-				WritePNG(width, height, m_iAct==ActTakeSnapshotArea);
-				m_iState = St_Done;
+				WritePNG(width, height, (m_iAct == ActTakeSnapshotArea || m_iAct == ActTakeSnapLCD));
+				std::cout << "Wrote: " << m_strFile << '\n';
+				if (m_bIsKeySnap) {
+					m_bIsKeySnap = false;
+					m_iState = St_Idle;
+				} else {
+					m_iState = St_Done;
+				}
 			}
 			break;
 			default:
@@ -97,6 +107,21 @@ void GLHelper::OnDraw()
 	if (m_iState == St_Queued)
 	{
 		m_iState = St_Queued2;
+	}
+}
+
+void GLHelper::OnKeyPress(const Key& key)
+{
+	switch (key)
+	{
+		case 'S':
+		{
+			std::cout << "LCD Snapshot toggled!\n";
+			m_bIsKeySnap = true;
+			// GLHelper::SnapRect(tests/snaps/LCD01,0,0,500,164)
+			ProcessAction(ActTakeSnapLCD,{"","0","0","500","164"});
+		}
+		break;
 	}
 }
 
@@ -186,11 +211,12 @@ IScriptable::LineStatus GLHelper::ProcessAction(unsigned int iAct, const std::ve
 		case ActTakeSnapshot:
 		case ActTakeSnapshotArea:
 		case ActTakeSnapDT:
+		case ActTakeSnapLCD:
 		{
-			bool bIsArea = iAct == ActTakeSnapshotArea;
+			bool bIsArea = (iAct == ActTakeSnapshotArea || iAct == ActTakeSnapLCD);
 			if (m_iState == St_Idle)
 			{
-				if (iAct == ActTakeSnapDT) {
+				if (iAct == ActTakeSnapDT || iAct == ActTakeSnapLCD) {
 					auto tNow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 					m_strFile = std::ctime(&tNow);
 					m_strFile = m_strFile.substr(0,m_strFile.size()-1);// strip newline.
@@ -211,7 +237,6 @@ IScriptable::LineStatus GLHelper::ProcessAction(unsigned int iAct, const std::ve
 			else if (m_iState == St_Done)
 			{
 				m_iState = St_Idle;
-				std::cout << "Wrote: " << m_strFile << '\n';
 				return LineStatus::Finished;
 			}
 			return LineStatus::HoldExec; // Pauses primary board execution until finished.

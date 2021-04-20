@@ -26,6 +26,8 @@ if (NOT APPLE)
 set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 endif()
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 add_subdirectory(3rdParty/tinyobjloader)
 add_subdirectory(3rdParty/gsl)
 add_subdirectory(scripts/tests)
@@ -46,7 +48,7 @@ else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 
 set (FIRMWARE
     assets/Firmware/MM-control-01.hex
@@ -258,10 +260,6 @@ if (ENABLE_THREAD_SANITY)
 	target_compile_options(MK404 PRIVATE -fsanitize=thread)
 endif()
 
-execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")
-
-
 add_custom_target(clean-simavr
 	COMMAND cd ${PROJECT_SOURCE_DIR}/3rdParty/simavr && make clean
 )
@@ -274,10 +272,6 @@ add_custom_target(clean-all
 
 
 add_dependencies(MK404 simavr)
-
-# set (LIBSIMAVR ${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/obj-${SIMAVR_BIN_DIR}/libsimavr.a)
-
-# message("Defining simavr location as ${LIBSIMAVR}")
 
 target_include_directories (MK404 PUBLIC
                             "${PROJECT_BINARY_DIR}"

@@ -338,8 +338,10 @@ int main(int argc, char *argv[])
 	std::vector<string> vstrExts = PrintVisualType::GetOpts();
 	ValuesConstraint<string> vcPrintOpts(vstrExts);
 	ValueArg<string> argExtrusion("","extrusion","Set Print visual type. HR options create a LOT of triangles, do not use for large prints!",false, "Line", &vcPrintOpts, cmd);
+	SwitchArg argDebugCore("","debugcore","Uses a debug version of the chip with more flash space. Board-dependent.", cmd);
 	MultiSwitchArg argDebug("d","debug","Increases debugging output, where supported.", cmd);
 	SwitchArg argColourE("", "colour-extrusion", "Colours extrusion by width (for advanced step/extrusion debugging.", cmd, false);
+	ValueArg<string> argStrBoot("","bootloader-file", "Specifies a .hex file to load as the bootloader. If empty, ("") no bootloader is loaded, if unspecified the default is used.",false,"stk500boot_v2_mega2560.hex","string",cmd);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.",cmd);
 	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown",cmd);
 
@@ -364,6 +366,8 @@ int main(int argc, char *argv[])
 	bool bArgHacks = argNoHacks.isSet() || argKlipper.isSet() || argMarlin.isSet();
 	bool bArgSkew = argSkew.isSet() || argKlipper.isSet();
 	Config::Get().SetSkewCorrect(bArgSkew);
+
+	Config::Get().SetDebugCore(argDebugCore.isSet());
 	// Make new image.
 	if (argImgSize.isSet())
 	{
@@ -402,8 +406,18 @@ int main(int argc, char *argv[])
 		strFW = argFW.getValue();
 	}
 
+	if (!argStrBoot.isSet())
+	{
+		std::cout << "No bootloader specified, using default: " << argStrBoot.getValue() << '\n';
+	} else if (argStrBoot.getValue().empty())
+	{
+		std::cout << "Empty bootloader filename provided. NOT loading a bootloader.\n";
+	} else {
+		std::cout << "Using Bootloader: " << argStrBoot.getValue() << '\n';
+	}
+
 	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),bArgHacks,argSerial.isSet(), argSD.getValue() ,
-		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),"stk500boot_v2_mega2560.hex"); // this line is the CreateBoard() args.
+		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),argStrBoot.getValue()); // this line is the CreateBoard() args.
 
 	pBoard->SetPrimary(true); // This is the primary board, responsible for scripting/dispatch. Blocks contention from sub-boards, e.g. MMU.
 

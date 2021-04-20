@@ -29,7 +29,7 @@ class PinSpec {
 		PinSpec(gsl::span<const unsigned char>pin2port, gsl::span<const unsigned char>pin2Mask, gsl::span<const unsigned char>pin2Timer,const std::string &strMCU):
 			m_pDPin2Port(pin2port),m_pDPin2Mask(pin2Mask),m_pDPin2Timer(pin2Timer),m_strMCU(strMCU)
 			{
-				std::cout << "Creating pinspec for" << strMCU << '\n';
+				std::cout << "Creating pinspec for " << strMCU << '\n';
 			};
 
 		// Returns a char representation of the port, e.g. 'A'
@@ -46,7 +46,7 @@ class PinSpec {
 
 		// Returns the MCU this spec is for. Used to designate the
 		// CPU in a board using this pinspec.
-		inline std::string GetMCUName() const { return m_strMCU; }
+		virtual inline std::string GetMCUName() const { return m_strMCU; }
 
 	protected:
 		// Set these in your derived class constructor args to pointer

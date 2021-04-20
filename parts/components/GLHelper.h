@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "IKeyClient.h"
 #include "IScriptable.h"
 #include "Scriptable.h"
 #include <atomic>
@@ -27,10 +28,10 @@
 #include <string>
 #include <vector>
 
-class GLHelper: public Scriptable
+class GLHelper: public Scriptable, private IKeyClient
 {
 	public:
-		explicit GLHelper(const std::string &strName = "GLHelper");
+		explicit GLHelper(const std::string &strName = "GLHelper", bool isPrimary = true);
 
 		inline bool IsTakingSnapshot() { return m_iState >= St_Queued; }
 
@@ -38,6 +39,8 @@ class GLHelper: public Scriptable
 		void OnDraw();
 
 	protected:
+
+		void OnKeyPress(const Key& key) override;
 
 		bool WritePNG(int width, int height, bool bRegion);
 
@@ -51,7 +54,8 @@ class GLHelper: public Scriptable
 			ActCheckPixel,
 			ActTakeSnapshot,
 			ActTakeSnapshotArea,
-			ActTakeSnapDT
+			ActTakeSnapDT,
+			ActTakeSnapLCD,
 		};
 		enum ActState
 		{
@@ -66,5 +70,6 @@ class GLHelper: public Scriptable
 		std::atomic_uint32_t m_x{0}, m_y{0}, m_h{0}, m_w{0}, m_color{0};
 		std::atomic_int m_iState {St_Idle};
 		std::vector<uint8_t> m_vBuffer{};
+		std::atomic_bool m_bIsKeySnap {false};
 		bool m_bVFlip = true;
 };

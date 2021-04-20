@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_DEBUG_POSTFIX d)
 
-include(ExternalProject)
-
 project(MK404 VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -28,9 +26,15 @@ if (NOT APPLE)
 set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 endif()
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 add_subdirectory(3rdParty/tinyobjloader)
 add_subdirectory(3rdParty/gsl)
 add_subdirectory(scripts/tests)
+
+# Could use this to shrink the binary a little.
+# list(APPEND ENABLED_CORES "mega2560" "mega404" "mega32u2" "mega32u4")
+add_subdirectory(3rdParty/simavr)
 
 if (ENABLE_IWYU)
 	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/include-what-you-use")
@@ -44,7 +48,7 @@ else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 
 set (FIRMWARE
     assets/Firmware/MM-control-01.hex
@@ -256,19 +260,6 @@ if (ENABLE_THREAD_SANITY)
 	target_compile_options(MK404 PRIVATE -fsanitize=thread)
 endif()
 
-execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE SIMAVR_BIN_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("Simavr binary dir detected as ${SIMAVR_BIN_DIR}")
-
-ExternalProject_Add(simavr
-    SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rdParty/simavr
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND make build-simavr RELEASE=0
-    INSTALL_COMMAND ""
-    BUILD_IN_SOURCE 1
-    BUILD_ALWAYS 1
-
-)
-
 add_custom_target(clean-simavr
 	COMMAND cd ${PROJECT_SOURCE_DIR}/3rdParty/simavr && make clean
 )
@@ -281,10 +272,6 @@ add_custom_target(clean-all
 
 
 add_dependencies(MK404 simavr)
-
-set (LIBSIMAVR ${PROJECT_SOURCE_DIR}/3rdParty/simavr/simavr/obj-${SIMAVR_BIN_DIR}/libsimavr.a)
-
-message("Defining simavr location as ${LIBSIMAVR}")
 
 target_include_directories (MK404 PUBLIC
                             "${PROJECT_BINARY_DIR}"
@@ -390,7 +377,7 @@ else()
 target_link_libraries(MK404 GLEW::GLEW)
 endif()
 
-target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU ${SDL_LIBRARY} tinyobjloader ${LIBSIMAVR} ${LIBELF_LIBRARIES})
+target_link_libraries(MK404 pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU ${SDL_LIBRARY} tinyobjloader simavr ${LIBELF_LIBRARIES})
 endif()
 
 if(EXISTS "${PNG_LIBRARY}")

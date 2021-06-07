@@ -474,11 +474,16 @@ namespace Boards {
 					auto tDiff = gsl::narrow<int64_t>(static_cast<uint64_t>(tWall)-tSim);
 					if (tDiff>1000000) // 1 ms
 					{
-						std::cout << "Lost " << std::to_string(tDiff/1000) << " us!\n";
 						if (tDiff>5000000) // If we lose more than 5ms, don't try to catch up.
 						{
+							if(m_pAVR->log > 1)
+								std::cout << "Skipping " << std::to_string(tDiff/1000) << " us!\n";
 							uiLost += tDiff;
+						} else if(m_pAVR->log > 2)
+						{
+							std::cout << "Lost " << std::to_string(tDiff/1000) << " us!\n";
 						}
+
 					}
 				}
 				// if (vsim.size()<10000)

@@ -44,9 +44,24 @@ class Config
 		inline void SetSkewCorrect(bool bVal){ m_bSkew = bVal;}
 		inline bool GetSkewCorrect(){ return m_bSkew;}
 
+		// Starting LCD colour scheme
+		inline void SetLCDScheme(uint8_t iVal){ m_iScheme = iVal;}
+		inline uint8_t GetLCDScheme(){ return m_iScheme;}
+
+		// Use a "debug" core? (board-specific)
+		inline void SetDebugCore(bool bVal){ m_bDebugCore = bVal;}
+		inline bool GetDebugCore(){ return m_bDebugCore;}
+
+		// Secondary firmware?
+		inline void SetFW2(std::string strName){ m_strSecFW = std::move(strName);}
+		inline const std::string GetFW2(){ return m_strSecFW;}
+
 	private:
 		unsigned int m_iExtrusion = false;
 		bool m_bColorExtrusion = false;
 		bool m_bSkew = false;
+		uint8_t m_iScheme = 0;
+		bool m_bDebugCore = false;
+		std::string m_strSecFW = "MM-control-01.hex";
 
 };

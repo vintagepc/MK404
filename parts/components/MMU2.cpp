@@ -20,6 +20,7 @@
  */
 
 #include "MMU2.h"
+#include "Config.h"
 #include "HC595.h"            // for HC595, TMC2130::IRQ::POSITION_OUT, MMU2...
 #include "IKeyClient.h"
 #include "LED.h"              // for LED
@@ -54,7 +55,7 @@ MMU2::MMU2():IKeyClient(),MM_Control_01()
 	}
 	g_pMMU = this;
 	SetBoardName("MMU2");
-	CreateBoard("MM-control-01.hex",0, false, 100,"");
+	CreateBoard(Config::Get().GetFW2(),0, false, 100,"");
 
 	RegisterKeyHandler('F',"Toggle the FINDA");
 	RegisterKeyHandler('A', "Resumes full-auto MMU mode.");

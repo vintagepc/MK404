@@ -12,7 +12,7 @@
 	url = https://github.com/vintagepc/gitversion.git
 [submodule "3rdParty/pngpp"]
 	path = 3rdParty/pngpp
-	url = https://github.com/sampotter/pngpp.git
+	url = https://github.com/vintagepc/pngpp.git
 [submodule "3rdParty/shmemq404"]
 	path = 3rdParty/shmemq404
 	url = https://github.com/vintagepc/shmemq404.git

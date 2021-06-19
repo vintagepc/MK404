@@ -260,7 +260,10 @@ SDCard::State SDCard::ProcessCommand()
 
 			DEBUG ("Write block (CMD24) from address %lu.", addr);
 
-			if (!IsBlockAligned(addr)) {
+			if (m_bRdOnly) {
+				// Is this right? Not sure what the SD spec calls for
+				COMMAND_RESPONSE_R1(R1_ILLEGAL_COMMAND);
+			} else if (!IsBlockAligned(addr)) {
 				/* Address misaligned. */
 				COMMAND_RESPONSE_R1 (R1_ADDRESS_MISALIGN);
 			} else if (addr >= gsl::narrow<off_t>(m_data.size())) {
@@ -515,6 +518,10 @@ void SDCard::SetCSDCSize(off_t c_size)
 	m_csd[8] |= (C_SIZE >> 8U);
 	m_csd[7] |= (C_SIZE >> 16U);
 	m_csd[15] = CRC7(m_csd.subspan(0,m_csd.size()-1));
+
+	// Also update write protect status:
+	_m_csd[14] |= m_bRdOnly << 5U; //PERM_WRITE_PROTECT
+
 #ifdef SD_CARD_DEBUG
 	printf("CSD: ");
 	for (auto i = 0u; i < sizeof(m_csd); i++)
@@ -566,9 +573,20 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 		std::cout << "SD file " << m_strFile << " does not exist. Will not create it.\n";
 		return -1;
 	}
+	if (access(m_strFile.c_str(), W_OK) == -1)
+	{
+		std::cout << "SD file " << m_strFile << " is READ-ONLY. Mounting accordingly, **write operations will fail!**.\n";
+		m_bRdOnly = true;
+	} else {
+		m_bRdOnly = false;
+	}
 
 	/* Open the specified disk image. */
-	fd = open (m_strFile.c_str(), O_RDWR | O_CLOEXEC, S_IRUSR | S_IWUSR); //NOLINT - no c++ stl non vararg memmap available.
+	if (m_bRdOnly) {
+		fd = open (m_strFile.c_str(), O_RDONLY | O_CLOEXEC, S_IRUSR); //NOLINT - no c++ stl non vararg memmap available.
+	} else {
+		fd = open (m_strFile.c_str(), O_RDWR | O_CLOEXEC, S_IRUSR | S_IWUSR); //NOLINT - no c++ stl non vararg memmap available.
+	}
 
 	if (fd == -1)
 	{
@@ -606,7 +624,11 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 	}
 
 	/* Map it into memory. */
-	mapped = mmap (nullptr, image_size, US(PROT_READ) | US(PROT_WRITE), MAP_SHARED, fd, 0);
+	int iFlags = US(PROT_READ);
+	if (!m_bRdOnly) {
+		iFlags |= US(PROT_WRITE);
+	}
+	mapped = mmap (nullptr, image_size,iFlags, MAP_SHARED, fd, 0);
 
 	if (mapped == MAP_FAILED) //NOLINT - complaint in system library
 	{

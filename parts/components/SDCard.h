@@ -169,7 +169,7 @@ class SDCard:public SPIPeripheral, public Scriptable, private IKeyClient
 			uint8_t length; /* number of bytes of data which are valid */
 		} m_command_response {{0}, 0};
 
-		bool m_bSelected = false, m_bMounted = false;
+		bool m_bSelected = false, m_bMounted = false, m_bRdOnly = false;
 
 		struct m_currOp
 		{

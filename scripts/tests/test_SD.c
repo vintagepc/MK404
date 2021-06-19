@@ -183,7 +183,7 @@ int main()
 
 	SDTX(0x08,0xFFFFFFFFFFULL,5);
 
-	SDTX(0x09,0xFFFFFFFFFFULL,16);
+	SDTX(0x09,0xFFFFFFFFFFULL,18);
 
 	SDTX(0x0C,0xFFFFFFFFFFULL,2);
 
@@ -223,6 +223,23 @@ int main()
 
 	SDTX(0x11,0x1ULL,516);
 	SDTX(0x11,131071ULL,516);
+
+	while(!(PINL&(1u<<6)));
+
+	printf("CARD REMOVED\n");
+
+	while((PINL&(1u<<6)));
+	printf("CARD MOUNTED\n");
+
+	// check CSD for RO card
+	SDTX(0x08,0xFFFFFFFFFFULL,5);
+	SDTX(0x09,0xFFFFFFFFFFULL,18);
+
+	SDTX(24u,0x00000000000ULL,1);
+
+	while(!(PINL&(1u<<6)));
+
+	printf("CARD REMOVED\n");
 
 	cli();
 

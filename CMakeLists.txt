@@ -438,6 +438,7 @@ add_test(core_SD_image3 MK404 --sdimage Prusa_MK3S_SDcard.bin_test --image-size 
 add_test(core_SD_image4 MK404 --sdimage Prusa_MK3_SDcard.bin_test --image-size 512M)
 add_test(core_SD_image5 MK404 --sdimage Prusa_MK3SMMU2_SDcard.bin_test --image-size 1G)
 add_test(core_SD_image6 MK404 --sdimage Prusa_MK3MMU2_SDcard.bin_test --image-size 2G)
+add_test(core_SD_image7 MK404 --sdimage RO_SDcard.bin_test --image-size 32M && chmod a-w RO_SDcard.bin_test)
 #add_test(Check_GL env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} glxinfo )
 
 add_test(core_Printer_Trace MK404 Test_Printer -g none --trace ?)

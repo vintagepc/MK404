@@ -517,10 +517,14 @@ void SDCard::SetCSDCSize(off_t c_size)
 	m_csd[9] |= (C_SIZE);
 	m_csd[8] |= (C_SIZE >> 8U);
 	m_csd[7] |= (C_SIZE >> 16U);
+	// Also update write protect status:
+	if (m_bRdOnly) {
+		m_csd[14] |= 1U << 5U; //PERM_WRITE_PROTECT
+	} else {
+		m_csd[14] &= ~(1U << 5U); //PERM_WRITE_PROTECT
+	}
 	m_csd[15] = CRC7(m_csd.subspan(0,m_csd.size()-1));
 
-	// Also update write protect status:
-	_m_csd[14] |= m_bRdOnly << 5U; //PERM_WRITE_PROTECT
 
 #ifdef SD_CARD_DEBUG
 	printf("CSD: ");

@@ -21,6 +21,19 @@ Serial0::NextLineMustBe(PINE 00)
 PINDA::SetPos(0,0,4.8)
 TelHost::WaitFor(PINDA_>pinda.out,1)
 Serial0::NextLineMustBe(PINE 40)
+
+# check that probing outside the bed doesn't crash
+PINDA::SetMBLPoint(0,3.5);
+PINDA::SetPos(-1,-1,4.6)
+TelHost::WaitFor(PINDA_>pinda.out,0)
+PINDA::SetPos(-1,-1,4.5)
+TelHost::WaitFor(PINDA_>pinda.out,1)
+PINDA::SetMBLPoint(48,3.5);
+PINDA::SetPos(255,210,4.6)
+TelHost::WaitFor(PINDA_>pinda.out,0)
+PINDA::SetPos(255,210,4.5)
+TelHost::WaitFor(PINDA_>pinda.out,1)
+
 PINDA::ToggleSheet();
 PINDA::SetPos(0,0,0)
 TelHost::WaitFor(PINDA_>pinda.out,0)

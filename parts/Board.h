@@ -169,6 +169,8 @@ namespace Boards
 			std::atomic_bool m_bQuit = {false}, m_bReset = {false};
 			bool m_bIsPrimary = false, m_bCorrectSkew = false;
 
+			bool m_bLostTimeLogged = false;
+
 			pthread_t m_thread = 0;
 			const Wirings::Wiring &m_wiring;
 			std::string m_strBoard = "";

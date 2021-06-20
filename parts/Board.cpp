@@ -474,11 +474,21 @@ namespace Boards {
 					auto tDiff = gsl::narrow<int64_t>(static_cast<uint64_t>(tWall)-tSim);
 					if (tDiff>1000000) // 1 ms
 					{
-						std::cout << "Lost " << std::to_string(tDiff/1000) << " us!\n";
 						if (tDiff>5000000) // If we lose more than 5ms, don't try to catch up.
 						{
+							if(m_pAVR->log > 1 || !m_bLostTimeLogged) {
+								if (!m_bLostTimeLogged) {
+									std::cout << "\033[1;31mWARNING: Your system cannot keep up in --skew-correct mode!\033[0m\n";
+									m_bLostTimeLogged = true;
+								}
+								std::cout << "Skipping " << std::to_string(tDiff/1000) << " us!\n";
+							}
 							uiLost += tDiff;
+						} else if(m_pAVR->log > 2)
+						{
+							std::cout << "Lost " << std::to_string(tDiff/1000) << " us!\n";
 						}
+
 					}
 				}
 				// if (vsim.size()<10000)
@@ -529,7 +539,11 @@ namespace Boards {
 		// {
 		// 	std::cout << std::to_string(vdC.at(i)) << ',' << std::to_string(vwall.at(i)) << ',' << std::to_string(vsim.at(i)) << '\n';
 		// }
-
+		if (m_bLostTimeLogged) {
+			std::cout << "\033[1;31mYour system was not able to keep simulation time from falling behind wall time. \033[0m\n";
+			std::cout << "If this number is big and you had issues with --skew-correct and real-time simulation (e.g. klipper) it's probably not a simulator bug.\n";
+			std::cout << "Total time lost during simulation: " << std::to_string(uiLost/1000U) << "ms\n";
+		}
 		return nullptr;
 	};
 

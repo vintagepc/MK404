@@ -57,6 +57,7 @@ namespace Boards {
 		RegisterActionAndMenu("Pause","Pauses the simulated AVR execution.", ScriptAction::Pause);
 		RegisterActionAndMenu("Resume","Resumes simulated AVR execution.", ScriptAction::Unpause);
 		RegisterAction("WaitMs","Waits the specified number of milliseconds (in AVR-clock time)", ScriptAction::Wait,{ArgType::Int});
+		RegisterAction("WaitForReset","Waits for the board to reset", ScriptAction::WaitReset);
 
 		RegisterKeyHandler('r', "Resets the AVR/board");
 		RegisterKeyHandler('z', "Pauses/resumes AVR execution");
@@ -411,6 +412,16 @@ namespace Boards {
 			case Unpause:
 				m_bPaused.store(false);
 				return LineStatus::Finished;
+			case WaitReset:
+				if (m_stResetWaitFlag == StateReset::IDLE) {
+					m_stResetWaitFlag = StateReset::WAITING;
+				}
+				if (m_stResetWaitFlag == StateReset::FINISHED) {
+					m_stResetWaitFlag = StateReset::IDLE;
+					return LineStatus::Finished;
+				} else {
+					return LineStatus::Waiting;
+				}
 		}
 		return LineStatus::Unhandled;
 	}
@@ -520,6 +531,9 @@ namespace Boards {
 				if (uiMCUSR) // only run on change and not changed to 0
 				{
 					OnAVRReset();
+					if (m_stResetWaitFlag == StateReset::WAITING) {
+						m_stResetWaitFlag = StateReset::FINISHED;
+					}
 				}
 			}
 			OnAVRCycle();

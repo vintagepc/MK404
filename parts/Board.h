@@ -171,6 +171,14 @@ namespace Boards
 
 			bool m_bLostTimeLogged = false;
 
+			enum class StateReset {
+				IDLE,
+				WAITING,
+				FINISHED
+			} ;
+
+			StateReset m_stResetWaitFlag = StateReset::IDLE;
+
 			pthread_t m_thread = 0;
 			const Wirings::Wiring &m_wiring;
 			std::string m_strBoard = "";
@@ -191,7 +199,8 @@ namespace Boards
 				Reset,
 				Wait,
 				Pause,
-				Unpause
+				Unpause,
+				WaitReset
 			};
 
 			EEPROM m_EEPROM;

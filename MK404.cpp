@@ -314,7 +314,7 @@ int main(int argc, char *argv[])
 	ValueArg<int> argVCDRate("","tracerate", "Sets the logging frequency of the VCD trace (default 100uS)",false, 100,"integer",cmd);
 	MultiArg<string> argVCD("t","trace","Enables VCD traces for the specified categories or IRQs. use '-t ?' to get a printout of available traces",false,"string",cmd);
 	SwitchArg argTerm("","terminal","Enable an in-UI terminal for interactive scripting (--EXPERIMENTAL!!--)", cmd);
-	SwitchArg argTest("","test","Run it test mode (no graphics, don't auto-exit.", cmd);
+	SwitchArg argTest("","test","Run it test mode (don't auto-exit due to lack of GL event loop and waiting for the window to close)", cmd);
 	SwitchArg argSkew("","skew-correct","Attempt to correct for fast clock skew of the simulated board", cmd);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.", cmd);
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img", cmd);

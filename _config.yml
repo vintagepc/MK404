@@ -1,4 +1,4 @@
-theme: jekyll-theme-leap-day
+theme: jekyll-theme-hack
 show_downloads: "true"
 title: MK404 - Printer Not Found
 description: A full-featured simulator for AVR-based Prusa FFF printers; with the capability to easily support any AVR-based machine with modular components.

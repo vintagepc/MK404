@@ -6,13 +6,22 @@
 MK404 is a 3D printer simulator. Specifically, it is a very techincally-oriented simulation, with several specific development-oriented goals in mind:
 
 - Fast turnaround for testing changes - No more waiting 5 minutes for your printer to flash and reboot. 
+
 - Hardware-accurate simulation - It should run the stock factory firmware and this firmware should not know the difference. 
+
+
 - Safe testing - Test your firmware changes without having to worry about accidentally damaging your real printer if something goes wrong. 
+
 - Easy gdb debugging - no special hardware required. The SimAVR core supports using avr-gdb to debug code on the target platform. 
+
 - Advanced non-GDB debugging - things like stepper timing and extrusion behaviour that are tricky to see on real prints can be examined in a reproducible environment.
+
 - Advanced interaction - Control aspects of the printer and modify its behaviours to simulate real hardware faults and scenarios. 
+
 - Extensibility - The SimAVR core supports many AVR microprocessors; in theory any AVR-based printer can be supported by implementing support for its peripherals. 
+
 - Experimentation - While not desinged for this it can also be a fun tool you can play with to learn more about how your printer and its firmware works!
+
 - Fancy(ish) 3D graphics. (Yes, we support skinning like the awesome Bear Mod if you want to beef up your virtual Prusa!).
 
 ![](https://github.com/vintagepc/MK404/wiki/images/Advanced_gfx.png)
@@ -29,17 +38,17 @@ If you would like to contribute support for your particular printer yourself, fe
 
 Model|Status (Not started, In Progress, Awaiting Merge, or Finished)
 -----|------
-Prusa MK1 |  :heavy_check_mark:  Finished :grey_exclamation:  No 3D visuals.
-Prusa MK2/MK2S |  :heavy_check_mark:  Finished 
-Prusa MK2/MK2S MMU |  :heavy_check_mark:  Finished
-Prusa MK2.5 |  :heavy_check_mark:  Finished
-Prusa MK2.5 MMU2 |  :x: Not Started
-Prusa MK2.5S |  :heavy_check_mark:  Finished
-Prusa MK2.5S MMU2 |  :x: Not Started
-Prusa MK3 |  :heavy_check_mark:  Finished
-Prusa MK3 MMU2 |  :heavy_check_mark:  Finished
-Prusa MK3S |  :heavy_check_mark:  Finished
-Prusa MK3S MMU2 |  :heavy_check_mark:  Finished
+Prusa MK1 |  ✔️  Finished ❕ No 3D visuals.
+Prusa MK2/MK2S | ✔️  Finished 
+Prusa MK2/MK2S MMU |  ✔️  Finished
+Prusa MK2.5 | ✔️  Finished
+Prusa MK2.5 MMU2 |  ❌ Not Started
+Prusa MK2.5S |  ✔️  Finished
+Prusa MK2.5S MMU2 |  ❌ Not Started
+Prusa MK3 | ✔️  Finished
+Prusa MK3 MMU2 |  ✔️  Finished
+Prusa MK3S |  ✔️  Finished
+Prusa MK3S MMU2 | ✔️  Finished
 
 ## What can it do?
 

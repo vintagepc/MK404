@@ -1,37 +1,38 @@
-## Welcome to GitHub Pages
+![](https://github.com/vintagepc/MK404/raw/master/assets/Logo.png)
 
-You can use the [editor on GitHub](https://github.com/vintagepc/MK404/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Markdown
+*Current state of affairs and features*:
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+Be sure to check out the [Historical timeline](https://github.com/vintagepc/MK404/wiki/Historical-Timeline) to get a peek at the growth of MK404.
 
-```markdown
-Syntax highlighted code block
+For a detailed list of features, see [Features And Capabilities](https://github.com/vintagepc/MK404/wiki/Features-and-Capabilities-Summary). The below is a brief summary of the more visually appealing entries.
 
-# Header 1
-## Header 2
-### Header 3
 
-- Bulleted
-- List
+![](https://user-images.githubusercontent.com/53943260/80157964-63404880-8595-11ea-9bfe-55668a0d4807.png)
 
-1. Numbered
-2. List
+- Fancy graphics:
 
-**Bold** and _Italic_ and `Code` text
+![](https://github.com/vintagepc/MK404/wiki/images/Advanced_gfx.png)
 
-[Link](url) and ![Image](src)
-```
+- Virtual MMU support:
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+![](https://github.com/vintagepc/MK404/wiki/images/MMU2.png)
 
-### Jekyll Themes
+- The MMU supports multicolour printing:
+![](https://user-images.githubusercontent.com/53943260/84335826-c432d880-ab63-11ea-9534-6cc61ae1a745.png)
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/vintagepc/MK404/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+### Controls:
 
-### Support or Contact
+* [Mouse](https://github.com/vintagepc/MK404/wiki/Mouse-Functions)
+* [Keyboard](https://github.com/vintagepc/MK404/wiki/Key-Controls)
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+### Reference documentation:
+Advanced documentation and details are located in the project [Wiki](https://github.com/vintagepc/MK404/wiki). 
+
+Some quick links for convenience:
+* [Argument reference](https://github.com/vintagepc/MK404/wiki/Command-Line)
+* [General scripting info (not in wiki)](scripts/Scripting.md)
+
+* [Script command reference](https://github.com/vintagepc/MK404/wiki/Scripting)
+* [Trace option reference](https://github.com/vintagepc/MK404/wiki/Trace-Options)

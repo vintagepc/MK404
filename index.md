@@ -69,6 +69,7 @@ While we strive to maintain compatibility with stock firmware, this doesn't mean
 ### Supports the MMU2 and MMU1
 
 - You can do simulated multicolour prints, and the MMU emulation is done in the same fashion - in other words, it runs the stock factory firmware on a simulated AVR core, and is none the wiser of this. 
+
 ![](https://user-images.githubusercontent.com/53943260/84335826-c432d880-ab63-11ea-9534-6cc61ae1a745.png)
 
 

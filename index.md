@@ -72,6 +72,12 @@ While we strive to maintain compatibility with stock firmware, this doesn't mean
 
 ![](https://user-images.githubusercontent.com/53943260/84335826-c432d880-ab63-11ea-9534-6cc61ae1a745.png)
 
+### Much, much more!
+
+I can't really begin to describe every detail on this page. If you can't find what you're looking for, be sure to check out the following resources:
+
+- [Wiki](https://github.com/vintagepc/MK404/wiki)
+- [SimAVR](https://github.com/buserror/simavr)
 
 ## History
 
@@ -112,3 +118,7 @@ Some quick links for convenience:
 * [General scripting info (not in wiki)](scripts/Scripting.md) - Scripting overview, which let you make the printer behave differently or simulate failures while it's running.
 * [Script command reference](https://github.com/vintagepc/MK404/wiki/Scripting) - Advanced scripting, with lists of all the script syntax.
 * [Trace option reference](https://github.com/vintagepc/MK404/wiki/Trace-Options) - The trace system, for debugging particular data streams within the printer. 
+
+### Open Source
+
+- This project is open source under the [GPLv3](https://github.com/vintagepc/MK404/blob/master/COPYING) and we are proud to submit improvements and bugfixes we make to third party libraries upstream, where practical, and we encourage you to submit your own improvements for inclusion as part of the open-source culture. If you're interested in contributing, please see [Contribution Guidelines](https://github.com/vintagepc/MK404/blob/master/.github/CONTRIBUTING.md) to get started!

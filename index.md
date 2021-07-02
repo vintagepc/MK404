@@ -78,6 +78,8 @@ I can't really begin to describe every detail on this page. If you can't find wh
 
 - [Wiki](https://github.com/vintagepc/MK404/wiki)
 - [SimAVR](https://github.com/buserror/simavr)
+- [Discussions](https://github.com/vintagepc/MK404/discussions)
+- [Issues](https://github.com/vintagepc/MK404/issues)
 
 ## History
 

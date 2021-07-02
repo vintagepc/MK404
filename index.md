@@ -26,6 +26,14 @@ MK404 is a 3D printer simulator. Specifically, it is a very techincally-oriented
 
 ![](https://github.com/vintagepc/MK404/wiki/images/Advanced_gfx.png)
 
+### Why the name?
+
+It's a bit of nerdy meta-humour, comprised of several components :)
+- HTTP error 404 means a resource is missing, in this case, a physical printer. Perhaps someday we'll simulate an AVR based Teapot and have to account for [HTTP Status code 418](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418)
+- Prusa's [404 Error Page](https://www.prusaprinters.org/thisisanerror) that teases a future printer
+- Prusa's naming of their line of i3 FFF/FDM printers using the MK1/MK2/MK3 designation
+- A logical assumption that a successor to the MK3/S/+ line will probably be dubbed the MK4... At which point, there will still be 400 more iterations to go before we encounter a naming conflict, so we should be safe for a little while. 
+
 
 ## Printers Supported
 

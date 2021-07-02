@@ -81,18 +81,19 @@ I started playing with SimAVR as it was the most fully featured offering at the 
 
 Be sure to check out the [Historical timeline](https://github.com/vintagepc/MK404/wiki/Historical-Timeline) where I have collected some screenshots of notable development milestones in MK404's history.
 
+## Timelapse
+
+This is a timelapse video I took of a 5-colour MMU virtual print. Note this is an older build so it is still using the older style line visualization for the print:
+
+{% include vimeo.html id=459446678 %}
+
+
 # Getting started
 
 See [Supported Operating Systems](https://github.com/vintagepc/MK404/wiki/Supported-Operating-Systems) for more information specific to your platform. 
 Using the download the buttons at the top of the page will take you to our "Releases" page where you will be able to download source code, or binary packages for various platforms. The `dev` tag will always be a build from the latest check-in, whereas the versioned releases will represent a notable collection of fixes or a milestone in the project's history. 
 
 Be sure to check out the [main README](https://github.com/vintagepc/MK404) in the repo if you're interested in building from source. 
-
-## Timelapse
-
-This is a timelapse video I took of a 5-colour MMU virtual print. Note this is an older build so it is still using the older style line visualization for the print:
-
-{% include vimeo.html id=459446678 %}
 
 ## Quick Reference
 

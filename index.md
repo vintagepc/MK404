@@ -88,7 +88,13 @@ Using the download the buttons at the top of the page will take you to our "Rele
 
 Be sure to check out the [main README](https://github.com/vintagepc/MK404) in the repo if you're interested in building from source. 
 
-## Quick Reference:
+## Timelapse
+
+This is a timelapse video I took of a 5-colour MMU virtual print. Note this is an older build so it is still using the older style line visualization for the print:
+
+{% include vimeoPlayer.html id=459446678 %}
+
+## Quick Reference
 
 Just a few items you might wish to look at or learn more about, in a convenient HTML hyperlink format:
 

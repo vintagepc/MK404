@@ -92,7 +92,7 @@ Be sure to check out the [main README](https://github.com/vintagepc/MK404) in th
 
 This is a timelapse video I took of a 5-colour MMU virtual print. Note this is an older build so it is still using the older style line visualization for the print:
 
-{% include vimeoPlayer.html id=459446678 %}
+{% include vimeo.html id=459446678 %}
 
 ## Quick Reference
 

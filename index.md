@@ -72,6 +72,24 @@ While we strive to maintain compatibility with stock firmware, this doesn't mean
 
 ![](https://user-images.githubusercontent.com/53943260/84335826-c432d880-ab63-11ea-9534-6cc61ae1a745.png)
 
+### Advanced Extrusion Visualization
+
+In addition to simple line-extrusion visualization (the default), MK404 supports a volumetric extrusion visualization capability where extrusions can render as rectangles, or "pipes" with widths based on the extruded volume. There are two options for each of these modes depending on your graphics needs and capabilities:
+
+- Averaged Quadrilaterals - a simple rectangle that consists of only 4 points that is as long as possible for the extrusion. 
+- High-Res Quadrilaterals - Rectangles, but these are drawn on a per-extruder-step basis so that you can visualize the discretization of extrusion movements for debugging
+- Averaged Pipes - Like Averaged Quad but the extrusions are drawn as diamond-shaped tubes so they have thickness to them. Requires significanly more vertices so make sure you have a good graphics card for any sizeable prints. 
+- High-Res Pipes - The Pipe counterpart of High-Res Quads. Requires many, many, **many** more vertices. You may want to minimize the visualization window until the simulated print is finished since the drawing routines need to share memory with the calculations; as the print gets more complex these take longer and longer and your framerate (and therefore simulation time) will suffer.
+
+#### Example of Quad_HR mode
+![](quad_hr.png)
+The red spikes you can see are visualizations of the Linear Advance algorithm at work when the print changes direction or starts/stops extrusion. Unlike a real printer there is no fluid physics so an extruded step can "instantly" expand without any back-pressure. 
+
+#### Example of Avg_Pipe mode
+![](calicat.png)
+Note the linear advance steps are no longer visible and the extrusions are as long as possible along the travel path. 
+
+
 ### Much, much more!
 
 I can't really begin to describe every detail on this page. If you can't find what you're looking for, be sure to check out the following resources:

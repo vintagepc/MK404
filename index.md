@@ -58,7 +58,7 @@ Prusa MK3 MMU2 |  ✔️  Finished
 Prusa MK3S |  ✔️  Finished
 Prusa MK3S MMU2 | ✔️  Finished
 
-## What can it do?
+## What can it do? (Feature Highlights)
 
 - Please see [Features and Capabilities](https://github.com/vintagepc/MK404/wiki/Features-and-Capabilities-Summary) for an outline of the status of various hardware component simulation. Some things are not completely implemented, but for the most part the missing things are either abstractions we don't need to simulate at this time, or simply not required for our goals. 
 
@@ -96,6 +96,30 @@ The red spikes you can see are visualizations of the Linear Advance algorithm at
 #### Example of Avg_Pipe mode
 ![](calicat.png)
 Note the linear advance steps are no longer visible and the extrusions are as long as possible along the travel path. 
+
+### Debugging
+
+- You can use AVR-GDB or any other tool that supports GDB-style debugging to step through your code in the simulated hardware environment. Here I'm using `avr-insight` to inspect a delay function.
+
+![avr-insight](debugging.png)
+
+### Signal Tracing
+
+- MK404 makes use of SimAVR's VCD capabilities to dump certain signals to a value-change-dump file. You can use this to sniff bus traffick check GPIO states, and many more items. See the [Trace Options](https://github.com/vintagepc/MK404/wiki/Trace-Options-Prusa_MK3S) pages for a more complete list of supported streams organized by printer model. 
+
+![GTKWave](gtkwave.png)
+
+### Scripting
+
+- MK404 has an integrated scripting engine so you can drive the simulated hardware in a repeatable, non-interactive fashion. There are many capabilities, from toggling sensor states to waiting for a particular condition or signal-trace event. See the [Scripting Wiki](https://github.com/vintagepc/MK404/wiki/Scripting) for details on what items you can interact with, organized by printer. Scripting items can be used in a few ways:
+  - From the command line,a text file passed in as an argument with `--script`.
+  - Interactively, using the `--terminal` argument to provide a basic terminal you can use to type script commands.
+  
+    ![Terminal](terminal.png)
+  
+  - Via context menu. Middle-clicking the window will bring up a menu containing any scripting controls that do not require input arguments.
+    
+    ![Scripting Menu](menu.png)
 
 
 ### Much, much more!

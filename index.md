@@ -121,6 +121,10 @@ Note the linear advance steps are no longer visible and the extrusions are as lo
     
     ![Scripting Menu](menu.png)
 
+### Simulated SD card support and Serial I/O
+
+- MK404 comes with an internal utility to help you make blank FAT32 SD card images of varying sizes. There is also a convenient build step that will copy the contents of the `SDCard` folder into the image if you have `mtools` installed on your system. 
+- You can also connect the simulated serial port to a pseudoterminal (pty) and use any standard serial utility to send it GCode or commands.
 
 ### Much, much more!
 

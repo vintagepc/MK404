@@ -133,15 +133,15 @@ I can't really begin to describe every detail on this page. If you can't find wh
 
 ## History
 
-For those of you wondering, this project started in early 2020 as a joke in one of the Prusa3D github threads where I mused about the possibilty of something like this to debug a particularly annoying Linear Advance issue. Searching turned up a little bit of work surrounding printer simulation, including @buserror (Author of the wonderful SimAVR) whom had started a SimRepRap project. Unfortunatly nothing was in active development at the time, and nothing really usable for our purpsoes. 
+For those of you wondering, this project started in early 2020 as a joke in one of the Prusa3D github threads where I mused about the possibilty of something like this to debug a particularly annoying Linear Advance issue. Searching turned up a little bit of work surrounding printer simulation, including @buserror (Author of the wonderful SimAVR) whom had started a SimRepRap project. Unfortunatly nothing was in active development at the time, and nothing really usable for the desired purposes. 
 
-I started playing with SimAVR as it was the most fully featured offering at the time and things just kind of went downhill from there... to the point where you're looking at a not insignificant amount of work over the better part of a year to get it to where it is today. I do have to credit a few people along the way, especially @wavexx, @leptun, @3d-gussner and @DRracer for their feedback and contributions to help make the project what it is today. 
+I started playing with SimAVR as it was the most fully featured offering at the time and things just kind of went downhill from there... to the point where you're looking at a not insignificant amount of work over the better part of a year to get it to where it is today. I do have to credit a few people along the way, especially @wavexx, @leptun, @3d-gussner and @DRracer for their testing, feedback, and contributions to help make the project become a reality. 
 
 Be sure to check out the [Historical timeline](https://github.com/vintagepc/MK404/wiki/Historical-Timeline) where I have collected some screenshots of notable development milestones in MK404's history.
 
 ## Timelapse
 
-This is a timelapse video I took of a 5-colour MMU virtual print. Note this is an older build so it is still using the older style line visualization for the print:
+This is a timelapse video I took of a 5-colour MMU virtual print. Note this is an older build so it is still using the older style line visualization for the print. Total simulation time was about 12 hours:
 
 {% include vimeo.html id=459446678 %}
 
@@ -173,4 +173,4 @@ Some quick links for convenience:
 
 ### Open Source
 
-- This project is open source under the [GPLv3](https://github.com/vintagepc/MK404/blob/master/COPYING) and we are proud to submit improvements and bugfixes we make to third party libraries upstream, where practical, and we encourage you to submit your own improvements for inclusion as part of the open-source culture. If you're interested in contributing, please see [Contribution Guidelines](https://github.com/vintagepc/MK404/blob/master/.github/CONTRIBUTING.md) to get started!
+- This project is open source under the [GPLv3](https://github.com/vintagepc/MK404/blob/master/COPYING) and we are proud to submit improvements and bugfixes we make to third party libraries upstream where practical, and we encourage you to submit your own improvements to MK404 for inclusion as part of the open-source culture. If you're interested in contributing, please see [Contribution Guidelines](https://github.com/vintagepc/MK404/blob/master/.github/CONTRIBUTING.md) for our contribution guidelines, and open a new issue or discussion to introduce yourself and how you'd like to help! 

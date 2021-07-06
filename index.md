@@ -1,3 +1,5 @@
+![CI Build](https://github.com/vintagepc/MK404/workflows/CI%20Build/badge.svg) ![Code Lint](https://github.com/vintagepc/MK404/workflows/Code%20Lint/badge.svg) ![Automated Tests](https://github.com/vintagepc/MK404/workflows/Automated%20Tests/badge.svg) [![Coverage](https://codecov.io/gh/vintagepc/MK404/branch/master/graph/badge.svg)](https://codecov.io/gh/vintagepc/MK404) 
+
 ![](https://github.com/vintagepc/MK404/raw/master/assets/Logo.png)
 
 

@@ -171,7 +171,7 @@ Advanced documentation and details are located in the project [Wiki](https://git
 
 Some quick links for convenience:
 * [Argument reference](https://github.com/vintagepc/MK404/wiki/Command-Line) - All the command line arguments available for operating your virtual printer.
-* [General scripting info (not in wiki)](scripts/Scripting.md) - Scripting overview, which let you make the printer behave differently or simulate failures while it's running.
+* [General scripting info (not in wiki)](https://github.com/vintagepc/MK404/blob/master/scripts/Scripting.md) - Scripting overview, which let you make the printer behave differently or simulate failures while it's running.
 * [Script command reference](https://github.com/vintagepc/MK404/wiki/Scripting) - Advanced scripting, with lists of all the script syntax.
 * [Trace option reference](https://github.com/vintagepc/MK404/wiki/Trace-Options) - The trace system, for debugging particular data streams within the printer. 
 

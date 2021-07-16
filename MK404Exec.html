@@ -1,0 +1,108 @@
+---
+layout: default
+---
+
+<h1 id="form-elements">MK404 Command Line Generator</h1>
+
+Note: This tool is still in development. Please report any issues you may encounter so it can be improved! <br><br>
+
+<h3> Daunted by all the command line options? We've got you covered! </h3>
+
+<link rel="stylesheet" href="style.css">
+<script>
+  function toggleClass(param,bBlock) {
+    baseclass = param.replace(/[0-9]/g,'');
+    items = document.getElementsByClassName(baseclass+'-block');
+    for(i=0; i<items.length; i++) {
+      // alert(items[i].id)
+      if (bBlock) {
+        if(items[i].id != param+"-p") {
+          items[i].style.display='none';
+        }
+      } else {
+        items[i].style.display='initial';
+      }
+    }
+  }
+
+  function updateParam(param, format) {
+    sourceCtl = document.getElementById(param);
+    enableCtl = document.getElementById(param + "-enabled");
+    if (arguments.length == 1) {
+      format = param + " %1";
+    }
+    //alert(event.target.id);
+    if (enableCtl.value == 1 || enableCtl.checked) { 
+      newstring = format.replace('%1',"" + sourceCtl.value);
+      newvis = "block";
+      toggleClass(param,true)
+    } else {
+      newstring = "";
+      newvis = "none";
+      toggleClass(param,false)
+    }
+    document.getElementById(param + "-val").innerHTML = newstring;
+    document.getElementById(param + "-val").style.display = newvis;
+    updateCmd();
+  }
+  </script>
+  
+
+<fieldset>
+  <legend>Options</legend>
+  <form>
+    {% include dropdown.html name="machine" label="Printer model" options="Prusa_MK1_mR13@Prusa_MK25S_mR13@Prusa_MK25_mR13@Prusa_MK2MMU_mR13@Prusa_MK2_mR13@Prusa_MK3@Prusa_MK3MMU2@Prusa_MK3S@Prusa_MK3SMMU2" format="%1" optional=1 %} 
+    {% include checkbox.html name="b" label="Execute bootloader" optional=1 %}
+    {% include textinput.html name="-bootloader-file" label="Bootloader filename" default="stk500boot_v2_mega2560.hex" optional=1 %} 
+    {% include checkbox.html name="-colour-extrusion" label="Colour Extrusion" optional=1 %}
+    {% include dropdown.html name="d" label="Debug verbosity" optional=1 options="@-d@-d -d@-d -d -d" %}
+    {% include checkbox.html name="-debugcore" label="Use 'Debug' AVR Core" optional=1 %}
+    {% include dropdown.html name="extrusion" index=1 label="Extrusion type" optional=1 options="Line@Quad_Avg@Quad_HR@Tube_Avg@Tube_HR" %}  
+    {% include textinput.html name="f" label="Firmware filename" default="MK3S.afx" optional=1 %} 
+    {% include dropdown.html name="g" index=1 label="Visual printer style" optional=1 options="none@lite@fancy@bear" %}  
+    {% include checkbox.html name="-gdb" label="Enable GDB debugging on port 1234" optional=1 %}
+    {% include dropdown.html name="-image-size" label="New SD image size" optional=1 options="32M@64M@128M@256M@512M@1G@2G" %}  
+    {% include checkbox.html name="k" label="Print keyboard controls" optional=1 %}
+    {% include checkbox.html name="-klipper" label="Klipper mode (--skew-correct and --no-hacks)" optional=1 %}
+    {% include dropdown.html name="-lcd-scheme" label="LCD colour scheme" optional=1 options="0@1@2" %}  
+    {% include checkbox.html name="l" label="(Re)load firmware to flash" optional=1 %}
+    {% include checkbox.html name="-marlin" label="Marlin mode (--no-hacks)" optional=1 %}
+    {% include checkbox.html name="m" label="Mute simulated beeper" optional=1 %}
+    {% include checkbox.html name="n" label="Disable any workarounds needed to runf factory firmware" optional=1 %}
+    {% include textinput.html name="-script" label="Run a script file" default="myscript.txt" optional=1 %} 
+    {% include checkbox.html name="-scripthelp" label="Print scripting help for selected printer" optional=1 %}
+    {% include textinput.html name="-sdimage" label="Custom SD Image filename" default="SDCard.bin" optional=1 %} 
+    {% include checkbox.html name="s" label="Route printer UART to a PTY instead of stdio" optional=1 %}
+    {% include checkbox.html name="-skew-correct" label="Attempt to correct for fast clock skew of the simulated board" optional=1 %}
+    {% include checkbox.html name="-terminal" label="Enable (experimental) scripting terminal" optional=1 %}
+    {% include checkbox.html name="w" label="Wait/pause execution once hardware is ready and serial is connected" optional=1 %}
+    
+  </form>
+</fieldset>
+<hr>
+<h2>Generated command line:</h2>
+<pre id="finalCmd" style="max-width:100%;" >MK404</pre>
+
+<script>
+  function updateCmd() {
+    params = document.getElementsByClassName("paramItem");
+    cmdLine = "MK404";
+    appendLine = ""
+    for(i=0; i<params.length; i++) {
+      if (params[i].innerHTML !="")
+        cmdLine += ' ' + params[i].innerHTML.trim();
+    }
+    params = document.getElementsByClassName("paramAppend");
+    for(i=0; i<params.length; i++) {
+      tmpParam = params[i].innerHTML.replace("-append ","").trim();
+      if (tmpParam !="")
+        appendLine += tmpParam + ",";
+    }
+    if (appendLine.trim() != "")
+      appendLine = '-append ' + appendLine.slice(0,-1);
+    cmdLine = cmdLine + ' ' + appendLine;
+    document.getElementById('finalCmd').innerHTML = cmdLine.replace(/\s+/g,' ');
+  }
+  document.onload = updateCmd();
+</script>
+</fieldset>

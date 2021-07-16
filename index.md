@@ -159,6 +159,8 @@ Using the download the buttons at the top of the page will take you to our "Rele
 
 Be sure to check out the [main README](https://github.com/vintagepc/MK404) in the repo if you're interested in building from source. 
 
+- **New** Check out the [Command line configurator](https://vintagepc.github.io/MK404/MK404Exec.html) to help you build a command line you can save to a batch file for later!
+
 ## Quick Reference
 
 Just a few items you might wish to look at or learn more about, in a convenient HTML hyperlink format:

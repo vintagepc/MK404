@@ -1,0 +1,7 @@
+{% assign unique_id = include.name | append: include.index %}
+
+<!--<span id="-{{unique_id}}-p" class="{{ include.excludes }}"> -->
+    {% include enabler.html %}
+    <label for="-{{ include.name }}"> {{ include.label }}:</label>
+    <input type="number" min="1024" max="4096" step="1" value="{{ include.default }}" id="-{{ include.name }}" onchange="updateParam('-{{ include.name }}','-{{ include.name }} {{ include.format }}')"/>
+</p>

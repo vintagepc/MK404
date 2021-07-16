@@ -1,0 +1,30 @@
+
+<span id="-{{unique_id}}-p" 
+{% if include.excludes!="" %}
+    class="{{ include.excludes }}-block"
+{% endif %}
+>
+{% if include.name == "append" %}
+    {% assign ctrlClass="paramAppend" %}
+{% else %}
+    {% assign ctrlClass="paramItem" %}
+{% endif %}
+{% if include.optional != 1 %}
+    {% assign initVal='-' | append: include.name %}
+{% else %}
+    {% assign initVal="" %}
+{% endif %}
+{% if include.default and include.optional != 1  %} 
+    {% assign initVal= initVal | append: ' ' | append: include.default %}
+{% endif %}
+<pre class="{{ ctrlClass }}" style="display:{% if include.optional == 1 %}none{% else %}block{% endif %};float:right;" id="-{{ unique_id }}-val">{{ initVal }} </pre>
+{% if include.format %}
+    {% assign argFmt=include.format %}
+{% else %}
+    {% assign argFmt='-' | append: include.name | append: ' %1' |  %}
+{% endif %}
+{% if include.optional == 1 %}
+    <input type ="checkbox" id="-{{ unique_id }}-enabled" value=0 onchange="updateParam('-{{ unique_id }}','{{ argFmt }}')" />
+{% else %}
+    <input type ="hidden" id="-{{ unique_id }}-enabled" value=1 />
+{% endif %}

@@ -1,0 +1,15 @@
+{% assign unique_id = include.name | append: include.index %}
+
+<!--<span id="-{{unique_id}}-p" class="{{ include.excludes }}"> -->
+    {% include enabler.html %}
+    <label for="-{{ include.name }}{{ include.index }}"> {{ include.label }}:</label>
+    <select  id="-{{ include.name }}{{ include.index }}" 
+        onchange="updateParam('-{{ include.name }}{{ include.index }}','{{ argFmt }}')"  
+        {% if include.disabled == 1 %}disabled{% endif %}>
+            {% assign choices = include.options | split: '@' %}
+            {% for option in choices %}
+                <option value="{{ option }}">{{ option }}</option>
+            {% endfor %}
+      </select>
+
+</span><br/></br>

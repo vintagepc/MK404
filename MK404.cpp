@@ -406,18 +406,31 @@ int main(int argc, char *argv[])
 		strFW = argFW.getValue();
 	}
 
-	if (!argStrBoot.isSet())
+	std::string strBoot {""};
 	{
-		std::cout << "No bootloader specified, using default: " << argStrBoot.getValue() << '\n';
-	} else if (argStrBoot.getValue().empty())
-	{
-		std::cout << "Empty bootloader filename provided. NOT loading a bootloader.\n";
-	} else {
-		std::cout << "Using Bootloader: " << argStrBoot.getValue() << '\n';
+		auto ifBL = std::ifstream(argStrBoot.getValue());
+		if (!argStrBoot.isSet() && ifBL.good())
+		{
+			std::cout << "No bootloader specified, using default: " << argStrBoot.getValue() << '\n';
+			strBoot = argStrBoot.getValue();
+		}
+		else if (argStrBoot.getValue().empty())
+		{
+			std::cout << "Empty bootloader filename provided. NOT loading a bootloader.\n";
+		}
+		else if (ifBL.good())
+		{
+			std::cout << "Using Bootloader: " << argStrBoot.getValue() << '\n';
+			strBoot = argStrBoot.getValue();
+		}
+		else
+		{
+			std::cout << "No bootloader specified, or specified file not found. Skipping!\n";
+		}
 	}
 
 	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),bArgHacks,argSerial.isSet(), argSD.getValue() ,
-		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),argStrBoot.getValue()); // this line is the CreateBoard() args.
+		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),strBoot); // this line is the CreateBoard() args.
 
 	pBoard->SetPrimary(true); // This is the primary board, responsible for scripting/dispatch. Blocks contention from sub-boards, e.g. MMU.
 

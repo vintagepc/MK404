@@ -466,7 +466,7 @@ int main(int argc, char *argv[])
 		std::cout << "GL_RENDERER  : " << glGetString(GL_RENDERER) << '\n';
 		std::cout << "GLEW_VERSION : " << glewGetString(GLEW_VERSION) << '\n';
 		//cout << "GLSL VERSION : " << glGetString(GL_SHADING_LANGUAGE_VERSION) << '\n';
-#if !defined(__APPLE__)
+#if !defined(__APPLE__) && !defined(__CYGWIN__)
 		glDebugMessageCallback( GLErrorCB, nullptr );
 		if (argSpam.getValue()<1)
 		{

@@ -52,11 +52,16 @@ class Config
 		inline void SetDebugCore(bool bVal){ m_bDebugCore = bVal;}
 		inline bool GetDebugCore(){ return m_bDebugCore;}
 
+		// Secondary firmware?
+		inline void SetFW2(std::string strName){ m_strSecFW = std::move(strName);}
+		inline const std::string GetFW2(){ return m_strSecFW;}
+
 	private:
 		unsigned int m_iExtrusion = false;
 		bool m_bColorExtrusion = false;
 		bool m_bSkew = false;
 		uint8_t m_iScheme = 0;
 		bool m_bDebugCore = false;
+		std::string m_strSecFW = "MM-control-01.hex";
 
 };

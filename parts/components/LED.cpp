@@ -29,58 +29,20 @@
 # include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glEnd
 #endif
 
-LED::LED(uint32_t uiHexColor, char chrLabel, bool bInvert):m_Color(uiHexColor),m_chrLabel(chrLabel),m_bInvert(bInvert)
+LED::LED(uint32_t uiHexColor, char chrLabel, bool bInvert):GLIndicator(chrLabel,bInvert)
 {
-    m_uiBrightness = 255*bInvert;
+    SetColor(uiHexColor);
 }
 
 
 void LED::OnValueChanged(struct avr_irq_t*, uint32_t value)
 {
-	m_uiBrightness = (value^m_bInvert)*255;
+	SetValue(value*255U);
 }
 
 void LED::OnPWMChanged(struct avr_irq_t*, uint32_t value)
 {
-	auto uiVal = gsl::narrow<uint8_t>(value);
-	if (m_bInvert)
-	{
-		m_uiBrightness = 255u-uiVal;
-	}
-	else
-	{
-		m_uiBrightness = uiVal;
-	}
-}
-
-void LED::Draw()
-{
-	if (!m_bAttached) return;
-
-	bool m_bOn = m_uiBrightness>0;
-	uint16_t uiBrt = ((m_uiBrightness*9)/10)+25;
-    glPushMatrix();
-        if (m_bOn)
-		{
-            glColor3us(m_Color.red*uiBrt, m_Color.green*uiBrt, m_Color.blue*uiBrt);
-		}
-        else
-		{
-            glColor3ub(m_Color.red/10, m_Color.green/10, m_Color.blue/10);
-		}
-
-        glBegin(GL_QUADS);
-            glVertex2f(0,10);
-            glVertex2f(20,10);
-            glVertex2f(20,0);
-            glVertex2f(0,0);
-        glEnd();
-		bool bWhite = m_uiBrightness<128;
-        glColor3f(bWhite,bWhite,bWhite);
-        glTranslatef(4,7,-1);
-        glScalef(0.1,-0.05,1);
-        glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrLabel);
-    glPopMatrix();
+	SetValue(gsl::narrow<uint8_t>(value));
 }
 
 void LED::Init(avr_t *avr)
@@ -88,5 +50,4 @@ void LED::Init(avr_t *avr)
     _Init(avr, this);
     RegisterNotify(LED_IN,MAKE_C_CALLBACK(LED,OnValueChanged),this);
 	RegisterNotify(PWM_IN,MAKE_C_CALLBACK(LED,OnPWMChanged),this);
-	m_bAttached = true;
 }

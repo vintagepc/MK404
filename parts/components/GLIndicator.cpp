@@ -28,8 +28,9 @@
 # include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glEnd
 #endif
 
-GLIndicator::GLIndicator(char chrLabel):m_chrLabel(chrLabel)
+GLIndicator::GLIndicator(char chrLabel, bool bInvert):m_chrLabel(chrLabel),m_bInvert(bInvert)
 {
+	m_uiBrightness = 255*bInvert;
 }
 
 void GLIndicator::Draw()
@@ -60,3 +61,13 @@ void GLIndicator::Draw()
     glPopMatrix();
 }
 
+void GLIndicator::SetValue(uint8_t value) {
+	if (m_bInvert)
+	{
+		m_uiBrightness = 255U-value;
+	}
+	else
+	{
+		m_uiBrightness = value;
+	}
+}

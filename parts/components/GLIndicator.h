@@ -30,15 +30,17 @@ class GLIndicator
 {
 public:
 	// Creates a new LED with RGBA color (A ignored) uiHexColor and char label chrLabel
-	GLIndicator(char chrLabel);
+	GLIndicator(char chrLabel, bool bInvert = false);
 	// Draws the LED
 	void Draw();
 
-	inline void SetValue(uint8_t value) { m_uiBrightness = value; }
+	void SetValue(uint8_t value);
 
 	inline void SetLabel(char label) { m_chrLabel = label;}
 
 	inline void SetColor(uint32_t color) { m_Color = hexColor_t(color); }
+
+	inline void SetRotation(uint16_t uiAngle) {m_uiRot = uiAngle%360U;}
 
 private:
 	// Value changed callback.
@@ -46,4 +48,5 @@ private:
 	char m_chrLabel = ' ';
 	std::atomic_uint8_t m_uiBrightness = {0};
 	bool m_bInvert = false;
+	std::atomic_uint16_t m_uiRot {0};
 };

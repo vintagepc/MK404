@@ -35,6 +35,10 @@ GLIndicator::GLIndicator(char chrLabel, bool bInvert):m_chrLabel(chrLabel),m_bIn
 
 void GLIndicator::Draw()
 {
+	if (!m_bVisible)
+	{
+		return;
+	}
 	bool m_bOn = m_uiBrightness>0;
 	uint16_t uiBrt = ((m_uiBrightness*9)/10)+25;
     glPushMatrix();

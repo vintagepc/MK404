@@ -40,7 +40,9 @@ public:
 
 	inline void SetColor(uint32_t color) { m_Color = hexColor_t(color); }
 
-	inline void SetRotation(uint16_t uiAngle) {m_uiRot = uiAngle%360U;}
+	inline uint16_t RotateStep(uint16_t uiAngle) { return (m_uiRot = (uiAngle + m_uiRot) % 360U); }
+
+	inline void SetVisible(bool bVisible) { m_bVisible = bVisible; }
 
 private:
 	// Value changed callback.
@@ -49,4 +51,5 @@ private:
 	std::atomic_uint8_t m_uiBrightness = {0};
 	bool m_bInvert = false;
 	std::atomic_uint16_t m_uiRot {0};
+	bool m_bVisible = false;
 };

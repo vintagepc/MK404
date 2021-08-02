@@ -35,7 +35,9 @@
 //#define ENABLE_MQ 0
 //#define ENABLE_SHMQ 1
 
+#if defined(ENABLE_MQ) || defined(ENABLE_PIPE)
 static constexpr char IPC_FILE[] = "/MK404IPC";
+#endif
 
 #if ENABLE_MQ
 static constexpr mqd_t MQ_ERR = -1;

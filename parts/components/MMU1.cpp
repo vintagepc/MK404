@@ -21,11 +21,13 @@
  */
 
 #include "MMU1.h"
-#include "GL/glew.h" // NOLINT - GLEW must come first.
-#include "GL/freeglut_std.h"
 #include "TelemetryHost.h"
 #include "Util.h"
 //#include <iostream>     // for printf
+
+MMU1::MMU1():GLIndicator('0') {
+	SetColor(GetToolColor(0));
+}
 
 void MMU1::Init(struct avr_t * avr)
 {
@@ -45,30 +47,7 @@ void MMU1::Init(struct avr_t * avr)
 	TH.AddTrace(this, STEP1, {TC::Stepper});
 	TH.AddTrace(this, STEP2, {TC::Stepper});
 	TH.AddTrace(this, STEP3, {TC::Stepper});
-
-	m_bEnabled = true;
-}
-
-void MMU1::Draw()
-{
-	if (!m_bEnabled)
-	{
-		return; // Don't draw if not attached.
-	}
-	hexColor_t colour = GetToolColor(m_uiTool);
-    glPushMatrix();
-		glColor3ub(colour.red, colour.green, colour.blue);
-        glBegin(GL_QUADS);
-            glVertex2f(0,10);
-            glVertex2f(20,10);
-            glVertex2f(20,0);
-            glVertex2f(0,0);
-        glEnd();
-        glColor3f(0,0,0);
-        glTranslatef(4,7,-1);
-        glScalef(0.1,-0.05,1);
-        glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'0'+m_uiTool);
-    glPopMatrix();
+	SetVisible(true);
 }
 
 void MMU1::OnStepIn(avr_irq_t */*irq*/, uint32_t value)
@@ -88,6 +67,8 @@ void MMU1::OnMuxIn(avr_irq_t *irq, uint32_t value)
 		uiTool = (2*(value))+GetIRQ(MUX0)->value;
 	}
 	m_uiTool = uiTool;
+	SetColor(GetToolColor(uiTool));
+	SetLabel('0'+uiTool);
 	//printf("TOOL: %u\n", uiTool);
 	RaiseIRQ(TOOL_OUT,uiTool);
 }

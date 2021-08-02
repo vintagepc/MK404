@@ -40,6 +40,8 @@ public:
 
 	inline void SetColor(uint32_t color) { m_Color = hexColor_t(color); }
 
+	inline void SetColor(hexColor_t color) { m_Color = color; }
+
 	inline uint16_t RotateStep(uint16_t uiAngle) { return (m_uiRot = (uiAngle + m_uiRot) % 360U); }
 
 	inline void SetVisible(bool bVisible) { m_bVisible = bVisible; }

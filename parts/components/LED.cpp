@@ -50,4 +50,5 @@ void LED::Init(avr_t *avr)
     _Init(avr, this);
     RegisterNotify(LED_IN,MAKE_C_CALLBACK(LED,OnValueChanged),this);
 	RegisterNotify(PWM_IN,MAKE_C_CALLBACK(LED,OnPWMChanged),this);
+	SetVisible(true);
 }

@@ -22,12 +22,6 @@
 
 #include "LED.h"
 #include "gsl-lite.hpp"
-#include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#if defined(__APPLE__)
-# include <OpenGL/gl.h>       // for glVertex2f, glBegin, glColor3f, glEnd
-#else
-# include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glEnd
-#endif
 
 LED::LED(uint32_t uiHexColor, char chrLabel, bool bInvert):GLIndicator(chrLabel,bInvert)
 {

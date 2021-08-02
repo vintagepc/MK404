@@ -24,10 +24,8 @@
 
 #include "BasePeripheral.h"  // for BasePeripheral
 #include "GLIndicator.h"
-#include "Util.h"            // for hexColor_t
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
-#include <atomic>
 #include <cstdint>          // for uint32_t, uint8_t
 
 class LED: public BasePeripheral, public GLIndicator

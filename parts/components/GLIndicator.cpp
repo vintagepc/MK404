@@ -61,7 +61,16 @@ void GLIndicator::Draw()
         glColor3f(bWhite,bWhite,bWhite);
         glTranslatef(4,7,-1);
         glScalef(0.1,-0.05,1);
-        glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrLabel);
+		glPushMatrix();
+			auto uiRot = m_uiRot.load();
+			if (uiRot)
+			{
+				glTranslatef(50,50,0);
+				glRotatef(m_uiRot,0,0,-1);
+				glTranslatef(-50,-50,0);
+			}
+        	glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrLabel);
+		glPopMatrix();
     glPopMatrix();
 }
 

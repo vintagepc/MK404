@@ -20,12 +20,6 @@
  */
 #include "Fan.h"
 #include "TelemetryHost.h"    // for TC, TelCategory, TelemetryHost
-#include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#if defined(__APPLE__)
-# include <OpenGL/gl.h>       // for glVertex2f, glTranslatef, glBegin, glCo..
-#else
-# include <GL/gl.h>           // for glVertex2f, glTranslatef, glBegin, glCo..
-#endif
 #include <iostream>
 
 //#define TRACE(_w)_w
@@ -33,7 +27,7 @@
 #define TRACE(_w)
 #endif
 
-Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),m_uiMaxRPM(iMaxRPM),m_chrSym(chrSym)
+Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),GLIndicator(chrSym),m_uiMaxRPM(iMaxRPM)
 {
 	RegisterActionAndMenu("Stall", "Stalls the fan", Actions::Stall);
 	RegisterActionAndMenu("Resume","Resumes fan from a stall condition",Actions::Resume);
@@ -44,33 +38,10 @@ avr_cycle_count_t Fan::OnTachChange(avr_t *, avr_cycle_count_t)
 {
     RaiseIRQ(TACH_OUT, m_bPulseState^=1);
     RegisterTimerUsec(m_fcnTachChange,m_uiUsecPulse,this);
-	m_uiRot = (m_uiRot + 21)%360;
-	RaiseIRQ(ROTATION_OUT,m_uiRot);
+	auto uiRot = RotateStep(21U);
+	RaiseIRQ(ROTATION_OUT,uiRot);
     return 0;
 }
-
-void Fan::Draw()
-{
-    glPushMatrix();
-	    glColor3ub(0,m_uiPWM>>1U,0);
-        glBegin(GL_QUADS);
-            glVertex2f(0,10);
-            glVertex2f(20,10);
-            glVertex2f(20,0);
-            glVertex2f(0,0);
-        glEnd();
-        glColor3f(1,1,1);
-        glTranslatef(9,5,-1);
-        glScalef(0.10,-0.05,1);
-		glRotatef(m_uiRot,0,0,-1);
-		glTranslatef(-50,-50,0);
-		glPushAttrib(GL_LINE_BIT);
-			glLineWidth(3);
-			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrSym);
-		glPopAttrib();
-    glPopMatrix();
-}
-
 
 Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const std::vector<std::string>& vArgs)
 {
@@ -100,7 +71,7 @@ void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 	{
         m_uiCurrentRPM = ((m_uiMaxRPM)*value)/255;
 	}
-
+	SetValue(value);
     RaiseIRQ(SPEED_OUT,m_uiCurrentRPM);
 
     float fSecPerRev = 60.0f/static_cast<float>(m_uiCurrentRPM);
@@ -139,6 +110,7 @@ void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr
 	TH.AddTrace(this, DIGITAL_IN, {TC::Fan, TC::OutputPin});
 	TH.AddTrace(this, TACH_OUT, {TC::Fan, TC::InputPin});
 	TH.AddTrace(this, SPEED_OUT,{TC::Fan, TC::Misc},16);
+	SetVisible(true);
 
 }
 

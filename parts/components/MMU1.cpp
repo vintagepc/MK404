@@ -25,7 +25,7 @@
 #include "Util.h"
 //#include <iostream>     // for printf
 
-MMU1::MMU1():GLIndicator('0', false) {
+MMU1::MMU1():GLIndicator('0', false, true) {
 	SetColor(GetToolColor(0));
 	SetValue(255);
 }

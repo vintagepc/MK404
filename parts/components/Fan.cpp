@@ -27,7 +27,7 @@
 #define TRACE(_w)
 #endif
 
-Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),GLIndicator(chrSym,false,false),m_uiMaxRPM(iMaxRPM)
+Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),GLIndicator(chrSym,false,true),m_uiMaxRPM(iMaxRPM)
 {
 	RegisterActionAndMenu("Stall", "Stalls the fan", Actions::Stall);
 	RegisterActionAndMenu("Resume","Resumes fan from a stall condition",Actions::Resume);

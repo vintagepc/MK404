@@ -43,7 +43,7 @@ void GLIndicator::Draw()
 	uint16_t uiBrt = m_uiBrightness;
 	if (m_bNoBlackBG)
 	{
-		m_uiBrightness = ((m_uiBrightness*9)/10)+25;
+		uiBrt = ((uiBrt*9)/10)+25;
 	}
     glPushMatrix();
         if (m_bOn)

@@ -30,7 +30,7 @@ class GLIndicator
 {
 public:
 	// Creates a new LED with RGBA color (A ignored) uiHexColor and char label chrLabel
-	GLIndicator(char chrLabel, bool bInvert = false);
+	explicit GLIndicator(char chrLabel, bool bInvert = false, bool bNoBlackBG = true);
 	// Draws the LED
 	void Draw();
 
@@ -54,4 +54,5 @@ private:
 	bool m_bInvert = false;
 	std::atomic_uint16_t m_uiRot {0};
 	bool m_bVisible = false;
+	bool m_bNoBlackBG = true;
 };

@@ -25,8 +25,9 @@
 #include "Util.h"
 //#include <iostream>     // for printf
 
-MMU1::MMU1():GLIndicator('0') {
+MMU1::MMU1():GLIndicator('0', false) {
 	SetColor(GetToolColor(0));
+	SetValue(255);
 }
 
 void MMU1::Init(struct avr_t * avr)

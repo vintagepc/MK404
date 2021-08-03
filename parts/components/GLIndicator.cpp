@@ -28,7 +28,7 @@
 # include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glEnd
 #endif
 
-GLIndicator::GLIndicator(char chrLabel, bool bInvert):m_chrLabel(chrLabel),m_bInvert(bInvert)
+GLIndicator::GLIndicator(char chrLabel, bool bInvert, bool bNoBlack):m_chrLabel(chrLabel),m_bInvert(bInvert),m_bNoBlackBG(bNoBlack)
 {
 	m_uiBrightness = 255*bInvert;
 }
@@ -40,7 +40,11 @@ void GLIndicator::Draw()
 		return;
 	}
 	bool m_bOn = m_uiBrightness>0;
-	uint16_t uiBrt = ((m_uiBrightness*9)/10)+25;
+	uint16_t uiBrt = m_uiBrightness;
+	if (m_bNoBlackBG)
+	{
+		m_uiBrightness = ((m_uiBrightness*9)/10)+25;
+	}
     glPushMatrix();
         if (m_bOn)
 		{

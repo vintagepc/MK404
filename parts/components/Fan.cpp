@@ -27,7 +27,7 @@
 #define TRACE(_w)
 #endif
 
-Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),GLIndicator(chrSym),m_uiMaxRPM(iMaxRPM)
+Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),GLIndicator(chrSym,false,false),m_uiMaxRPM(iMaxRPM)
 {
 	RegisterActionAndMenu("Stall", "Stalls the fan", Actions::Stall);
 	RegisterActionAndMenu("Resume","Resumes fan from a stall condition",Actions::Resume);
@@ -71,7 +71,7 @@ void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 	{
         m_uiCurrentRPM = ((m_uiMaxRPM)*value)/255;
 	}
-	SetValue(value);
+	SetValue(value>>1);
     RaiseIRQ(SPEED_OUT,m_uiCurrentRPM);
 
     float fSecPerRev = 60.0f/static_cast<float>(m_uiCurrentRPM);

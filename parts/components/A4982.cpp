@@ -21,13 +21,6 @@
 
 #include "A4982.h"
 #include "TelemetryHost.h"
-
-#include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#if defined(__APPLE__)
-# include <OpenGL/gl.h>       // for glVertex3f, glColor3f, glBegin, glEnd
-#else
-# include <GL/gl.h>           // for glVertex3f, glColor3f, glBegin, glEnd
-#endif
 #include <algorithm>          // for min
 #include <atomic>
 #include <cstring>				// for memcpy
@@ -115,6 +108,7 @@ void A4982::OnEnableIn(struct avr_irq_t * /*irq*/, uint32_t value)
 A4982::A4982(char cAxis):GLMotor(cAxis)
 {
 	m_strName.push_back(cAxis);
+	m_bEnable = false;
 }
 
 void A4982::OnResetIn(avr_irq_t */*irq*/, uint32_t value)

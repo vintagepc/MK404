@@ -150,8 +150,6 @@ void MMU2::SetupHardware()
 
 	_Init(GetAVR(), this);
 
-	m_Extr.SetSimple(true);
-
 	RegisterNotify(RESET,MAKE_C_CALLBACK(MMU2,OnResetIn),this);
 	RegisterNotify(PULLEY_IN, MAKE_C_CALLBACK(MMU2,OnPulleyFeedIn),this);
 	RegisterNotify(SHIFT_IN, MAKE_C_CALLBACK(MMU2,LEDHandler),this);

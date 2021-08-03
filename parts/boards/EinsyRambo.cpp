@@ -174,6 +174,7 @@ namespace Boards
 		cfg.uiFullStepsPerMM = 280*8;
 
 		E.SetConfig(cfg);
+		E.SetSimple(true);
 		AddHardware(E);
 		TryConnect(E0_TMC2130_CS, 	&E, TMC2130::SPI_CSEL);
 		TryConnect(E0_DIR_PIN,		&E, TMC2130::DIR_IN);

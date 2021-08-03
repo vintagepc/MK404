@@ -62,7 +62,7 @@ class GLMotor
 		int32_t m_iCurStep = 0;
 		int32_t m_iMaxPos = 0;
 
-		std::atomic_bool 	m_bEnable {false},
+		std::atomic_bool 	m_bEnable {true},
 							m_bIsSimple{false},
 							m_bStealthMode {false},
 							m_bDrawStall {false},

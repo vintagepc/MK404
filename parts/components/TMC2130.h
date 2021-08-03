@@ -211,8 +211,8 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 		uint32_t m_uiStepIncrement = 1;
 
 		// Position helpers
-		float StepToPos(int32_t step);
-		int32_t PosToStep(float step);
+		float StepToPos(int32_t step) override;
+		int32_t PosToStep(float step) override;
 
 		inline uint32_t GetStepDivisor() { return 256U>>m_regs.defs.CHOPCONF.mres; }
 };

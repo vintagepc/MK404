@@ -35,77 +35,6 @@
 
 #define TRACE(x)
 
-void A4982::Draw()
-{
-	_Draw(false);
-}
-
-void A4982::Draw_Simple()
-{
-	_Draw(true);
-}
-
-void A4982::_Draw(bool bIsSimple)
-{
-	if (!m_bConnected) return;
-		// Copy atomic to local
-		float fPos = m_fCurPos;
-        glColor3f(0,0,0);
-	    glBegin(GL_QUADS);
-			glVertex3f(0,0,0);
-			glVertex3f(350,0,0);
-			glVertex3f(350,10,0);
-			glVertex3f(0,10,0);
-        	glColor3f(1,1,1);
-			if (m_bEnable)
-			{
-                glVertex3f(3,8,0);
-                glVertex3f(13,8,0);
-                glVertex3f(13,1,0);
-                glVertex3f(3,1,0);
-            	glColor3f(0,0,0);
-			}
-		glEnd();
- 		glPushMatrix();
-            glTranslatef(3,7,0);
-            glScalef(0.09,-0.05,0);
-            glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_cAxis);
-            //glTranslatef(  bIsSimple? 30 : 280 ,7,0);
-            //glScalef(0.09,-0.05,0);
-			// Values translated according to existing Scalef()
-			glTranslatef(bIsSimple? 195 : 2973 ,0,0);
-			glColor3f(1,1,1);
-            std::string strPos = std::to_string(fPos);
-            for (int i=0; i<std::min(7,static_cast<int>(strPos.size())); i++)
-			{
-                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
-			}
-        glPopMatrix();
-		if (bIsSimple)
-		{
-			return;
-		}
-		glPushMatrix();
-			glTranslatef(20,0,0);
-			glColor3f(1,0,0);
-			glBegin(GL_QUADS);
-				glVertex3f(0,2,0);
-				glVertex3f(-2,2,0);
-				glVertex3f(-2,8,0);
-				glVertex3f(0,8,0);
-				glVertex3f(m_fEnd,2,0);
-				glVertex3f(m_fEnd+2,2,0);
-				glVertex3f(m_fEnd+2,8,0);
-				glVertex3f(m_fEnd,8,0);
-				glColor3f(0,1,1);
-				glVertex3f(fPos-0.5,2,0);
-				glVertex3f(fPos+0.5,2,0);
-				glVertex3f(fPos+0.5,8,0);
-				glVertex3f(fPos-0.5,8,0);
-			glEnd();
-		glPopMatrix();
-}
-
 // Called when DIR pin changes.
 void A4982::OnDirIn(struct avr_irq_t * /*irq*/, uint32_t value)
 {
@@ -183,7 +112,7 @@ void A4982::OnEnableIn(struct avr_irq_t * /*irq*/, uint32_t value)
     m_bEnable = value==0; // active low, i.e motors off when high.
 }
 
-A4982::A4982(char cAxis):m_cAxis(cAxis)
+A4982::A4982(char cAxis):GLMotor(cAxis)
 {
 	m_strName.push_back(cAxis);
 }
@@ -258,9 +187,9 @@ void A4982::OnMSIn(avr_irq_t *irq, uint32_t value)
 void A4982::Init(struct avr_t * avr)
 {
     _Init(avr, this);
-	m_bConnected = true;
-
 	ReparseConfig();
+
+	m_bConfigured = true;
 
 	GetIRQ(MIN_OUT)->flags |= IRQ_FLAG_FILTERED; // Don't re-raise if already at value.
 	GetIRQ(MAX_OUT)->flags |= IRQ_FLAG_FILTERED; // Don't re-raise if already at value.

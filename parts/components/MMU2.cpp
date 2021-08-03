@@ -120,7 +120,7 @@ void MMU2::Draw(float fY)		/* function called whenever redisplay needed */
 	glPushMatrix();
 		glColor3f(0,0,0);
 		glTranslatef(0,fY-20,0);
-		m_Extr.Draw_Simple();
+		m_Extr.Draw();
 	glPopMatrix();
 	glPushMatrix();
 		glColor3f(0,0,0);
@@ -149,6 +149,8 @@ void MMU2::SetupHardware()
 	Boards::MM_Control_01::SetupHardware();
 
 	_Init(GetAVR(), this);
+
+	m_Extr.SetSimple(true);
 
 	RegisterNotify(RESET,MAKE_C_CALLBACK(MMU2,OnResetIn),this);
 	RegisterNotify(PULLEY_IN, MAKE_C_CALLBACK(MMU2,OnPulleyFeedIn),this);

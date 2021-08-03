@@ -68,6 +68,7 @@ Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const s
 		if (m_iLineCt>0 && !m_bMatched && ID == NextLineMustBe) // Failed to match on the next line.
 		{
 			m_strMatch.clear();
+			std::cout << "NextLine Mismatch, received: " << m_strLine << '\n';
 			m_type = None;
 			m_bMatched = false;
 			return LineStatus::Timeout;

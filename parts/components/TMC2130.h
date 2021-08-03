@@ -23,6 +23,7 @@
 #pragma once
 
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
+#include "GLMotor.h"
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "SPIPeripheral.h"     // for SPIPeripheral
 #include "Scriptable.h"        // for Scriptable
@@ -35,7 +36,7 @@
 #include <string>              // for string
 #include <vector>              // for vector
 
-class TMC2130: public SPIPeripheral, public Scriptable
+class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 {
     public:
         #define IRQPAIRS \
@@ -63,7 +64,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
 
         // Default constructor.
         explicit TMC2130(char cAxis = ' ');
-		~TMC2130();
+		virtual ~TMC2130();
 
         // Sets the configuration to the provided values. (inversion, positions, etc)
         void SetConfig(TMC2130_cfg_t cfg);
@@ -72,12 +73,6 @@ class TMC2130: public SPIPeripheral, public Scriptable
 
         // Registers with SimAVR.
         void Init(avr_t *avr);
-
-        // Draws a simple visual representation of the motor position.
-        void Draw();
-
-        // Draws the position value as a number, without position ticks.
-        void Draw_Simple();
 
 	protected:
 		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
@@ -89,8 +84,6 @@ class TMC2130: public SPIPeripheral, public Scriptable
 			ActSetDiag,
 			ActResetDiag
 		};
-
-		void _Draw(bool bSimple);
 
         // SPI handlers.
         uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;
@@ -115,7 +108,6 @@ class TMC2130: public SPIPeripheral, public Scriptable
 		void ClearDiag();
 
         bool m_bDir  = false;
-        std::atomic_bool m_bEnable {true}, m_bConfigured {false}, m_bStealthMode {false};
 
         TMC2130_cfg_t cfg;
         // Register definitions.
@@ -211,18 +203,12 @@ class TMC2130: public SPIPeripheral, public Scriptable
             }defs;
         };
 
-        int32_t m_iCurStep = 0;
-        int32_t m_iMaxPos = 0;
-        std::atomic<float> m_fCurPos = {0}, m_fEnd = {0}; // Tracks position in float for gl
         tmc2130_cmd_t m_cmdIn {};
         tmc2130_cmd_t m_cmdProc {};
         tmc2130_cmd_t m_cmdOut {}; // the previous data for output.
         tmc2130_registers_t m_regs{};
-		std::atomic_char m_cAxis;
 		bool m_bStall = false;
 		uint32_t m_uiStepIncrement = 1;
-
-		std::atomic_bool m_bDrawStall {false};
 
 		// Position helpers
 		float StepToPos(int32_t step);

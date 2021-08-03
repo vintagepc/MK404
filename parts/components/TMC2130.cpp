@@ -39,87 +39,6 @@
 #define TRACE(_w)
 #endif
 
-void TMC2130::Draw()
-{
-	_Draw(false);
-}
-
-void TMC2130::Draw_Simple()
-{
-	_Draw(true);
-}
-
-void TMC2130::_Draw(bool bIsSimple)
-{
-        if (!m_bConfigured)
-		{
-            return; // Motors not ready yet.
-		}
-		// Copy atomic to local
-		float fPos = m_fCurPos;
-		if (m_bDrawStall) {
-        	glColor3f(0.7,0,0);
-		} else {
-        	glColor3f(0,0,0);
-		}
-	    glBegin(GL_QUADS);
-			glVertex3f(0,0,0);
-			glVertex3f(350,0,0);
-			glVertex3f(350,10,0);
-			glVertex3f(0,10,0);
-			if (m_bStealthMode)
-				glColor3f(0.9,1,0.4); // acid green is the new "stealth"
-			else
-				glColor3f(1,1,1);
-			if (m_bEnable)
-			{
-				glVertex3f(3,8,0);
-				glVertex3f(13,8,0);
-				glVertex3f(13,1,0);
-				glVertex3f(3,1,0);
-				glColor3f(0,0,0);
-			}
-		glEnd();
-        glPushMatrix();
-            glTranslatef(3,7,0);
-            glScalef(0.09,-0.05,0);
-            glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_cAxis);
-            //glTranslatef(  bIsSimple? 30 : 280 ,7,0);
-            //glScalef(0.09,-0.05,0);
-			// Values translated according to existing Scalef()
-			glTranslatef(bIsSimple? 195 : 2973 ,0,0);
-			glColor3f(1,1,1);
-            std::string strPos = std::to_string(fPos);
-            for (int i=0; i<std::min(7,static_cast<int>(strPos.size())); i++)
-			{
-                glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,strPos[i]);
-			}
-        glPopMatrix();
-		if (bIsSimple)
-		{
-			return;
-		}
-		glPushMatrix();
-			glTranslatef(20,0,0);
-			glColor3f(1,0,0);
-			glBegin(GL_QUADS);
-				glVertex3f(0,2,0);
-				glVertex3f(-2,2,0);
-				glVertex3f(-2,8,0);
-				glVertex3f(0,8,0);
-				glVertex3f(m_fEnd,2,0);
-				glVertex3f(m_fEnd+2,2,0);
-				glVertex3f(m_fEnd+2,8,0);
-				glVertex3f(m_fEnd,8,0);
-				glColor3f(0,1,1);
-				glVertex3f(fPos-0.5,2,0);
-				glVertex3f(fPos+0.5,2,0);
-				glVertex3f(fPos+0.5,8,0);
-				glVertex3f(fPos-0.5,8,0);
-			glEnd();
-		glPopMatrix();
-}
-
 void TMC2130::CreateReply()
 {
     m_cmdOut.all = 0x00; // Copy over.
@@ -320,7 +239,7 @@ void TMC2130::OnEnableIn(struct avr_irq_t *, uint32_t value)
 
 // needed because cppcheck doesn't seem to do bitfield unions correctly.
 // cppcheck-suppress uninitMemberVar
-TMC2130::TMC2130(char cAxis):Scriptable(std::string("") + cAxis),m_cAxis(cAxis)
+TMC2130::TMC2130(char cAxis):Scriptable(std::string("") + cAxis),GLMotor(cAxis)
 {
 		// Check register packing/sizes:
 	Expects(sizeof(m_regs) == sizeof(m_regs.raw));

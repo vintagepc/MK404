@@ -38,10 +38,12 @@ class GLMotor
 		// Draws a simple visual representation of the motor position.
 		void Draw();
 
+		// Sets whether to draw positional ref or just a number.
+		inline void SetSimple(bool bVal) { m_bIsSimple = bVal; }
+
 	protected:
 
 		inline void SetEnable(bool bVal) { m_bEnable = bVal; }
-		inline void SetSimple(bool bVal) { m_bIsSimple = bVal; }
 		inline void SetMaxPos(int32_t iVal)
 		{
 			m_iMaxPos = iVal;
@@ -57,16 +59,26 @@ class GLMotor
 
 		inline float GetCurrentPos() { return m_fCurPos.load(); }
 
-	private:
-
-		std::atomic_bool m_bEnable {false}, m_bIsSimple{false};
-
-		uint32_t m_uiStepsPerMM = 0;
 		int32_t m_iCurStep = 0;
 		int32_t m_iMaxPos = 0;
+
+		std::atomic_bool 	m_bEnable {false},
+							m_bIsSimple{false},
+							m_bStealthMode {false},
+							m_bDrawStall {false},
+							m_bConfigured {false};
+
 		std::atomic<float> m_fCurPos = {0}, m_fEnd = {0}; // Tracks position in float for gl
 		std::atomic_char m_cAxis {' '};
-
 		// Position helpers
-		float StepToPos(int32_t step);
+		virtual float StepToPos(int32_t step);
+		virtual int32_t PosToStep(float step);
+
+	private:
+
+
+		uint32_t m_uiStepsPerMM = 0;
+
+
+
 };

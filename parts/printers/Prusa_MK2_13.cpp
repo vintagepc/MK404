@@ -91,6 +91,8 @@ void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
 		Z.GetConfig().uiStepsPerMM,
 		E.GetConfig().uiStepsPerMM
 	);
+
+	E.SetSimple(true);
 }
 
 void Prusa_MK2_13::Draw()
@@ -114,15 +116,15 @@ void Prusa_MK2_13::Draw()
 			Z.Draw();
 			glTranslatef(0,10,0);
 			glPushMatrix();
-				E.Draw_Simple();
+				E.Draw();
 				glTranslatef(150.f,0,0);
-				E1.Draw_Simple();
+				E1.Draw();
 			glPopMatrix();
 			glTranslatef(0,10,0);
 			glPushMatrix();
-				E2.Draw_Simple();
+				E2.Draw();
 				glTranslatef(150.f,0,0);
-				E3.Draw_Simple();
+				E3.Draw();
 			glPopMatrix();
 			glTranslatef(0,10,0);
 			glTranslatef(170,0,0);

@@ -61,7 +61,7 @@ void GLIndicator::Draw()
             glVertex2f(20,0);
             glVertex2f(0,0);
         glEnd();
-		bool bWhite = uiBrt<128;
+		bool bWhite = m_uiBrightness<128;
         glColor3f(bWhite,bWhite,bWhite);
         glTranslatef(4,7,-1);
         glScalef(0.1,-0.05,1);

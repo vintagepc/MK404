@@ -24,6 +24,7 @@
 #include "Thermistor.h"
 #include "BasePeripheral.h"  // for MAKE_C_CALLBACK
 #include "TelemetryHost.h"
+#include <algorithm>         // for copy, max
 #include <iostream>
 #include <iterator>
 

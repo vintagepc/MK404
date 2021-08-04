@@ -52,11 +52,12 @@
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK, BasePeripheral
 #include "IScriptable.h"       // for ArgType, ArgType::Int, ArgType::String
 #include "Scriptable.h"        // for Scriptable
-#include "gsl-lite.hpp"
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <algorithm>     		// for copy
+#include <array>               // for array
 #include <atomic>
 #include <cstdint>            // for uint8_t, uint16_t, uint32_t
 #include <string>              // for string

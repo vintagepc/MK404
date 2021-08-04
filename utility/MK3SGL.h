@@ -30,10 +30,12 @@
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
+#include "sim_avr_types.h"
 #include <GL/glew.h>         // NOLINT for glTranslatef
 #include <GL/freeglut_std.h> //
 #include <GLPrint.h>         // for GLPrint
 #include <atomic>            // for atomic, atomic_bool, atomic_int
+#include <algorithm>
 #include <cstdint>          // for uint32_t
 #include <string>            // for string
 #include <vector>            // for vector

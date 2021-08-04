@@ -26,7 +26,7 @@
 #include "gsl-lite.hpp"
 #include <GL/glew.h>   // for glMaterialfv, GL_FRONT_AND_BACK, glDisableClie...
 #include <algorithm>   // for transform
-#include <cmath>
+#include <cmath>		 // IWYU pragma: keep
 #include <functional>  // for minus
 #include <iostream>
 #include <iterator>

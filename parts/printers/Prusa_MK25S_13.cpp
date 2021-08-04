@@ -23,6 +23,7 @@
 #include "IRSensor.h"  // for IRSensor
 #include "LED.h"       // for LED, LED::IRQ::LED_IN, PAT9125::IRQ::LED_OUT
 #include "PinNames.h"  // for Pin::IR_SENSOR_PIN, Pin::VOLT_IR_PIN
+#include "printers/Prusa_MK25_13.h"  // for Prusa_MK25_13
 
 void Prusa_MK25S_13::SetupHardware()
 {

@@ -27,7 +27,6 @@
 #include <cstring>
 #include <fstream> // IWYU pragma: keep
 #include <iostream>
-#include <utility>
 #include <vector>       // for vector
 
 // const map<FatImage::Size, uint32_t>FatImage::SectorsPerFat =

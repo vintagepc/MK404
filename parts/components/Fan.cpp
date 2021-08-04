@@ -20,6 +20,7 @@
  */
 #include "Fan.h"
 #include "TelemetryHost.h"    // for TC, TelCategory, TelemetryHost
+#include <algorithm>        // for copy
 #include <iostream>
 
 //#define TRACE(_w)_w

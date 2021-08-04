@@ -23,7 +23,7 @@
 #include "MMU1.h"
 #include "TelemetryHost.h"
 #include "Util.h"
-//#include <iostream>     // for printf
+#include <algorithm>        // for copy
 
 MMU1::MMU1():GLIndicator('0', false, true) {
 	SetColor(GetToolColor(0));

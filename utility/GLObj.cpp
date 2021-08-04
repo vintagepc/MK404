@@ -31,7 +31,7 @@
 #include <iostream>           // for operator<<, endl, basic_ostream, std::cerr
 #include <limits>             // for numeric_limits
 #include <map>                // for map, _Rb_tree_iterator
-#include <scoped_allocator>   // for allocator_traits<>::value_type
+#include <memory>             // for allocator_traits<>::value_type
 #include <string>             // for string, operator<<, char_traits
 #include <utility>
 #include <vector>             // for vector

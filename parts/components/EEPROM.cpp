@@ -24,6 +24,7 @@
 #include "gsl-lite.hpp"
 #include "sim_avr.h"     // for avr_t
 #include "sim_io.h"      // for avr_ioctl
+#include <algorithm>     // for copy, fill, max
 #include <cstdlib>      // for malloc, exit, free, size_t
 #include <fstream>       // IWYU pragma: keep
 #include <iostream>       // for perror, printf, fprintf, stderr

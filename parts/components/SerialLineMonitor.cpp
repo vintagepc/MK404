@@ -24,6 +24,8 @@
 #include "SerialLineMonitor.h"
 #include "avr_uart.h"  // for AVR_IOCTL_UART_GETIRQ, ::UART_IRQ_INPUT, ::UAR...
 #include "sim_io.h"    // for avr_io_getirq
+#include <algorithm>         // for copy
+#include <iostream>    // for operator<<, basic_ostream, cout, ostream
 
 
 SerialLineMonitor::SerialLineMonitor(const std::string &strName):Scriptable(strName)

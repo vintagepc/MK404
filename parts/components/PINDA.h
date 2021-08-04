@@ -61,7 +61,7 @@ class PINDA:public BasePeripheral,public Scriptable, private IKeyClient {
 	void Reconfigure(float fX, float fY, XYCalMap map);
 
 	// so we can use initializer syntax later
-	using MBLMap_t = struct
+	using MBLMap_t = struct MBLMap_t
 	{
 		float points[49] {0.04584,	0.07806,	0.10584,	0.12917,	0.14806,	0.1625, 	0.1725,
         0.00973,	0.04031,	0.06306,	0.07797,	0.08503,	0.08426,	0.07565,

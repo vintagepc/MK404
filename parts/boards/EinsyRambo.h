@@ -36,6 +36,7 @@
 #include "TMC2130.h"                             // for TMC2130
 #include "Thermistor.h"                          // for Thermistor
 #include "VoltageSrc.h"                          // for VoltageSrc
+#include "gsl-lite.hpp"                           // for span
 #include "sim_irq.h"                             // for avr_irq_t
 #include "uart_pty.h"                            // for uart_pty
 #include "w25x20cl.h"                            // for w25x20cl

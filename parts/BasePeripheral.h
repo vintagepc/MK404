@@ -24,6 +24,7 @@
 #include "gsl-lite.hpp"
 #include "sim_avr.h"
 #include "sim_irq.h"
+#include <algorithm>         // for copy
 #include <array>
 #include <iostream>
 #include <utility>

@@ -19,15 +19,20 @@
  */
 
 #include "IPCPrinter.h"
+#include "Board.h"        // for Board
+#include "GLHelper.h"     // for GLHelper
+#include "GLIndicator.h"  // for GLIndicator
 #include "GLMotor.h"
 #include <GL/glew.h> //NOLINT - must come first.
+#include <memory>
+
+#ifdef ENABLE_ANY_IPC
 #include <fcntl.h>
 #include <iostream>
-#include <memory>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
+#endif
 // NOTE: these are herer for future re-use and not actively supported but I could see it being useful for someone.
 // SHMQ can (in theory) be enabled via CMAKE options - if you need this feature and it's broken
 // please open an issue and I will look into fixing the problem.

@@ -31,7 +31,6 @@
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
-#include <atomic>
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <string>              // for string
 #include <vector>              // for vector
@@ -53,7 +52,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 			_IRQ(STEP_POS_OUT, 		">tmc2130.step_out")
         #include "IRQHelper.h"
 
-        using TMC2130_cfg_t = struct
+        using TMC2130_cfg_t = struct TMC2130_cfg_t
 		{
             bool bInverted {false};
             uint16_t uiFullStepsPerMM {100U*16U}; // This is FULL steps per mm, at maximum (256us) resolution.
@@ -111,7 +110,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 
         TMC2130_cfg_t cfg;
         // Register definitions.
-        using tmc2130_cmd_t = union {
+        using tmc2130_cmd_t = union tmc2130_cmd_t{
             uint64_t all :40;
             struct {
 				uint32_t data :32; // 32 bits of data
@@ -130,7 +129,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
         };
 
         // the internal programming registers.
-        using tmc2130_registers_t =  union
+        using tmc2130_registers_t =  union tmc2130_registers_t
         {
             uint32_t raw[128] {0}; // There are 128, 7-bit addressing.
             // Add fields for specific ones down the line as you see fit...

@@ -24,7 +24,7 @@
 #include "MMU1.h"
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
 #include "RotaryEncoder.h"           // for HD44780
-
+#include <algorithm>        // for copy
 #include <iostream>
 #include <string>
 #include <vector>

@@ -22,6 +22,7 @@
 #include "PINDA.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
+#include <algorithm>         // for copy
 #include <cmath>    // for pow, floor, round, sqrt
 #include <cstring>
 #include <iostream>

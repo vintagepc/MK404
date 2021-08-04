@@ -22,13 +22,15 @@
 
 #include "ScriptHost.h"
 #include "gsl-lite.hpp"
+#include <GL/glew.h>  //NOLINT
 #include <GL/freeglut_std.h> // glut menus
 #include <cstddef>
-#include <exception>    // for exception
+#include <exception>    // IWYU pragma: keep // for exception
 #include <fstream>      // IWYU pragma: keep
 #include <iostream>
 #include <sstream>		// IWYU pragma: keep
-#include <utility>      // for make_pair, pair
+// IWYU pragma: no_include <bits/exception.h>
+
 
 std::map<std::string, IScriptable*> ScriptHost::m_clients;
 

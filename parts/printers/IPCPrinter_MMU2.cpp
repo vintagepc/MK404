@@ -19,7 +19,12 @@
  */
 
 #include "IPCPrinter_MMU2.h"
-#include "MMU2.h"
+#include "MK3SGL.h"               // for MK3SGL
+#include "MMU2.h"                 // for MMU2
+#include "printers/IPCPrinter.h"  // for IPCPrinter
+#include <GL/glew.h>              // for glPopMatrix, glPushMatrix
+#include <memory>                 // for unique_ptr
+
 
 void IPCPrinter_MMU2::SetupHardware()
 {

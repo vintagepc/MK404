@@ -28,9 +28,8 @@
 #include <atomic>           // for atomic_int
 #include <cstdint>         // for uint32_t, uint8_t
 #include <memory>           // for unique_ptr
+#include <string>           // for string
 #include <utility>          // for pair
-
-class MK3SGL;
 
 class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 {

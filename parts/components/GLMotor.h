@@ -34,6 +34,8 @@ class GLMotor
 		// Default constructor.
 		explicit GLMotor(char cAxis = ' '):m_cAxis(cAxis){};
 
+		virtual ~GLMotor() = default;
+
 
 		// Draws a simple visual representation of the motor position.
 		void Draw();

@@ -18,7 +18,7 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Prusa_MK25_13.h"
+#include "printers/Prusa_MK25_13.h"
 #include "3rdParty/MK3/thermistortables.h"  // for temptable_1, OVERSAMPLENR
 #include "A4982.h"                          // for A4982
 #include "Fan.h"                            // for Fan

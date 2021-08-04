@@ -27,8 +27,9 @@
 #else
 # include <GL/gl.h>           // for glVertex3f, glColor3f, glBegin, glEnd
 #endif
+
+#include <algorithm>          // for min
 #include <atomic>
-#include <cstring>				// for memcpy
 #include <string>
 
 void GLMotor::Draw()

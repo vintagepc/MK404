@@ -36,7 +36,7 @@
 #include "Thermistor.h"
 #include "sim_irq.h"                             // for avr_irq_t
 #include "uart_pty.h"                            // for uart_pty
-#include "wiring/miniRAMBo_1_3a.h"                   // for Einsy_1_1a
+#include "miniRAMBo_1_3a.h"                   // for Einsy_1_1a
 #include <cstdint>                              // for uint32_t
 
 namespace Boards

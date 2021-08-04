@@ -31,7 +31,6 @@
 #include <mutex>
 #include <set>
 #include <string>         // for std::string
-#include <utility>        // for pair
 #include <vector>         // for vector
 
 class ScriptHost: public IScriptable
@@ -89,7 +88,7 @@ class ScriptHost: public IScriptable
 
     private:
 
-		using LineParts_t = struct
+		using LineParts_t = struct LineParts_t
 		{
 			bool isValid {false};
 			std::string strCtxt {""};
@@ -117,7 +116,7 @@ class ScriptHost: public IScriptable
 			return h;
 		}
 
-		using linestate_t = struct{
+		using linestate_t = struct linestate_t{
 			std::string strCtxt {""};
 			unsigned int iActID {0};
 			std::vector<std::string> vArgs {};

@@ -23,8 +23,7 @@
 #include "IPCPrinter.h"
 #include "GCodeSniffer.h"
 #include "MMU2.h"
-#include <gsl-lite.hpp>
-
+#include <string>
 #include <utility>          // for pair
 
 class IPCPrinter_MMU2 : public IPCPrinter

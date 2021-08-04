@@ -32,6 +32,7 @@
 #include "printers/Test_Printer.h"
 #include "printers/IPCPrinter.h"
 #include "printers/IPCPrinter_MMU2.h"
+#include <algorithm>                   // for max
 #include <iostream>
 
 /*

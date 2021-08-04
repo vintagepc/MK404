@@ -23,6 +23,7 @@
 
 #include "HC595.h"
 #include "TelemetryHost.h"
+#include <algorithm>        // for copy
 
 /*
  * called when a SPI byte is sent

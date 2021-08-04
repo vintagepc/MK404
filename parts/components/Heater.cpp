@@ -30,6 +30,7 @@
 #else
 # include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glColor3fv
 #endif
+#include <algorithm>        // for copy
 #include <cmath>             // for pow
 
 #define TRACE(_w)

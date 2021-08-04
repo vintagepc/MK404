@@ -24,8 +24,11 @@
 #include "Printer.h"        // for Printer, Printer::VisualType
 #include "IPCBoard.h"     		// for EinsyRambo
 #include "MK3SGL.h"
-#include <gsl-lite.hpp>
-#include <fstream>
+#include <array>             // for array
+#include <cstdint>          // for uint32_t
+#include <memory>            // for unique_ptr
+#include <string>            // for string
+#include <vector>            // for vector
 
 #if ENABLE_PIPE || ENABLE_MQ || ENABLE_SHMQ
 	#define ENABLED_ANY_IPC
@@ -35,8 +38,11 @@
 extern "C" {
 	#include "../../3rdParty/shmemq404/shmemq.h"
 }
+	#include <gsl-lite.hpp>
 #elif ENABLE_MQ
 	#include <mqueue.h>
+#elif ENABLE_PIPE
+	#include <fstream>
 #endif
 #include <utility>          // for pair
 

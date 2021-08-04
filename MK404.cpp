@@ -32,6 +32,7 @@
 #include "gitversion/version.h"
 #include "parts/Board.h"              // for Board
 #include "sim_avr.h"                  // for avr_t
+#include "tclap/ArgException.h"       // for ArgParseException
 #include "tclap/CmdLine.h"            // for CmdLine
 #include "tclap/MultiArg.h"           // for MultiArg
 #include "tclap/MultiSwitchArg.h"     // for MultiSwitchArg
@@ -47,11 +48,13 @@
 #include <atomic>
 #include <csignal>                   // for signal, SIGINT
 #include <cstdio>                    // for printf, NULL, fprintf, getchar
+#include <cstdint>
 #include <cstdlib>                   // for exit
+#include <fstream>
 #include <iomanip>
 #include <iostream>                   // for operator<<, basic_ostream, '\n'
+#include <map>
 #include <string>                     // for string, basic_string
-#include <utility>                    // for pair
 #include <vector>                     // for vector
 
 
@@ -416,7 +419,7 @@ int main(int argc, char *argv[])
 
 	std::string strBoot {""};
 	{
-		auto ifBL = std::ifstream(argStrBoot.getValue());
+		std::ifstream ifBL {argStrBoot.getValue()};
 		if (!argStrBoot.isSet() && ifBL.good())
 		{
 			std::cout << "No bootloader specified, using default: " << argStrBoot.getValue() << '\n';

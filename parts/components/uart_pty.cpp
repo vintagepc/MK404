@@ -48,8 +48,10 @@ int
 #include <string>
 #include <sys/select.h>                 // for select, FD_ISSET, FD_SET, FD_...
 // IWYU pragma: no_include <bits/types/struct_timeval.h>
+// IWYU pragma: no_include <bits/termios-struct.h>
+// IWYU pragma: no_include <bits/termios-tcflow.h>
 #include <sys/time.h>                   // IWYU pragma: keep
-#include <termios.h>                    // for cfmakeraw, tcgetattr, tcsetattr
+#include <termios.h>                    // IWYU pragma: keep // for cfmakeraw, tcgetattr, tcsetattr
 #include <unistd.h>                     // for close, read, symlink, unlink
 
 //#define TRACE(_w) _w

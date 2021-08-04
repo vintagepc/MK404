@@ -30,6 +30,7 @@
 #include "PINDA.h"            // for PINDA
 #include "PinNames.h"         // for Pin::Z_MIN_PIN
 #include "RotaryEncoder.h"    // for RotaryEncoder, RotaryEncoder::::CCW_CLICK
+#include "SDCard.h"           // for SDCard
 #include "sim_io.h"           // for avr_register_io_write
 #include "uart_pty.h"         // for uart_pty
 #include <GL/glew.h>          // NOLINT for glTranslatef, glLoadIdentity, glPopMatrix

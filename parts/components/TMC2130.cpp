@@ -22,15 +22,9 @@
 #include "TMC2130.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
-
-#include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#if defined(__APPLE__)
-# include <OpenGL/gl.h>       // for glVertex3f, glColor3f, glBegin, glEnd
-#else
-# include <GL/gl.h>           // for glVertex3f, glColor3f, glBegin, glEnd
-#endif
 #include <algorithm>          // for min
-#include <cmath>
+#include <atomic>
+#include <cmath>	// IWYU pragma: keep for std::pow
 #include <cstring>           // for memset
 
 //#define TRACE(_w) _w

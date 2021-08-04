@@ -24,6 +24,7 @@
 #include "TelemetryHost.h"
 #include "avr_uart.h"  // for ::UART_IRQ_OUTPUT, AVR_IOCTL_UART_GETIRQ
 #include "sim_io.h"    // for avr_io_getirq
+#include <algorithm>        // for copy
 #include <iostream>     // for printf
 
 void GCodeSniffer::OnByteIn(struct avr_irq_t *, uint32_t value)

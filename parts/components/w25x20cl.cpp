@@ -23,7 +23,7 @@
 
 #include "w25x20cl.h"
 #include "TelemetryHost.h"
-
+#include <algorithm>   // for min
 #include <cstdlib>     // for exit, free, malloc
 #include <cstring>     // for memset, memcpy, strncpy
 #include <fstream>		// IWYU pragma: keep

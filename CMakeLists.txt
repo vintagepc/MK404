@@ -39,6 +39,7 @@ add_subdirectory(3rdParty/simavr)
 
 if (ENABLE_IWYU)
 	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/include-what-you-use")
+	set(ENABLE_PCH OFF) # // PCH prevents IWYU working.
 else()
 	unset(CMAKE_CXX_INCLUDE_WHAT_YOU_USE)
 endif()

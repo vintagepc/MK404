@@ -82,7 +82,7 @@ class GLObj
 
     private:
 
-        using DrawObject = struct {
+        using DrawObject = struct DrawObject{
             GLuint vb {0};  // vertex buffer
             int numTriangles {0};
             size_t material_id {0}; // Atomic to allow for cross thread

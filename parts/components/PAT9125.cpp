@@ -27,6 +27,7 @@
 #include "gsl-lite.hpp"
 #include "sim_avr.h"           // for avr_t
 #include "sim_irq.h"           // for avr_irq_t
+#include <algorithm>         // for copy
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <cstring>
 #include <iostream>

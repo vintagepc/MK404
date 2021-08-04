@@ -32,9 +32,10 @@
 #include <iostream>
 #include <iterator>
 
-Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper"), IKeyClient(), GLIndicator('T')
+Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper"), IKeyClient(), GLIndicator('T', false, true)
 {
 	SetColor(0xFF800000);
+	SetValue(25);
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
 	{
 		std::cerr << "Failed to init SDL_Audio" << '\n';

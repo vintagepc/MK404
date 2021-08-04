@@ -98,8 +98,8 @@ Beeper::~Beeper()
 }
 
 void Beeper::UpdateMute(bool bMuted) {
-	SetDisabled(m_bMuted);
 	m_bMuted = bMuted;
+	SetDisabled(m_bMuted);
 }
 
 void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)

@@ -110,7 +110,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 
         TMC2130_cfg_t cfg;
         // Register definitions.
-        using tmc2130_cmd_t = union tmc2130_cmd_t{
+        using tmc2130_cmd_t = union {
             uint64_t all :40;
             struct {
 				uint32_t data :32; // 32 bits of data
@@ -129,8 +129,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
         };
 
         // the internal programming registers.
-        using tmc2130_registers_t =  union tmc2130_registers_t
-        {
+        using tmc2130_registers_t =  union {
             uint32_t raw[128] {0}; // There are 128, 7-bit addressing.
             // Add fields for specific ones down the line as you see fit...
             struct {

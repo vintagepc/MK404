@@ -32,7 +32,7 @@
 #include <iostream>
 #include <iterator>
 
-Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper"), IKeyClient(), GLIndicator('T',false, true)
+Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper"), IKeyClient(), GLIndicator('T')
 {
 	SetColor(0xFF800000);
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
@@ -83,7 +83,7 @@ Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const std::vecto
 	{
 		case ActMute:
 		case ActUnmute:
-			m_bMuted = iAct==ActMute;
+			UpdateMute(iAct==ActMute);
 			return LineStatus::Finished;
 		case ActToggle:
 			UpdateMute(!m_bMuted);
@@ -98,8 +98,8 @@ Beeper::~Beeper()
 }
 
 void Beeper::UpdateMute(bool bMuted) {
-	m_bMuted = bMuted;
 	SetDisabled(m_bMuted);
+	m_bMuted = bMuted;
 }
 
 void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)

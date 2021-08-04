@@ -44,9 +44,6 @@ class Beeper:public SoftPWMable, public Scriptable, private IKeyClient, public G
 		// Initializes the LED to the AVR
 		void Init(avr_t * avr);
 
-		// Draws the LED
-		// void Draw();
-
 	protected:
 		void OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal) override;
 

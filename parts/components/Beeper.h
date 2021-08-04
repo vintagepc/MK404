@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "GLIndicator.h"
 #include "IKeyClient.h"
 #include "IScriptable.h"    // for IScriptable::LineStatus
 #include "Scriptable.h"     // for Scriptable
@@ -32,7 +33,7 @@
 #include <string>           // for string
 #include <vector>           // for vector
 
-class Beeper:public SoftPWMable, public Scriptable, private IKeyClient
+class Beeper:public SoftPWMable, public Scriptable, private IKeyClient, public GLIndicator
 {
 	public:
 		#define IRQPAIRS _IRQ(DIGITAL_IN,"<digital.in") _IRQ(PWM_IN,"<pwm.in")
@@ -44,13 +45,7 @@ class Beeper:public SoftPWMable, public Scriptable, private IKeyClient
 		void Init(avr_t * avr);
 
 		// Draws the LED
-		void Draw();
-
-		inline void ToggleMute()
-		{
-			m_bMuted = !m_bMuted;
-		}
-
+		// void Draw();
 
 	protected:
 		void OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal) override;
@@ -62,6 +57,7 @@ class Beeper:public SoftPWMable, public Scriptable, private IKeyClient
 	private:
 		void StartTone();
 		void SDL_FillBuffer(uint8_t *raw_buffer, int bytes);
+		void UpdateMute(bool bVal);
 
 		void(*m_fcnSDL)(void* p, uint8_t*, int) = [](void *p, uint8_t *raw_buffer, int bytes){auto self = static_cast<Beeper*>(p); self->SDL_FillBuffer(raw_buffer,bytes);};
 

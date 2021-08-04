@@ -46,6 +46,8 @@ public:
 
 	inline void SetVisible(bool bVisible) { m_bVisible = bVisible; }
 
+	inline void SetDisabled(bool bDisabled) { m_bDisabled = bDisabled; }
+
 private:
 	// Value changed callback.
 	hexColor_t m_Color = hexColor_t(0x00FF0000);
@@ -55,4 +57,5 @@ private:
 	std::atomic_uint16_t m_uiRot {0};
 	bool m_bVisible = false;
 	bool m_bBlackBG = false;
+	std::atomic_bool m_bDisabled {0};
 };

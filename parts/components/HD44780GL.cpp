@@ -38,11 +38,6 @@
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
 #include <array>              // for array<>::value_type, array
 #include <GL/glew.h>
-// #if defined(__APPLE__)
-// # include <OpenGL/gl.h>       // for glVertex3f, glBegin, glEnd, glMaterialfv
-// #else
-// # include <GL/gl.h>           // for glVertex3f, glBegin, glEnd, glMaterialfv
-// #endif
 #include <vector>
 
 //#define TRACE(_w) _w

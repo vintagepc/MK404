@@ -73,7 +73,13 @@ void GLIndicator::Draw()
 				glRotatef(m_uiRot,0,0,-1);
 				glTranslatef(-50,-50,0);
 			}
-        	glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrLabel);
+			glPushMatrix();
+				glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrLabel);
+			glPopMatrix();
+			if (m_bDisabled)
+			{
+				glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'X');
+			}
 		glPopMatrix();
     glPopMatrix();
 }

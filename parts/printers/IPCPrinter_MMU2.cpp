@@ -19,6 +19,7 @@
  */
 
 #include "IPCPrinter_MMU2.h"
+#include "GLHelper.h"             // for GLHelper
 #include "MK3SGL.h"               // for MK3SGL
 #include "MMU2.h"                 // for MMU2
 #include "printers/IPCPrinter.h"  // for IPCPrinter
@@ -45,7 +46,9 @@ void IPCPrinter_MMU2::Draw()
 {
 	glPushMatrix();
 		IPCPrinter::Draw();
+		glScalef(500.F/350.F,1.F,1.F);
 		m_MMU.Draw(static_cast<float>(GetWindowSize().second));
+		m_gl.OnDraw();
 	glPopMatrix();
 }
 

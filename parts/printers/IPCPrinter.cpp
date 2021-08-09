@@ -407,7 +407,10 @@ void IPCPrinter::Draw()
 				glTranslatef(30,0,0);
 			}
 		glPopMatrix();
-		m_gl.OnDraw();
+		if(!GetHasMMU())
+		{
+			m_gl.OnDraw();
+		}
 	if ((GetVisualType()!="none") && m_pVis)
 	{
 		m_pVis->FlagForRedraw();

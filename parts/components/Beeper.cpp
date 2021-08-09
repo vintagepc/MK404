@@ -28,6 +28,7 @@
 #include <SDL_audio.h>        // for SDL_PauseAudio, SDL_AudioSpec, SDL_Clos...
 #include <SDL_error.h>        // for SDL_GetError
 #include <SDL_stdinc.h>       // for Sint16
+#include <algorithm>         // for copy
 #include <cstring>
 #include <iostream>
 #include <iterator>

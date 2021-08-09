@@ -33,6 +33,15 @@ GLIndicator::GLIndicator(char chrLabel, bool bInvert, bool bBlack):m_chrLabel(ch
 	m_uiBrightness = 255*bInvert;
 }
 
+GLIndicator::GLIndicator(bool bInterp, char chrLabel):m_chrLabel(chrLabel),m_bInterp(bInterp)
+{
+	m_bInvert = true;
+	m_uiBrightness = 255;
+}
+
+constexpr Color3fv GLIndicator::m_colColdTemp;
+constexpr Color3fv GLIndicator::m_colHotTemp;
+
 void GLIndicator::Draw()
 {
 	if (!m_bVisible)
@@ -46,7 +55,13 @@ void GLIndicator::Draw()
 	}
 	bool m_bOn = m_uiBrightness>0;
     glPushMatrix();
-        if (m_bOn || m_bBlackBG)
+		if (m_bInterp)
+		{
+			Color3fv colFill;
+			colorLerp(m_colColdTemp, m_colHotTemp, static_cast<float>(m_uiLerpVal.load())/255.F, colFill);
+			glColor3fv(static_cast<float*>(colFill));
+		}
+        else if (m_bOn || m_bBlackBG)
 		{
             glColor3us(m_Color.red*uiBrt, m_Color.green*uiBrt, m_Color.blue*uiBrt);
 		}

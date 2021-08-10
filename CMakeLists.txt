@@ -492,7 +492,7 @@ add_test(ext1_MK2MMU_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404
 add_test(ext1_MK25_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -f tests/extra_MiniRambo.afx -g fancy --script ../scripts/tests/test_MK25_fancy.txt --lcd-scheme 2 )
 add_test(ext1_MK2_Lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -f tests/extra_MiniRambo.afx -g lite --script ../scripts/tests/test_MK2_lite.txt --lcd-scheme 2 )
 add_test(ext1_IPC env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCPrinter --script ../scripts/tests/test_boot_ipc.txt)
-add_test(ext1_IPCMMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCPrinter --script ../scripts/tests/test_boot_ipcmmu2.txt )
+add_test(ext1_IPCMMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCPrinter_MMU2 --script ../scripts/tests/test_boot_ipcmmu2.txt )
 
 # TODO- move these images out of parts and to their own ext2 dir...
 add_test(ext2_Print_prep cp ../scripts/tests/Prusa_MK3S_eeprom.bin_test ${PROJECT_BINARY_DIR})

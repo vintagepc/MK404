@@ -24,6 +24,8 @@
 #include "SerialLineMonitor.h"
 #include "avr_uart.h"  // for AVR_IOCTL_UART_GETIRQ, ::UART_IRQ_INPUT, ::UAR...
 #include "sim_io.h"    // for avr_io_getirq
+#include <algorithm>         // for copy
+#include <iostream>    // for operator<<, basic_ostream, cout, ostream
 
 
 SerialLineMonitor::SerialLineMonitor(const std::string &strName):Scriptable(strName)
@@ -68,6 +70,7 @@ Scriptable::LineStatus SerialLineMonitor::ProcessAction(unsigned int ID, const s
 		if (m_iLineCt>0 && !m_bMatched && ID == NextLineMustBe) // Failed to match on the next line.
 		{
 			m_strMatch.clear();
+			std::cout << "NextLine Mismatch, received: " << m_strLine << '\n';
 			m_type = None;
 			m_bMatched = false;
 			return LineStatus::Timeout;

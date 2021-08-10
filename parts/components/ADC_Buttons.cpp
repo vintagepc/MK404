@@ -23,6 +23,7 @@
 #include "BasePeripheral.h"
 #include "IKeyClient.h"
 #include "IScriptable.h"
+#include <algorithm>         // for copy
 #include <iostream>
 
 ADC_Buttons::ADC_Buttons(const std::string &strName, uint32_t uiDelay):Scriptable(strName),IKeyClient(), m_uiDelay{uiDelay}

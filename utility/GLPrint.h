@@ -24,8 +24,10 @@
 #include "PrintVisualType.h"
 #include <array>   // for array
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <mutex>
+#include <string>
 #include <tuple>
 #include <vector>  // for vector
 

@@ -22,6 +22,7 @@
 #include "VoltageSrc.h"
 #include "BasePeripheral.h"  // for MAKE_C_CALLBACK
 #include "TelemetryHost.h"
+#include <algorithm>         // for copy
 
 uint32_t VoltageSrc::OnADCRead(struct avr_irq_t*, uint32_t)
 {

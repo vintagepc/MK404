@@ -24,22 +24,19 @@
 #include "IKeyClient.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
-#include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#if defined(__APPLE__)
-# include <OpenGL/gl.h>       // for glVertex2f, glPopMatrix, glPushMatrix
-#else
-# include <GL/gl.h>           // for glVertex2f, glPopMatrix, glPushMatrix
-#endif
 #include <SDL.h>              // for SDL_Init, SDL_INIT_AUDIO
 #include <SDL_audio.h>        // for SDL_PauseAudio, SDL_AudioSpec, SDL_Clos...
 #include <SDL_error.h>        // for SDL_GetError
 #include <SDL_stdinc.h>       // for Sint16
+#include <algorithm>         // for copy
 #include <cstring>
 #include <iostream>
 #include <iterator>
 
-Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper"), IKeyClient()
+Beeper::Beeper():SoftPWMable(true,this, 1, 100), Scriptable("Beeper"), IKeyClient(), GLIndicator('T', false, true)
 {
+	SetColor(0xFF800000);
+	SetValue(25);
 	if (SDL_Init(SDL_INIT_AUDIO)!=0)
 	{
 		std::cerr << "Failed to init SDL_Audio" << '\n';
@@ -77,7 +74,7 @@ void Beeper::OnKeyPress(const Key &key)
 	switch (key)
 	{
 		case 'm':
-			ToggleMute();
+			UpdateMute(!m_bMuted);
 			break;
 	}
 }
@@ -88,10 +85,10 @@ Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const std::vecto
 	{
 		case ActMute:
 		case ActUnmute:
-			m_bMuted = iAct==ActMute;
+			UpdateMute(iAct==ActMute);
 			return LineStatus::Finished;
 		case ActToggle:
-			ToggleMute();
+			UpdateMute(!m_bMuted);
 			return LineStatus::Finished;
 	}
 	return LineStatus::Unhandled;
@@ -100,6 +97,11 @@ Scriptable::LineStatus Beeper::ProcessAction(unsigned int iAct, const std::vecto
 Beeper::~Beeper()
 {
 	SDL_CloseAudio();
+}
+
+void Beeper::UpdateMute(bool bMuted) {
+	m_bMuted = bMuted;
+	SetDisabled(m_bMuted);
 }
 
 void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)
@@ -135,6 +137,7 @@ void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 	{
 		if (m_bAudioAvail) SDL_PauseAudio(1);
 		m_bPlaying = false;
+		SetValue(25);
 	}
 	else
 	{
@@ -152,6 +155,7 @@ void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 			}
 			m_uiCounter = m_uiSampleRate/m_uiCtOn;
 			m_bPlaying = true;
+			SetValue(255);
 			if (m_bAudioAvail) SDL_PauseAudio(0);
 		}
 
@@ -164,36 +168,5 @@ void Beeper::Init(avr_t *avr)
 	Beeper::RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Beeper,OnDigitalInSPWM), this);
 
 	TelemetryHost::GetHost().AddTrace(this, DIGITAL_IN, {TC::OutputPin, TC::Misc},8);
-}
-
-void Beeper::Draw()
-{
-	uint16_t uiBrt = 255;//((m_uiFreq*9)/10)+25;
-    glPushMatrix();
-        if (m_bPlaying)
-		{
-            glColor3us(255*uiBrt, 128*uiBrt, 0);
-		}
-        else
-		{
-            glColor3ub(25,12,0);
-		}
-
-        glBegin(GL_QUADS);
-            glVertex2f(0,10);
-            glVertex2f(20,10);
-            glVertex2f(20,0);
-            glVertex2f(0,0);
-        glEnd();
-        glColor3f(!m_bPlaying,!m_bPlaying,!m_bPlaying);
-        glTranslatef(4,7,-1);
-        glScalef(0.1,-0.05,1);
-		glPushMatrix();
-        	glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'T');
-		glPopMatrix();
-		if (m_bMuted)
-		{
-			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,'X');
-		}
-    glPopMatrix();
+	SetVisible(true);
 }

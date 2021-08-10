@@ -55,9 +55,11 @@ void Test_Printer::Draw()
 		float fY = (5 + m_lcd.GetHeight() * 9);
 		glScalef(fX/350,4,1);
 		glTranslatef(0, fY,0);
+		m_TMC.SetSimple(false);
 		m_TMC.Draw();
 		glTranslatef(0,10,0);
-		m_TMC.Draw_Simple();
+		m_TMC.SetSimple(true);
+		m_TMC.Draw();
 		glTranslatef(0,10,0);
 		glPushMatrix();
 			m_Fan.Draw();
@@ -73,8 +75,10 @@ void Test_Printer::Draw()
 			m_MM1.Draw();
 		glPopMatrix();
 		glTranslatef(0,10,0);
+		m_Allg.SetSimple(false);
 		m_Allg.Draw();
 		glTranslatef(0,10,0);
-		m_Allg.Draw_Simple();
+		m_Allg.SetSimple(true);
+		m_Allg.Draw();
 		m_gl.OnDraw();
 }

@@ -25,7 +25,6 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
-#include <utility>
 
 TelemetryHost::TelemetryHost():Scriptable("TelHost"),IKeyClient()
 {

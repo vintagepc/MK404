@@ -24,12 +24,7 @@
 #include "Heater.h"
 #include "TelemetryHost.h"
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
-#include <GL/freeglut_std.h>          // for glutStrokeCharacter, GLUT_STROKE_MONO_R...
-#if defined(__APPLE__)
-# include <OpenGL/gl.h>       // for glVertex2f, glBegin, glColor3f, glColor3fv
-#else
-# include <GL/gl.h>           // for glVertex2f, glBegin, glColor3f, glColor3fv
-#endif
+#include <algorithm>        // for copy
 #include <cmath>             // for pow
 
 #define TRACE(_w)
@@ -56,7 +51,8 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * pAVR, avr_cycle_count_t)
         float dT = (m_fCurrentTemp - m_fAmbientTemp)*pow(2.7183,-0.005*0.3);
         m_fCurrentTemp -= m_fCurrentTemp - (m_fAmbientTemp + dT);
     }
-	m_iDrawTemp = m_fCurrentTemp;
+	float v = (m_fCurrentTemp - m_fColdTemp) / (m_fHotTemp - m_fColdTemp);
+	SetLerp(255.F*v);
 
     TRACE(printf("New temp value: %.02f\n",m_fCurrentTemp));
     RaiseIRQ(TEMP_OUT,static_cast<int>(m_fCurrentTemp*256.f));
@@ -94,6 +90,7 @@ void Heater::OnPWMChanged(struct avr_irq_t *,uint32_t value)
 	{
         RaiseIRQ(ON_OUT,m_uiPWM>0);
 	}
+	SetValue(m_uiPWM);
 }
 
 //TCCR0A  _SFR_IO8(0x24)
@@ -120,11 +117,11 @@ void Heater::OnDigitalChanged(struct avr_irq_t * irq, uint32_t value)
 Heater::Heater(float fThermalMass, float fAmbientTemp, bool bIsBed,
 			   char chrLabel, float fColdTemp, float fHotTemp):
 			   								Scriptable(std::string("Heater_") + chrLabel),
+											GLIndicator(true, chrLabel),
                                             m_fThermalMass(fThermalMass),
                                             m_fAmbientTemp(fAmbientTemp),
                                             m_fCurrentTemp(fAmbientTemp),
                                             m_bIsBed(bIsBed),
-                                            m_chrLabel(chrLabel),
                                             m_fColdTemp(fColdTemp),
                                             m_fHotTemp(fHotTemp)
 {
@@ -171,6 +168,7 @@ void Heater::Init(struct avr_t * avr, avr_irq_t *irqPWM, avr_irq_t *irqDigital)
 	TH.AddTrace(this, TEMP_OUT, {TC::Heater});
 
   	RaiseIRQ(TEMP_OUT,static_cast<int>(m_fCurrentTemp*256.f));
+	SetVisible(true);
 }
 
 void Heater::Set(uint8_t uiPWM)
@@ -188,31 +186,3 @@ void Heater::Resume_Auto()
 }
 
 
-constexpr Color3fv Heater::m_colColdTemp;
-constexpr Color3fv Heater::m_colHotTemp;
-
-void Heater::Draw()
-{
-	bool bOn = m_uiPWM>0;
-
-	Color3fv colFill;
-	float v = (float(m_iDrawTemp) - m_fColdTemp) / (m_fHotTemp - m_fColdTemp);
-	colorLerp(m_colColdTemp, m_colHotTemp, v, colFill);
-
-    glPushMatrix();
-	    glColor3fv(static_cast<float*>(colFill));
-        glBegin(GL_QUADS);
-            glVertex2f(0,10);
-            glVertex2f(20,10);
-            glVertex2f(20,0);
-            glVertex2f(0,0);
-        glEnd();
-        glColor3f(bOn,bOn,bOn);
-        glTranslatef(8,7,-1);
-        glScalef(0.05,-0.05,1);
-		glPushAttrib(GL_LINE_BIT);
-			glLineWidth(3);
-			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,m_chrLabel);
-		glPopAttrib();
-    glPopMatrix();
-}

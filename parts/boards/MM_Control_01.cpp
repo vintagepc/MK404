@@ -51,6 +51,8 @@ namespace Boards
 		SetPin(P_TMC2130_DIAG,0);
 		m_Extr.ConnectFrom(m_shift.GetIRQ(HC595::BIT0),	TMC2130::DIR_IN);
 		m_Extr.ConnectFrom(m_shift.GetIRQ(HC595::BIT1),	TMC2130::ENABLE_IN);
+		m_Extr.SetSimple(true);
+
 
 		cfg.uiFullStepsPerMM = 400*16;
 		cfg.iMaxMM = 70;

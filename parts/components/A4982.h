@@ -23,16 +23,15 @@
 #pragma once
 
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
+#include "GLMotor.h"
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
-
-#include <atomic>
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <string>               // for string
 
-class A4982: public BasePeripheral
+class A4982: public BasePeripheral, public GLMotor
 {
 	public:
 		#define IRQPAIRS \
@@ -70,14 +69,7 @@ class A4982: public BasePeripheral
 		// Registers with SimAVR.
 		void Init(avr_t *avr);
 
-		// Draws a simple visual representation of the motor position.
-		void Draw();
-
-		// Draws the position value as a number, without position ticks.
-		void Draw_Simple();
-
 	private:
-		void _Draw(bool bSimple = false);
 
 		void CheckEndstops();
 
@@ -95,20 +87,15 @@ class A4982: public BasePeripheral
 
 		bool m_bDir  = false;
 		bool m_bReset = false;
-		std::atomic_bool m_bEnable {false}, m_bSleep {false}, m_bConnected {false};
+		bool m_bSleep = false;
 
-
-		int32_t m_iCurStep = 0;
-		int32_t m_iMaxPos = 0;
 		uint8_t m_uiStepSize = 16;
-		std::atomic<float> m_fCurPos = {0}, m_fEnd = {0}; // Tracks position in float for gl
-		std::atomic_char m_cAxis {' '};
 
 		A4982_cfg_t m_cfg = A4982_cfg_t();
 
 		std::string m_strName {"A4982_"};
 
 		// Position helpers
-		float StepToPos(int32_t step);
-		int32_t PosToStep(float step);
+		float StepToPos(int32_t step) override;
+		int32_t PosToStep(float step) override;
 };

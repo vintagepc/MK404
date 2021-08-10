@@ -25,12 +25,12 @@
 #include <GL/glew.h> //NOLINT
 #include <GL/freeglut_std.h>
 #include <atomic>
-#include <cstddef>
 #ifdef SUPPORTS_LIBPNG
-#include <exception>               // for exception
+//#include <exception>               // for exception
 #include <image.hpp>               // NOLINT for image
+#include <image_info.hpp>
+#include <png.h>                   // for png_create_write_struct, png_destr...
 #include <rgb_pixel.hpp>           // NOLINT for rgb_pixel, basic_rgb_pixel
-#include <scoped_allocator>        // NOLINT for allocator_traits<>::value_type
 #include <solid_pixel_buffer.hpp>  // NOLINT for solid_pixel_buffer
 #endif // SUPPORTS_LIBPNG
 #include <chrono>
@@ -38,9 +38,11 @@
 #include <fstream> // IWYU pragma: keep
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
+// IWYU pragma: no_include <bits/exception.h>
 
 
 GLHelper::GLHelper(const std::string &strName, bool bIsPrimary):Scriptable(strName)

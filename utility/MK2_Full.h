@@ -22,11 +22,11 @@
 #pragma once
 
 #include "OBJCollection.h"
+#include "GLObj.h"
 #include "gsl-lite.hpp"
 #include <GL/glew.h>
 #include <memory>
 
-class GLObj;
 
 class MK2_Full: public OBJCollection
 {

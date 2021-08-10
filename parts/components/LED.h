@@ -23,13 +23,12 @@
 #pragma once
 
 #include "BasePeripheral.h"  // for BasePeripheral
-#include "Util.h"            // for hexColor_t
+#include "GLIndicator.h"
 #include "sim_avr.h"         // for avr_t
 #include "sim_irq.h"         // for avr_irq_t
-#include <atomic>
 #include <cstdint>          // for uint32_t, uint8_t
 
-class LED: public BasePeripheral
+class LED: public BasePeripheral, public GLIndicator
 {
 public:
 	#define IRQPAIRS _IRQ(LED_IN,"<LED.in") _IRQ(PWM_IN,"<pwm.in")
@@ -41,18 +40,9 @@ public:
 	// Initializes the LED to the AVR
 	void Init(avr_t * avr);
 
-	// Draws the LED
-	void Draw();
-
 private:
 	// Value changed callback.
 	void OnValueChanged(avr_irq_t *irq, uint32_t value);
 	void OnPWMChanged(avr_irq_t *irq, uint32_t value);
-	hexColor_t m_Color = hexColor_t(0x00FF0000);
-	char m_chrLabel = ' ';
-	std::atomic_uint8_t m_uiBrightness = {0};
-	bool m_bInvert = false;
-
-	std::atomic_bool m_bAttached {false};
 
 };

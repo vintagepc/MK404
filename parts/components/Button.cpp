@@ -24,6 +24,7 @@
 #include "Button.h"
 #include "IKeyClient.h"
 #include "TelemetryHost.h"
+#include <algorithm>        // for copy
 #include <iostream>  // for printf
 
 Button::Button(const std::string &strName):Scriptable(strName),IKeyClient(),m_strName(strName)

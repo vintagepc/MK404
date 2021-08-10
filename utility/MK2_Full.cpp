@@ -22,9 +22,7 @@
 #include "MK2_Full.h"
 #include "GLObj.h"
 #include "OBJCollection.h"
-#include <map>              // for map
 #include <string>           // for string
-#include <vector>           // for vector
 
 
 MK2_Full::MK2_Full(bool bMMU, bool bMK25):OBJCollection("MK2Full"), m_bMK25(bMK25), m_bMMU(bMMU)

@@ -23,6 +23,8 @@
 #include "PLYExport.h"
 #include "Config.h"
 #include "gsl-lite.hpp"
+#include <cstddef>
+#include <cstdint>
 #include <fstream>
 
 bool PLYExporter::Export(const std::string& strFN, const VF &tri, const VF &triNorm, const VF& triColor, const VI &tStart, const VI &tCount){

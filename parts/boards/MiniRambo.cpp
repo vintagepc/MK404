@@ -24,6 +24,7 @@
 #include "HD44780.h"           // for HD44780
 #include "LED.h"
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
+#include <algorithm>        // for copy
 #include <iostream>
 #include <string>
 #include <vector>
@@ -142,6 +143,12 @@ namespace Boards
 		TryConnect(E0_ENABLE_PIN, 	&E, A4982::ENABLE_IN);
 		TryConnect(E0_MS1_PIN, 		&E, A4982::MS1_IN);
 		TryConnect(E0_MS2_PIN, 		&E, A4982::MS2_IN);
+		E.SetSimple(true);
+
+		E1.SetSimple(true);
+		E2.SetSimple(true);
+		E3.SetSimple(true);
+
 
 		AddUARTTrace('0'); // External
 

@@ -23,6 +23,7 @@
 #pragma once
 
 #include "BasePeripheral.h"    // for MAKE_C_TIMER_CALLBACK
+#include "GLMotor.h"
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "SPIPeripheral.h"     // for SPIPeripheral
 #include "Scriptable.h"        // for Scriptable
@@ -30,12 +31,11 @@
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
-#include <atomic>
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <string>              // for string
 #include <vector>              // for vector
 
-class TMC2130: public SPIPeripheral, public Scriptable
+class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 {
     public:
         #define IRQPAIRS \
@@ -52,7 +52,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
 			_IRQ(STEP_POS_OUT, 		">tmc2130.step_out")
         #include "IRQHelper.h"
 
-        using TMC2130_cfg_t = struct
+        using TMC2130_cfg_t = struct TMC2130_cfg_t
 		{
             bool bInverted {false};
             uint16_t uiFullStepsPerMM {100U*16U}; // This is FULL steps per mm, at maximum (256us) resolution.
@@ -63,7 +63,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
 
         // Default constructor.
         explicit TMC2130(char cAxis = ' ');
-		~TMC2130();
+		virtual ~TMC2130();
 
         // Sets the configuration to the provided values. (inversion, positions, etc)
         void SetConfig(TMC2130_cfg_t cfg);
@@ -72,12 +72,6 @@ class TMC2130: public SPIPeripheral, public Scriptable
 
         // Registers with SimAVR.
         void Init(avr_t *avr);
-
-        // Draws a simple visual representation of the motor position.
-        void Draw();
-
-        // Draws the position value as a number, without position ticks.
-        void Draw_Simple();
 
 	protected:
 		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
@@ -89,8 +83,6 @@ class TMC2130: public SPIPeripheral, public Scriptable
 			ActSetDiag,
 			ActResetDiag
 		};
-
-		void _Draw(bool bSimple);
 
         // SPI handlers.
         uint8_t OnSPIIn(avr_irq_t *irq, uint32_t value) override;
@@ -115,7 +107,6 @@ class TMC2130: public SPIPeripheral, public Scriptable
 		void ClearDiag();
 
         bool m_bDir  = false;
-        std::atomic_bool m_bEnable {true}, m_bConfigured {false}, m_bStealthMode {false};
 
         TMC2130_cfg_t cfg;
         // Register definitions.
@@ -138,8 +129,7 @@ class TMC2130: public SPIPeripheral, public Scriptable
         };
 
         // the internal programming registers.
-        using tmc2130_registers_t =  union
-        {
+        using tmc2130_registers_t =  union {
             uint32_t raw[128] {0}; // There are 128, 7-bit addressing.
             // Add fields for specific ones down the line as you see fit...
             struct {
@@ -211,22 +201,16 @@ class TMC2130: public SPIPeripheral, public Scriptable
             }defs;
         };
 
-        int32_t m_iCurStep = 0;
-        int32_t m_iMaxPos = 0;
-        std::atomic<float> m_fCurPos = {0}, m_fEnd = {0}; // Tracks position in float for gl
         tmc2130_cmd_t m_cmdIn {};
         tmc2130_cmd_t m_cmdProc {};
         tmc2130_cmd_t m_cmdOut {}; // the previous data for output.
         tmc2130_registers_t m_regs{};
-		std::atomic_char m_cAxis;
 		bool m_bStall = false;
 		uint32_t m_uiStepIncrement = 1;
 
-		std::atomic_bool m_bDrawStall {false};
-
 		// Position helpers
-		float StepToPos(int32_t step);
-		int32_t PosToStep(float step);
+		float StepToPos(int32_t step) override;
+		int32_t PosToStep(float step) override;
 
 		inline uint32_t GetStepDivisor() { return 256U>>m_regs.defs.CHOPCONF.mres; }
 };

@@ -32,6 +32,7 @@
 #include "gitversion/version.h"
 #include "parts/Board.h"              // for Board
 #include "sim_avr.h"                  // for avr_t
+#include "tclap/ArgException.h"       // for ArgParseException
 #include "tclap/CmdLine.h"            // for CmdLine
 #include "tclap/MultiArg.h"           // for MultiArg
 #include "tclap/MultiSwitchArg.h"     // for MultiSwitchArg
@@ -47,11 +48,13 @@
 #include <atomic>
 #include <csignal>                   // for signal, SIGINT
 #include <cstdio>                    // for printf, NULL, fprintf, getchar
+#include <cstdint>
 #include <cstdlib>                   // for exit
+#include <fstream>
 #include <iomanip>
 #include <iostream>                   // for operator<<, basic_ostream, '\n'
+#include <map>
 #include <string>                     // for string, basic_string
-#include <utility>                    // for pair
 #include <vector>                     // for vector
 
 
@@ -215,23 +218,6 @@ void MotionCB(int x, int y)
 	printer->OnMouseMove(x,y);
 }
 // pragma: LCOV_EXCL_STOP
-// gl timer. if the lcd is dirty, refresh display
-void timerCB(int i)
-{
-	if (bIsQuitting)
-	{
-		return;
-	}
-	glutSetWindow(window);
-	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH))
-	{
-		glutReshapeWindow(iWinW, iWinH);
-	}
-	// 16 = 60fps
-	glutTimerFunc(16, timerCB, i);
-	glutPostRedisplay();
-}
-
 
 void ResizeCB(int w, int h)
 {
@@ -268,6 +254,29 @@ void ResizeCB(int w, int h)
 	glLoadIdentity();
 
 }
+
+// gl timer. if the lcd is dirty, refresh display
+void timerCB(int i)
+{
+	if (bIsQuitting)
+	{
+		return;
+	}
+	glutSetWindow(window);
+	if (iWinH!=glutGet(GLUT_WINDOW_HEIGHT) || iWinW != glutGet(GLUT_WINDOW_WIDTH) || printer->GetSizeChanged())
+	{
+		if (printer->GetSizeChanged())
+		{
+			ResizeCB(iWinW, iWinH);
+			printer->ClearSizeChanged();
+		}
+		glutReshapeWindow(iWinW, iWinH);
+	}
+	// 16 = 60fps
+	glutTimerFunc(16, timerCB, i);
+	glutPostRedisplay();
+}
+
 
 int initGL()
 {
@@ -335,6 +344,7 @@ int main(int argc, char *argv[])
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed, cmd);
 	ValueArg<string> argFW("f","firmware","hex/afx/elf Firmware file to load (default MK3S.afx)",false,"MK3S.afx","filename", cmd);
+	ValueArg<string> argFW2("F","firmware2","secondary hex/afx/elf Firmware file to load to MMU, if present (default MM-control-01.hex)",false,"MM-control-01.hex","filename", cmd);
 	std::vector<string> vstrExts = PrintVisualType::GetOpts();
 	ValuesConstraint<string> vcPrintOpts(vstrExts);
 	ValueArg<string> argExtrusion("","extrusion","Set Print visual type. HR options create a LOT of triangles, do not use for large prints!",false, "Line", &vcPrintOpts, cmd);
@@ -391,6 +401,7 @@ int main(int argc, char *argv[])
 	Config::Get().SetLCDScheme(argLCDSCheme.getValue());
 	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
 	Config::Get().SetColourE(argColourE.isSet());
+	Config::Get().SetFW2(argFW2.getValue());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 
@@ -408,7 +419,7 @@ int main(int argc, char *argv[])
 
 	std::string strBoot {""};
 	{
-		auto ifBL = std::ifstream(argStrBoot.getValue());
+		std::ifstream ifBL {argStrBoot.getValue()};
 		if (!argStrBoot.isSet() && ifBL.good())
 		{
 			std::cout << "No bootloader specified, using default: " << argStrBoot.getValue() << '\n';

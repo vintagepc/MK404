@@ -34,6 +34,7 @@
 #include "sim_avr.h"  // for avr_t
 #include "sim_irq.h"  // for avr_irq_t
 #include <GL/glew.h>
+ #include <algorithm>     // for copy
 #include <atomic>
 #include <cstdint>   // for uint32_t, uint8_t
 #include <vector>

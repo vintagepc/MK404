@@ -14,6 +14,7 @@ option(ENABLE_GCOV "Enables gcov coverage")
 option(ENABLE_GPERF "Enables gperf profiling")
 option(RUNNER_ENV, "Adjust commands for github runner")
 option(ENABLE_PCH "Enables a precompiled header for faster compile times" 1)
+option(ENABLE_SHMQ "Enables Shared memory queue code for IPC pritner")
 
 
 if (ENABLE_GCOV)
@@ -38,6 +39,7 @@ add_subdirectory(3rdParty/simavr)
 
 if (ENABLE_IWYU)
 	set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/include-what-you-use")
+	set(ENABLE_PCH OFF) # // PCH prevents IWYU working.
 else()
 	unset(CMAKE_CXX_INCLUDE_WHAT_YOU_USE)
 endif()
@@ -72,6 +74,7 @@ set(H_FILES_base
 	parts/components/Fan.h
 	parts/components/GCodeSniffer.h
 	parts/components/GLHelper.h
+	parts/components/GLMotor.h
 	parts/components/HC595.h
 	parts/components/hd44780_charROM.h
 	parts/components/HD44780GL.h
@@ -101,6 +104,8 @@ set(H_FILES_base
 	parts/pinspecs/PinSpec_32u4.h
 	parts/PrinterFactory.h
 	parts/Printer.h
+	parts/printers/IPCPrinter.h
+	parts/printers/IPCPrinter_MMU2.h
 	parts/printers/Prusa_MK1_13.h
 	parts/printers/Prusa_MK2_13.h
 	parts/printers/Prusa_MK25_13.h
@@ -170,12 +175,14 @@ set(MK404_SOURCES_base
 	parts/components/EEPROM.cpp
 	parts/components/Fan.cpp
 	parts/components/GLHelper.cpp
+	parts/components/GLMotor.cpp
 	parts/components/GCodeSniffer.cpp
 	parts/components/HC595.cpp
 	parts/components/HD44780.cpp
 	parts/components/HD44780GL.cpp
 	parts/components/Heater.cpp
 	parts/components/IRSensor.cpp
+	parts/components/GLIndicator.cpp
 	parts/components/LED.cpp
 	parts/components/MMU1.cpp
 	parts/components/MMU2.cpp
@@ -190,6 +197,8 @@ set(MK404_SOURCES_base
 	parts/components/uart_pty.cpp
 	parts/components/VoltageSrc.cpp
 	parts/components/w25x20cl.cpp
+	parts/printers/IPCPrinter.cpp
+	parts/printers/IPCPrinter_MMU2.cpp
 	parts/printers/Prusa_MK1_13.cpp
 	parts/printers/Prusa_MK2_13.cpp
 	parts/printers/Prusa_MK25_13.cpp
@@ -224,6 +233,7 @@ set(MK404_SOURCES_base
 	parts/KeyController.cpp
 )
 
+
 set(MK404_SOURCES_3rdparty
 	3rdParty/arcball/Camera.cpp
 )
@@ -234,6 +244,13 @@ if (ENABLE_TIDY)
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${FIRMWARE})
 else()
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
+endif()
+
+if(ENABLE_SHMQ)
+	target_sources(MK404 PRIVATE 3rdParty/shmemq404/shmemq.c)
+	set_source_files_properties(3rdParty/shmemq404/shmemq.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+	target_compile_definitions(MK404 PRIVATE -DENABLE_SHMQ=1 -DENABLE_MQ=0 -DENABLE_PIPE=0)
+	target_link_libraries(MK404 rt)
 endif()
 
 if (ENABLE_PCH AND NOT ENABLE_TIDY)
@@ -474,6 +491,8 @@ add_test(ext1_MK2_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Pr
 add_test(ext1_MK2MMU_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK2MMU_mR13 -f tests/extra_MiniRambo.afx -g fancy --script ../scripts/tests/test_MK2MMU_fancy.txt --lcd-scheme 2 )
 add_test(ext1_MK25_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -f tests/extra_MiniRambo.afx -g fancy --script ../scripts/tests/test_MK25_fancy.txt --lcd-scheme 2 )
 add_test(ext1_MK2_Lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MK25_mR13 -f tests/extra_MiniRambo.afx -g lite --script ../scripts/tests/test_MK2_lite.txt --lcd-scheme 2 )
+add_test(ext1_IPC env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCPrinter --script ../scripts/tests/test_boot_ipc.txt)
+add_test(ext1_IPCMMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCPrinter_MMU2 -g lite --script ../scripts/tests/test_boot_ipcmmu2.txt )
 
 # TODO- move these images out of parts and to their own ext2 dir...
 add_test(ext2_Print_prep cp ../scripts/tests/Prusa_MK3S_eeprom.bin_test ${PROJECT_BINARY_DIR})

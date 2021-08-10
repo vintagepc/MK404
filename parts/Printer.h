@@ -59,16 +59,25 @@ class Printer: public Scriptable
 
 		inline void SetConnectSerial(bool bVal){m_bConnectSerial = bVal;}
 
+		inline bool GetSizeChanged() { return m_bSizeChanged; }
+
+		inline void ClearSizeChanged() { m_bSizeChanged = false; }
+
 	protected:
 		inline bool GetConnectSerial(){return m_bConnectSerial;}
 
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
+
+		// Notify the draw func that the window size should be recalculated.
+		inline void SetSizeChanged() { m_bSizeChanged = true; }
 
 		GLHelper m_gl{};
 
 	private:
 		std::string m_visType = "lite";
 		bool m_bConnectSerial = false;
+
+		bool m_bSizeChanged = false;
 
 		std::string m_strPrintName;
 

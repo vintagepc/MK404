@@ -25,19 +25,18 @@
 #pragma once
 
 #include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
-#include "Color.h"             // for Color3fv
+#include "GLIndicator.h"
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
 #include "sim_cycle_timers.h"  // for avr_cycle_timer_t
 #include "sim_irq.h"           // for avr_irq_t
-#include <atomic>
 #include <cstdint>            // for uint32_t, uint16_t, uint8_t
 #include <string>              // for string
 #include <vector>              // for vector
 
-class Heater : public BasePeripheral, public Scriptable
+class Heater : public BasePeripheral, public Scriptable, public GLIndicator
 {
 public:
     #define IRQPAIRS _IRQ(PWM_IN,"<heater.pwm_in") _IRQ(DIGITAL_IN,"<heater.digital_in") _IRQ(TEMP_OUT,">heater.temp_out") _IRQ(ON_OUT,">heater.on")
@@ -57,9 +56,6 @@ public:
 
     // Returns to automatic control after having used Set()
     void Resume_Auto();
-
-	// Draws the heater status
-	void Draw();
 
 	// Change SoftPWM mode after creation
 	inline void SetSoftPWM(bool bVal) { m_bIsBed = bVal; }
@@ -91,14 +87,10 @@ public:
         float m_fThermalMass = 1.0;
         float m_fAmbientTemp = 25.0;
         float m_fCurrentTemp {25.0};
-		std::atomic_int16_t m_iDrawTemp = {0};
         bool m_bIsBed = false;
-        char m_chrLabel;
         float m_fColdTemp;
         float m_fHotTemp;
-        std::atomic_uint16_t m_uiPWM = {0};
+        uint8_t m_uiPWM = {0};
 		bool m_bStopTicking = false;
-	    static constexpr Color3fv m_colColdTemp = {0, 1, 1};
-	    static constexpr Color3fv m_colHotTemp = {1, 0, 0};
 		avr_cycle_count_t m_cntOff = 0;
 };

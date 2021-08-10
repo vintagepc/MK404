@@ -3,4 +3,5 @@ ScriptHost::SetTimeoutMs(1000)
 ScriptHost::SetQuitOnTimeout(1)
 Board::WaitMs(500);
 GLHelper::Snapshot(tests/snaps/IPCMMU2_start)
+3DView::Snapshot(tests/snaps/IPCMMU2_lite)
 Board::Quit()

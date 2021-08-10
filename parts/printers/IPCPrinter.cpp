@@ -97,6 +97,13 @@ void IPCPrinter::SetupHardware()
 	m_queue = shmemq_create(IPC_FILE);
 #endif
 	_Init(Board::m_pAVR,this);
+#ifdef TEST_MODE
+	m_vMotors.push_back(std::unique_ptr<GLMotor>(new GLMotor('T')));
+	m_vMotors.at(0)->SetMaxPos(200);
+	m_vMotors.at(0)->m_bConfigured = true;
+	m_vInds.push_back(std::unique_ptr<GLIndicator>(new GLIndicator('I')));
+	m_vInds.at(0)->SetVisible(true);
+#endif
 }
 
 
@@ -170,7 +177,7 @@ void IPCPrinter::OnAVRCycle()
 					m_vStepIRQs.push_back(COUNT);
 					break;
 				case 'I':
-					m_vInds.push_back(std::unique_ptr<IPCIndicator>(new IPCIndicator(m_msg.at(2))));
+					m_vInds.push_back(std::unique_ptr<GLIndicator>(new GLIndicator(m_msg.at(2))));
 					switch (m_msg.at(2))
 					{
 						case 'M': // MINDA:

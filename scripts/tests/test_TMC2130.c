@@ -192,6 +192,15 @@ int main()
 	PORTA&=~(1U<<4);
 	printf("DIAG %02x\n",PINA&0x02);
 
+	printf("SCRIPTDIAG\n");
+	_delay_ms(5);
+	printf("DIAG %02x\n",PINA&0x02);
+	_delay_ms(5);
+	printf("DIAG %02x\n",PINA&0x02);
+	PORTA|=(1U<<3); // rev dir
+	step();
+	printf("STEP\n");
+
 	printf("FINISHED\n");
 
 	cli();

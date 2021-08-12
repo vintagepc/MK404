@@ -131,7 +131,7 @@ class BasePeripheral
 
         // Cancels a registered cycle timer.
         template <class C>
-        void inline CancelTimer(avr_cycle_timer_t func, C* pObj) { avr_cycle_timer_cancel(m_pAVR, func, pObj); };
+        void inline CancelTimer(avr_cycle_timer_t func, C* pObj) { if (m_pAVR != nullptr ) avr_cycle_timer_cancel(m_pAVR, func, pObj); };
 
         // Registers a callback for a cycle timer, in usec
         template <class C>

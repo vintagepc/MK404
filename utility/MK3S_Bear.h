@@ -35,8 +35,6 @@ class MK3S_Bear: public OBJCollection
 
 		void SetupLighting() override;
 
-		inline bool SupportsMMU() override { return false; }
-
 		inline void ApplyLCDTransform() override { glTranslatef(-0.051000, 0.203000, 0.045); }
 
 		inline void ApplyPLEDTransform() override {glTranslatef(-0.201000, -0.062000, -0.45);};

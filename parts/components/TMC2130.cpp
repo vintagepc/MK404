@@ -20,6 +20,7 @@
  */
 
 #include "TMC2130.h"
+#include "3rdParty/catch2/catch.hpp"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
 #include <algorithm>          // for min
@@ -313,3 +314,4 @@ int32_t TMC2130::PosToStep(float pos)
 {
 	return pos*static_cast<float>(cfg.uiFullStepsPerMM); // Convert pos to steps, we always work in the full 256 microstep workspace.
 }
+

@@ -238,6 +238,10 @@ set(MK404_SOURCES_3rdparty
 	3rdParty/arcball/Camera.cpp
 )
 
+set (MK404_TEST_SOURCES
+#	scripts/tests/Internal_tests.cpp
+)
+
 set(MK404_SOURCES ${MK404_SOURCES_base} ${MK404_SOURCES_3rdparty})
 
 if (ENABLE_TIDY)
@@ -335,6 +339,18 @@ if (ENABLE_GCOV)
 	target_link_libraries(MK404 -coverage -lgcov)
 	add_definitions(-DTEST_MODE)
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
+
+	include(Catch)
+	#include(CatchAddTests)
+
+	add_executable(MK404_tests scripts/tests/Internal_tests.cpp ${MK404_SOURCES} ${H_FILES} ${MK404_TEST_SOURCES})
+	get_target_property(MK404_TEST_INCL MK404 INCLUDE_DIRECTORIES)
+	target_include_directories(MK404_tests PRIVATE ${MK404_TEST_INCL})
+	target_include_directories(MK404_tests PRIVATE "3rdParty/gsl/")
+	target_include_directories(MK404_tests PRIVATE "3rdParty/catch2/")
+	target_compile_options(MK404_tests PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
+	target_link_libraries(MK404_tests -coverage -lgcov pthread util m ${GLUT_LIBRARIES} OpenGL::GL OpenGL::GLU GLEW::GLEW ${PNG_LIBRARY} ${SDL_LIBRARY} tinyobjloader simavr ${LIBELF_LIBRARIES})
+	catch_discover_tests(MK404_tests)
 else()
 	set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE OFF)
 endif()
@@ -366,8 +382,8 @@ add_custom_target(Coverage.tar.gz
 	COMMAND lcov --remove coverage.info '/usr/*' -o coverage.info
 	COMMAND lcov --remove coverage.info '*/3rdParty/*' -o coverage.info
 	COMMAND genhtml coverage.info --output-directory Coverage
-	COMMAND tar -zcvf Coverage.tar.gz Coverage
-	COMMAND ${PROJECT_SOURCE_DIR}/3rdParty/gcovr -r ${PROJECT_SOURCE_DIR} -e 3rdParty | tee ${PROJECT_BINARY_DIR}/summary.txt
+#	COMMAND tar -zcvf Coverage.tar.gz Coverage
+#	COMMAND ${PROJECT_SOURCE_DIR}/3rdParty/gcovr -r ${PROJECT_SOURCE_DIR} -e 3rdParty | tee ${PROJECT_BINARY_DIR}/summary.txt
 	DEPENDS Test_Common
 )
 add_custom_target(Test_Parts

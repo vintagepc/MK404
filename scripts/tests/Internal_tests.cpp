@@ -80,13 +80,13 @@ UNHANDLED_TEST(Thermistor);
 UNHANDLED_TEST_A(TMC2130, 'X');
 UNHANDLED_TEST(VoltageSrc);
 
-// Out of range tests
-TEST_CASE(IRSensor_OOR) {
-	IRSensor o;
-	using e = IRSensor::IRState;
-	using a = IRSensor::Actions::I
+// // Out of range tests
+// TEST_CASE(IRSensor_OOR) {
+// 	IRSensor o;
+// 	using e = IRSensor::IRState;
+// 	using a = IRSensor::Actions::I
 
-	REQUIRE(o.Test_ProcessActionIF(e::))
+// 	REQUIRE(o.Test_ProcessActionIF(e::))
 
-}
+// }
 

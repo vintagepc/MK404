@@ -1,6 +1,7 @@
 # This script just checks that the printer boots by looking for 'start' on the serial line.
 ScriptHost::SetTimeoutMs(10000)
 ScriptHost::SetQuitOnTimeout(1)
+KeyCtl::Key(?)
 Serial0::WaitForLine(READY)
 3DView::Snapshot(tests/snaps/GFXLiteKey01)
 KeyCtl::Key(n)

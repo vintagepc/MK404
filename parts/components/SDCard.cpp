@@ -654,29 +654,30 @@ int SDCard::Mount(const std::string &filename, off_t image_size)
 
 int SDCard::Unmount()
 {
-	if (m_data.empty()) {
+	// Force to idle so we don't keep trying to read the missing card.
+	m_state = State::IDLE;
+	m_bMounted = false;
+
+	if (!m_data.empty()) {
 		/* No disk mounted. */
-		RaiseIRQ(CARD_PRESENT,1);
-		m_bMounted = false;
-		return 0;
+
+		/* Synchronise changes. */
+		msync (m_data.data(), m_data.size(), US(MS_SYNC) | US(MS_INVALIDATE));
+
+		/* Unlock the file. */
+		flock (m_data_fd, LOCK_UN);
+
+		/* munmap() and close. */
+		munmap (m_data.data(), m_data.size());
+		close (m_data_fd);
+
+		m_data = {};
+		m_data_fd = -1;
+
+		InitCSD();
+		SetCSDCSize(0);
 	}
 
-	/* Synchronise changes. */
-	msync (m_data.data(), m_data.size(), US(MS_SYNC) | US(MS_INVALIDATE));
-
-	/* Unlock the file. */
-	flock (m_data_fd, LOCK_UN);
-
-	/* munmap() and close. */
-	munmap (m_data.data(), m_data.size());
-	close (m_data_fd);
-
-	m_data = {};
-	m_data_fd = -1;
-
-	m_bMounted = false;
-	InitCSD();
-	SetCSDCSize(0);
 	RaiseIRQ(CARD_PRESENT,1);
 	return 0;
 }

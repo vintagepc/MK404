@@ -95,6 +95,11 @@ void KeyController::OnAVRCycle()
 
 	m_key.store(0);
 
+	if (key == '?') {
+		PrintKeys(false);
+		return;
+	}
+
 	if (m_mClients.count(key)>0)
 	{
 		std::vector<IKeyClient*>& vClients = m_mClients.at(key);

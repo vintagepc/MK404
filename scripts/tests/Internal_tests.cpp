@@ -24,6 +24,7 @@
 #include "3rdParty/catch2/catch.hpp"
 #include "ADC_Buttons.h"
 #include "Beeper.h"
+#include "Board.h"
 #include "EEPROM.h"
 #include "Fan.h"
 #include "GLHelper.h"
@@ -35,6 +36,7 @@
 #include "PINDA.h"
 #include "SDCard.h"
 #include "SerialLineMonitor.h"
+#include "Test_Board.h"
 #include "Thermistor.h"
 #include "TMC2130.h"
 #include "VoltageSrc.h"
@@ -66,6 +68,7 @@ using LineStatus = IScriptable::LineStatus;
 
 UNHANDLED_TEST_A(ADC_Buttons, "");
 UNHANDLED_TEST(Beeper);
+UNHANDLED_TEST(Boards::Test_Board);
 UNHANDLED_TEST(EEPROM);
 UNHANDLED_TEST_A(Fan,1000,'F');
 UNHANDLED_TEST(GLHelper);
@@ -80,13 +83,29 @@ UNHANDLED_TEST(Thermistor);
 UNHANDLED_TEST_A(TMC2130, 'X');
 UNHANDLED_TEST(VoltageSrc);
 
-// // Out of range tests
-// TEST_CASE(IRSensor_OOR) {
-// 	IRSensor o;
-// 	using e = IRSensor::IRState;
-// 	using a = IRSensor::Actions::I
 
-// 	REQUIRE(o.Test_ProcessActionIF(e::))
+void Test_IRSensor_OOR() {
+	IRSensor o;
+	REQUIRE(o.Test_ProcessActionIF(IRSensor::ActSet, {std::to_string(IRSensor::IRState::IR_MIN)}) == LineStatus::Error);
+	REQUIRE(o.Test_ProcessActionIF(IRSensor::ActSet, {std::to_string(IRSensor::IRState::IR_MIN -1)}) == LineStatus::Error);
+	REQUIRE(o.Test_ProcessActionIF(IRSensor::ActSet, {std::to_string(IRSensor::IRState::IR_MAX +1)}) == LineStatus::Error);
+	REQUIRE(o.Test_ProcessActionIF(IRSensor::ActSet, {std::to_string(IRSensor::IRState::IR_MAX)}) == LineStatus::Error);
+};
 
-// }
+// Out of range tests
+TEST_CASE("IRSensor_OOR") {
+	Test_IRSensor_OOR();
+}
 
+void Test_Board_Interface() {
+	Boards::Test_Board b;
+	REQUIRE(b.TryConnect(nullptr, Pin::INVALID_PIN) == false);
+	REQUIRE(b.TryConnect(Pin::INVALID_PIN, nullptr, 0) == false);
+	REQUIRE(b.TryConnect(nullptr, 0, Pin::INVALID_PIN) == false);
+	// REQUIRE(b.GetPWMIRQ(Pin::INVALID_PIN) == nullptr);
+	// REQUIRE(b.GetDIRQ(Pin::INVALID_PIN) == nullptr);
+};
+
+TEST_CASE("Board_Connect_Errors") {
+	Test_Board_Interface();
+}

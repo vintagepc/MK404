@@ -68,7 +68,9 @@ public:
 		void OnKeyPress(const Key& key) override;
 
 private:
-
+#ifdef TEST_MODE
+	friend void Test_IRSensor_OOR();
+#endif
 	enum Actions
 	{
 		// Don't reorder these, we map as act-3 ->

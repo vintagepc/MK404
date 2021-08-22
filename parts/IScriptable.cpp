@@ -70,11 +70,12 @@ void IScriptable::SetName(const std::string &strName)
 	}
 }
 
+#ifdef TEST_MODE
 IScriptable::LineStatus IScriptable::Test_ProcessActionIF(unsigned int iAction, const std::vector<std::string>& vArgs)
 {
 	return ProcessAction(iAction, vArgs);
 }
-
+#endif
 
 // Prints help text for this Scriptable
 void IScriptable::PrintRegisteredActions(bool bMarkdown)

@@ -69,6 +69,10 @@ class w25x20cl:public SPIPeripheral, public Scriptable
 
 	protected:
 
+	#ifdef TEST_MODE
+		friend void Test_w25x20cl_errors();
+	#endif
+
 		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 		enum w25x20cl_states{

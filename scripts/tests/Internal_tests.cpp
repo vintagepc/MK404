@@ -40,6 +40,7 @@
 #include "Thermistor.h"
 #include "TMC2130.h"
 #include "VoltageSrc.h"
+#include "w25x20cl.h"
 
 #ifndef TEST_MODE
 	#error "Internal_Tests requires TEST_MODE defined to access protected interface functions."
@@ -82,7 +83,7 @@ UNHANDLED_TEST_A(SerialLineMonitor,"SLM");
 UNHANDLED_TEST(Thermistor);
 UNHANDLED_TEST_A(TMC2130, 'X');
 UNHANDLED_TEST(VoltageSrc);
-
+UNHANDLED_TEST(w25x20cl);
 
 void Test_IRSensor_OOR() {
 	IRSensor o;
@@ -97,15 +98,76 @@ TEST_CASE("Internal_IRSensor_OOR") {
 	Test_IRSensor_OOR();
 }
 
-void Test_Board_Interface() {
+void Boards::Test_Board_Interface() {
 	Boards::Test_Board b;
 	REQUIRE(b.TryConnect(nullptr, Pin::INVALID_PIN) == false);
 	REQUIRE(b.TryConnect(Pin::INVALID_PIN, nullptr, 0) == false);
 	REQUIRE(b.TryConnect(nullptr, 0, Pin::INVALID_PIN) == false);
-	// REQUIRE(b.GetPWMIRQ(Pin::INVALID_PIN) == nullptr);
-	// REQUIRE(b.GetDIRQ(Pin::INVALID_PIN) == nullptr);
+	REQUIRE(b.GetPWMIRQ(Pin::INVALID_PIN) == nullptr);
+	REQUIRE(b.GetDIRQ(Pin::INVALID_PIN) == nullptr);
 };
 
 TEST_CASE("Internal_Board_Connect_Errors") {
-	Test_Board_Interface();
+	Boards::Test_Board_Interface();
+}
+
+void Test_HD44780_OOR() {
+	HD44780 d;
+	REQUIRE(d.Test_ProcessActionIF(HD44780::ActCheckCGRAM, {"A","64"}) == LineStatus::Error);
+	REQUIRE(d.Test_ProcessActionIF(HD44780::ActCheckCGRAM, {"128","60"}) == LineStatus::Timeout);
+	// Desync also indicates all lines have changed.
+	REQUIRE(d.Test_ProcessActionIF(HD44780::ActDesync,{}) == LineStatus::Finished);
+	// Line OOR
+	REQUIRE(d.Test_ProcessActionIF(HD44780::ActWaitForText, {"A","10"}) == LineStatus::Error);
+	REQUIRE(d.Test_ProcessActionIF(HD44780::ActWaitForText, {"A","-2"}) == LineStatus::Error);
+};
+
+// Out of range tests
+TEST_CASE("Internal_HD44780_OOR") {
+	Test_HD44780_OOR();
+}
+
+void Test_PAT9125_Toggle() {
+	PAT9125 p;
+	p.Set(PAT9125::FS_MIN);
+	p.Toggle();
+	REQUIRE(p.m_state == PAT9125::FS_MIN);
+	// Check that writes are blocked to RO:
+	auto uiOld = p.GetRegVal(0);
+	REQUIRE(p.SetRegVal(0,~uiOld) == false);
+	REQUIRE(p.GetRegVal(0) == uiOld);
+
+	REQUIRE(p.Test_ProcessActionIF(PAT9125::ActSet, {std::to_string(PAT9125::FS_MAX)}) == LineStatus::Error);
+	REQUIRE(p.Test_ProcessActionIF(PAT9125::ActSet, {std::to_string(PAT9125::FS_MIN)}) == LineStatus::Error);
+
+};
+
+// Out of range tests
+TEST_CASE("Internal_PAT9125") {
+	Test_PAT9125_Toggle();
+}
+
+void Test_PINDA_OOR() {
+	PINDA p;
+	REQUIRE(p.Test_ProcessActionIF(PINDA::ActSetMBLPoint, {"-1","1.0"}) == LineStatus::Error);
+	REQUIRE(p.Test_ProcessActionIF(PINDA::ActSetMBLPoint, {"49","1.0"}) == LineStatus::Error);
+	REQUIRE(p.Test_ProcessActionIF(PINDA::ActSetXYCalPont, {"-1","1.0","1.0"}) == LineStatus::Error);
+	REQUIRE(p.Test_ProcessActionIF(PINDA::ActSetXYCalPont, {"4","1.0","1.0"}) == LineStatus::Error);
+};
+
+// Out of range tests
+TEST_CASE("Internal_PINDA_OOR") {
+	Test_PINDA_OOR();
+}
+
+
+void Test_w25x20cl_errors() {
+	w25x20cl w;
+	// Check behaviour for no filename given.
+	REQUIRE(w.Test_ProcessActionIF(w25x20cl::ActLoad, {}) == LineStatus::Error);
+	REQUIRE(w.Test_ProcessActionIF(w25x20cl::ActSave, {}) == LineStatus::Error);
+};
+
+TEST_CASE("Internal_w25x20cl_errors") {
+	Test_w25x20cl_errors();
 }

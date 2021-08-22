@@ -122,8 +122,8 @@ class BasePeripheral
 			};
 
         // Raises your own IRQ
-        void inline RaiseIRQ(unsigned int eDest, uint32_t value) { avr_raise_irq(m_pIrq.begin() + eDest, value);}
-        void inline RaiseIRQFloat(unsigned int eDest, uint32_t value) { avr_raise_irq_float(m_pIrq.begin() + eDest, value, (m_pIrq.begin() + eDest)->flags & IRQ_FLAG_FLOATING);}
+        void inline RaiseIRQ(unsigned int eDest, uint32_t value) { if (m_pAVR) avr_raise_irq(m_pIrq.begin() + eDest, value);}
+        void inline RaiseIRQFloat(unsigned int eDest, uint32_t value) { if (m_pAVR) avr_raise_irq_float(m_pIrq.begin() + eDest, value, (m_pIrq.begin() + eDest)->flags & IRQ_FLAG_FLOATING);}
 
         // Registers an IRQ notification function. Use MAKE_C_CALLBACK to make a lambda function.
         template <class C>

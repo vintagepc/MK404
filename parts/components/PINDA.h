@@ -73,6 +73,9 @@ class PINDA:public BasePeripheral,public Scriptable, private IKeyClient {
 	};
 
 	protected:
+#ifdef TEST_MODE
+	friend void Test_PINDA_OOR();
+#endif
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
 		void OnKeyPress(const Key &key) override;

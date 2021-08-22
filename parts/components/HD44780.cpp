@@ -112,17 +112,15 @@ Scriptable::LineStatus HD44780::ProcessAction(unsigned int iAction, const std::v
 		}
 		case ActWaitForText:
 			int iLine = stoi(vArgs.at(1));
+			if (iLine>=m_uiHeight || iLine<-1)
+			{
+				return IssueLineError(std::string("Line index ") + std::to_string(iLine) + " is out of range [-1," + std::to_string (m_uiHeight) + "]");
+			}
 			uint8_t uiLnChk = iLine<0 ? 0xFF : 1U<<gsl::narrow<uint8_t>(iLine);
 			if (!(uiLnChk & m_uiLineChg)) // NO changes to check against.
 			{
 				return LineStatus::Waiting;
 			}
-
-			if (iLine>=m_uiHeight || iLine<-1)
-			{
-				return IssueLineError(std::string("Line index ") + std::to_string(iLine) + " is out of range [-1," + std::to_string (m_uiHeight) + "]");
-			}
-
 			bool bResult = false;
 			if (iLine<0)
 			{

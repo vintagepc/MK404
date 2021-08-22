@@ -28,12 +28,14 @@
 /*
  * called when a SPI byte is sent
  */
+// pragma: LCOV_EXCL_START -- Not used currently.
 void HC595::OnSPIIn(struct avr_irq_t*, uint32_t value)
 {
 	// send "old value" to any chained one..
 	RaiseIRQ(SPI_BYTE_OUT,m_uiValue);
 	m_uiValue = m_uiValue<<8U | (value & 0xFFU);
 }
+// pragma: LCOV_EXCL_STOP
 
 void HC595::OnDataIn(struct avr_irq_t*, uint32_t value)
 {

@@ -42,28 +42,24 @@ static constexpr uint8_t m_States[STATE_COUNT] = {
 
 avr_cycle_count_t RotaryEncoder::OnStateChangeTimer(avr_t *,avr_cycle_count_t)
 {
-	switch (m_eDirection) {
-		case CW_CLICK:
-			// Advance phase forwards
-            m_iPhase = (m_iPhase+1)%STATE_COUNT;
+	if (m_eDirection == CW_CLICK)
+	{
+		// Advance phase forwards
+		m_iPhase = (m_iPhase+1)%STATE_COUNT;
 
-			if (m_bVerbose)
-			{
-				std::cout << "RotaryEncoder: CW Twist" << '\n';
-			}
-			break;
-		case CCW_CLICK:
-			// Advance phase backwards
-			 m_iPhase = (m_iPhase+3)%STATE_COUNT;
-			if (m_bVerbose)
-			{
-				std::cout << "RotaryEncoder: CCW twist" << '\n';
-			}
-			break;
-
-		default:
-			std::cout << "Rotenc: Invalid direction.\n"; // Invalid direction
-			break;
+		if (m_bVerbose)
+		{
+			std::cout << "RotaryEncoder: CW Twist" << '\n';
+		}
+	}
+	else
+	{
+		// Advance phase backwards
+		m_iPhase = (m_iPhase+3)%STATE_COUNT;
+		if (m_bVerbose)
+		{
+			std::cout << "RotaryEncoder: CCW twist" << '\n';
+		}
 	}
     RaiseIRQ(OUT_A, gsl::at(m_States, m_iPhase)>>1U);
     RaiseIRQ(OUT_B, gsl::at(m_States, m_iPhase)&1U);
@@ -124,6 +120,7 @@ void RotaryEncoder::Release()
  */
 void RotaryEncoder::Twist(Direction eDir)
 {
+	Expects(eDir == CCW_CLICK || eDir == CW_CLICK);
 	if (m_eDirection == eDir)
 	{
 		m_uiPulseCt+=4; // Just tick it more if the dir is correct.

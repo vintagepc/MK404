@@ -55,6 +55,10 @@ class EEPROM: public BasePeripheral, public Scriptable {
 	uint8_t Peek(uint16_t address);
 
 	protected:
+	#ifdef TEST_MODE
+		friend void Test_EEPROM_errors();
+	#endif
+
 		LineStatus ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs) override;
 
 

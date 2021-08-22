@@ -25,5 +25,13 @@ Serial0::NextLineMustBe(DIAGDISABLE 02)
 Serial0::NextLineMustBe(DIAG 00)
 Serial0::NextLineMustBe(DIAG 02)
 Serial0::NextLineMustBe(DIAG 02)
+Serial0::NextLineMustBe(SCRIPTDIAG)
+X::Reset()
+Serial0::NextLineMustBe(DIAG 00)
+X::Stall();
+Serial0::NextLineMustBe(DIAG 02)
+X::ToggleStall();
+Serial0::NextLineMustBe(STEP)
+GLHelper::SnapRect(tests/snaps/TMC05,0,164,500,80)
 Serial0::NextLineMustBe(FINISHED)
 Board::Quit()

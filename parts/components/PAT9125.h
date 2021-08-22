@@ -66,7 +66,9 @@ class PAT9125: public I2CPeripheral, public Scriptable, private IKeyClient
 
 
 	protected:
-
+#ifdef TEST_MODE
+		friend void Test_PAT9125_Toggle();
+#endif
 		void OnKeyPress(const Key& key) override;
 
 		void UpdateSensorState();

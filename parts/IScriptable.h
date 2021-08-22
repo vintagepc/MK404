@@ -66,6 +66,9 @@ class IScriptable
 		Unhandled
 	};
 
+#ifdef TEST_MODE
+		IScriptable::LineStatus Test_ProcessActionIF(unsigned int iAction, const std::vector<std::string>& vArgs);
+#endif
 
     protected:
 		IScriptable::LineStatus IssueLineError(const std::string &msg);

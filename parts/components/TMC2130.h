@@ -81,7 +81,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 		{
 			ActToggleStall,
 			ActSetDiag,
-			ActResetDiag
+			ActResetDiag,
 		};
 
         // SPI handlers.

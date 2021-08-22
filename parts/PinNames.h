@@ -112,6 +112,8 @@ namespace PinNames {
 		Z_MIN_PIN,
 		__TMC2130_PIN_SET(Z)
 		__A4982_PIN_SET(Z)
-		PIN_COUNT
+		PIN_COUNT,
+		INVALID_PIN // Used for testing error cases.
+
 	};
 }; // namespace PinNames

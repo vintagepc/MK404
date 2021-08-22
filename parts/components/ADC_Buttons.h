@@ -52,9 +52,14 @@ class ADC_Buttons:public ADCPeripheral, public Scriptable, private IKeyClient
 		void Push(uint8_t uiBtn);
 
 	protected:
-			LineStatus ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs) override;
+	#ifdef TEST_MODE
+		friend void Test_ADCButtons_errors();
+	#endif
 
-			void OnKeyPress(const Key& key) override;
+		LineStatus ProcessAction(unsigned int uiAct, const std::vector<std::string> &vArgs) override;
+
+		void OnKeyPress(const Key& key) override;
+
 	private:
 
 		avr_cycle_count_t AutoRelease(avr_t *avr, avr_cycle_count_t uiWhen);

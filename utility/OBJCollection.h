@@ -82,8 +82,8 @@ class OBJCollection
 		virtual void DrawEVis(float /*fEPos*/){};
 
 		// pragma: LCOV_EXCL_STOP
-
 		virtual inline bool SupportsMMU() { return false; }
+
 
 		inline const std::string GetName() { return m_strName;}
 

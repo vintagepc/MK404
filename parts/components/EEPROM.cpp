@@ -191,9 +191,11 @@ void EEPROM::Poke(uint16_t address, uint8_t value)
 
 uint8_t EEPROM::Peek(uint16_t address)
 {
-	uint8_t uiRet = 0;
-	avr_eeprom_desc_t io {.ee = &uiRet, .offset = address, .size = 1};
-	Expects(address<m_uiSize);
-	avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); //NOLINT - complaint is external macro
+	uint8_t uiRet = 0xFF;
+	if (m_pAVR != nullptr) {
+		avr_eeprom_desc_t io {.ee = &uiRet, .offset = address, .size = 1};
+		Expects(address<m_uiSize);
+		avr_ioctl(m_pAVR,AVR_IOCTL_EEPROM_GET,&io); //NOLINT - complaint is external macro
+	}
 	return uiRet;
 }

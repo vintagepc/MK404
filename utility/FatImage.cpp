@@ -93,26 +93,34 @@ uint32_t FatImage::GetDataStartAddr(Size imgSize)
 	return FirstFATAddr + (Sector2Bytes(SectorsPerFat(imgSize))<<1u); // <<10 = 2*512, 2*bytespersector.
 }
 
-uint32_t FatImage::SectorsPerFat(Size size)
+uint32_t FatImage::SectorsPerFat(Size sizeEnum)
 {
-	switch (size)
+	uint32_t size = 0;
+	switch (sizeEnum)
 	{
 		case Size::M32:
-			return 505;
+			size = 505U;
+			break;
 		case Size::M64:
-			return 1009;
+			size = 1009U;
+			break;
 		case Size::M128:
-			return 2017;
+			size = 2017U;
+			break;
 		case Size::M256:
-			return 4033;
+			size = 4033U;
+			break;
 		case Size::M512:
-			return 1022;
+			size = 1022U;
+			break;
 		case Size::G1:
-			return 2044;
+			size = 2044U;
+			break;
 		case Size::G2:
-			return 4088;
+			size = 4088U;
+			break;
 	}
-	return 0;
+	return size;
 };
 
 std::vector<std::string> FatImage::GetSizes()

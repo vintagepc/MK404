@@ -70,6 +70,13 @@ void IScriptable::SetName(const std::string &strName)
 	}
 }
 
+#ifdef TEST_MODE
+IScriptable::LineStatus IScriptable::Test_ProcessActionIF(unsigned int iAction, const std::vector<std::string>& vArgs)
+{
+	return ProcessAction(iAction, vArgs);
+}
+#endif
+
 // Prints help text for this Scriptable
 void IScriptable::PrintRegisteredActions(bool bMarkdown)
 {
@@ -121,11 +128,10 @@ bool IScriptable::RegisterAction(const std::string &strAct, const std::string& s
 // The types are (currently) for display only but the count is used to sanity-check lines before passing them to you in ProcessAction.
 void IScriptable::RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID, const std::vector<ArgType>& vTypes)
 {
-	if (!RegisterAction(strAct,strDesc, ID))
+	if (RegisterAction(strAct,strDesc, ID))
 	{
-		return;
+		m_ActionArgs[ID] = vTypes;
 	}
-	m_ActionArgs[ID] = vTypes;
 }
 
 const std::map<ArgType,std::string>& IScriptable::GetArgTypeNames()

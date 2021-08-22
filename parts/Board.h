@@ -156,6 +156,11 @@ namespace Boards
 			bool m_bNoHacks = false;
 
 		private:
+
+		#ifdef TEST_MODE
+			friend void Test_Board_Interface();
+		#endif
+
 			void CreateAVR();
 
 			void _OnAVRInit();

@@ -373,29 +373,27 @@ void IPCPrinter::UpdateMotor()
 
 void IPCPrinter::OnVisualTypeSet(const std::string &type)
 {
-	if (type!="lite")
+	if (type == "lite")
 	{
-		return;
+		m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
+
+		AddHardware(*m_pVis);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::X_POSITION_OUT),MK3SGL::X_IN);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Y_POSITION_OUT),MK3SGL::Y_IN);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Z_POSITION_OUT),MK3SGL::Z_IN);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::E_POSITION_OUT),MK3SGL::E_IN);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::X_STEP_OUT),MK3SGL::X_STEP_IN);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Y_STEP_OUT),MK3SGL::Y_STEP_IN);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Z_STEP_OUT),MK3SGL::Z_STEP_IN);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::E_STEP_OUT),MK3SGL::E_STEP_IN);
+		// m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
+		// m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
+		// m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::BED_OUT), MK3SGL::BED_IN);
+		// m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
+		m_pVis->ConnectFrom(GetIRQ(IPCPrinter::PINDA_OUT), MK3SGL::PINDA_IN);
+		// m_pVis->SetLCD(&lcd);
 	}
-
-	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
-
-	AddHardware(*m_pVis);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::X_POSITION_OUT),MK3SGL::X_IN);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Y_POSITION_OUT),MK3SGL::Y_IN);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Z_POSITION_OUT),MK3SGL::Z_IN);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::E_POSITION_OUT),MK3SGL::E_IN);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::X_STEP_OUT),MK3SGL::X_STEP_IN);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Y_STEP_OUT),MK3SGL::Y_STEP_IN);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::Z_STEP_OUT),MK3SGL::Z_STEP_IN);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::E_STEP_OUT),MK3SGL::E_STEP_IN);
-	// m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
-	// m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
-	// m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::BED_OUT), MK3SGL::BED_IN);
-	// m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
-	m_pVis->ConnectFrom(GetIRQ(IPCPrinter::PINDA_OUT), MK3SGL::PINDA_IN);
-	// m_pVis->SetLCD(&lcd);
 }
 
 void IPCPrinter::Draw()

@@ -100,37 +100,35 @@ std::pair<int,int> Prusa_MK3S::GetWindowSize(){
 
 void Prusa_MK3S::OnVisualTypeSet(const std::string &type)
 {
-	if (type=="none")
+	if (type != "none")
 	{
-		return;
+		m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
+
+		AddHardware(*m_pVis);
+
+		m_pVis->ConnectFrom(X.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::X_IN);
+		m_pVis->ConnectFrom(Y.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::Y_IN);
+		m_pVis->ConnectFrom(Z.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::Z_IN);
+		m_pVis->ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::E_IN);
+		m_pVis->ConnectFrom(X.GetIRQ(TMC2130::STEP_POS_OUT),MK3SGL::X_STEP_IN);
+		m_pVis->ConnectFrom(Y.GetIRQ(TMC2130::STEP_POS_OUT),MK3SGL::Y_STEP_IN);
+		m_pVis->ConnectFrom(Z.GetIRQ(TMC2130::STEP_POS_OUT),MK3SGL::Z_STEP_IN);
+		m_pVis->ConnectFrom(E.GetIRQ(TMC2130::STEP_POS_OUT),MK3SGL::E_STEP_IN);
+		m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
+		m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
+		m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
+		m_pVis->ConnectFrom(hBed.GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
+		m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
+		m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
+		m_pVis->SetLCD(&lcd);
+
+		m_pVis->SetStepsPerMM(
+			X.GetConfig().uiFullStepsPerMM,
+			Y.GetConfig().uiFullStepsPerMM,
+			Z.GetConfig().uiFullStepsPerMM,
+			E.GetConfig().uiFullStepsPerMM
+		);
 	}
-
-	m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
-
-	AddHardware(*m_pVis);
-
-	m_pVis->ConnectFrom(X.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::X_IN);
-	m_pVis->ConnectFrom(Y.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::Y_IN);
-	m_pVis->ConnectFrom(Z.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::Z_IN);
-	m_pVis->ConnectFrom(E.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::E_IN);
-	m_pVis->ConnectFrom(X.GetIRQ(TMC2130::STEP_POS_OUT),MK3SGL::X_STEP_IN);
-	m_pVis->ConnectFrom(Y.GetIRQ(TMC2130::STEP_POS_OUT),MK3SGL::Y_STEP_IN);
-	m_pVis->ConnectFrom(Z.GetIRQ(TMC2130::STEP_POS_OUT),MK3SGL::Z_STEP_IN);
-	m_pVis->ConnectFrom(E.GetIRQ(TMC2130::STEP_POS_OUT),MK3SGL::E_STEP_IN);
-	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::SHEET_OUT), MK3SGL::SHEET_IN);
-	m_pVis->ConnectFrom(fExtruder.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
-	m_pVis->ConnectFrom(fPrint.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
-	m_pVis->ConnectFrom(hBed.GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
-	m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
-	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
-	m_pVis->SetLCD(&lcd);
-
-	m_pVis->SetStepsPerMM(
-		X.GetConfig().uiFullStepsPerMM,
-		Y.GetConfig().uiFullStepsPerMM,
-		Z.GetConfig().uiFullStepsPerMM,
-		E.GetConfig().uiFullStepsPerMM
-	);
 }
 
 void Prusa_MK3S::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)

@@ -148,6 +148,9 @@ class HD44780:public BasePeripheral, public Scriptable
 		std::vector<uint8_t> m_lineOffsets = {0, 0x40, 0, 0x40};
 
 	private:
+#ifdef TEST_MODE
+	friend void Test_HD44780_OOR();
+#endif
 		enum Actions
 		{
 			ActDesync,

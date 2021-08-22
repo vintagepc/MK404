@@ -128,37 +128,33 @@ void Beeper::SDL_FillBuffer(uint8_t *raw_buffer, int bytes)
 
 void Beeper::OnWaveformChange(uint32_t uiTOn,uint32_t uiTTotal)
 {
-	if (m_bMuted)
+	if (!m_bMuted)
 	{
-		return;
-	}
-	//printf("Beeper debug: %u on, %u total\n", uiTOn,uiTTotal);
-	if (uiTOn == 0)
-	{
-		if (m_bAudioAvail) SDL_PauseAudio(1);
-		m_bPlaying = false;
-		SetValue(25);
-	}
-	else
-	{
-		m_uiCtOn = m_pAVR->frequency/uiTOn;
-		m_uiCtOff = m_pAVR->frequency/(uiTTotal-uiTOn);
-		//printf("Beep @ %u Hz, duty cycle %u %\n",m_pAVR->frequency/uiTTotal, (100*uiTOn)/uiTTotal);
-		if (m_uiCtOn == 0)
+		//printf("Beeper debug: %u on, %u total\n", uiTOn,uiTTotal);
+		if (uiTOn == 0)
 		{
-			return;
+			if (m_bAudioAvail) SDL_PauseAudio(1);
+			m_bPlaying = false;
+			SetValue(25);
 		}
+		else
 		{
-			if (m_bPlaying && m_bAudioAvail)
+			m_uiCtOn = m_pAVR->frequency/uiTOn;
+			m_uiCtOff = m_pAVR->frequency/(uiTTotal-uiTOn);
+			//printf("Beep @ %u Hz, duty cycle %u %\n",m_pAVR->frequency/uiTTotal, (100*uiTOn)/uiTTotal);
+			if (m_uiCtOn != 0)
 			{
-				SDL_PauseAudio(1);
+				if (m_bPlaying && m_bAudioAvail)
+				{
+					SDL_PauseAudio(1);
+				}
+				m_uiCounter = m_uiSampleRate/m_uiCtOn;
+				m_bPlaying = true;
+				SetValue(255);
+				if (m_bAudioAvail) SDL_PauseAudio(0);
 			}
-			m_uiCounter = m_uiSampleRate/m_uiCtOn;
-			m_bPlaying = true;
-			SetValue(255);
-			if (m_bAudioAvail) SDL_PauseAudio(0);
-		}
 
+		}
 	}
 };
 

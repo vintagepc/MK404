@@ -93,7 +93,7 @@ void Test_IRSensor_OOR() {
 };
 
 // Out of range tests
-TEST_CASE("IRSensor_OOR") {
+TEST_CASE("Internal_IRSensor_OOR") {
 	Test_IRSensor_OOR();
 }
 
@@ -106,6 +106,6 @@ void Test_Board_Interface() {
 	// REQUIRE(b.GetDIRQ(Pin::INVALID_PIN) == nullptr);
 };
 
-TEST_CASE("Board_Connect_Errors") {
+TEST_CASE("Internal_Board_Connect_Errors") {
 	Test_Board_Interface();
 }

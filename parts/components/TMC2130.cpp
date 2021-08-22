@@ -92,6 +92,8 @@ void TMC2130::ProcessCommand()
  */
 uint8_t TMC2130::OnSPIIn(struct avr_irq_t *, uint32_t value)
 {
+	// Just for tracing, the bytes are not attached to anything.
+	RaiseIRQ(SPI_BYTE_IN, value);
     m_cmdIn.all<<=8; // Shift bits up
     m_cmdIn.bytes[0] = value;
     TRACE(printf("TMC2130 %c: byte received: %02x (%010lx)\n",m_cAxis.load(),value, m_cmdIn.all));
@@ -100,6 +102,7 @@ uint8_t TMC2130::OnSPIIn(struct avr_irq_t *, uint32_t value)
     m_cmdOut.all<<=8;
     TRACE(printf("TMC2130 %c: Clocking (%10lx) out %02x\n",m_cAxis.load(),m_cmdOut.all,byte));
     SetSendReplyFlag();
+	RaiseIRQ(SPI_BYTE_OUT,byte);
     return byte; // SPIPeripheral takes care of the reply.
 }
 

@@ -115,6 +115,7 @@ set(H_FILES_base
 	parts/printers/Prusa_MK3MMU2.h
 	parts/printers/Prusa_MK3S.h
 	parts/printers/Prusa_MK3SMMU2.h
+	parts/printers/Prusa_MMU2.h
 	parts/printers/Test_Printer.h
 	parts/Scriptable.h
 	parts/ScriptHost.h
@@ -208,6 +209,7 @@ set(MK404_SOURCES_base
 	parts/printers/Prusa_MK3MMU2.cpp
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
+	parts/printers/Prusa_MMU2.cpp
 	parts/printers/Test_Printer.cpp
 	parts/IScriptable.cpp
 	parts/Printer.cpp

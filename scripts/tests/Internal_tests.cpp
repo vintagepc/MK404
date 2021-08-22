@@ -41,6 +41,7 @@
 #include "TMC2130.h"
 #include "VoltageSrc.h"
 #include "w25x20cl.h"
+#include "Color.h"
 
 #ifndef TEST_MODE
 	#error "Internal_Tests requires TEST_MODE defined to access protected interface functions."
@@ -170,4 +171,67 @@ void Test_w25x20cl_errors() {
 
 TEST_CASE("Internal_w25x20cl_errors") {
 	Test_w25x20cl_errors();
+}
+
+void Test_ADCButtons_errors() {
+	ADC_Buttons b{"Buttons"};
+	REQUIRE(b.Test_ProcessActionIF(ADC_Buttons::ActPress,{"0"}) == LineStatus::Error);
+	REQUIRE(b.Test_ProcessActionIF(ADC_Buttons::ActPress,{"4"}) == LineStatus::Error);
+}
+
+TEST_CASE("Internal_ADCB_errors") {
+	Test_ADCButtons_errors();
+}
+
+void Test_EEPROM_errors() {
+	EEPROM e;
+	// OOR
+	REQUIRE(e.Test_ProcessActionIF(EEPROM::ActPoke,{"65535","10"}) == LineStatus::Error);
+	REQUIRE(e.Test_ProcessActionIF(EEPROM::ActPeekVerify,{"65535","10"}) == LineStatus::Error);
+	// Mismatch of value
+	REQUIRE(e.Test_ProcessActionIF(EEPROM::ActPeekVerify,{"0","10"}) == LineStatus::Timeout);
+}
+
+TEST_CASE("Internal_EEPROM_errors") {
+	Test_EEPROM_errors();
+}
+
+TEST_CASE("Internal_Colour_conversion") {
+	float white[] = {1.F,1.F,1.F};
+	float black[] = {0.F,0.F,0.F};
+	float red[] = {1.F,0.F,0.F};
+	float green[] = {0.F,1.F,0.F};
+	float blue[] = {0.F,0.F,1.F};
+	float magenta[] = {0.75F,0.F,1.F};
+	float magenta2[] = {1.F,0.F,1.F};
+
+
+
+	float out[3] {0};
+
+	colorLerp(black, white, 0, out);
+	REQUIRE(out[0] == 0.F);
+	REQUIRE(out[1] == 0.F);
+	REQUIRE(out[2] == 0.F);
+
+	colorLerp(black, white, 1, out);
+	REQUIRE(out[0] == 1.F);
+	REQUIRE(out[1] == 1.F);
+	REQUIRE(out[2] == 1.F);
+
+	colorLerp(black, blue, 0.75, out);
+	REQUIRE(out[0] == 0.1875F);
+	REQUIRE(out[1] == 0.75F);
+	REQUIRE(out[2] == 0.75F);
+
+	colorLerp(black, magenta, 1, out);
+	REQUIRE(out[0] == magenta[0]);
+	REQUIRE(out[1] == magenta[1]);
+	REQUIRE(out[2] == magenta[2]);
+
+	colorLerp(black, magenta2, 1, out);
+	REQUIRE(out[0] == 0.F);
+	REQUIRE(out[1] == magenta2[1]);
+	REQUIRE(out[2] == 0.F);
+
 }

@@ -303,6 +303,9 @@ void TMC2130::Init(struct avr_t * avr)
 	TH.AddTrace(this, DIR_IN,{TC::OutputPin, TC::Stepper});
 	TH.AddTrace(this, ENABLE_IN,{TC::OutputPin, TC::Stepper});
 	TH.AddTrace(this, DIAG_OUT,{TC::InputPin, TC::Stepper});
+
+	m_regs.defs.IOIN.one = 0x1;
+	m_regs.defs.IOIN.version = 0x11;
 }
 
 float TMC2130::StepToPos(int32_t step)

@@ -160,7 +160,16 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
                     uint8_t uv_cp   :1;
 					uint32_t :29; // unused
                 }  __attribute__ ((__packed__)) GSTAT;
-                uint32_t _unimplemented[106]; //0x02 - 0x6B
+                uint32_t _unimplemented[2]; //0x02 - 0x03
+                struct                 // 0x04
+                {
+					uint8_t         :6;  // unused
+					uint8_t one     :1;  // always one
+					uint8_t         :1;  // unused
+					uint16_t        :16; // unused
+					uint8_t version :8;
+                }  __attribute__ ((__packed__)) IOIN;
+                uint32_t _unimplemented2[103]; //0x05 - 0x6B
 				struct                        //0x6C
 				{
 					uint32_t toff		:4;
@@ -181,7 +190,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 					uint32_t diss2g		:1;
 					uint32_t			:1;
 				} __attribute__ ((__packed__)) CHOPCONF;
-                uint32_t _unimplemented2[2]; //0x6D - 0x6E
+                uint32_t _unimplemented3[2]; //0x6D - 0x6E
                 struct                       //0x6F
                 {
                     uint16_t SG_RESULT   :10;

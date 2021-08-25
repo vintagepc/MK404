@@ -42,13 +42,13 @@ class HC595: public BasePeripheral
 	public:
 
 		#define IRQPAIRS \
-			_IRQ(SPI_BYTE_IN,"8<hc959.spi_in") \
-			_IRQ(SPI_BYTE_OUT,"8>hc959.spi_out") \
-			_IRQ(IN_LATCH,"32<hc959.latch_in") \
-			_IRQ(IN_RESET,"<hc959.reset_in") \
-			_IRQ(IN_CLOCK,"<hc959.clock_in") \
-			_IRQ(IN_DATA,"<hc959.data_in") \
-			_IRQ(SHIFT_OUT,"32>hc959.out") \
+			_IRQ(SPI_BYTE_IN,"8<hc595.spi_in") \
+			_IRQ(SPI_BYTE_OUT,"8>hc595.spi_out") \
+			_IRQ(IN_LATCH,"32<hc595.latch_in") \
+			_IRQ(IN_RESET,"<hc595.reset_in") \
+			_IRQ(IN_CLOCK,"<hc595.clock_in") \
+			_IRQ(IN_DATA,"<hc595.data_in") \
+			_IRQ(SHIFT_OUT,"32>hc595.out") \
 			_IRQ(BIT0	,">bit0") \
 			_IRQ(BIT1	,">bit1") \
 			_IRQ(BIT2	,">bit2") \

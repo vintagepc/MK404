@@ -33,58 +33,9 @@ std::pair<int,int> Prusa_MMU2::GetWindowSize()
 
 void Prusa_MMU2::Draw()
 {
+	glScalef(50.F/35.F,4,1);
 	float fY = (float)(glutGet(GLUT_WINDOW_HEIGHT)/4);
-	glScalef(500.F/350.F, 4.F, 1.F);
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-50,0);
-		 glBegin(GL_QUADS);
-			glVertex3f(0,0,0);
-			glVertex3f(350,0,0);
-			glVertex3f(350,10,0);
-			glVertex3f(0,10,0);
-		glEnd();
-		glTranslatef(20,7,0);
-        glColor3f(1,1,1);
-		glScalef(0.09,-0.05,0);
-		// for (auto &c : m_strTitle)
-		// {
-		// 	glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
-		// }
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-40,0);
-		m_Sel.Draw();
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-30,0);
-		m_Idl.Draw();
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-20,0);
-		m_Extr.Draw();
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-10,0);
-		glBegin(GL_QUADS);
-			glVertex3f(0,0,0);
-			glVertex3f(350,0,0);
-			glVertex3f(350,10,0);
-			glVertex3f(0,10,0);
-		glEnd();
-		for (int i=0; i<5; i++)
-		{
-			gsl::at(m_lRed,i).Draw();
-			glTranslatef(20,0,0);
-			gsl::at(m_lGreen,i).Draw();
-			glTranslatef(40,0,0);
-		}
-		m_lFINDA.Draw();
-	glPopMatrix();
+	MM_Control_01::Draw(fY);
 }
 
 void Prusa_MMU2::OnVisualTypeSet(const std::string &type)

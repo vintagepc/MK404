@@ -29,12 +29,6 @@
 #include "TMC2130.h"          // for TMC2130
 #include "gsl-lite.hpp"
 #include "uart_pty.h"         // for uart_pty
-#include <GL/freeglut_std.h>          // for glutGet, glutStrokeCharacter, GLUT_STRO...
-#if defined(__APPLE__)
-# include <OpenGL/gl.h>       // for glTranslatef, glVertex3f, glColor3f
-#else
-# include <GL/gl.h>           // for glTranslatef, glVertex3f, glColor3f
-#endif
 #include <cstdlib>           // for exit
 #include <cstring>
 #include <iostream>            // for fprintf, size_t, stderr
@@ -85,62 +79,6 @@ void MMU2::OnKeyPress(const Key& key)
 const std::string MMU2::GetSerialPort()
 {
 	return m_UART.GetSlaveName();
-}
-
-void MMU2::Draw(float fY)		/* function called whenever redisplay needed */
-{
-	//float fY = (float)(glutGet(GLUT_WINDOW_HEIGHT)/4);
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-50,0);
-		 glBegin(GL_QUADS);
-			glVertex3f(0,0,0);
-			glVertex3f(350,0,0);
-			glVertex3f(350,10,0);
-			glVertex3f(0,10,0);
-		glEnd();
-		glTranslatef(20,7,0);
-        glColor3f(1,1,1);
-		glScalef(0.09,-0.05,0);
-		for (auto &c : m_strTitle)
-		{
-			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN,c);
-		}
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-40,0);
-		m_Sel.Draw();
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-30,0);
-		m_Idl.Draw();
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-20,0);
-		m_Extr.Draw();
-	glPopMatrix();
-	glPushMatrix();
-		glColor3f(0,0,0);
-		glTranslatef(0,fY-10,0);
-		glBegin(GL_QUADS);
-			glVertex3f(0,0,0);
-			glVertex3f(350,0,0);
-			glVertex3f(350,10,0);
-			glVertex3f(0,10,0);
-		glEnd();
-		for (int i=0; i<5; i++)
-		{
-			gsl::at(m_lRed,i).Draw();
-			glTranslatef(20,0,0);
-			gsl::at(m_lGreen,i).Draw();
-			glTranslatef(40,0,0);
-		}
-		m_lFINDA.Draw();
-	glPopMatrix();
-
 }
 
 void MMU2::SetupHardware()

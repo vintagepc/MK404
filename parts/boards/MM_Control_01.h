@@ -39,8 +39,11 @@ namespace Boards
 
 			~MM_Control_01() override = default;
 
+			void Draw(float fY);
+
 		protected:
 			void SetupHardware() override;
+
 
 		//	void CustomAVRInit() override;
 
@@ -58,5 +61,7 @@ namespace Boards
 
 		private:
 			const Wirings::MM_Control_01 m_wiring = Wirings::MM_Control_01();
+
+			std::string m_strTitle = "Missing Material Unit 2";
 	};
 }; // namespace Boards

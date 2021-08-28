@@ -15,6 +15,7 @@
  */
 
 #include "Prusa_MMU2.h"
+#include "GLHelper.h"
 #include "MMU2.h"
 #include "MK3SGL.h"
 
@@ -36,18 +37,18 @@ void Prusa_MMU2::Draw()
 	glScalef(50.F/35.F,4,1);
 	float fY = (float)(glutGet(GLUT_WINDOW_HEIGHT)/4);
 	MM_Control_01::Draw(fY);
+	m_gl.OnDraw();
 }
 
 void Prusa_MMU2::OnVisualTypeSet(const std::string &type)
 {
-	if (type!="lite")
-	{
-		return;
-	}
+	// if (type=="lite")
+	// {
+	// 	m_pVis.reset(new MK3SGL(type,true,this)); //NOLINT - suggestion is c++14.
+	// 	AddHardware(*m_pVis);
+	// }
 
-	m_pVis.reset(new MK3SGL(type,true,this)); //NOLINT - suggestion is c++14.
 
-	AddHardware(*m_pVis);
 	// Wire up the additional MMU stuff.
 
 	//AddHardware(m_sniffer,'2');

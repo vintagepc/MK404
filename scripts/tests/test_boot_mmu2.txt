@@ -1,0 +1,6 @@
+# Just a simple grab of the screen for sanity.
+ScriptHost::SetTimeoutMs(1000)
+ScriptHost::SetQuitOnTimeout(1)
+Board::WaitMs(500);
+GLHelper::Snapshot(tests/snaps/MMU2_start)
+Board::Quit()

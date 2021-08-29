@@ -49,8 +49,6 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
         // Returns the name of the serial port (for the pipe thread)
         const std::string GetSerialPort();
 
-        void Draw(float fY);
-
 		inline void SetFINDAState(bool bVal) {m_bFINDAManual = bVal;}
 		void ToggleFINDA();
 
@@ -74,8 +72,6 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
         std::atomic_bool m_bStarted = {false};
         std::atomic_bool m_bReset ={false};
         pthread_t m_tRun = 0;
-
-        std::string m_strTitle = "Missing Material Unit 2";
 
         static MMU2 *g_pMMU; // Needed for GL
 };

@@ -25,4 +25,4 @@ setup arguments (like printer model) to see what is available within that contex
 
 ## Example actions available for the default (MK3S) printer:
 
-[See ref/Scripting.md](../ref/Scripting.md)
+[See Scripting.md](https://github.com/vintagepc/MK404/wiki/Scripting)

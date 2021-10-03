@@ -53,7 +53,7 @@ namespace Boards
 		//	void CustomAVRDeinit() override;
 
 			uart_pty m_UART;
-			usbip_t* m_usb;
+			usbip_t* m_usb = nullptr;
 			HC595 m_shift;
 			TMC2130 m_Sel {'S'},
 					m_Idl {'I'},

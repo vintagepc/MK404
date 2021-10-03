@@ -31,6 +31,12 @@
 namespace Boards
 {
 
+	MM_Control_01::~MM_Control_01()
+	{
+		pthread_cancel(m_usb_thread);
+		usbip_destroy(m_usb);
+	}
+
 	void MM_Control_01::SetupHardware()
 	{
 		DisableInterruptLevelPoll(5);
@@ -109,6 +115,14 @@ namespace Boards
 		m_lRed[1].ConnectFrom(	m_shift.GetIRQ(HC595::BIT15), LED::LED_IN);
 
 		AddHardware(m_buttons,5);
+
+		m_usb = usbip_create(m_pAVR);
+		if (!m_usb)
+		{
+			fprintf(stderr, "usbip_create failed\n");
+			exit(1);
+		}
+		pthread_create(&m_usb_thread, NULL, usbip_main, m_usb);
 
 	}
 

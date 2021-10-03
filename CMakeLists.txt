@@ -93,6 +93,7 @@ set(H_FILES_base
 	parts/components/TMC2130.h
 	parts/components/UART_Logger.h
 	parts/components/uart_pty.h
+	parts/components/usbip.h
 	parts/components/VoltageSrc.h
 	parts/components/w25x20cl.h
 	parts/I2CPeripheral.h
@@ -196,6 +197,7 @@ set(MK404_SOURCES_base
 	parts/components/TMC2130.cpp
 	parts/components/UART_Logger.cpp
 	parts/components/uart_pty.cpp
+	parts/components/usbip.c
 	parts/components/VoltageSrc.cpp
 	parts/components/w25x20cl.cpp
 	parts/printers/IPCPrinter.cpp
@@ -251,6 +253,8 @@ if (ENABLE_TIDY)
 else()
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
 endif()
+
+set_source_files_properties(parts/components/usbip.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
 if(ENABLE_SHMQ)
 	target_sources(MK404 PRIVATE 3rdParty/shmemq404/shmemq.c)

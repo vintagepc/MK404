@@ -504,7 +504,7 @@ usbip_main(
 {
 	int listenfd = open_usbip_socket();
 	struct sockaddr_in cli;
-	unsigned int clilen = sizeof(cli);
+	socklen_t clilen = sizeof(cli);
 
 	while (1) {
 		int sockfd = accept(listenfd, (struct sockaddr *)&cli,  &clilen);

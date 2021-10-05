@@ -163,7 +163,15 @@ set(H_FILES_3rdParty
 
 set(H_FILES ${H_FILES_base} ${H_FILES_3rdParty})
 
+if (NOT APPLE)
+	set(NON_APPLE_SRC parts/components/usbip.c)
+	set_source_files_properties(parts/components/usbip.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+else()
+	set(NON_APPLE_SRC)
+endif()
+
 set(MK404_SOURCES_base
+	${NON_APPLE_SRC}
 	parts/Board.cpp
 	parts/I2CPeripheral.cpp
 	parts/boards/EinsyRambo.cpp
@@ -251,12 +259,6 @@ if (ENABLE_TIDY)
 else()
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
 endif()
-
-if (NOT APPLE)
-	target_sources(MK404 PRIVATE parts/components/usbip.c)
-	set_source_files_properties(parts/components/usbip.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-endif()
-
 
 if(ENABLE_SHMQ)
 	target_sources(MK404 PRIVATE 3rdParty/shmemq404/shmemq.c)

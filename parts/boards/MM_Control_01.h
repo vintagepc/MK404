@@ -26,9 +26,11 @@
 #include "LED.h"                   // for LED
 #include "TMC2130.h"               // for TMC2130
 #include "uart_pty.h"              // for uart_pty
-extern "C" {
-	#include "usbip.h"
-}
+#ifndef __APPLE__
+	extern "C" {
+		#include "usbip.h"
+	}
+#endif
 #include "wiring/MM_Control_01.h"  // for MM_Control_01
 #include <cstdint>                // for uint32_t
 
@@ -53,7 +55,6 @@ namespace Boards
 		//	void CustomAVRDeinit() override;
 
 			uart_pty m_UART;
-			usbip_t* m_usb = nullptr;
 			HC595 m_shift;
 			TMC2130 m_Sel {'S'},
 					m_Idl {'I'},
@@ -63,7 +64,10 @@ namespace Boards
 				m_lFINDA {0xFFCC00FF,'F'};
 			ADC_Buttons m_buttons {"MMUButtons"};
 
-			pthread_t m_usb_thread;
+			#ifndef __APPLE__
+				usbip_t* m_usb = nullptr;
+				pthread_t m_usb_thread;
+			#endif
 
 		private:
 			const Wirings::MM_Control_01 m_wiring = Wirings::MM_Control_01();

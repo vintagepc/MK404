@@ -41,11 +41,11 @@
 #include <cstdint>
 #include <cstdlib>   // for exit, free
 #include <cstring>    // for memcpy, NULL
+#include <ctime>
 #include <fstream>		// IWYU pragma: keep
 #include <iomanip>          // for operator<<, setw
 #include <iostream>
 #include <typeinfo>         // for type_info
-#include <time.h>
 #include <unistd.h>         // for usleep
 
 namespace Boards {

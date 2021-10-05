@@ -26,9 +26,9 @@
 #pragma once
 
 #include "BasePeripheral.h"
+#include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <sim_avr.h>         // for avr_t
 #include <sim_irq.h>         // for avr_irq_t, avr_irq_register_notify
-#include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 
 class I2CPeripheral: public BasePeripheral
 {

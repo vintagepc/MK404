@@ -45,7 +45,7 @@ else()
 endif()
 
 if (ENABLE_TIDY)
-	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy;-config=")
+	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy-5.0;-config=")
 else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()
@@ -93,6 +93,7 @@ set(H_FILES_base
 	parts/components/TMC2130.h
 	parts/components/UART_Logger.h
 	parts/components/uart_pty.h
+	parts/components/usbip.h
 	parts/components/VoltageSrc.h
 	parts/components/w25x20cl.h
 	parts/I2CPeripheral.h
@@ -162,7 +163,15 @@ set(H_FILES_3rdParty
 
 set(H_FILES ${H_FILES_base} ${H_FILES_3rdParty})
 
+if (NOT APPLE)
+	set(NON_APPLE_SRC parts/components/usbip.c)
+	set_source_files_properties(parts/components/usbip.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+else()
+	set(NON_APPLE_SRC)
+endif()
+
 set(MK404_SOURCES_base
+	${NON_APPLE_SRC}
 	parts/Board.cpp
 	parts/I2CPeripheral.cpp
 	parts/boards/EinsyRambo.cpp
@@ -234,7 +243,6 @@ set(MK404_SOURCES_base
 	parts/IKeyClient.cpp
 	parts/KeyController.cpp
 )
-
 
 set(MK404_SOURCES_3rdparty
 	3rdParty/arcball/Camera.cpp

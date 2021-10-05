@@ -164,11 +164,11 @@ void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 		// We don't need to track co-linearity if not extruding.
 		bColinear = true;
 	}
-	const std::array<float, 3> fExtrEnd = {
+	const std::array<float, 3> fExtrEnd = {{
 		static_cast<float>(m_uiExtrEnd[0])/static_cast<float>(m_iStepsPerMM[0]*1000),
 		static_cast<float>(m_uiExtrEnd[1])/static_cast<float>(m_iStepsPerMM[2]*1000),
 		static_cast<float>(m_uiExtrEnd[2])/static_cast<float>(m_iStepsPerMM[1]*1000),
-		};
+		}};
 	const std::array<float,3> vfPos =
 	{{
 		static_cast<float>(m_uiX)/static_cast<float>(m_iStepsPerMM[0]*1000),
@@ -182,7 +182,7 @@ void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 		{
 			//printf("New extrusion %u at index %u\n",m_ivStart.size(),m_ivStart.back());
 			// Add a temporary normal vertex
-			std::array<float, 3> fCross = {0,0,0}, fA = {0,0,0}, fB = {0,-1,0};
+			std::array<float, 3> fCross = {{0,0,0}}, fA = {{0,0,0}}, fB = {{0,-1,0}};
 			std::transform(vfPos.begin(), vfPos.end(), fExtrEnd.data(), fA.data(), std::minus<float>());
 			CrossProduct(fA,fB,{fCross.data(),3});
 			Normalize({fCross.data(),3});
@@ -225,7 +225,7 @@ void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 	else if (!bColinear)
 	{
 		// First, update the previous normal with the new vertex info.
-		std::array<float, 3> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-0.002,0};
+		std::array<float, 3> fCross = {{0,0,0}}, fA = {{0,0,0}} ,fB = {{0,-0.002,0}};
 		auto itPrev = m_fvNorms.end()-3;
 		std::transform(itPrev, itPrev+3, vfPos.data(), fA.data(), std::minus<float>()); // Length from p->curr
 		CrossProduct(fA,fB,{fCross.data(),3});
@@ -278,7 +278,7 @@ void GLPrint::AddSegment()
 	const float fLayerZRad = m_fZHt/2; //0.5*layer height. TODO (vintagepc): Sort this out based on guessed z height.
 
 	//std::cout << "Adding segment from: " << extPrev[0] << " " << fZ << " " << fY << " to " << m_fExtrEnd[0] << " " << m_fExtrEnd[1] << " " << m_fExtrEnd[2] << '\n';
-	std::array<float, 3> fCross = {0,0,0}, fA = {0,0,0} ,fB = {0,-2,0};
+	std::array<float, 3> fCross = {{0,0,0}}, fA = {{0,0,0}} ,fB = {{0,-2,0}};
 
 	auto pStart = m_vPath.begin();
 	bool bIsSkipping = false;
@@ -418,11 +418,11 @@ void GLPrint::AddSegment()
 
 void GLPrint::Draw()
 {
-	const std::array<float, 4> fColor = {m_fColR,m_fColG,m_fColB,1};
+	const std::array<float, 4> fColor = {{m_fColR,m_fColG,m_fColB,1}};
 	//std::vector<float> fG[4] = {0,0.5,0,1};
-	static const std::array<float, 4> fY = {1,1,0,1};
+	static const std::array<float, 4> fY = {{1,1,0,1}};
 	//static const std::array<float, 4> fK = {0,0,0,1};
-	static const std::array<float, 4> fSpec = {1,1,1,1};
+	static const std::array<float, 4> fSpec = {{1,1,1,1}};
 	glLineWidth(1.0);
 
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,fSpec.data());

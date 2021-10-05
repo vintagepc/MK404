@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "OBJCollection.h"
 #include "GLObj.h"
+#include "OBJCollection.h"
 #include "gsl-lite.hpp"
 #include <GL/glew.h>
 #include <memory>

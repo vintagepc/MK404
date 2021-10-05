@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "IPCPrinter.h"
 #include "GCodeSniffer.h"
+#include "IPCPrinter.h"
 #include "MMU2.h"
 #include <string>
 #include <utility>          // for pair

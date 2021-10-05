@@ -29,8 +29,8 @@
 #include "IScriptable.h"     // for IScriptable::LineStatus
 #include "Scriptable.h"      // for Scriptable
 #include "sim_avr.h"         // for avr_t
-#include "sim_irq.h"         // for avr_irq_t
 #include "sim_avr_types.h"
+#include "sim_irq.h"         // for avr_irq_t
 #include <GL/glew.h>         // NOLINT for glTranslatef
 #include <GL/freeglut_std.h> //
 #include <GLPrint.h>         // for GLPrint

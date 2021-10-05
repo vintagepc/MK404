@@ -42,7 +42,7 @@ namespace Boards
 			explicit MM_Control_01(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){};
 
-			~MM_Control_01();
+			~MM_Control_01() override;
 
 			void Draw(float fY);
 
@@ -66,7 +66,7 @@ namespace Boards
 
 			#ifndef __APPLE__
 				usbip_t* m_usb = nullptr;
-				pthread_t m_usb_thread;
+				pthread_t m_usb_thread = 0;
 			#endif
 
 		private:

@@ -121,10 +121,10 @@ namespace Boards
 			m_usb = usbip_create(m_pAVR);
 			if (!m_usb)
 			{
-				fprintf(stderr, "usbip_create failed\n");
+				std::cout << "Failed to create USBIP context\n";
 				exit(1);
 			}
-			pthread_create(&m_usb_thread, NULL, usbip_main, m_usb);
+			pthread_create(&m_usb_thread, nullptr, usbip_main, m_usb);
 		#endif
 
 	}

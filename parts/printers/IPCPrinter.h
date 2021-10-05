@@ -21,9 +21,9 @@
 #pragma once
 
 #include "BasePeripheral.h"
-#include "Printer.h"        // for Printer, Printer::VisualType
 #include "IPCBoard.h"     		// for EinsyRambo
 #include "MK3SGL.h"
+#include "Printer.h"        // for Printer, Printer::VisualType
 #include <array>             // for array
 #include <cstdint>          // for uint32_t
 #include <memory>            // for unique_ptr
@@ -101,7 +101,7 @@ class IPCPrinter : public Boards::IPCBoard, public Printer, public BasePeriphera
 
 		std::vector<unsigned int> m_vStepIRQs, m_vIndIRQs;
 
-		std::array<uint32_t,4> m_vStepsPerMM = {100,100,400,280};
+		std::array<uint32_t,4> m_vStepsPerMM = {{100,100,400,280}};
 
 
 };

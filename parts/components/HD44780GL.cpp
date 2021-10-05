@@ -36,8 +36,8 @@
 #include "hd44780_charROM.h"  // for (anonymous), hd44780_ROM_AOO
 #include "sim_avr_types.h"    // for avr_regbit_t
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
-#include <array>              // for array<>::value_type, array
 #include <GL/glew.h>
+#include <array>              // for array<>::value_type, array
 #include <vector>
 
 //#define TRACE(_w) _w

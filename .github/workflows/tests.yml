@@ -224,6 +224,13 @@ jobs:
 
 
     - name: Upload to codecov.io
-      run: |
-        bash <(curl -s https://codecov.io/bash) -f parts/parts.info
-        bash <(curl -s https://codecov.io/bash) -f ext1/ext1.info
+      uses: codecov/codecov-action@v2.1.0
+      with: 
+        # Comma-separated list of files to upload
+        files: parts/parts.info, ext1/ext1.info
+        # Specify whether or not CI build should fail if Codecov runs into an error during upload
+        fail_ci_if_error: true
+        # Comma-separated list, see the README for options and their usage
+        # functionalities: # optional
+        # Specify whether the Codecov output should be verbose
+        verbose: true

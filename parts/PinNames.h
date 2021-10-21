@@ -3,7 +3,7 @@
 	Not all boards have every pin, the idea is that if using TryConnect() you can potentially
 	reuse a board and disconnect a pin in its wiring to reduce copypasta code.
 
-	Copyright 2020 VintagePC <https://github.com/vintagepc/>
+	Copyright 2020-2021 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
 
@@ -53,8 +53,9 @@ namespace PinNames {
 		E0_FAN,
 		E_MUX0_PIN,
 		E_MUX1_PIN,
-		FAN_1_PIN,
 		FAN_PIN,
+		FAN_1_PIN,
+		FAN_2_PIN,
 		FINDA_PIN,
 		HEATER_0_PIN,
 		HEATER_1_PIN,
@@ -88,6 +89,7 @@ namespace PinNames {
 		SWI2C_SDA,
 		TACH_0,
 		TACH_1,
+		TACH_2,
 		TEMP_0_PIN,
 		TEMP_1_PIN,
 		TEMP_2_PIN,
@@ -112,6 +114,7 @@ namespace PinNames {
 		Z_MIN_PIN,
 		__TMC2130_PIN_SET(Z)
 		__A4982_PIN_SET(Z)
+		MCP_CSEL,
 		PIN_COUNT,
 		INVALID_PIN // Used for testing error cases.
 

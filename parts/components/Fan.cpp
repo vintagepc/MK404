@@ -28,7 +28,7 @@
 #define TRACE(_w)
 #endif
 
-Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),GLIndicator(chrSym,false,true),m_uiMaxRPM(iMaxRPM)
+Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM, bool bInvert):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),GLIndicator(chrSym,false,true),m_bInvert(bInvert),m_uiMaxRPM(iMaxRPM)
 {
 	RegisterActionAndMenu("Stall", "Stalls the fan", Actions::Stall);
 	RegisterActionAndMenu("Resume","Resumes fan from a stall condition",Actions::Resume);
@@ -67,6 +67,11 @@ Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const std::vector<std
 
 void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 {
+	printf("PWM fan: %02x\n",value);
+	if (m_bInvert)
+	{
+		value = 255U - value;
+	}
     m_uiPWM = value;
     if (m_bAuto) // Only update RPM if auto (pwm-controlled). Else user supplied RPM.
 	{
@@ -92,19 +97,68 @@ void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 // Just a dummy wrapper to handle non-PWM control (digitalWrite)
 void Fan::OnDigitalChange(struct avr_irq_t *, uint32_t value)
 {
-   	RaiseIRQ(PWM_IN, value*0xFF);
+	RaiseIRQ(PWM_IN, value*0xFF);
 }
 
-void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM)
+void Fan::OnEnableInput(struct avr_irq_t *, uint32_t value)
+{
+	// Update if PWM val or digital changes.
+	RaiseIRQ(ENABLE_IN, GetIRQ(ENABLE_IN)->value);
+}
+
+void Fan::OnEnableChange(avr_irq_t *irq, uint32_t value)
+{
+	printf("Enable %c changed: %02x %02x %02x\n", GetLabel(), value, GetIRQ(DIGITAL_IN)->value, GetIRQ(PWM_IN)->value);
+	if (value) {
+	 	if (GetIRQ(DIGITAL_IN)->value) // 255 is a digitalwrite(1)
+		{
+			value = 0xFFU;
+		}
+		else if(GetIRQ(PWM_IN)->value) // 1-254
+		{
+			value = GetIRQ(PWM_IN)->value;
+		}
+		else
+		{
+			value = 0U;
+		}
+	}
+	OnPWMChange(nullptr, value);
+}
+
+void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM, bool bIsEnableCtl)
 {
     _Init(avr, this);
 
     if(irqPWM)  ConnectFrom(irqPWM, PWM_IN);
-    if(irqDigital) ConnectFrom(irqDigital, DIGITAL_IN);
+    if(irqDigital)
+	{
+		if (m_bIsSoftPWM)
+		{
+			ConnectFrom(irqDigital, SPWM_IN);
+		}
+		else
+		{
+			ConnectFrom(irqDigital, DIGITAL_IN);
+		}
+	}
     if(irqTach) ConnectTo(TACH_OUT,irqTach);
 
-    RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnPWMChange), this);
-    RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalInSPWM), this);
+
+	// Note - this is partly for the CW1 FW where the enable pin is changed after the CWS so
+	// we use that as a trigger to "lock in" the current value rather than trying to mess with the mashup of
+	// digital and pwm signal.
+	if (!bIsEnableCtl)
+	{
+    	RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnPWMChange), this);
+    	RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalChange), this);
+		RegisterNotify(SPWM_IN,MAKE_C_CALLBACK(Fan,OnDigitalInSPWM), this);
+	}
+	else
+	{
+		RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnEnableInput), this);
+	}
+	RegisterNotify(ENABLE_IN,MAKE_C_CALLBACK(Fan,OnEnableChange), this);
 
 	auto &TH = TelemetryHost::GetHost();
 	TH.AddTrace(this, PWM_IN,{TC::PWM, TC::Fan},8);

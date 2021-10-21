@@ -62,10 +62,12 @@ set(H_FILES_base
 	parts/ADCPeripheral.h
 	parts/BasePeripheral.h
 	parts/Board.h
+	parts/boards/CW1S.h
 	parts/boards/EinsyRambo.h
 	parts/boards/MiniRambo.h
 	parts/boards/MM_Control_01.h
 	parts/boards/Test_Board.h
+	parts/components/74HCT4052.h
 	parts/components/A4982.h
 	parts/components/ADC_Buttons.h
 	parts/components/Beeper.h
@@ -82,6 +84,7 @@ set(H_FILES_base
 	parts/components/Heater.h
 	parts/components/IRSensor.h
 	parts/components/LED.h
+	parts/components/MCP23S17.h
 	parts/components/MMU1.h
 	parts/components/MMU2.h
 	parts/components/PAT9125.h
@@ -93,6 +96,7 @@ set(H_FILES_base
 	parts/components/TMC2130.h
 	parts/components/UART_Logger.h
 	parts/components/uart_pty.h
+	parts/components/usbip.h
 	parts/components/VoltageSrc.h
 	parts/components/w25x20cl.h
 	parts/I2CPeripheral.h
@@ -106,6 +110,8 @@ set(H_FILES_base
 	parts/Printer.h
 	parts/printers/IPCPrinter.h
 	parts/printers/IPCPrinter_MMU2.h
+	parts/printers/Prusa_CW1.h
+	parts/printers/Prusa_CW1S.h
 	parts/printers/Prusa_MK1_13.h
 	parts/printers/Prusa_MK2_13.h
 	parts/printers/Prusa_MK25_13.h
@@ -125,6 +131,7 @@ set(H_FILES_base
 	parts/wiring/Einsy_1_0a.h
 	parts/wiring/Einsy_1_1a.h
 	parts/Wiring.h
+	parts/wiring/CW1S.h
 	parts/wiring/miniRAMBo_1_1b.h
 	parts/wiring/miniRAMBo_1_3a.h
 	parts/wiring/MM_Control_01.h
@@ -165,10 +172,12 @@ set(H_FILES ${H_FILES_base} ${H_FILES_3rdParty})
 set(MK404_SOURCES_base
 	parts/Board.cpp
 	parts/I2CPeripheral.cpp
+	parts/boards/CW1S.cpp
 	parts/boards/EinsyRambo.cpp
 	parts/boards/MiniRambo.cpp
 	parts/boards/MM_Control_01.cpp
 	parts/boards/Test_Board.cpp
+	parts/components/74HCT4052.cpp
 	parts/components/A4982.cpp
 	parts/components/ADC_Buttons.cpp
 	parts/components/Beeper.cpp
@@ -185,6 +194,7 @@ set(MK404_SOURCES_base
 	parts/components/IRSensor.cpp
 	parts/components/GLIndicator.cpp
 	parts/components/LED.cpp
+	parts/components/MCP23S17.cpp
 	parts/components/MMU1.cpp
 	parts/components/MMU2.cpp
 	parts/components/PAT9125.cpp
@@ -196,10 +206,12 @@ set(MK404_SOURCES_base
 	parts/components/TMC2130.cpp
 	parts/components/UART_Logger.cpp
 	parts/components/uart_pty.cpp
+	parts/components/usbip.c
 	parts/components/VoltageSrc.cpp
 	parts/components/w25x20cl.cpp
 	parts/printers/IPCPrinter.cpp
 	parts/printers/IPCPrinter_MMU2.cpp
+	parts/printers/Prusa_CW1S.cpp
 	parts/printers/Prusa_MK1_13.cpp
 	parts/printers/Prusa_MK2_13.cpp
 	parts/printers/Prusa_MK25_13.cpp
@@ -251,6 +263,8 @@ if (ENABLE_TIDY)
 else()
 	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
 endif()
+
+set_source_files_properties(parts/components/usbip.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
 if(ENABLE_SHMQ)
 	target_sources(MK404 PRIVATE 3rdParty/shmemq404/shmemq.c)

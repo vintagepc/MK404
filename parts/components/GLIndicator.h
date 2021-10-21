@@ -40,6 +40,7 @@ public:
 	void SetValue(uint8_t value);
 
 	inline void SetLabel(char label) { m_chrLabel = label;}
+	inline char GetLabel() { return m_chrLabel.load();}
 
 	inline void SetColor(uint32_t color) { m_Color = hexColor_t(color); }
 

@@ -422,7 +422,7 @@ int main(int argc, char *argv[])
 		std::ifstream ifBL {argStrBoot.getValue()};
 		if (!argStrBoot.isSet() && ifBL.good())
 		{
-			if (argModel.getValue() != "Prusa_MMU2") {
+			if (argModel.getValue() != "Prusa_MMU2" && argModel.getValue() != "Prusa_CW1S" && argModel.getValue() != "Prusa_CW1" ) {
 				std::cout << "No bootloader specified, using default: " << argStrBoot.getValue() << '\n';
 				strBoot = argStrBoot.getValue();
 			} // MMU does not take a bootloader.

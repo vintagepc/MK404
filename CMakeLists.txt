@@ -554,6 +554,8 @@ add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
 
 
 SET(PRINTERS
+	Prusa_CW1
+	Prusa_CW1S
 	Prusa_MK3
 	Prusa_MK3MMU2
 	Prusa_MK3S
@@ -563,6 +565,7 @@ SET(PRINTERS
 	Prusa_MK2MMU_mR13
 	Prusa_MK2_mR13
 	Prusa_MK1_mR13
+	Prusa_MMU2
 )
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/SDCard)

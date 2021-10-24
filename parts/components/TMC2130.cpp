@@ -213,9 +213,13 @@ void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
     TRACE(printf("cur pos: %f (%u)\n",m_fCurPos,m_iCurStep));
 	bStall |= m_bStall;
     if (bStall)
+	{
 		SetDiag();
+	}
     else
+	{
 		ClearDiag();
+	}
     m_regs.defs.DRV_STATUS.stst = false;
     // 2^20 comes from the datasheet.
     RegisterTimer(m_fcnStandstill,1U<<20U,this);

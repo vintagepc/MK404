@@ -63,7 +63,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 
         // Default constructor.
         explicit TMC2130(char cAxis = ' ');
-		virtual ~TMC2130();
+		~TMC2130() override;
 
         // Sets the configuration to the provided values. (inversion, positions, etc)
         void SetConfig(TMC2130_cfg_t cfg);

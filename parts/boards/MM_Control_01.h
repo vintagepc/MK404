@@ -26,6 +26,11 @@
 #include "LED.h"                   // for LED
 #include "TMC2130.h"               // for TMC2130
 #include "uart_pty.h"              // for uart_pty
+#ifndef __APPLE__
+	extern "C" {
+		#include "usbip.h"
+	}
+#endif
 #include "wiring/MM_Control_01.h"  // for MM_Control_01
 #include <cstdint>                // for uint32_t
 
@@ -37,7 +42,7 @@ namespace Boards
 			explicit MM_Control_01(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){};
 
-			~MM_Control_01() override = default;
+			~MM_Control_01() override;
 
 			void Draw(float fY);
 
@@ -58,6 +63,11 @@ namespace Boards
 				m_lRed[5] {{0xFF0000FF,' '},{0xFF0000FF,' '},{0xFF0000FF,' '},{0xFF0000FF,' '},{0xFF0000FF,' '}},
 				m_lFINDA {0xFFCC00FF,'F'};
 			ADC_Buttons m_buttons {"MMUButtons"};
+
+			#ifndef __APPLE__
+				usbip_t* m_usb = nullptr;
+				pthread_t m_usb_thread = 0;
+			#endif
 
 		private:
 			const Wirings::MM_Control_01 m_wiring = Wirings::MM_Control_01();

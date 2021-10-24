@@ -65,7 +65,7 @@ private:
 	bool m_bVisible = false;
 	bool m_bBlackBG = false;
 	bool m_bInterp = false;
-	std::atomic_bool m_bDisabled {0};
+	std::atomic_bool m_bDisabled {false};
 	std::atomic_int16_t m_uiLerpVal = {0};
 
 	static constexpr Color3fv m_colColdTemp = {0, 1, 1};

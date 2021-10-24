@@ -34,9 +34,9 @@
 #include "SDCard.h"
 #include "SerialLineMonitor.h"
 #include "Thermistor.h"
+#include "miniRAMBo_1_3a.h"                   // for Einsy_1_1a
 #include "sim_irq.h"                             // for avr_irq_t
 #include "uart_pty.h"                            // for uart_pty
-#include "miniRAMBo_1_3a.h"                   // for Einsy_1_1a
 #include <cstdint>                              // for uint32_t
 
 namespace Boards

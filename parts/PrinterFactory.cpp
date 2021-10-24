@@ -20,6 +20,8 @@
  */
 
 #include "PrinterFactory.h"
+#include "printers/IPCPrinter.h"
+#include "printers/IPCPrinter_MMU2.h"
 #include "printers/Prusa_CW1.h"
 #include "printers/Prusa_CW1S.h"
 #include "printers/Prusa_MK1_13.h"
@@ -33,8 +35,6 @@
 #include "printers/Prusa_MK3SMMU2.h"
 #include "printers/Prusa_MMU2.h"
 #include "printers/Test_Printer.h"
-#include "printers/IPCPrinter.h"
-#include "printers/IPCPrinter_MMU2.h"
 #include <algorithm>                   // for max
 #include <iostream>
 

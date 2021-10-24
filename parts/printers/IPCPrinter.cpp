@@ -52,6 +52,7 @@ static constexpr mqd_t MQ_ERR = -1;
 
 IPCPrinter::~IPCPrinter()
 {
+	m_pVis.release(); // Just to shut up clang-tidy if there are not defines.
 #if ENABLE_PIPE
 	unlink(IPC_FILE);
 #elif ENABLE_MQ

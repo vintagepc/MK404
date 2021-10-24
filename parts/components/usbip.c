@@ -158,7 +158,7 @@ control_read(
 	const unsigned int ctrlep = 0;
 	struct avr_io_usb pkt = { ctrlep, sizeof buf, (uint8_t*) &buf };
 
-	printf("ctrl_read typ:%d req:%d val:%04x  len:%d bytes\n", reqtype, req, wValue, wLength);
+	printf("ctrl_read typ:%u req:%u val:%04x  len:%u bytes\n", reqtype, req, wValue, wLength);
 	avr_ioctl(p->avr, AVR_IOCTL_USB_SETUP, &pkt);
 
 	ret = avr_usb_read(p, ctrlep, data, wLength);
@@ -233,7 +233,7 @@ vhci_usb_attach_hook(
 {
 	struct usbip_t * p = param;
 	p->attached = !!value;
-	printf("avr attached: %d\n", p->attached);
+	printf("avr attached: %u\n", p->attached);
 
 	avr_ioctl(p->avr, AVR_IOCTL_USB_VBUS, (void*) 1);
 
@@ -510,7 +510,7 @@ usbip_main(
 {
 	int listenfd = open_usbip_socket();
 	struct sockaddr_in cli;
-	unsigned int clilen = sizeof(cli);
+	socklen_t clilen = sizeof(cli);
 
 	while (1) {
 		int sockfd = accept(listenfd, (struct sockaddr *)&cli,  &clilen);

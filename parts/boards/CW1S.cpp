@@ -37,8 +37,10 @@ namespace Boards
 
 	CW1S::~CW1S()
 	{
-		pthread_cancel(m_usb_thread);
-		usbip_destroy(m_usb);
+		#ifndef __APPLE__
+			pthread_cancel(m_usb_thread);
+			usbip_destroy(m_usb);
+		#endif
 	}
 
 	void CW1S::SetupHardware()
@@ -64,7 +66,6 @@ namespace Boards
 		}
 		TryConnect(LCD_PINS_RS,&m_lcd, HD44780::RS);
 		TryConnect(LCD_PINS_ENABLE, &m_lcd,HD44780::E);
-		// TryConnect(LCD_BL_PIN, &m_lcd, HD44780::BRIGHTNESS_IN);
 		m_lcd.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), HD44780::BRIGHTNESS_PWM_IN);
 
 		AddHardware(m_gpio);
@@ -76,7 +77,7 @@ namespace Boards
 		avr_connect_irq(m_enc.GetIRQ(RotaryEncoder::OUT_BUTTON), m_gpio.GetIRQ(MCP23S17::MCP_GPA0));
 
 		AddHardware(m_beep);
-		TryConnect(BEEPER, &m_beep, Beeper::PWM_IN);
+		TryConnect(BEEPER, &m_beep, Beeper::DIGITAL_IN);
 
 		AddHardware(m_tmc);
 		auto cfg = m_tmc.GetConfig();
@@ -92,33 +93,28 @@ namespace Boards
 
 		m_lid.SetIsToggle(true);
 		AddHardware(m_lid);
-		//m_lid.GetIRQ(Button::BUTTON_OUT)->flags |= IRQ_FLAG_NOT;
+		m_lid.Press();
 		avr_connect_irq(m_lid.GetIRQ(Button::BUTTON_OUT), m_gpio.GetIRQ(MCP23S17::MCP_GPA2));
 
 		m_tank.SetIsToggle(true);
 		AddHardware(m_tank);
-		//m_tank.GetIRQ(Button::BUTTON_OUT)->flags |= IRQ_FLAG_NOT;
+		m_tank.Press();
 		avr_connect_irq(m_tank.GetIRQ(Button::BUTTON_OUT), m_gpio.GetIRQ(MCP23S17::MCP_GPA1));
 
-		// m_gpio.GetIRQ(MCP23S17::MCP_GPB3)->flags |= IRQ_FLAG_NOT;
-		// m_gpio.GetIRQ(MCP23S17::MCP_GPB4)->flags |= IRQ_FLAG_NOT;
-		// GetDIRQ(FAN_PIN)->flags |= IRQ_FLAG_NOT;
-		// GetDIRQ(FAN_1_PIN)->flags |= IRQ_FLAG_NOT;
-		AddHardware(m_f1,GetDIRQ(TACH_1),  GetDIRQ(FAN_PIN), GetPWMIRQ(FAN_PIN), true);
+		GetPWMIRQ(FAN_PIN)->flags |= IRQ_FLAG_PWM_INV;
+		GetPWMIRQ(FAN_1_PIN)->flags |= IRQ_FLAG_PWM_INV;
+		AddHardware(m_f1,GetDIRQ(TACH_0),  GetDIRQ(FAN_PIN), GetPWMIRQ(FAN_PIN), true);
 		avr_connect_irq(m_gpio.GetIRQ(MCP23S17::MCP_GPB3), m_f1.GetIRQ(Fan::ENABLE_IN));
-		AddHardware(m_f2, nullptr /*GetDIRQ(TACH_1)*/, GetDIRQ(FAN_1_PIN), GetPWMIRQ(FAN_1_PIN), true);
+		AddHardware(m_f2, GetDIRQ(TACH_1), GetDIRQ(FAN_1_PIN), GetPWMIRQ(FAN_1_PIN), true);
 		avr_connect_irq(m_gpio.GetIRQ(MCP23S17::MCP_GPB4), m_f2.GetIRQ(Fan::ENABLE_IN));
-		AddHardware(m_f3,GetDIRQ(TACH_2), nullptr /*GetDIRQ(FAN_1_PIN)*/, m_gpio.GetIRQ(MCP23S17::MCP_GPB2));
-		// avr_raise_irq(m_f1.GetIRQ(Fan::DIGITAL_IN),0);
-		//avr_raise_irq(m_f2.GetIRQ(Fan::DIGITAL_IN),1);
+		if (!m_bIsCW1S)
+		{
+			AddHardware(m_f3,GetDIRQ(TACH_2), m_gpio.GetIRQ(MCP23S17::MCP_GPB2), nullptr);
+		}
 
 		AddHardware(m_ht, nullptr, m_gpio.GetIRQ(MCP23S17::MCP_GPB2));
 
 		AddHardware(m_htUV, GetPWMIRQ(LED_PIN), m_gpio.GetIRQ(MCP23S17::MCP_GPA6));
-
-		// AddHardware(m_muxX,0);
-		// avr_connect_irq(m_gpio.GetIRQ(MCP23S17::MCP_GPB1), m_muxX.GetIRQ(L74HCT4052::A_IN));
-		// avr_connect_irq(m_gpio.GetIRQ(MCP23S17::MCP_GPB0), m_muxX.GetIRQ(L74HCT4052::B_IN));
 
 		AddHardware(m_muxY,1);
 		avr_connect_irq(m_gpio.GetIRQ(MCP23S17::MCP_GPB1), m_muxY.GetIRQ(L74HCT4052::A_IN));
@@ -146,16 +142,17 @@ namespace Boards
 		m_ht.ConnectTo(Heater::TEMP_OUT, m_tAmb.GetIRQ(Thermistor::TEMP_IN));
 		m_htUV.ConnectTo(Heater::TEMP_OUT, m_tUV.GetIRQ(Thermistor::TEMP_IN));
 
-		m_usb = usbip_create(m_pAVR);
-		if (!m_usb)
-		{
-			std::cout << "Could not create USBIP context. Skipping thread...\n";
-		}
-		else
-		{
-			pthread_create(&m_usb_thread, nullptr, usbip_main, m_usb);
-		}
-
+		#ifndef __APPLE__ // pragma: LCOV_EXCL_START
+			m_usb = usbip_create(m_pAVR);
+			if (!m_usb)
+			{
+				std::cout << "Could not create USBIP context. Skipping thread...\n";
+			}
+			else
+			{
+				pthread_create(&m_usb_thread, nullptr, usbip_main, m_usb);
+			}
+		#endif // pragma: LCOV_EXCL_STOP
 	}
 
 	void CW1S::Draw()		/* function called whenever redisplay needed */

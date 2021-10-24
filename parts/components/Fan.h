@@ -50,7 +50,7 @@ public:
     #include "IRQHelper.h"
 
 	// Constructs a new Fan with a max RPM of iMaxRPM (at PWM 255)
-	explicit Fan(uint16_t iMaxRPM, char chrSym = ' ', bool bIsSoftPWM = false, bool bInvert = false);
+	explicit Fan(uint16_t iMaxRPM, char chrSym = ' ', bool bIsSoftPWM = false);
 
 	// Initializes the fan with avr, and connects to irqTach (out), irqDigital (in), irqPWM (pwm control value), isEnableCtl (whether the fan is controlled with an EN line)
 	void Init(struct avr_t* avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM, bool bIsEnableCt = false);
@@ -81,11 +81,13 @@ public:
 		// Callback for tach pulse update.
 		avr_cycle_count_t OnTachChange(avr_t *avr, avr_cycle_count_t when);
 
+		avr_cycle_count_t OnFanDigiDelay(avr_t *avr, avr_cycle_count_t when);
 
 		bool m_bAuto = true;
 		bool m_bPulseState = false;
 		bool m_bIsSoftPWM = false;
-		bool m_bInvert = false;
+
+		bool m_bDigiDelayVal = false;
 
 		uint8_t m_uiPWM = 0;
 		uint16_t m_uiMaxRPM = 2000;
@@ -94,6 +96,8 @@ public:
 
 		avr_cycle_timer_t m_fcnTachChange = MAKE_C_TIMER_CALLBACK(Fan,OnTachChange);
 
+		// Bit of an ugly hack for the bug that ODR writes update all bits in simavr...
+		avr_cycle_timer_t m_fcnFanDelay = MAKE_C_TIMER_CALLBACK(Fan,OnFanDigiDelay);
 
 		enum Actions
 		{

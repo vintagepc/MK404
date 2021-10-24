@@ -31,6 +31,12 @@
 	~# usbip -a 127.0.0.1 1-1
 */
 
+// NOTE: I'm excluding this from coverage because:
+// a) it's not my code
+// b) I may end up converting it to C++ and rewriting it in the future
+// c) there probably isn't a good way to test this on the build runners anyway...
+// pragma: LCOV_EXCL_START
+
 #include <pthread.h>
 #include <string.h>
 #include <stdbool.h>
@@ -544,3 +550,4 @@ usbip_destroy(
 	free(p);
 }
 #undef sock_send
+// pragma: LCOV_EXCL_STOP

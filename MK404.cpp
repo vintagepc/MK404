@@ -426,6 +426,10 @@ int main(int argc, char *argv[])
 				std::cout << "No bootloader specified, using default: " << argStrBoot.getValue() << '\n';
 				strBoot = argStrBoot.getValue();
 			} // MMU does not take a bootloader.
+			else
+			{
+				std::cout << "Model does not take standard bootloader. Skipping... \n";
+			}
 		}
 		else if (argStrBoot.getValue().empty())
 		{

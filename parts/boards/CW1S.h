@@ -32,10 +32,12 @@
 #include "RotaryEncoder.h"
 #include "TMC2130.h"
 #include "Thermistor.h"
+#ifndef __APPLE__
 extern "C"
 {
 	#include "usbip.h"
 }
+#endif
 #include "wiring/CW1S.h"  // for MM_Control_01
 #include <cstdint>                // for uint32_t
 
@@ -63,7 +65,7 @@ namespace Boards
 
 		Button m_lid {"Lid",'l',"Opens/closes the lid"}, m_tank {"Tank",'t',"Inserts/removes the IPA tank"};
 		Beeper m_beep;
-		Fan m_f1 {1500,'1', true, true}, m_f2 {1500,'2', false, true},  m_f3 {1500,'3', false, true};
+		Fan m_f1 {1500,'1', false}, m_f2 {1500,'2', false},  m_f3 {500,'3', false};
 		HD44780GL m_lcd;
 		Heater m_ht {0.25, 25.f, false, 'H', 15.f, 150.f};
 		Heater m_htUV {0.05f, 20.f, false, 'U', 15.f, 150.f};
@@ -74,8 +76,10 @@ namespace Boards
 		LED m_uv {0x8800FF00,'U'};
 		Thermistor m_tUV {20.f}, m_tAmb;
 
-		pthread_t m_usb_thread;
+#ifndef __APPLE__
+		pthread_t m_usb_thread = 0;
 		usbip_t* m_usb = nullptr;
+#endif
 
 		private:
 			const Wirings::CW1S m_wiring = Wirings::CW1S();

@@ -28,7 +28,7 @@
 #define TRACE(_w)
 #endif
 
-Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM, bool bInvert):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),GLIndicator(chrSym,false,true),m_bInvert(bInvert),m_uiMaxRPM(iMaxRPM)
+Fan::Fan(uint16_t iMaxRPM, char chrSym, bool bIsSoftPWM):SoftPWMable(bIsSoftPWM,this),Scriptable("Fan"),GLIndicator(chrSym,false,true),m_bIsSoftPWM(bIsSoftPWM),m_uiMaxRPM(iMaxRPM)
 {
 	RegisterActionAndMenu("Stall", "Stalls the fan", Actions::Stall);
 	RegisterActionAndMenu("Resume","Resumes fan from a stall condition",Actions::Resume);
@@ -41,6 +41,12 @@ avr_cycle_count_t Fan::OnTachChange(avr_t *, avr_cycle_count_t)
     RegisterTimerUsec(m_fcnTachChange,m_uiUsecPulse,this);
 	auto uiRot = RotateStep(21U);
 	RaiseIRQ(ROTATION_OUT,uiRot);
+    return 0;
+}
+
+avr_cycle_count_t Fan::OnFanDigiDelay(avr_t *, avr_cycle_count_t)
+{
+	OnPWMChange(nullptr, 255U*m_bDigiDelayVal);
     return 0;
 }
 
@@ -67,11 +73,6 @@ Scriptable::LineStatus Fan::ProcessAction(unsigned int ID, const std::vector<std
 
 void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 {
-	printf("PWM fan: %02x\n",value);
-	if (m_bInvert)
-	{
-		value = 255U - value;
-	}
     m_uiPWM = value;
     if (m_bAuto) // Only update RPM if auto (pwm-controlled). Else user supplied RPM.
 	{
@@ -97,21 +98,23 @@ void Fan::OnPWMChange(struct avr_irq_t*, uint32_t value)
 // Just a dummy wrapper to handle non-PWM control (digitalWrite)
 void Fan::OnDigitalChange(struct avr_irq_t *, uint32_t value)
 {
-	RaiseIRQ(PWM_IN, value*0xFF);
+	RaiseIRQ(PWM_IN, value*0xFFU);
 }
 
-void Fan::OnEnableInput(struct avr_irq_t *, uint32_t value)
+void Fan::OnEnableInput(struct avr_irq_t* irq, uint32_t value)
 {
-	// Update if PWM val or digital changes.
-	RaiseIRQ(ENABLE_IN, GetIRQ(ENABLE_IN)->value);
+	// Trigger update if PWM val or digital changes.
+	OnEnableChange(GetIRQ(ENABLE_IN), GetIRQ(ENABLE_IN)->value);
 }
 
 void Fan::OnEnableChange(avr_irq_t *irq, uint32_t value)
 {
-	printf("Enable %c changed: %02x %02x %02x\n", GetLabel(), value, GetIRQ(DIGITAL_IN)->value, GetIRQ(PWM_IN)->value);
+	// printf("Enable %c changed: EN %02x DIG %02x PWM %02x\n", GetLabel(), value, GetIRQ(DIGITAL_IN)->value, GetIRQ(PWM_IN)->value);
+	bool bSetTimer = false;
 	if (value) {
 	 	if (GetIRQ(DIGITAL_IN)->value) // 255 is a digitalwrite(1)
 		{
+			bSetTimer = true;
 			value = 0xFFU;
 		}
 		else if(GetIRQ(PWM_IN)->value) // 1-254
@@ -120,10 +123,28 @@ void Fan::OnEnableChange(avr_irq_t *irq, uint32_t value)
 		}
 		else
 		{
+			bSetTimer = true;
 			value = 0U;
 		}
 	}
-	OnPWMChange(nullptr, value);
+	else // enable line low, fan off.
+	{
+		value = 0;
+
+	}
+	if (bSetTimer)
+	{
+		m_bDigiDelayVal = value>0;
+ 		RegisterTimerUsec(m_fcnFanDelay,5000,this);
+	}
+	else
+	{
+		CancelTimer(m_fcnFanDelay,this);
+		if (value != m_uiPWM)
+		{
+			OnPWMChange(nullptr, value);
+		}
+	}
 }
 
 void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr_irq_t *irqPWM, bool bIsEnableCtl)
@@ -157,6 +178,7 @@ void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr
 	else
 	{
 		RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnEnableInput), this);
+		RegisterNotify(DIGITAL_IN, MAKE_C_CALLBACK(Fan,OnEnableInput), this);
 	}
 	RegisterNotify(ENABLE_IN,MAKE_C_CALLBACK(Fan,OnEnableChange), this);
 

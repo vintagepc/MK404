@@ -21,6 +21,7 @@
 
 #include "74HCT4052.h"
 #include "BasePeripheral.h"
+#include "TelemetryHost.h"
 #include <iostream>
 
 uint32_t L74HCT4052::OnADCRead(struct avr_irq_t* /*irq*/, uint32_t)
@@ -43,5 +44,13 @@ void L74HCT4052::Init(struct avr_t * avr, uint8_t adc_mux_number)
 {
 	_Init(avr, adc_mux_number, this);
 
+	auto &TH = TelemetryHost::GetHost();
+	TH.AddTrace(this, ADC_VALUE_OUT, {TC::ADC, TC::Mux},16);
+	TH.AddTrace(this, A_IN,{TC::Mux});
+	TH.AddTrace(this, B_IN,{TC::Mux});
+	TH.AddTrace(this, OUT_0,{TC::Mux});
+	TH.AddTrace(this, OUT_1,{TC::Mux});
+	TH.AddTrace(this, OUT_2,{TC::Mux});
+	TH.AddTrace(this, OUT_3,{TC::Mux});
 }
 

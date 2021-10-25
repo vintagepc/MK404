@@ -60,6 +60,17 @@ namespace Boards
 
 		AddHardware(m_thrm,3);
 
+		// The ADC mux.
+		AddHardware(m_mux, 4);
+		// Share mux pins with the MMU.
+		TryConnect(E_MUX0_PIN, &m_mux, L74HCT4052::A_IN);
+		TryConnect(E_MUX1_PIN, &m_mux, L74HCT4052::B_IN);
+		// Pre-setup the inputs. 5V = FF
+		m_mux.GetIRQ(L74HCT4052::IN_0)->value = 5000;
+		m_mux.GetIRQ(L74HCT4052::IN_1)->value = 2500;
+		m_mux.GetIRQ(L74HCT4052::IN_2)->value = 1250;
+		m_mux.GetIRQ(L74HCT4052::IN_3)->value = 100;
+
 
 		TMC2130::TMC2130_cfg_t cfg;
 		cfg.iMaxMM = 20;

@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "74HCT4052.h"
 #include "A4982.h"
 #include "ADC_Buttons.h"
 #include "Beeper.h"                              // for Beeper
@@ -64,6 +65,8 @@ namespace Boards
 			void OnAVRInit() override;
 
 			void OnAVRDeinit() override;
+
+			L74HCT4052 m_mux;
 
 			A4982 m_Allg{'Y'};
 

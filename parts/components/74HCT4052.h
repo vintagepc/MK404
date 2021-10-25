@@ -41,10 +41,10 @@ class L74HCT4052:public ADCPeripheral
 			_IRQ(IN_1, "<mux.in_1") \
 			_IRQ(IN_2, "<mux.in_2") \
 			_IRQ(IN_3, "<mux.in_3") \
-			_IRQ(OUT_0, "<mux.in_0") \
-			_IRQ(OUT_1, "<mux.in_1") \
-			_IRQ(OUT_2, "<mux.in_2") \
-			_IRQ(OUT_3, "<mux.in_3") \
+			_IRQ(OUT_0, "<mux.out_0") \
+			_IRQ(OUT_1, "<mux.out_1") \
+			_IRQ(OUT_2, "<mux.out_2") \
+			_IRQ(OUT_3, "<mux.out_3") \
 			_IRQ(A_IN,"<mux.a") \
 			_IRQ(B_IN,"<mux.b")
 		#include "IRQHelper.h"
@@ -53,9 +53,9 @@ class L74HCT4052:public ADCPeripheral
 
 		~L74HCT4052() = default;
 
-
-		// someday... extend this with flexibility for any number of buttons/voltage levels.
 		void Init(avr_t *avr, uint8_t uiMux);
+
+		inline const std::string GetName(){return "74HCT4052";}
 
 	private:
 		uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) override;

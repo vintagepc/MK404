@@ -23,14 +23,14 @@
 #include "BasePeripheral.h"
 #include <iostream>
 
-uint32_t L74HCT4052::OnADCRead(struct avr_irq_t* irq, uint32_t)
+uint32_t L74HCT4052::OnADCRead(struct avr_irq_t* /*irq*/, uint32_t)
 {
 	uint8_t sel = ((GetIRQ(B_IN)->value)<<1U) | GetIRQ(A_IN)->value;
 	// give it a chance to respond - attached to SRC 255 so it doesn't bind a REAL adc pin.
 	union {
 		avr_adc_mux_t t;
 		uint32_t raw;
-	} mux;
+	} mux = {{0}};
 	mux.t.src = 0xFFU;
 	RaiseIRQ(OUT_0 + sel,mux.raw);
 	uint8_t uiIndex = IN_0 + sel;

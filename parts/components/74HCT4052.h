@@ -58,9 +58,6 @@ class L74HCT4052:public ADCPeripheral
 		void Init(avr_t *avr, uint8_t uiMux);
 
 	private:
-
-		uint8_t m_select = 0;
-
 		uint32_t OnADCRead(struct avr_irq_t * irq, uint32_t value) override;
 
 };

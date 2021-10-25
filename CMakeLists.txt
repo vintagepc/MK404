@@ -45,7 +45,7 @@ else()
 endif()
 
 if (ENABLE_TIDY)
-	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy-5.0.1;-config=")
+	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy-5.0;-config=")
 else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()

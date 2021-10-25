@@ -152,17 +152,7 @@ void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr
     _Init(avr, this);
 
     if(irqPWM)  ConnectFrom(irqPWM, PWM_IN);
-    if(irqDigital)
-	{
-		if (m_bIsSoftPWM)
-		{
-			ConnectFrom(irqDigital, SPWM_IN);
-		}
-		else
-		{
-			ConnectFrom(irqDigital, DIGITAL_IN);
-		}
-	}
+    if(irqDigital) ConnectFrom(irqDigital, DIGITAL_IN);
     if(irqTach) ConnectTo(TACH_OUT,irqTach);
 
 
@@ -172,8 +162,7 @@ void Fan::Init(struct avr_t *avr, avr_irq_t *irqTach, avr_irq_t *irqDigital, avr
 	if (!bIsEnableCtl)
 	{
     	RegisterNotify(PWM_IN, MAKE_C_CALLBACK(Fan,OnPWMChange), this);
-    	RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalChange), this);
-		RegisterNotify(SPWM_IN,MAKE_C_CALLBACK(Fan,OnDigitalInSPWM), this);
+		RegisterNotify(DIGITAL_IN,MAKE_C_CALLBACK(Fan,OnDigitalInSPWM), this);
 	}
 	else
 	{

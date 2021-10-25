@@ -101,13 +101,13 @@ void Fan::OnDigitalChange(struct avr_irq_t *, uint32_t value)
 	RaiseIRQ(PWM_IN, value*0xFFU);
 }
 
-void Fan::OnEnableInput(struct avr_irq_t* irq, uint32_t value)
+void Fan::OnEnableInput(struct avr_irq_t* /*irq*/, uint32_t /*value*/)
 {
 	// Trigger update if PWM val or digital changes.
 	OnEnableChange(GetIRQ(ENABLE_IN), GetIRQ(ENABLE_IN)->value);
 }
 
-void Fan::OnEnableChange(avr_irq_t *irq, uint32_t value)
+void Fan::OnEnableChange(avr_irq_t* /*irq*/, uint32_t value)
 {
 	// printf("Enable %c changed: EN %02x DIG %02x PWM %02x\n", GetLabel(), value, GetIRQ(DIGITAL_IN)->value, GetIRQ(PWM_IN)->value);
 	bool bSetTimer = false;

@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include "boards/CW1S.h"
 #include "Printer.h"
+#include "boards/CW1S.h"
 #include <atomic>
 #include <gsl-lite.hpp>
 
@@ -25,7 +25,7 @@ class Prusa_CW1S : public Printer, public Boards::CW1S
 {
 	public:
 
-		virtual std::pair<int,int> GetWindowSize() override;
+		std::pair<int,int> GetWindowSize() override;
 
 		void Draw() override;
 

@@ -21,12 +21,12 @@
 #pragma once
 
 #include "74HCT4052.h"
-#include "Board.h"                 // for Board
 #include "Beeper.h"
+#include "Board.h"                 // for Board
 #include "Button.h"
 #include "Fan.h"
-#include "Heater.h"
 #include "HD44780GL.h"
+#include "Heater.h"
 #include "LED.h"
 #include "MCP23S17.h"
 #include "RotaryEncoder.h"
@@ -49,7 +49,7 @@ namespace Boards
 			explicit CW1S(uint32_t uiFreq = 16000000)
 				:Board(m_wiring,uiFreq){};
 
-			~CW1S();
+			~CW1S() override;
 
 			void Draw();
 

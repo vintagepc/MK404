@@ -29,7 +29,7 @@
 #include <string>              // for string
 #include <vector>              // for vector
 
-typedef struct {
+using mcp_reg_bank_1_t = struct mcp_reg_bank_1_t {
 	uint8_t IODIR;		//0x00
 	uint8_t IPOL;		//0x01
 	uint8_t GPINTEN;	//0x02
@@ -54,7 +54,7 @@ typedef struct {
 	uint8_t GPIO;		//0x09
 	uint8_t OLAT;		//0x0A
 	uint8_t _unused[5];	//0x0B-F
-} mcp_reg_bank_1_t;
+};
 
 class MCP23S17: public SPIPeripheral
 {
@@ -112,7 +112,7 @@ class MCP23S17: public SPIPeripheral
 		};
 		MCP_STATE m_state = MCP_STATE::IDLE;
 
-		uint8_t m_addr;
+		uint8_t m_addr = 0;
 		union {
 			uint8_t opcode;
 			struct {
@@ -120,12 +120,12 @@ class MCP23S17: public SPIPeripheral
 				uint8_t HADDR :3;
 				uint8_t _FIXED :4;
 			} __attribute__ ((__packed__));
-		} m_hdr;
+		} m_hdr = {0};
 
 		union {
 			uint8_t raw[0x20];
 			mcp_reg_bank_1_t bank[2];
-		} m_regs;
+		} m_regs = {{0}};
 
 		bool m_bSelf = false;
 

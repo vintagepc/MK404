@@ -61,7 +61,7 @@ uint8_t MCP23S17::OnSPIIn(struct avr_irq_t *, uint32_t value)
 		case MCP_STATE::DATA:
 			if (m_hdr.READ)
 			{
-				byte = m_regs.raw[ToBank1Addr(m_addr)];
+				byte = gsl::at(m_regs.raw,ToBank1Addr(m_addr));
 				if (ToBank1Addr(m_addr) >= 0x12)
 				{
 					// printf("MCP: READ %02x fr %02x\n", byte, ToBank1Addr(m_addr));
@@ -89,7 +89,7 @@ void MCP23S17::OnODRChanged(uint8_t bank, uint8_t old, uint8_t value)
 {
 	auto uiChanged = old^value;
 	auto base = bank ? MCP_GPB0 : MCP_GPA0;
-	auto uiDir = ~(m_regs.bank[bank].IODIR);
+	auto uiDir = ~(gsl::at(m_regs.bank,bank).IODIR);
 	uint8_t uiPos = 0;
 	while (uiChanged)
 	{
@@ -116,17 +116,17 @@ void MCP23S17::OnWrite(uint8_t b1_addr, uint8_t value)
 		case R_OFF_GPIO:
 		case R_OFF_OLAT:
 		{
-			OnODRChanged(bank, m_regs.bank[bank].OLAT, value);
-			auto inMask = (m_regs.bank[bank].IODIR);
+			OnODRChanged(bank, gsl::at(m_regs.bank,bank).OLAT, value);
+			auto inMask = (gsl::at(m_regs.bank,bank).IODIR);
 			value = value & ~inMask;
-			value |= (m_regs.bank[bank].OLAT & inMask);
-			m_regs.bank[bank].OLAT = value;
+			value |= (gsl::at(m_regs.bank,bank).OLAT & inMask);
+			gsl::at(m_regs.bank,bank).OLAT = value;
 			//printf("ODR update: %02x %02x / I: %02x %02x\n", m_regs.bank[0].OLAT, m_regs.bank[1].OLAT, m_regs.bank[0].GPIO,m_regs.bank[1].GPIO);
 		}
 			break;
 		default:
 			//printf("MCP: Wrote %02x to %02x\n", value, ToBank1Addr(m_addr));
-			m_regs.raw[b1_addr] = value;
+			gsl::at(m_regs.raw,b1_addr) = value;
 	}
 }
 
@@ -150,16 +150,16 @@ void MCP23S17::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
 	}
 	auto pin_mask = 1U << pin;
 	//only update GPIO if the dir is in.
-	if (m_regs.bank[bank].IODIR & pin_mask)
+	if (gsl::at(m_regs.bank,bank).IODIR & pin_mask)
 	{
 		//printf("MCP: Pin changed: %c %02x to %d (was %02x)", 'A' + bank, pin, value,m_regs.bank[bank].GPIO);
 		if (value)
 		{
-			m_regs.bank[bank].GPIO |= pin_mask;
+			gsl::at(m_regs.bank,bank).GPIO |= pin_mask;
 		}
 		else
 		{
-			m_regs.bank[bank].GPIO &= ~pin_mask;
+			gsl::at(m_regs.bank,bank).GPIO &= ~pin_mask;
 		}
 		//printf(" now %02x\n",m_regs.bank[bank].GPIO);
 	}
@@ -192,10 +192,10 @@ void MCP23S17::OnCSELIn(struct avr_irq_t *, uint32_t value)
 MCP23S17::MCP23S17()
 {
 	// Check register packing/sizes:
-	static_assert(sizeof(m_regs.bank[0].GPIO)==sizeof(uint8_t));
-	static_assert(sizeof(m_regs.bank)==sizeof(m_regs));
-	static_assert(sizeof(m_regs.bank)==sizeof(m_regs.raw));
-	static_assert(sizeof(m_regs.bank[0])==0x10);
+	static_assert(sizeof(m_regs.bank[0].GPIO)==sizeof(uint8_t), __FILE__" registers misaligned!");
+	static_assert(sizeof(m_regs.bank)==sizeof(m_regs), __FILE__" registers misaligned!");
+	static_assert(sizeof(m_regs.bank)==sizeof(m_regs.raw), __FILE__" registers misaligned!");
+	static_assert(sizeof(m_regs.bank[0])==0x10, __FILE__" registers misaligned!");
 
 }
 

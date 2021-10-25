@@ -19,8 +19,8 @@
  */
 
 #include "CW1S.h"
-#include "PinNames.h"  // for Pin::FINDA_PIN, Pin::I_TMC2130_DIAG, Pin::P_TM...
 #include "3rdParty/MK3/thermistortables_2.h"
+#include "PinNames.h"  // for Pin::FINDA_PIN, Pin::I_TMC2130_DIAG, Pin::P_TM...
 #include <GL/freeglut_std.h>          // for glutGet, glutStrokeCharacter, GLUT_STRO...
 #if defined(__APPLE__)
 # include <OpenGL/gl.h>       // for glTranslatef, glVertex3f, glColor3f
@@ -126,6 +126,7 @@ namespace Boards
 		avr_connect_irq(GetPWMIRQ(LED_PIN), m_uv.GetIRQ(LED::PWM_IN));
 
 		AddHardware(m_tUV,0xFF);
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
 		m_tUV.SetTable({(int16_t*)table_NCP21WF104J03RA,
 			sizeof(table_NCP21WF104J03RA) / sizeof(int16_t)},
 			1);
@@ -133,6 +134,7 @@ namespace Boards
 		avr_connect_irq(m_tUV.GetIRQ(Thermistor::ADC_VALUE_OUT),m_muxY.GetIRQ(L74HCT4052::IN_1));
 
 		AddHardware(m_tAmb,0xFF);
+		//NOLINTNEXTLINE - so we can keep using thermistortables.h as-is.
 		m_tAmb.SetTable({(int16_t*)table_100k_ntc,
 			sizeof(table_100k_ntc) / sizeof(int16_t)},
 			1);

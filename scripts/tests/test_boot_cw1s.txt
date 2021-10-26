@@ -1,0 +1,6 @@
+# Just a simple grab of the screen for sanity.
+ScriptHost::SetTimeoutMs(5000)
+ScriptHost::SetQuitOnTimeout(1)
+Board::WaitMs(300);
+GLHelper::Snapshot(tests/snaps/CW1S_start)
+Board::Quit()

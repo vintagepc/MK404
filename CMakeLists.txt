@@ -453,7 +453,14 @@ add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/assets/Firmware/stk500boot_v2_mega2560.hex"
                     "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
-
+add_custom_command(TARGET MK404 POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Prusa-CW1-Firmware-en-v3.1.0.hex"
+                    "${PROJECT_BINARY_DIR}/Prusa-CW1-Firmware.hex")
+add_custom_command(TARGET MK404 POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Prusa-CW1S-Firmware-en-v3.1.0.hex"
+                    "${PROJECT_BINARY_DIR}/Prusa-CW1S-Firmware.hex")
 # Copies the models/materials:
 
 file(GLOB_RECURSE MODEL_FILES
@@ -530,6 +537,9 @@ add_test(ext1_MK2_Lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Pru
 add_test(ext1_IPC env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCPrinter --script ../scripts/tests/test_boot_ipc.txt)
 add_test(ext1_IPCMMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCPrinter_MMU2 -g lite --script ../scripts/tests/test_boot_ipcmmu2.txt )
 add_test(ext1_MMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MMU2 -f MM-control-01.hex --script ../scripts/tests/test_boot_mmu2.txt )
+add_test(ext1_CW1 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex --script ../scripts/tests/test_boot_cw1.txt )
+add_test(ext1_CW1S env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1S -f Prusa-CW1S-Firmware.hex --script ../scripts/tests/test_boot_cw1s.txt )
+
 
 
 # TODO- move these images out of parts and to their own ext2 dir...

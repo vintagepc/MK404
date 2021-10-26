@@ -74,6 +74,7 @@ namespace Boards
 			RotaryEncoder encoder {true};
 
 			Button m_btn {"Button",'p', "Test button"};
+			Button m_btn2 {"Toggle",'q', "Test toggle"};
 
 			SerialLineMonitor m_Monitor {"Serial0"};
 

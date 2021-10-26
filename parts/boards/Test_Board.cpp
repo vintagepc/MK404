@@ -45,6 +45,9 @@ namespace Boards
 
 		AddHardware(m_btn);
 		TryConnect(&m_btn, Button::BUTTON_OUT, BTN_ENC);
+		AddHardware(m_btn2);
+		m_btn2.SetIsToggle(true);
+		TryConnect(&m_btn2, Button::BUTTON_OUT, BTN_ENC);
 
 		AddHardware(m_IR,0);
 		TryConnect(&m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);

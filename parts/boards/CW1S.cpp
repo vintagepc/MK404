@@ -68,7 +68,7 @@ namespace Boards
 		TryConnect(LCD_PINS_ENABLE, &m_lcd,HD44780::E);
 		m_lcd.ConnectFrom(GetPWMIRQ(LCD_BL_PIN), HD44780::BRIGHTNESS_PWM_IN);
 
-		AddHardware(m_gpio);
+		AddHardware(m_gpio, 0x06);
 		TryConnect(MCP_CSEL,&m_gpio, MCP23S17::SPI_CSEL);
 
 		AddHardware(m_enc);

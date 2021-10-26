@@ -72,6 +72,16 @@ namespace Boards
 		m_mux.GetIRQ(L74HCT4052::IN_3)->value = 100;
 
 
+		AddHardware(m_gpio);
+		TryConnect(MCP_CSEL, &m_gpio, MCP23S17::SPI_CSEL);
+		// Setup a crossover loopback, A4-7 to B3-0 and B4-7 to A3-0
+		for (int i=0; i<4; i++)
+		{
+			avr_connect_irq(m_gpio.GetIRQ(MCP23S17::MCP_GPA4 + i),m_gpio.GetIRQ(MCP23S17::MCP_GPB3 - i));
+			avr_connect_irq(m_gpio.GetIRQ(MCP23S17::MCP_GPB4 + i),m_gpio.GetIRQ(MCP23S17::MCP_GPA3 - i));
+		}
+
+
 		TMC2130::TMC2130_cfg_t cfg;
 		cfg.iMaxMM = 20;
 		cfg.uiFullStepsPerMM=16;

@@ -86,7 +86,7 @@ class MCP23S17: public SPIPeripheral
 		virtual ~MCP23S17() = default;
 
         // Registers with SimAVR.
-        void Init(avr_t *avr);
+        void Init(avr_t *avr, uint8_t uiGPIOA = 0, uint8_t uiGPIOB = 0);
 
 		inline const std::string GetName(){return "MCP23S17";}
 
@@ -127,6 +127,6 @@ class MCP23S17: public SPIPeripheral
 			mcp_reg_bank_1_t bank[2];
 		} m_regs = {{0}};
 
-		bool m_bSelf = false;
+		uint8_t m_uiSelf = 0U;
 
 };

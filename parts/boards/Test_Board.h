@@ -33,6 +33,7 @@
 #include "Heater.h"                              // for Heater
 #include "IRSensor.h"                          // for IRSensor
 #include "LED.h"                                 // for LED
+#include "MCP23S17.h"
 #include "MMU1.h"
 #include "PAT9125.h"
 #include "PINDA.h"                               // for PINDA
@@ -91,6 +92,8 @@ namespace Boards
 			HC595 m_shift{};
 
 			Heater m_heat {5.f, 25.f, false, 'B',10.f,50.f};
+
+			MCP23S17 m_gpio;
 
 			MMU1 m_MM1{};
 

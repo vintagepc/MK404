@@ -62,10 +62,6 @@ uint8_t MCP23S17::OnSPIIn(struct avr_irq_t *, uint32_t value)
 			if (m_hdr.READ)
 			{
 				byte = gsl::at(m_regs.raw,ToBank1Addr(m_addr));
-				if (ToBank1Addr(m_addr) >= 0x12)
-				{
-					// printf("MCP: READ %02x fr %02x\n", byte, ToBank1Addr(m_addr));
-				}
 			}
 			else
 			{
@@ -76,9 +72,10 @@ uint8_t MCP23S17::OnSPIIn(struct avr_irq_t *, uint32_t value)
 				m_addr++;
 			}
 		break;
+		// pragma: LCOV_EXCL_START
 		default:
 			break;
-
+		// pragma: LCOV_EXCL_STOP
 	}
     SetSendReplyFlag();
 	RaiseIRQ(SPI_BYTE_OUT,byte);
@@ -96,9 +93,9 @@ void MCP23S17::OnODRChanged(uint8_t bank, uint8_t old, uint8_t value)
 		// Pin must be in output mode to fire IRQ.
 		if (uiChanged & 1U & uiDir)
 		{
-			m_bSelf = true;
+			m_uiSelf = base + uiPos;
 			RaiseIRQ(base + uiPos, value & 1U);
-			m_bSelf = false;
+			m_uiSelf = 0;
 		}
 		uiChanged >>= 1U;
 		value >>= 1U;
@@ -124,15 +121,22 @@ void MCP23S17::OnWrite(uint8_t b1_addr, uint8_t value)
 			//printf("ODR update: %02x %02x / I: %02x %02x\n", m_regs.bank[0].OLAT, m_regs.bank[1].OLAT, m_regs.bank[0].GPIO,m_regs.bank[1].GPIO);
 		}
 			break;
+		case R_OFF_IOCON: // update both IOCONs so we don't need to also redirect reads.
+		{
+			gsl::at(m_regs.raw,R_OFF_IOCON) = value;
+			gsl::at(m_regs.raw,(R_OFF_IOCON | 0x10)) = value;
+
+		}
+			break;
 		default:
 			//printf("MCP: Wrote %02x to %02x\n", value, ToBank1Addr(m_addr));
 			gsl::at(m_regs.raw,b1_addr) = value;
 	}
 }
 
-void MCP23S17::OnPinChanged(struct avr_irq_t * irq,uint32_t value)
+void MCP23S17::OnPinChanged(struct avr_irq_t* irq,uint32_t value)
 {
-	if (m_bSelf)
+	if (m_uiSelf == irq->irq)
 	{
 		// Reentrancy guard
 		return;
@@ -199,7 +203,7 @@ MCP23S17::MCP23S17()
 
 }
 
-void MCP23S17::Init(struct avr_t * avr)
+void MCP23S17::Init(struct avr_t * avr, uint8_t uiGPIOA, uint8_t uiGPIOB)
 {
     _InitWithArgs(avr, this, nullptr, SPI_CSEL);
 
@@ -210,11 +214,12 @@ void MCP23S17::Init(struct avr_t * avr)
 
 	memset(&m_regs.raw,0,sizeof(m_regs.raw));
 	m_regs.bank[0].IODIR = 0xFF;
-	m_regs.bank[0].GPIO |= 0b110;
+	m_regs.bank[0].GPIO |= uiGPIOA;
 	m_regs.bank[1].IODIR = 0xFF;
+	m_regs.bank[1].GPIO |= uiGPIOB;
 
 	auto &TH = TelemetryHost::GetHost();
-	TH.AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Stepper},8);
-	TH.AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Stepper},8);
-	TH.AddTrace(this, SPI_CSEL, {TC::SPI, TC::Stepper, TC::OutputPin});
+	TH.AddTrace(this, SPI_BYTE_IN,{TC::SPI, TC::Mux},8);
+	TH.AddTrace(this, SPI_BYTE_OUT,{TC::SPI, TC::Mux},8);
+	TH.AddTrace(this, SPI_CSEL, {TC::SPI, TC::Mux, TC::OutputPin});
 }

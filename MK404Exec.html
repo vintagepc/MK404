@@ -51,7 +51,7 @@ Note: This tool is still in development. Please report any issues you may encoun
 <fieldset>
   <legend>Options</legend>
   <form>
-    {% include dropdown.html name="machine" label="Printer model" options="Prusa_MK1_mR13@Prusa_MK25S_mR13@Prusa_MK25_mR13@Prusa_MK2MMU_mR13@Prusa_MK2_mR13@Prusa_MK3@Prusa_MK3MMU2@Prusa_MK3S@Prusa_MK3SMMU2" format="%1" optional=1 %} 
+    {% include dropdown.html name="machine" label="Printer model" options="Prusa_CW1@Prusa_CW1S@Prusa_MK1_mR13@Prusa_MK25S_mR13@Prusa_MK25_mR13@Prusa_MK2MMU_mR13@Prusa_MK2_mR13@Prusa_MK3@Prusa_MK3MMU2@Prusa_MK3S@Prusa_MK3SMMU2@Prusa_MMU2" format="%1" optional=1 %} 
     {% include checkbox.html name="b" label="Execute bootloader" optional=1 %}
     {% include textinput.html name="-bootloader-file" label="Bootloader filename" default="stk500boot_v2_mega2560.hex" optional=1 %} 
     {% include checkbox.html name="-colour-extrusion" label="Colour Extrusion" optional=1 %}

@@ -119,11 +119,13 @@ namespace Boards
 		AddHardware(m_buttons,5);
 		#ifndef __APPLE__
 			m_usb = usbip_create(m_pAVR);
+			// pragma: LCOV_EXCL_START
 			if (!m_usb)
 			{
 				std::cout << "Failed to create USBIP context\n";
 				exit(1);
 			}
+			// pragma: LCOV_EXCL_STOP
 			pthread_create(&m_usb_thread, nullptr, usbip_main, m_usb);
 		#endif
 

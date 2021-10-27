@@ -45,6 +45,9 @@ namespace Boards
 
 		AddHardware(m_btn);
 		TryConnect(&m_btn, Button::BUTTON_OUT, BTN_ENC);
+		AddHardware(m_btn2);
+		m_btn2.SetIsToggle(true);
+		TryConnect(&m_btn2, Button::BUTTON_OUT, BTN_ENC);
 
 		AddHardware(m_IR,0);
 		TryConnect(&m_IR,IRSensor::DIGITAL_OUT, IR_SENSOR_PIN);
@@ -59,6 +62,27 @@ namespace Boards
 		m_thrm.SetTable({(int16_t*)temptable_5, sizeof(temptable_5)/sizeof(int16_t)},OVERSAMPLENR);
 
 		AddHardware(m_thrm,3);
+
+		// The ADC mux.
+		AddHardware(m_mux, 4);
+		// Share mux pins with the MMU.
+		TryConnect(E_MUX0_PIN, &m_mux, L74HCT4052::A_IN);
+		TryConnect(E_MUX1_PIN, &m_mux, L74HCT4052::B_IN);
+		// Pre-setup the inputs. 5V = FF
+		m_mux.GetIRQ(L74HCT4052::IN_0)->value = 5000;
+		m_mux.GetIRQ(L74HCT4052::IN_1)->value = 2500;
+		m_mux.GetIRQ(L74HCT4052::IN_2)->value = 1250;
+		m_mux.GetIRQ(L74HCT4052::IN_3)->value = 100;
+
+
+		AddHardware(m_gpio);
+		TryConnect(MCP_CSEL, &m_gpio, MCP23S17::SPI_CSEL);
+		// Setup a crossover loopback, A4-7 to B3-0 and B4-7 to A3-0
+		for (int i=0; i<4; i++)
+		{
+			avr_connect_irq(m_gpio.GetIRQ(MCP23S17::MCP_GPA4 + i),m_gpio.GetIRQ(MCP23S17::MCP_GPB3 - i));
+			avr_connect_irq(m_gpio.GetIRQ(MCP23S17::MCP_GPB4 + i),m_gpio.GetIRQ(MCP23S17::MCP_GPA3 - i));
+		}
 
 
 		TMC2130::TMC2130_cfg_t cfg;

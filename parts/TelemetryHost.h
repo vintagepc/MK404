@@ -49,7 +49,8 @@
 	_TC(I2C,"I2C"),\
 	_TC(ADC,"ADC"),\
 	_TC(PWM,"PWM"),\
-	_TC(Misc,"Misc")
+	_TC(Misc,"Misc"),\
+	_TC(Mux,"Mux")
 
 // Ugh, not ideal, but a dirty macro to generate references for string->enum and vice versa.
 #define _TC(x,y) x
@@ -126,6 +127,7 @@ class TelemetryHost: public BasePeripheral, public Scriptable, private IKeyClien
 			ActWaitFor,
 			ActWaitForGT,
 			ActWaitForLT,
+			ActIsEqual,
 			ActStartTrace,
 			ActStopTrace
 		};

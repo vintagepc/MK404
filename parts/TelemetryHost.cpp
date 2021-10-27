@@ -36,6 +36,7 @@ TelemetryHost::TelemetryHost():Scriptable("TelHost"),IKeyClient()
 	RegisterAction("WaitFor","Waits for a specified telemetry value to occur",ActWaitFor, {ArgType::String,ArgType::uint32});
 	RegisterAction("WaitForGT","Waits for a specified telemetry value to be greater than specified",ActWaitForGT, {ArgType::String,ArgType::uint32});
 	RegisterAction("WaitForLT","Waits for a specified telemetry value to be less than specified",ActWaitForLT, {ArgType::String,ArgType::uint32});
+	RegisterAction("IsEqual", "Checks if a value is equal to the specified value and errors if not.", ActIsEqual, {ArgType::String, ArgType::uint32});
 	RegisterActionAndMenu("StartTrace", "Starts the telemetry trace. You must have set a category or set of items with the -t option",ActStartTrace);
 	RegisterActionAndMenu("StopTrace", "Stops a running telemetry trace.",ActStopTrace);
 #endif
@@ -130,6 +131,7 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const std
 		case ActWaitFor:
 		case ActWaitForGT:
 		case ActWaitForLT:
+		case ActIsEqual:
 		{
 			if (m_pCurrentIRQ == nullptr)
 			{
@@ -164,6 +166,11 @@ Scriptable::LineStatus TelemetryHost::ProcessAction(unsigned int iAct, const std
 			{
 				m_pCurrentIRQ = nullptr;
 				return LineStatus::Finished;
+			}
+			else if (iAct == ActIsEqual)
+			{
+				std::cout << "IsEqual Failed - Expecting " << std::to_string(m_uiMatchVal) << " but got " << std::to_string(m_pCurrentIRQ->value) << "\n";
+				return LineStatus::Timeout;
 			}
 			else
 			{

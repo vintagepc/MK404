@@ -75,7 +75,8 @@ namespace Wirings
 					{E_MUX1_PIN, 77},
 					{X_SLP_PIN, 74},
 					{X_RST_PIN, 75},
-					{X_MAX_PIN, 73}
+					{X_MAX_PIN, 73},
+					{MCP_CSEL, 17}
 				};
 			};
 		private:

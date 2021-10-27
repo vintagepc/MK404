@@ -26,8 +26,8 @@
 #include "I2CPeripheral.h"
 #include "avr_twi.h"  // for avr_twi_irq_msg, ::TWI_COND_ACK, ::TWI_COND_READ
 #include "sim_avr.h"  // for avr_t
-#include "sim_irq.h"  // for avr_raise_irq, avr_irq_register_notify, avr_irq_t
 #include "sim_io.h"   // for avr_io_getirq
+#include "sim_irq.h"  // for avr_raise_irq, avr_irq_register_notify, avr_irq_t
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
 #include <iostream>   // for operator<<, cout, ostream
 

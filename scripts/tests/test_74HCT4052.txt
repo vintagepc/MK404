@@ -1,0 +1,60 @@
+# This script is a component test script for use with the test firmware and printer.
+ScriptHost::SetTimeoutMs(1000)
+ScriptHost::SetQuitOnTimeout(1)
+TelHost::IsEqual(74HCT4052_<mux.out_0,0)
+TelHost::IsEqual(74HCT4052_<mux.out_1,0)
+TelHost::IsEqual(74HCT4052_<mux.out_2,0)
+TelHost::IsEqual(74HCT4052_<mux.out_3,0)
+Serial0::NextLineMustBe(READY)
+# Cycle through the outputs while checking the input value and that the muxpins are set correctly:
+
+Serial0::NextLineMustBe(ADC ff CH 00)
+TelHost::IsEqual(74HCT4052_<mux.a,0)
+TelHost::IsEqual(74HCT4052_<mux.b,0)
+TelHost::IsEqual(74HCT4052_<mux.out_0,133693440)
+TelHost::IsEqual(74HCT4052_<mux.out_1,0)
+TelHost::IsEqual(74HCT4052_<mux.out_2,0)
+TelHost::IsEqual(74HCT4052_<mux.out_3,0)
+
+Serial0::NextLineMustBe(ADC 7f CH 01)
+TelHost::IsEqual(74HCT4052_<mux.a,1)
+TelHost::IsEqual(74HCT4052_<mux.b,0)
+TelHost::IsEqual(74HCT4052_<mux.out_0,133693440)
+TelHost::IsEqual(74HCT4052_<mux.out_1,133693440)
+TelHost::IsEqual(74HCT4052_<mux.out_2,0)
+TelHost::IsEqual(74HCT4052_<mux.out_3,0)
+
+Serial0::NextLineMustBe(ADC 3f CH 02)
+TelHost::IsEqual(74HCT4052_<mux.a,0)
+TelHost::IsEqual(74HCT4052_<mux.b,1)
+TelHost::IsEqual(74HCT4052_<mux.out_0,133693440)
+TelHost::IsEqual(74HCT4052_<mux.out_1,133693440)
+TelHost::IsEqual(74HCT4052_<mux.out_2,133693440)
+TelHost::IsEqual(74HCT4052_<mux.out_3,0)
+
+Serial0::NextLineMustBe(ADC 05 CH 03)
+TelHost::IsEqual(74HCT4052_<mux.a,1)
+TelHost::IsEqual(74HCT4052_<mux.b,1)
+TelHost::IsEqual(74HCT4052_<mux.out_0,133693440)
+TelHost::IsEqual(74HCT4052_<mux.out_1,133693440)
+TelHost::IsEqual(74HCT4052_<mux.out_2,133693440)
+TelHost::IsEqual(74HCT4052_<mux.out_3,133693440)
+
+Serial0::NextLineMustBe(ADC ff CH 00)
+TelHost::IsEqual(74HCT4052_<mux.a,0)
+TelHost::IsEqual(74HCT4052_<mux.b,0)
+
+Serial0::NextLineMustBe(ADC 05 CH 03)
+TelHost::IsEqual(74HCT4052_<mux.a,1)
+TelHost::IsEqual(74HCT4052_<mux.b,1)
+
+Serial0::NextLineMustBe(ADC 7f CH 01)
+TelHost::IsEqual(74HCT4052_<mux.a,1)
+TelHost::IsEqual(74HCT4052_<mux.b,0)
+
+Serial0::NextLineMustBe(ADC 3f CH 02)
+TelHost::IsEqual(74HCT4052_<mux.a,0)
+TelHost::IsEqual(74HCT4052_<mux.b,1)
+
+Serial0::NextLineMustBe(FINISHED)
+Board::Quit();

@@ -56,6 +56,11 @@ Scriptable::LineStatus Button::ProcessAction(unsigned int iAction, const std::ve
 	return LineStatus::Finished;
 }
 
+void Button::SetIsToggle(bool bVal)
+{
+	m_bIsToggle = bVal;
+}
+
 void Button::OnKeyPress(const Key& /*key*/)
 {
 	std::cout << "Pressed: " << m_strName << '\n';
@@ -84,7 +89,14 @@ avr_cycle_count_t Button::AutoRelease(avr_t *, avr_cycle_count_t uiWhen)
 void Button::Press(uint32_t uiUsec)
 {
 	CancelTimer(m_fcnRelease,this);
-	RaiseIRQ(BUTTON_OUT, 0);// press
 	// register the auto-release
-	RegisterTimerUsec(m_fcnRelease,uiUsec, this);
+	if (m_bIsToggle)
+	{
+		RaiseIRQ(BUTTON_OUT, m_pIrq[BUTTON_OUT].value^1);
+	}
+	else
+	{
+		RaiseIRQ(BUTTON_OUT, 0);// press
+		RegisterTimerUsec(m_fcnRelease,uiUsec, this);
+	}
 }

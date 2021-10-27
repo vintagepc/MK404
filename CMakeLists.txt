@@ -45,7 +45,7 @@ else()
 endif()
 
 if (ENABLE_TIDY)
-	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy;-config=")
+	set(CMAKE_CXX_CLANG_TIDY "/usr/bin/clang-tidy-5.0;-config=")
 else()
 	unset(CMAKE_CXX_CLANG_TIDY)
 endif()
@@ -62,10 +62,12 @@ set(H_FILES_base
 	parts/ADCPeripheral.h
 	parts/BasePeripheral.h
 	parts/Board.h
+	parts/boards/CW1S.h
 	parts/boards/EinsyRambo.h
 	parts/boards/MiniRambo.h
 	parts/boards/MM_Control_01.h
 	parts/boards/Test_Board.h
+	parts/components/74HCT4052.h
 	parts/components/A4982.h
 	parts/components/ADC_Buttons.h
 	parts/components/Beeper.h
@@ -82,6 +84,7 @@ set(H_FILES_base
 	parts/components/Heater.h
 	parts/components/IRSensor.h
 	parts/components/LED.h
+	parts/components/MCP23S17.h
 	parts/components/MMU1.h
 	parts/components/MMU2.h
 	parts/components/PAT9125.h
@@ -93,6 +96,7 @@ set(H_FILES_base
 	parts/components/TMC2130.h
 	parts/components/UART_Logger.h
 	parts/components/uart_pty.h
+	parts/components/usbip.h
 	parts/components/VoltageSrc.h
 	parts/components/w25x20cl.h
 	parts/I2CPeripheral.h
@@ -106,6 +110,8 @@ set(H_FILES_base
 	parts/Printer.h
 	parts/printers/IPCPrinter.h
 	parts/printers/IPCPrinter_MMU2.h
+	parts/printers/Prusa_CW1.h
+	parts/printers/Prusa_CW1S.h
 	parts/printers/Prusa_MK1_13.h
 	parts/printers/Prusa_MK2_13.h
 	parts/printers/Prusa_MK25_13.h
@@ -125,6 +131,7 @@ set(H_FILES_base
 	parts/wiring/Einsy_1_0a.h
 	parts/wiring/Einsy_1_1a.h
 	parts/Wiring.h
+	parts/wiring/CW1S.h
 	parts/wiring/miniRAMBo_1_1b.h
 	parts/wiring/miniRAMBo_1_3a.h
 	parts/wiring/MM_Control_01.h
@@ -162,13 +169,23 @@ set(H_FILES_3rdParty
 
 set(H_FILES ${H_FILES_base} ${H_FILES_3rdParty})
 
+if (NOT APPLE)
+	set(NON_APPLE_SRC parts/components/usbip.c)
+	set_source_files_properties(parts/components/usbip.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+else()
+	set(NON_APPLE_SRC)
+endif()
+
 set(MK404_SOURCES_base
+	${NON_APPLE_SRC}
 	parts/Board.cpp
 	parts/I2CPeripheral.cpp
+	parts/boards/CW1S.cpp
 	parts/boards/EinsyRambo.cpp
 	parts/boards/MiniRambo.cpp
 	parts/boards/MM_Control_01.cpp
 	parts/boards/Test_Board.cpp
+	parts/components/74HCT4052.cpp
 	parts/components/A4982.cpp
 	parts/components/ADC_Buttons.cpp
 	parts/components/Beeper.cpp
@@ -185,6 +202,7 @@ set(MK404_SOURCES_base
 	parts/components/IRSensor.cpp
 	parts/components/GLIndicator.cpp
 	parts/components/LED.cpp
+	parts/components/MCP23S17.cpp
 	parts/components/MMU1.cpp
 	parts/components/MMU2.cpp
 	parts/components/PAT9125.cpp
@@ -200,6 +218,7 @@ set(MK404_SOURCES_base
 	parts/components/w25x20cl.cpp
 	parts/printers/IPCPrinter.cpp
 	parts/printers/IPCPrinter_MMU2.cpp
+	parts/printers/Prusa_CW1S.cpp
 	parts/printers/Prusa_MK1_13.cpp
 	parts/printers/Prusa_MK2_13.cpp
 	parts/printers/Prusa_MK25_13.cpp
@@ -234,7 +253,6 @@ set(MK404_SOURCES_base
 	parts/IKeyClient.cpp
 	parts/KeyController.cpp
 )
-
 
 set(MK404_SOURCES_3rdparty
 	3rdParty/arcball/Camera.cpp
@@ -435,7 +453,14 @@ add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/assets/Firmware/stk500boot_v2_mega2560.hex"
                     "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
-
+add_custom_command(TARGET MK404 POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Prusa-CW1-Firmware-en-v3.1.0.hex"
+                    "${PROJECT_BINARY_DIR}/Prusa-CW1-Firmware.hex")
+add_custom_command(TARGET MK404 POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Prusa-CW1S-Firmware-en-v3.1.0.hex"
+                    "${PROJECT_BINARY_DIR}/Prusa-CW1S-Firmware.hex")
 # Copies the models/materials:
 
 file(GLOB_RECURSE MODEL_FILES
@@ -512,6 +537,9 @@ add_test(ext1_MK2_Lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Pru
 add_test(ext1_IPC env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCPrinter --script ../scripts/tests/test_boot_ipc.txt)
 add_test(ext1_IPCMMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCPrinter_MMU2 -g lite --script ../scripts/tests/test_boot_ipcmmu2.txt )
 add_test(ext1_MMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MMU2 -f MM-control-01.hex --script ../scripts/tests/test_boot_mmu2.txt )
+add_test(ext1_CW1 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex --script ../scripts/tests/test_boot_cw1.txt )
+add_test(ext1_CW1S env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1S -f Prusa-CW1S-Firmware.hex --script ../scripts/tests/test_boot_cw1s.txt )
+
 
 
 # TODO- move these images out of parts and to their own ext2 dir...
@@ -540,6 +568,8 @@ add_custom_target(MK3S.afx  COMMAND cd ${PROJECT_SOURCE_DIR}
 
 
 SET(PRINTERS
+	Prusa_CW1
+	Prusa_CW1S
 	Prusa_MK3
 	Prusa_MK3MMU2
 	Prusa_MK3S
@@ -549,6 +579,7 @@ SET(PRINTERS
 	Prusa_MK2MMU_mR13
 	Prusa_MK2_mR13
 	Prusa_MK1_mR13
+	Prusa_MMU2
 )
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/SDCard)

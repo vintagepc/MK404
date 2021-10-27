@@ -18,4 +18,15 @@ Button::PressAndRelease()
 Serial0::NextLineMustBe(BTN00)
 Board::WaitMs(1)
 Serial0::NextLineMustBe(BTN40)
+# Test the toggle variant:
+Toggle::PressAndRelease();
+Board::WaitMs(1);
+Toggle::PressAndRelease();
+Serial0::NextLineMustBe(BTN00)
+Toggle::PressAndRelease()
+Serial0::NextLineMustBe(BTN40)
+Toggle::PressAndRelease()
+Serial0::NextLineMustBe(BTN00)
+Toggle::PressAndRelease()
+Serial0::NextLineMustBe(BTN40)
 Board::Quit();

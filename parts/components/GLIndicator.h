@@ -40,6 +40,7 @@ public:
 	void SetValue(uint8_t value);
 
 	inline void SetLabel(char label) { m_chrLabel = label;}
+	inline char GetLabel() { return m_chrLabel.load();}
 
 	inline void SetColor(uint32_t color) { m_Color = hexColor_t(color); }
 
@@ -64,7 +65,7 @@ private:
 	bool m_bVisible = false;
 	bool m_bBlackBG = false;
 	bool m_bInterp = false;
-	std::atomic_bool m_bDisabled {0};
+	std::atomic_bool m_bDisabled {false};
 	std::atomic_int16_t m_uiLerpVal = {0};
 
 	static constexpr Color3fv m_colColdTemp = {0, 1, 1};

@@ -33,7 +33,7 @@ class PinSpec_32u4 : public PinSpec
 		PinSpec_32u4():PinSpec(DPin2Port,DPin2Mask,DPin2Timer,"atmega32u4"){};
 
 	private:
-		const unsigned char DPin2Timer[31] = {
+		const unsigned char DPin2Timer[32] = {
 			// TIMERS
 			// -------------------------------------------
 			NOT_ON_TIMER,
@@ -69,11 +69,12 @@ class PinSpec_32u4 : public PinSpec
 			NOT_ON_TIMER,
 			NOT_ON_TIMER,
 			NOT_ON_TIMER,
-			NOT_ON_TIMER
+			NOT_ON_TIMER,
+			NOT_ON_TIMER,
 		};
 
 
-		const unsigned char DPin2Mask[31] = {
+		const unsigned char DPin2Mask[32] = {
 			// PIN IN PORT
 			// -------------------------------------------
 			_BV(2), // D0 - PD2
@@ -111,9 +112,10 @@ class PinSpec_32u4 : public PinSpec
 			_BV(6), // D28 / D10 - A10 - PB6
 			_BV(6), // D29 / D12 - A11 - PD6
 			_BV(5), // D30 / TX Led - PD5
+			_BV(2), // D31, HWB
 		};
 
-		const unsigned char DPin2Port[31] = {
+		const unsigned char DPin2Port[32] = {
 			// PORTLIST
 			// -------------------------------------------
 			PD, // D0 - PD2
@@ -151,6 +153,8 @@ class PinSpec_32u4 : public PinSpec
 			PB, // D28 / D10 - A10 - PB6
 			PD, // D29 / D12 - A11 - PD6
 			PD, // D30 / TX Led - PD5
+
+			PE, // D31, HWB
 		};
 
 };

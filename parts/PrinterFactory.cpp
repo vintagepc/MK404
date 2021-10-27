@@ -1,7 +1,7 @@
 /*
 	PrinterFactory.cpp - Printer factory for printer models.
 	Add your printer implementation to the map of names->constructors.
-	Copyright 2020 VintagePC <https://github.com/vintagepc/>
+	Copyright 2020-2021 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
 
@@ -20,6 +20,10 @@
  */
 
 #include "PrinterFactory.h"
+#include "printers/IPCPrinter.h"
+#include "printers/IPCPrinter_MMU2.h"
+#include "printers/Prusa_CW1.h"
+#include "printers/Prusa_CW1S.h"
 #include "printers/Prusa_MK1_13.h"
 #include "printers/Prusa_MK25S_13.h"
 #include "printers/Prusa_MK25_13.h"
@@ -31,8 +35,6 @@
 #include "printers/Prusa_MK3SMMU2.h"
 #include "printers/Prusa_MMU2.h"
 #include "printers/Test_Printer.h"
-#include "printers/IPCPrinter.h"
-#include "printers/IPCPrinter_MMU2.h"
 #include <algorithm>                   // for max
 #include <iostream>
 
@@ -85,6 +87,8 @@ using Dtor = void(*)(void* p);
 std::map<std::string,std::pair<Ctor,Dtor>>& PrinterFactory::GetModelMap()
 {
 	static std::map<std::string,std::pair<PrinterFactory::Ctor,PrinterFactory::Dtor>> m_Models  = {
+		{"Prusa_CW1", 			{&PrinterFactory::_CreatePrinter<Prusa_CW1>	, 	&PrinterFactory::_DestroyPrinter<Prusa_CW1>}},
+		{"Prusa_CW1S", 			{&PrinterFactory::_CreatePrinter<Prusa_CW1S>	, 	&PrinterFactory::_DestroyPrinter<Prusa_CW1S>}},
 		{"Prusa_MK1_mR13",		{&PrinterFactory::_CreatePrinter<Prusa_MK1_13>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK1_13>}},
 		{"Prusa_MK2_mR13",		{&PrinterFactory::_CreatePrinter<Prusa_MK2_13>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK2_13>}},
 		{"Prusa_MK2MMU_mR13",	{&PrinterFactory::_CreatePrinter<Prusa_MK2MMU_13>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK2MMU_13>}},

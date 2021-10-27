@@ -50,6 +50,9 @@ class Button:public BasePeripheral, public Scriptable, private IKeyClient
 	// Presses the button for a given duration (us, default 1000)
 	void Press(uint32_t uiUSec = 2000);
 
+	// Turns the button into a toggle switch instead.
+	void SetIsToggle(bool bVal);
+
 	protected:
 		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &vArgs) override;
 
@@ -68,5 +71,7 @@ class Button:public BasePeripheral, public Scriptable, private IKeyClient
 			ActRelease,
 			ActPressAndRelease
 		};
+
+		bool m_bIsToggle = false;
 
 };

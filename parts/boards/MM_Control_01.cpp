@@ -31,6 +31,14 @@
 namespace Boards
 {
 
+	MM_Control_01::~MM_Control_01()
+	{
+		#ifndef __APPLE__
+			pthread_cancel(m_usb_thread);
+			usbip_destroy(m_usb);
+		#endif
+	}
+
 	void MM_Control_01::SetupHardware()
 	{
 		DisableInterruptLevelPoll(5);
@@ -109,6 +117,17 @@ namespace Boards
 		m_lRed[1].ConnectFrom(	m_shift.GetIRQ(HC595::BIT15), LED::LED_IN);
 
 		AddHardware(m_buttons,5);
+		#ifndef __APPLE__
+			m_usb = usbip_create(m_pAVR);
+			// pragma: LCOV_EXCL_START
+			if (!m_usb)
+			{
+				std::cout << "Failed to create USBIP context\n";
+				exit(1);
+			}
+			// pragma: LCOV_EXCL_STOP
+			pthread_create(&m_usb_thread, nullptr, usbip_main, m_usb);
+		#endif
 
 	}
 

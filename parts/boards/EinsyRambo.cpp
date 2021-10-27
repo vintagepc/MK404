@@ -23,8 +23,8 @@
 #include "Einsy_1_1a.h"        // for Einsy_1_1a
 #include "HD44780.h"           // for HD44780
 #include "PinNames.h"          // for Pin, Pin::BTN_ENC, Pin::W25X20CL_PIN_CS
-#include <iostream>             // for fprintf, printf, stderr
 #include <algorithm>                        // for copy
+#include <iostream>             // for fprintf, printf, stderr
 #include <string>
 #include <vector>
 

@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "74HCT4052.h"
 #include "A4982.h"
 #include "ADC_Buttons.h"
 #include "Beeper.h"                              // for Beeper
@@ -32,6 +33,7 @@
 #include "Heater.h"                              // for Heater
 #include "IRSensor.h"                          // for IRSensor
 #include "LED.h"                                 // for LED
+#include "MCP23S17.h"
 #include "MMU1.h"
 #include "PAT9125.h"
 #include "PINDA.h"                               // for PINDA
@@ -65,11 +67,14 @@ namespace Boards
 
 			void OnAVRDeinit() override;
 
+			L74HCT4052 m_mux;
+
 			A4982 m_Allg{'Y'};
 
 			RotaryEncoder encoder {true};
 
 			Button m_btn {"Button",'p', "Test button"};
+			Button m_btn2 {"Toggle",'q', "Test toggle"};
 
 			SerialLineMonitor m_Monitor {"Serial0"};
 
@@ -88,6 +93,8 @@ namespace Boards
 			HC595 m_shift{};
 
 			Heater m_heat {5.f, 25.f, false, 'B',10.f,50.f};
+
+			MCP23S17 m_gpio;
 
 			MMU1 m_MM1{};
 

@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include "boards/MM_Control_01.h"
 #include "GCodeSniffer.h"
 #include "Printer.h"
+#include "boards/MM_Control_01.h"
 #include <gsl-lite.hpp>
 
 class MK3SGL;

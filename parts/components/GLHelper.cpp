@@ -89,6 +89,11 @@ void GLHelper::OnDraw()
 			case ActTakeSnapshotArea:
 			case ActTakeSnapLCD:
 			{
+				if (m_iAct.load() == ActTakeSnapLCD) // Account for LCD scaling
+				{
+					m_h = static_cast<float>(m_h)*(static_cast<float>(width)/static_cast<float>(m_w));
+					m_w = width;
+				}
 				WritePNG(width, height, (m_iAct == ActTakeSnapshotArea || m_iAct == ActTakeSnapLCD));
 				std::cout << "Wrote: " << m_strFile << '\n';
 				if (m_bIsKeySnap) {
@@ -120,7 +125,7 @@ void GLHelper::OnKeyPress(const Key& key)
 		{
 			std::cout << "LCD Snapshot toggled!\n";
 			m_bIsKeySnap = true;
-			// GLHelper::SnapRect(tests/snaps/LCD01,0,0,500,164)
+			// Args are scaled based on window width in the routine.
 			ProcessAction(ActTakeSnapLCD,{"","0","0","500","164"});
 		}
 		break;

@@ -35,8 +35,7 @@ std::pair<int,int> Prusa_MMU2::GetWindowSize()
 void Prusa_MMU2::Draw()
 {
 	glScalef(50.F/35.F,4,1);
-	auto fY = static_cast<float>(glutGet(GLUT_WINDOW_HEIGHT)/4);
-	MM_Control_01::Draw(fY);
+	MM_Control_01::Draw(static_cast<float>(GetWindowSize().second));
 	m_gl.OnDraw();
 }
 

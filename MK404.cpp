@@ -151,12 +151,11 @@ void displayCB()		/* function called whenever redisplay needed */
 	glLoadIdentity();
 	glClear(US(GL_COLOR_BUFFER_BIT) | US(GL_DEPTH_BUFFER_BIT));
 	int iW = glutGet(GLUT_WINDOW_WIDTH);
-	//int iH = glutGet(GLUT_WINDOW_HEIGHT);
 	if (m_bTerminal)
 	{
 		glPushMatrix();
-			glTranslatef(0,m_iTermHeight,0);
-			ScriptHost::Draw();
+		glTranslatef(0,4.F*(printer->GetWindowSize().second + 2),0);
+		ScriptHost::Draw();
 		glPopMatrix();
 	}
 	printer->Draw();
@@ -224,7 +223,7 @@ void ResizeCB(int w, int h)
 	std::pair<int,int> winSize = printer->GetWindowSize();
 	if (m_bTerminal)
 	{
-		winSize.second+=10;
+		winSize.second += 14;
 	}
 	float fWS = static_cast<float>(w)/static_cast<float>(winSize.first*4);
 	float fHS = static_cast<float>(h)/static_cast<float>(winSize.second*4);
@@ -461,7 +460,7 @@ int main(int argc, char *argv[])
 		int pixsize = 4;
 		if (m_bTerminal)
 		{
-			winSize.second +=10;
+			winSize.second += 14;
 		}
 		iWinW = winSize.first * pixsize;
 		iWinH = (winSize.second)*pixsize;

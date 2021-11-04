@@ -65,9 +65,9 @@ namespace Boards
 
 		Button m_lid {"Lid",'l',"Opens/closes the lid"}, m_tank {"Tank",'t',"Inserts/removes the IPA tank"};
 		Beeper m_beep;
-		Fan m_f1 {1500,'1', false}, m_f2 {1500,'2', false},  m_f3 {500,'3', false};
+		Fan m_f1 {5000,'1', false}, m_f2 {5000,'2', false},  m_f3 {500,'3', false};
 		HD44780GL m_lcd;
-		Heater m_ht {0.25, 25.f, false, 'H', 15.f, 150.f};
+		Heater m_ht {0.4, 25.f, false, 'H', 15.f, 150.f};
 		Heater m_htUV {0.05f, 20.f, false, 'U', 15.f, 150.f};
 		MCP23S17 m_gpio;
 		RotaryEncoder m_enc;

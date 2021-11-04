@@ -138,6 +138,8 @@ set(H_FILES_base
 	parts/wiring/Test_Wiring.h
 	utility/Color.h
 	utility/Config.h
+	utility/CW1S_Lite.h
+	utility/CW1S_Full.h
 	utility/GLPrint.h
 	utility/FatImage.h
 	utility/MK2_Full.h
@@ -238,6 +240,8 @@ set(MK404_SOURCES_base
 	parts/SoftPWMable.cpp
 	parts/SPIPeripheral.cpp
 	parts/TelemetryHost.cpp
+	utility/CW1S_Lite.cpp
+	utility/CW1S_Full.cpp
 	utility/MK2_Full.cpp
 	utility/MK3S_Bear.cpp
 	utility/MK3S_Full.cpp

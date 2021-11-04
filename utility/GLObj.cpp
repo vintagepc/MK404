@@ -104,6 +104,26 @@ void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 	}
 }
 
+void GLObj::SwapMaterial(unsigned iOld, unsigned iNew)
+{
+	if (iNew < m_materials.size())
+	{
+		std::lock_guard<std::mutex> lock(m_lock);
+		for (auto &m : m_DrawObjects)
+		{
+			if (m.material_id == iOld)
+			{
+				m.material_id = iNew;
+			}
+		}
+	}
+	else
+	{
+		std::cout << "GLObj: Invalid new material ID\n";
+	}
+
+}
+
 void GLObj::Draw() {
 	if (!m_bLoaded)	return;
 

@@ -20,12 +20,12 @@
  */
 
 #include "MK3SGL.h"
+#include "CW1S_Full.h"
+#include "CW1S_Lite.h"
 #include "Camera.hpp"         // for Camera
 #include "GLPrint.h"          // for GLPrint
 #include "HD44780GL.h"        // for HD44780GL
 #include "KeyController.h"
-#include "CW1S_Lite.h"
-#include "CW1S_Full.h"
 #include "MK2_Full.h"
 #include "MK3S_Bear.h"        // for MK3S_Bear
 #include "MK3S_Full.h"        // for MK3S_Full

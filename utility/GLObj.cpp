@@ -100,7 +100,7 @@ void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 	}
 	else
 	{
-		std::cout << "GLObj: Tried to set invalid material or object.\n";
+		std::cout << "GLObj: Tried to set invalid material or object.\n"; // pragma: LCOV_EXCL_LINE
 	}
 }
 
@@ -119,7 +119,7 @@ void GLObj::SwapMaterial(unsigned iOld, unsigned iNew)
 	}
 	else
 	{
-		std::cout << "GLObj: Invalid new material ID\n";
+		std::cout << "GLObj: Invalid new material ID\n"; // pragma: LCOV_EXCL_LINE
 	}
 
 }

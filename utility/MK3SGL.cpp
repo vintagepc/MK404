@@ -521,8 +521,8 @@ void MK3SGL::OnGenericChanged(avr_irq_t *irq, uint32_t uiVal)
 	case GENERIC_3:
 		m_uiG3 = uiVal;
 		break;
-	default:
-		break;
+	default: 	// pragma: LCOV_EXCL_LINE
+		break;  // pragma: LCOV_EXCL_LINE
 	}
 }
 

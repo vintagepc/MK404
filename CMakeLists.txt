@@ -138,6 +138,8 @@ set(H_FILES_base
 	parts/wiring/Test_Wiring.h
 	utility/Color.h
 	utility/Config.h
+	utility/CW1S_Lite.h
+	utility/CW1S_Full.h
 	utility/GLPrint.h
 	utility/FatImage.h
 	utility/MK2_Full.h
@@ -238,6 +240,8 @@ set(MK404_SOURCES_base
 	parts/SoftPWMable.cpp
 	parts/SPIPeripheral.cpp
 	parts/TelemetryHost.cpp
+	utility/CW1S_Lite.cpp
+	utility/CW1S_Full.cpp
 	utility/MK2_Full.cpp
 	utility/MK3S_Bear.cpp
 	utility/MK3S_Full.cpp
@@ -539,7 +543,8 @@ add_test(ext1_IPCMMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCP
 add_test(ext1_MMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MMU2 -f MM-control-01.hex --script ../scripts/tests/test_boot_mmu2.txt )
 add_test(ext1_CW1 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex --script ../scripts/tests/test_boot_cw1.txt )
 add_test(ext1_CW1S env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1S -f Prusa-CW1S-Firmware.hex --script ../scripts/tests/test_boot_cw1s.txt )
-
+add_test(ext1_CW1S_lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex -g lite --script ../scripts/tests/test_cw1_lite_gfx.txt )
+add_test(ext1_CW1S_full env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex -g fancy --script ../scripts/tests/test_cw1_full_gfx.txt )
 
 
 # TODO- move these images out of parts and to their own ext2 dir...

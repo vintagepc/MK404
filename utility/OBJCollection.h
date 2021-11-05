@@ -81,6 +81,10 @@ class OBJCollection
 		virtual void DrawPFan(int /*iRotation*/){};
 		virtual void DrawEVis(float /*fEPos*/){};
 
+		virtual void DrawGeneric1 (uint32_t /*uiVal*/) {};
+		virtual void DrawGeneric2 (uint32_t /*uiVal*/) {};
+		virtual void DrawGeneric3 (uint32_t /*uiVal*/) {};
+
 		// pragma: LCOV_EXCL_STOP
 		virtual inline bool SupportsMMU() { return false; }
 

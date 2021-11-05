@@ -21,6 +21,8 @@
 #include <atomic>
 #include <gsl-lite.hpp>
 
+class MK3SGL;
+
 class Prusa_CW1S : public Printer, public Boards::CW1S
 {
 	public:
@@ -31,12 +33,15 @@ class Prusa_CW1S : public Printer, public Boards::CW1S
 
 		void OnMousePress(int button, int action, int x, int y) override;
 
+		void OnVisualTypeSet(const std::string &type) override;
+
 	protected:
 		void OnAVRCycle() override;
 
 	private:
 		std::atomic_int m_mouseBtn = {0};
 
+		std::unique_ptr<MK3SGL> m_pVis {nullptr};
 
 
 };

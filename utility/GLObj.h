@@ -62,6 +62,9 @@ class GLObj
         // Lets you tweak the material for a subobject. An example is a modelled LED turning on/off.
         void SetSubobjectMaterial(unsigned iObj, unsigned iMat);
 
+		// Swaps all objects using a given material ID to a different material.
+		void SwapMaterial(unsigned iOld, unsigned iNew);
+
         // Sets all subobjects as visible or invisible.
         void SetAllVisible(bool bVisible = true);
 

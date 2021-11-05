@@ -100,8 +100,28 @@ void GLObj::SetSubobjectMaterial(unsigned iObj, unsigned iMat)
 	}
 	else
 	{
-		std::cout << "GLObj: Tried to set invalid material or object.\n";
+		std::cout << "GLObj: Tried to set invalid material or object.\n"; // pragma: LCOV_EXCL_LINE
 	}
+}
+
+void GLObj::SwapMaterial(unsigned iOld, unsigned iNew)
+{
+	if (iNew < m_materials.size())
+	{
+		std::lock_guard<std::mutex> lock(m_lock);
+		for (auto &m : m_DrawObjects)
+		{
+			if (m.material_id == iOld)
+			{
+				m.material_id = iNew;
+			}
+		}
+	}
+	else
+	{
+		std::cout << "GLObj: Invalid new material ID\n"; // pragma: LCOV_EXCL_LINE
+	}
+
 }
 
 void GLObj::Draw() {

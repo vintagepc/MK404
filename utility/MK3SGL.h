@@ -51,7 +51,8 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
                             _IRQ(SHEET_IN,"<sheet.in") _IRQ(E_IN, "<e.in") _IRQ(SD_IN,"<SD.in") _IRQ(EFAN_IN,"<EFAN.in") \
                             _IRQ(BED_IN,"<bed.in") _IRQ(PINDA_IN,"<pinda.in") _IRQ(PFAN_IN,"<PFAN.in") _IRQ(SEL_IN,"<Sel.in") \
                             _IRQ(IDL_IN,"<idler.in") _IRQ(MMU_LEDS_IN,"<mmuleds.in") _IRQ(TOOL_IN,"8<TOOL_IN") _IRQ(FINDA_IN,"<finda.in") \
-							_IRQ(FEED_IN,"<feed.in") _IRQ(X_STEP_IN,"") _IRQ(Y_STEP_IN,"") _IRQ(Z_STEP_IN,"") _IRQ(E_STEP_IN,"")
+							_IRQ(FEED_IN,"<feed.in") _IRQ(X_STEP_IN,"") _IRQ(Y_STEP_IN,"") _IRQ(Z_STEP_IN,"") _IRQ(E_STEP_IN,"") \
+							_IRQ(GENERIC_1,"<generic.1") _IRQ(GENERIC_2,"<generic.2") _IRQ(GENERIC_3,"<generic.3")
         #include "IRQHelper.h"
 
 
@@ -163,6 +164,7 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
         void OnMMULedsChanged(avr_irq_t *irq, uint32_t value);
 		void OnToolChanged(avr_irq_t *irq, uint32_t iIdx);
 
+		void OnGenericChanged(avr_irq_t *irq, uint32_t iIdx);
 
         // Correction parameters to get the model at 0,0,0 and aligned with the simulated starting positions.
         std::atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01}, m_fPPos = {0.f};
@@ -186,6 +188,7 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
 		avr_cycle_count_t m_lastETick = 0;
 
+		std:: atomic_uint32_t m_uiG1 {0},  m_uiG2 {0},  m_uiG3 {0};
 
         int m_iWindow = 0;
 

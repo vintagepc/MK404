@@ -16,6 +16,7 @@
 
 #include "Prusa_CW1S.h"
 #include "GLHelper.h"
+#include "MK3SGL.h"
 #include <GL/glew.h>		// NOLINT must come before freeglut
 #include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
 
@@ -31,6 +32,36 @@ void Prusa_CW1S::Draw()
 	glScalef(50.F/35.F,4,1);
 	CW1S::Draw();
 	m_gl.OnDraw();
+	if ((GetVisualType()!="none") && m_pVis)
+	{
+		m_pVis->FlagForRedraw();
+	}
+}
+
+void Prusa_CW1S::OnVisualTypeSet(const std::string &type)
+{
+	if (type == "lite" || type == "fancy")
+	{
+		m_pVis.reset(new MK3SGL("cw1s_" + type,false,this)); //NOLINT - suggestion is c++14.
+
+		AddHardware(*m_pVis);
+
+		m_pVis->ConnectFrom(m_tmc.GetIRQ(TMC2130::POSITION_OUT),MK3SGL::E_IN);
+		m_pVis->ConnectFrom(m_f1.GetIRQ(Fan::ROTATION_OUT), MK3SGL::EFAN_IN);
+		m_pVis->ConnectFrom(m_f2.GetIRQ(Fan::ROTATION_OUT), MK3SGL::PFAN_IN);
+		avr_raise_irq(m_pVis->GetIRQ(MK3SGL::GENERIC_3),1);
+		avr_raise_irq(m_pVis->GetIRQ(MK3SGL::GENERIC_2),1);
+		m_pVis->ConnectFrom(m_lid.GetIRQ(Button::BUTTON_OUT), MK3SGL::GENERIC_3);
+		m_pVis->ConnectFrom(m_tank.GetIRQ(Button::BUTTON_OUT), MK3SGL::GENERIC_2);
+		m_pVis->ConnectFrom(m_gpio.GetIRQ(MCP23S17::MCP_GPA6), MK3SGL::GENERIC_1);
+
+		m_pVis->SetLCD(&m_lcd);
+
+		m_pVis->SetStepsPerMM(
+			0,0,0,
+			m_tmc.GetConfig().uiFullStepsPerMM
+		);
+	}
 }
 
 void Prusa_CW1S::OnAVRCycle()
@@ -47,9 +78,11 @@ void Prusa_CW1S::OnAVRCycle()
 				break;
 			case 3:
 				m_enc.Twist(RotaryEncoder::CCW_CLICK);
+				if (m_pVis) m_pVis->TwistKnob(true);
 				break;
 			case 4:
 				m_enc.Twist(RotaryEncoder::CW_CLICK);
+				if (m_pVis) m_pVis->TwistKnob(false);
 				break;
 		}
 		m_mouseBtn = 0;

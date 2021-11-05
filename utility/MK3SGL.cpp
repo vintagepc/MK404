@@ -20,6 +20,8 @@
  */
 
 #include "MK3SGL.h"
+#include "CW1S_Full.h"
+#include "CW1S_Lite.h"
 #include "Camera.hpp"         // for Camera
 #include "GLPrint.h"          // for GLPrint
 #include "HD44780GL.h"        // for HD44780GL
@@ -51,6 +53,7 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 		std::cerr << "ERROR: Cannot have multiple MK3SGL instances due to freeglut limitations." << '\n';
 		exit(1);
 	}
+	bool bIsPrinter = true;
 	g_pMK3SGL = this;
 	if (strModel == "lite")
 	{
@@ -73,22 +76,36 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	{
 		m_Objs = new MK2_Full(false,true);
 	}
+	else if (strModel == "cw1s_lite")
+	{
+		bIsPrinter = false;
+		m_Objs = new CW1S_Lite();
+	}
+	else if (strModel == "cw1s_fancy")
+	{
+		bIsPrinter = false;
+		m_Objs = new CW1S_Full();
+	}
 
-	RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
-	RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);
+	if (bIsPrinter)
+	{
+		RegisterActionAndMenu("ClearPrint","Clears rendered print objects",ActClear);
+		RegisterActionAndMenu("ToggleNozzleCam","Toggles between normal and nozzle cam mode.",ActToggleNCam);
+		RegisterActionAndMenu("NonLinearX", "Toggle motor nonlinearity on X", ActNonLinearX);
+		RegisterActionAndMenu("NonLinearY", "Toggle motor nonlinearity on Y", ActNonLinearY);
+		RegisterActionAndMenu("NonLinearZ", "Toggle motor nonlinearity on Z", ActNonLinearZ);
+		RegisterActionAndMenu("NonLinearE", "Toggle motor nonlinearity on E", ActNonLinearE);
+		RegisterActionAndMenu("ExportPLY", "Export high resolution extrusion print to a PLY file (Export.ply)", ActExportPLY);
+		RegisterAction("ExportPLYFile", "Export high resolution extrusion print to a PLY file (filename)", ActExportPLYFile, {ArgType::String});
+		RegisterKeyHandler('n',"Toggle Nozzle-Cam Mode");
+		RegisterKeyHandler('l',"Clears any print on the bed. May cause graphical glitches if used while printing.");
+	}
+
 	RegisterActionAndMenu("ResetCamera","Resets camera view to default",ActResetView);
 	RegisterAction("MouseBtn", "Simulates a mouse button (# = GL button enum, gl state,x,y)", ActMouse, {ArgType::Int,ArgType::Int,ArgType::Int,ArgType::Int});
 	RegisterAction("MouseMove", "Simulates a mouse move (x,y)", ActMouseMove, {ArgType::Int,ArgType::Int});
-	RegisterActionAndMenu("NonLinearX", "Toggle motor nonlinearity on X", ActNonLinearX);
-	RegisterActionAndMenu("NonLinearY", "Toggle motor nonlinearity on Y", ActNonLinearY);
-	RegisterActionAndMenu("NonLinearZ", "Toggle motor nonlinearity on Z", ActNonLinearZ);
-	RegisterActionAndMenu("NonLinearE", "Toggle motor nonlinearity on E", ActNonLinearE);
-    RegisterActionAndMenu("ExportPLY", "Export high resolution extrusion print to a PLY file (Export.ply)", ActExportPLY);
-	RegisterAction("ExportPLYFile", "Export high resolution extrusion print to a PLY file (filename)", ActExportPLYFile, {ArgType::String});
 
 	RegisterKeyHandler('`', "Reset camera view to default");
-	RegisterKeyHandler('n',"Toggle Nozzle-Cam Mode");
-	RegisterKeyHandler('l',"Clears any print on the bed. May cause graphical glitches if used while printing.");
 	RegisterKeyHandler('w',"");
 	RegisterKeyHandler('s',"");
 
@@ -253,6 +270,11 @@ void MK3SGL::Init(avr_t *avr)
 	RegisterNotify(SD_IN, 		fcnBoolCB,	this);
 	RegisterNotify(PINDA_IN, 	fcnBoolCB,	this);
 	RegisterNotify(FINDA_IN, 	fcnBoolCB,	this);
+
+	auto fcnGenCB = MAKE_C_CALLBACK(MK3SGL, OnGenericChanged);
+	RegisterNotify(GENERIC_1, fcnGenCB, this);
+	RegisterNotify(GENERIC_2, fcnGenCB, this);
+	RegisterNotify(GENERIC_3, fcnGenCB, this);
 
 	RegisterNotify(TOOL_IN,		MAKE_C_CALLBACK(MK3SGL,OnToolChanged),this);
 	RegisterNotify(MMU_LEDS_IN,	MAKE_C_CALLBACK(MK3SGL,OnMMULedsChanged),this);
@@ -486,6 +508,24 @@ void MK3SGL::OnToolChanged(avr_irq_t *, uint32_t iIdx)
 	m_iCurTool = iIdx;
 };
 
+void MK3SGL::OnGenericChanged(avr_irq_t *irq, uint32_t uiVal)
+{
+	switch (irq->irq)
+	{
+	case GENERIC_1:
+		m_uiG1 = uiVal;
+		break;
+	case GENERIC_2:
+		m_uiG2 = uiVal;
+		break;
+	case GENERIC_3:
+		m_uiG3 = uiVal;
+		break;
+	default: 	// pragma: LCOV_EXCL_LINE
+		break;  // pragma: LCOV_EXCL_LINE
+	}
+}
+
 static constexpr float fMM2M = 1.f/1000.f;
 
 void MK3SGL::Draw()
@@ -627,6 +667,15 @@ void MK3SGL::Draw()
 		m_Objs->Draw(OBJCollection::ObjClass::Fixed);
 		glPushMatrix();
 			m_Objs->DrawKnob(m_iKnobPos);
+		glPopMatrix();
+		glPushMatrix();
+			m_Objs->DrawGeneric1(m_uiG1);
+		glPopMatrix();
+		glPushMatrix();
+			m_Objs->DrawGeneric2(m_uiG2);
+		glPopMatrix();
+		glPushMatrix();
+			m_Objs->DrawGeneric3(m_uiG3);
 		glPopMatrix();
 		if (m_pLCD)
 		{

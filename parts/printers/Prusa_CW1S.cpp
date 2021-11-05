@@ -78,9 +78,11 @@ void Prusa_CW1S::OnAVRCycle()
 				break;
 			case 3:
 				m_enc.Twist(RotaryEncoder::CCW_CLICK);
+				if (m_pVis) m_pVis->TwistKnob(true);
 				break;
 			case 4:
 				m_enc.Twist(RotaryEncoder::CW_CLICK);
+				if (m_pVis) m_pVis->TwistKnob(false);
 				break;
 		}
 		m_mouseBtn = 0;

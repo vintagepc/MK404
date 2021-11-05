@@ -543,7 +543,8 @@ add_test(ext1_IPCMMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 IPCP
 add_test(ext1_MMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_MMU2 -f MM-control-01.hex --script ../scripts/tests/test_boot_mmu2.txt )
 add_test(ext1_CW1 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex --script ../scripts/tests/test_boot_cw1.txt )
 add_test(ext1_CW1S env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1S -f Prusa-CW1S-Firmware.hex --script ../scripts/tests/test_boot_cw1s.txt )
-
+add_test(ext1_CW1S_lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex -g lite --script ../scripts/tests/test_cw1_lite_gfx.txt )
+add_test(ext1_CW1S_full env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex -g fancy --script ../scripts/tests/test_cw1_full_gfx.txt )
 
 
 # TODO- move these images out of parts and to their own ext2 dir...

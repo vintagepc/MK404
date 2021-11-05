@@ -45,12 +45,7 @@ class CW1S_Lite: public OBJCollection
 
 		void DrawKnob(int iRotation) override;
 
-		inline void GetNozzleCamPos(gsl::span<float> fPos) override
-		{
-			fPos[0] = -.155f;
-			fPos[1] = -0.127f;
-			fPos[2] = -0.024f;
-		}
+		inline void GetNozzleCamPos(gsl::span<float> /*fPos*/ ) override {} // pragma: LCOV_EXCL_LINE
 
 		void DrawEVis(float fEPos) override;
 

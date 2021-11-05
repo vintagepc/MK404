@@ -48,8 +48,8 @@ If you would like to contribute support for your particular printer yourself, fe
 
 Model|Status (Not started, In Progress, Awaiting Merge, or Finished)
 -----|------
-Prusa CW1 |  :heavy_check_mark:  Passes self-test :grey_exclamation:  No 3D visuals.
-Prusa CW1S |  :heavy_check_mark:  Passes self-test :grey_exclamation:  No 3D visuals.
+Prusa CW1 |  :heavy_check_mark:  Passes self-test
+Prusa CW1S |  :heavy_check_mark:  Passes self-test 
 Prusa MK1 |  ✔️  Finished ❕ No 3D visuals.
 Prusa MK2/MK2S | ✔️  Finished 
 Prusa MK2/MK2S MMU |  ✔️  Finished

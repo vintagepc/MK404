@@ -66,6 +66,7 @@ set(H_FILES_base
 	parts/boards/EinsyRambo.h
 	parts/boards/MiniRambo.h
 	parts/boards/MM_Control_01.h
+	parts/boards/SL1.h
 	parts/boards/Test_Board.h
 	parts/components/74HCT4052.h
 	parts/components/A4982.h
@@ -122,6 +123,7 @@ set(H_FILES_base
 	parts/printers/Prusa_MK3S.h
 	parts/printers/Prusa_MK3SMMU2.h
 	parts/printers/Prusa_MMU2.h
+	parts/printers/Prusa_SL1_Ctl.h
 	parts/printers/Test_Printer.h
 	parts/Scriptable.h
 	parts/ScriptHost.h
@@ -135,6 +137,7 @@ set(H_FILES_base
 	parts/wiring/miniRAMBo_1_1b.h
 	parts/wiring/miniRAMBo_1_3a.h
 	parts/wiring/MM_Control_01.h
+	parts/wiring/SL1_Control.h
 	parts/wiring/Test_Wiring.h
 	utility/Color.h
 	utility/Config.h
@@ -186,6 +189,7 @@ set(MK404_SOURCES_base
 	parts/boards/EinsyRambo.cpp
 	parts/boards/MiniRambo.cpp
 	parts/boards/MM_Control_01.cpp
+	parts/boards/SL1.cpp
 	parts/boards/Test_Board.cpp
 	parts/components/74HCT4052.cpp
 	parts/components/A4982.cpp
@@ -231,6 +235,7 @@ set(MK404_SOURCES_base
 	parts/printers/Prusa_MK3S.cpp
 	parts/printers/Prusa_MK3SMMU2.cpp
 	parts/printers/Prusa_MMU2.cpp
+	parts/printers/Prusa_SL1_Ctl.cpp
 	parts/printers/Test_Printer.cpp
 	parts/IScriptable.cpp
 	parts/Printer.cpp

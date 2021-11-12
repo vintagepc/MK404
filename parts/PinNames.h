@@ -72,12 +72,14 @@ namespace PinNames {
 		LCD_PINS_ENABLE,
 		LCD_PINS_RS,
 		LED_PIN,
+		LED_1_PIN,
 		MMU_HWRESET,
 		__TMC2130_PIN_SET(P)
 		PAT_INT_PIN,
 		PS_ON_PIN,
 		__TMC2130_PIN_SET(S)
 		RX2_PIN,
+		RX_LED,
 		SDCARDDETECT,
 		SDPOWER,
 		SDSS,
@@ -97,6 +99,7 @@ namespace PinNames {
 		TEMP_BED_PIN,
 		TEMP_PINDA_PIN,
 		TX2_PIN,
+		TX_LED,
 		UVLO_PIN,
 		VOLT_BED_PIN,
 		VOLT_IR_PIN,

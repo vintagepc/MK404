@@ -54,8 +54,8 @@ class I2CPeripheral: public BasePeripheral
 		// Native I2C uses one that's not directly compatible.
 		using I2CMsg_t = union I2CMsg
 		{
-			explicit I2CMsg(uint32_t uiRaw = 0){ raw = uiRaw;}; // Convenience constructor
-			I2CMsg(const unsigned int &uiMsg, const unsigned &uiAddr, const unsigned &uiData){ raw = uiMsg<<16u | uiAddr << 8u | uiData;}
+			void I2CMsg_t(uint32_t uiRaw = 0){ raw = uiRaw;}; // Convenience constructor
+			void I2CMsg_t(const unsigned int &uiMsg, const unsigned &uiAddr, const unsigned &uiData){ raw = uiMsg<<16u | uiAddr << 8u | uiData;}
 			uint32_t raw :24;
 			uint8_t bytes[3] {0};
 			struct {
@@ -67,7 +67,7 @@ class I2CPeripheral: public BasePeripheral
 		};
 
 		using NativeI2CMsg_t = union NativeI2CMsg {
-			explicit NativeI2CMsg(uint32_t uiRaw = 0){ raw = uiRaw;}
+			void NativeI2CMsg_t(uint32_t uiRaw = 0){ raw = uiRaw;}
 			uint32_t raw;
 			struct {
 				uint8_t :8;

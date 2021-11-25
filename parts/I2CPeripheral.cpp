@@ -195,7 +195,7 @@ void I2CPeripheral::_OnSDA(avr_irq_t */*irq*/, uint32_t value)
 void I2CPeripheral::_OnI2CTx(avr_irq_t */*irq*/, uint32_t value)
 {
 //	std::cout << "TX_IN:" << std::setw(8) << std::setfill('0') << std::hex << value << '\n';
-	NativeI2CMsg_t msg = {value};
+	NativeI2CMsg_t msg{value};
 
 	if (msg.cond & TWI_COND_STOP)
 	{

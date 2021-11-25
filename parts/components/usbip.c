@@ -321,7 +321,7 @@ handle_usbip_req_devlist(
 	// get config AND interface descriptors
 	struct {
 		struct usb_configuration_descriptor config;
-		struct usb_interface_descriptor interf[p->udev.bNumInterfaces];
+		struct usb_interface_descriptor interf[32];
 	} cd;
 	if (!get_descriptor(p, USB_DESCRIPTOR_CONFIGURATION, &cd, sizeof cd)) {
 		fprintf(stderr, "get configuration descriptor failed\n");

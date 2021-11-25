@@ -51,7 +51,7 @@
 #include <arpa/inet.h>
 
 #define USBIP_PORT_NUM 3240
-#define MAX_USB_ENDPOINTS 32
+#define MAX_USB_ENDPOINTS 16
 
 #include "usb_types.h"
 #include "usbip_types.h"

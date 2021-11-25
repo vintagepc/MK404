@@ -52,7 +52,7 @@ class I2CPeripheral: public BasePeripheral
     private:
 		// This is the bitbanged message structure.
 		// Native I2C uses one that's not directly compatible.
-		using I2CMsg_t = union
+		using I2CMsg_t = union I2CMsg
 		{
 			void I2CMsg_t(uint32_t uiRaw = 0){ raw = uiRaw;}; // Convenience constructor
 			void I2CMsg_t(const unsigned int &uiMsg, const unsigned &uiAddr, const unsigned &uiData){ raw = uiMsg<<16u | uiAddr << 8u | uiData;}
@@ -66,7 +66,7 @@ class I2CPeripheral: public BasePeripheral
 			}__attribute__ ((__packed__));
 		};
 
-		using NativeI2CMsg_t = union {
+		using NativeI2CMsg_t = union NativeI2CMsg {
 			void NativeI2CMsg_t(uint32_t uiRaw = 0){ raw = uiRaw;}
 			uint32_t raw;
 			struct {

@@ -51,6 +51,7 @@
 #include <arpa/inet.h>
 
 #define USBIP_PORT_NUM 3240
+#define MAX_USB_ENDPOINTS 16
 
 #include "usb_types.h"
 #include "usbip_types.h"
@@ -321,7 +322,7 @@ handle_usbip_req_devlist(
 	// get config AND interface descriptors
 	struct {
 		struct usb_configuration_descriptor config;
-		struct usb_interface_descriptor interf[p->udev.bNumInterfaces];
+		struct usb_interface_descriptor interf[MAX_USB_ENDPOINTS];
 	} cd;
 	if (!get_descriptor(p, USB_DESCRIPTOR_CONFIGURATION, &cd, sizeof cd)) {
 		fprintf(stderr, "get configuration descriptor failed\n");

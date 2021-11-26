@@ -146,7 +146,7 @@ class SDCard:public SPIPeripheral, public Scriptable, private IKeyClient
 				unsigned int address :32;
 				Command cmd :6;
 				unsigned char :2; // Start/position
-			} __attribute__ ((__packed__)) bits;
+			} __attribute__((__packed__)) bits;
 			uint8_t bytes[6];
 		} m_CmdIn {.all = 0};
 
@@ -161,7 +161,7 @@ class SDCard:public SPIPeripheral, public Scriptable, private IKeyClient
 				uint32_t function :4;
 				uint32_t mio :1;
 
-			} __attribute__ ((__packed__)) bits;
+			} __attribute__((__packed__)) bits;
 		};
 
 		struct {

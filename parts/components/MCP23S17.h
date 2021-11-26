@@ -46,7 +46,7 @@ using mcp_reg_bank_1_t = struct mcp_reg_bank_1_t {
 			uint8_t SEQOP :1;
 			uint8_t MIRROR :1;
 			uint8_t BANK :1;
-		} __attribute__ ((__packed__)) IOCON;
+		} __attribute__((__packed__)) IOCON;
 	};
 	uint8_t GPPU;		//0x06
 	uint8_t INTF;		//0x07
@@ -119,7 +119,7 @@ class MCP23S17: public SPIPeripheral
 				uint8_t READ :1;
 				uint8_t HADDR :3;
 				uint8_t _FIXED :4;
-			} __attribute__ ((__packed__));
+			} __attribute__((__packed__));
 		} m_hdr = {0};
 
 		union {

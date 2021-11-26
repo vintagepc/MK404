@@ -31,7 +31,7 @@ struct usbip_usb_interface {
 	uint8_t bInterfaceSubClass;
 	uint8_t bInterfaceProtocol;
 	uint8_t padding;	/* alignment */
-} __attribute__((packed));
+} __attribute__((__packed__));
 
 struct usbip_usb_device {
 	char path[USBIP_SYSFS_PATH_MAX];
@@ -51,7 +51,7 @@ struct usbip_usb_device {
 	uint8_t bConfigurationValue;
 	uint8_t bNumConfigurations;
 	uint8_t bNumInterfaces;
-} __attribute__((packed));
+} __attribute__((__packed__));
 
 
 #define USBIP_PROTO_VERSION 0x111
@@ -66,33 +66,33 @@ struct usbip_op_common {
 #define USBIP_ST_NA 0x01
 	uint32_t status;
 
-} __attribute__((packed));
+} __attribute__((__packed__));
 
 #define USBIP_OP_DEVLIST 0x05
 
 struct usbip_op_devlist_request {
-} __attribute__((packed));
+} __attribute__((__packed__));
 
 struct usbip_op_devlist_reply {
 	uint32_t ndev;
 	/* followed by reply_extra[] */
-} __attribute__((packed));
+} __attribute__((__packed__));
 
 struct usbip_op_devlist_reply_extra {
 	struct usbip_usb_device    udev;
 	struct usbip_usb_interface uinf[];
-} __attribute__((packed));
+} __attribute__((__packed__));
 
 
 #define USBIP_OP_IMPORT 0x03
 struct usbip_op_import_request {
     char busid[USBIP_SYSFS_BUS_ID_SIZE];
-} __attribute__((packed));
+} __attribute__((__packed__));
 
 struct usbip_op_import_reply {
     struct usbip_usb_device udev;
 //	struct usbip_usb_interface uinf[];
-} __attribute__((packed));
+} __attribute__((__packed__));
 
 struct usbip_common_hdr {
     uint32_t command;
@@ -100,7 +100,7 @@ struct usbip_common_hdr {
     uint32_t devid; // (busnum << 16) | devnum
     uint32_t direction;
     uint32_t ep;
-} __attribute__ ((__packed__));
+} __attribute__((__packed__));
 
 #define USBIP_CMD_SUBMIT 0x0001
 #define USBIP_CMD_UNLINK 0x0002
@@ -117,7 +117,7 @@ struct usbip_cmd_submit {
     int32_t number_of_packets;
     int32_t interval;
     unsigned char setup[8];
-} __attribute__ ((__packed__));
+} __attribute__((__packed__));
 
 /*
 +  Allowed transfer_flags  | value      | control | interrupt | bulk     | isochronous
@@ -139,7 +139,7 @@ struct usbip_ret_submit {
     int32_t number_of_packets;
     int32_t error_count;
     long long setup;
-} __attribute__ ((__packed__));
+} __attribute__((__packed__));
 
 
 struct usbip_cmd_unlink {
@@ -149,7 +149,7 @@ struct usbip_cmd_unlink {
     int32_t pad3;
     int32_t pad4;
     long long pad5;
-} __attribute__ ((__packed__));
+} __attribute__((__packed__));
 
 
 struct usbip_ret_unlink {
@@ -159,7 +159,7 @@ struct usbip_ret_unlink {
     int32_t pad3;
     int32_t pad4;
     long long pad5;
-} __attribute__ ((__packed__));
+} __attribute__((__packed__));
 
 struct usbip_header {
     struct usbip_common_hdr hdr;
@@ -169,4 +169,4 @@ struct usbip_header {
         struct usbip_cmd_unlink unlink;
         struct usbip_ret_unlink retunlink;
     } u;
-} __attribute__ ((__packed__));
+} __attribute__((__packed__));

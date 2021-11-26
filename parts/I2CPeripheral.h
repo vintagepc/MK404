@@ -63,7 +63,7 @@ class I2CPeripheral: public BasePeripheral
 				uint8_t writeRegAddr;
 				uint8_t isAddrRead :1; // Write bit on address. IDK if this is used given msgBits.isWrite.
 				uint8_t address :7;
-			}__attribute__ ((__packed__));
+			} __attribute__((__packed__));
 		};
 
 		using NativeI2CMsg_t = union NativeI2CMsg {
@@ -75,7 +75,7 @@ class I2CPeripheral: public BasePeripheral
 				uint8_t isWrite :1; // Write bit on address. IDK if this is used given msgBits.isWrite.
 				uint8_t address :7;
 				uint8_t data :8 ;
-			} __attribute__ ((__packed__));
+			} __attribute__((__packed__));
 		};
 
 		// I2C transaction handler.

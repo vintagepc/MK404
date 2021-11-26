@@ -62,7 +62,7 @@ struct usb_device_descriptor {
     byte iProduct;              // Index of String Descriptor describing the product.
     byte iSerialNumber;         // Index of String Descriptor with the device's serial number.
     byte bNumConfigurations;    // Number of possible configurations.
-} __attribute__ ((__packed__));
+} __attribute__((__packed__));
 
 struct usb_configuration_descriptor
 {
@@ -74,7 +74,7 @@ struct usb_configuration_descriptor
     byte iConfiguration;        // Index of String Descriptor describing the configuration.
     byte bmAttributes;          // Configuration characteristics.
     byte bMaxPower;             // Maximum power consumed by this configuration.
-} __attribute__ ((__packed__));
+} __attribute__((__packed__));
 
 
 struct usb_interface_descriptor
@@ -88,4 +88,4 @@ struct usb_interface_descriptor
     byte bInterfaceSubClass;    // Subclass code (assigned by the USB-IF).
     byte bInterfaceProtocol;    // Protocol code (assigned by the USB-IF).  0xFF-Vendor specific.
     byte iInterface;            // Index of String Descriptor describing the interface.
-} __attribute__ ((__packed__));
+} __attribute__((__packed__));

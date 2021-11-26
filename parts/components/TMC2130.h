@@ -116,7 +116,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 				uint32_t data :32; // 32 bits of data
 				uint8_t address :7;
 				uint8_t RW :1;
-            } __attribute__ ((__packed__)) bitsIn;
+            } __attribute__((__packed__)) bitsIn;
             struct {
                 uint32_t data :32; // 32 bits of data
                 uint8_t reset_flag :1;
@@ -124,7 +124,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
                 uint8_t sg2 :1;
                 uint8_t standstill :1;
                 uint8_t :4; // unused
-            }  __attribute__ ((__packed__)) bitsOut;
+            }  __attribute__((__packed__)) bitsOut;
             uint8_t bytes[5] {0,0,0,0,0}; // Raw bytes as piped in/out by SPI.
         };
 
@@ -152,14 +152,14 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
                     uint8_t stop_enable :1;
                     uint8_t direct_mode         :1;
 					uint16_t :14;
-                }  __attribute__ ((__packed__)) GCONF;             // 0x00
+                }  __attribute__((__packed__)) GCONF;             // 0x00
                 struct                 // 0x01
                 {
                     uint8_t reset   :1;
                     uint8_t drv_err :1;
                     uint8_t uv_cp   :1;
 					uint32_t :29; // unused
-                }  __attribute__ ((__packed__)) GSTAT;
+                }  __attribute__((__packed__)) GSTAT;
                 uint32_t _unimplemented[2]; //0x02 - 0x03
                 struct                 // 0x04
                 {
@@ -168,7 +168,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 					uint8_t         :1;  // unused
 					uint16_t        :16; // unused
 					uint8_t version :8;
-                }  __attribute__ ((__packed__)) IOIN;
+                }  __attribute__((__packed__)) IOIN;
                 uint32_t _unimplemented2[103]; //0x05 - 0x6B
 				struct                        //0x6C
 				{
@@ -189,7 +189,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
 					uint32_t dedge		:1;
 					uint32_t diss2g		:1;
 					uint32_t			:1;
-				} __attribute__ ((__packed__)) CHOPCONF;
+				} __attribute__((__packed__)) CHOPCONF;
                 uint32_t _unimplemented3[2]; //0x6D - 0x6E
                 struct                       //0x6F
                 {
@@ -206,7 +206,7 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
                     uint8_t ola         :1;
                     uint8_t olb         :1;
                     uint8_t stst        :1;
-                }  __attribute__ ((__packed__)) DRV_STATUS;
+                }  __attribute__((__packed__)) DRV_STATUS;
             }defs;
         };
 

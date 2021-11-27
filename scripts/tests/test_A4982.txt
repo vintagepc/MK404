@@ -10,7 +10,7 @@ Serial0::NextLineMustBe(DISABLED)
 GLHelper::SnapRect(tests/snaps/A498201c,0,284,350,80)
 Serial0::NextLineMustBe(ST CT 101)
 GLHelper::SnapRect(tests/snaps/A498202,0,284,350,80)
-Serial0::NextLineMustBe(ST CT -100)
+Serial0::NextLineMustBe(ST CT -99)
 GLHelper::SnapRect(tests/snaps/A498203,0,284,350,80)
 
 Serial0::NextLineMustBe(STEP64 8)

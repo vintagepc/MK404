@@ -35,17 +35,18 @@
 // This creates an inverted parabolic trigger zone above the cal point
 void PINDA::CheckTriggerNoSheet()
 {
-    float fEdist = 100;
+    float fEdistSquared = 100^2;
     bool bFound = false;
     //printf("PINDA: X: %f Y: %f\n", m_fPos[0], m_fPos[1]);
 	if (m_fPos[2]<10.f)
 	{
 		for (auto i=0U; i<GetXYCalPoints().size()/2; i++)
 		{
-			fEdist = sqrt( pow(m_fPos[0] - GetXYCalPoints().at(2*i),2)  +
-				pow(m_fPos[1] - GetXYCalPoints().at((2*i)+1),2));
-			if (fEdist<10)
+			fEdistSquared = pow(m_fPos[0] - GetXYCalPoints().at(2*i),2)  +
+				pow(m_fPos[1] - GetXYCalPoints().at((2*i)+1),2);
+			if (fEdistSquared<(10^2))
 			{
+				//printf("PINDA: squared distance : %f\n", fEdistSquared);
 				bFound = true;
 				break;  // Stop as soon as we find a near cal point.
 			}
@@ -55,7 +56,7 @@ void PINDA::CheckTriggerNoSheet()
     if (bFound)
     {
 		bool bHasSheet = m_XYCalType != XYCalMap::MK2;
-        float fTrigZ = (1.0*(1-pow(fEdist/5,2))) + (bHasSheet? 3.0 : 0.0) ;
+        float fTrigZ = (1.0*(1-fEdistSquared/(5^2))) + (bHasSheet? 3.0 : 0.0) ;
         //printf("fTZ:%f fZ: %f\n",fTrigZ, this->fPos[2]);
         if (m_fPos[2]<=fTrigZ)
 		{

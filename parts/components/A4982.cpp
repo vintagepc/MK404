@@ -72,7 +72,7 @@ void A4982::OnStepIn(struct avr_irq_t * /*irq*/, uint32_t value)
 
 void A4982::CheckEndstops()
 {
-	if (m_iCurStep<0)
+	if (m_iCurStep<=0)
 	{
 		m_iCurStep = 0;
 		RaiseIRQ(MIN_OUT,1);

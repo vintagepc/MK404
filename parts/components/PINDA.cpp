@@ -44,7 +44,7 @@ void PINDA::CheckTriggerNoSheet()
 		{
 			fEdistSquared = pow(m_fPos[0] - GetXYCalPoints().at(2*i),2)  +
 				pow(m_fPos[1] - GetXYCalPoints().at((2*i)+1),2);
-			if (fEdistSquared<(100.f)) // 10mm search radius (squared)
+			if (fEdistSquared<100.f) // 10mm search radius (squared)
 			{
 				//printf("PINDA: squared distance : %f\n", fEdistSquared);
 				bFound = true;
@@ -56,7 +56,7 @@ void PINDA::CheckTriggerNoSheet()
     if (bFound)
     {
 		bool bHasSheet = m_XYCalType != XYCalMap::MK2;
-        float fTrigZ = (1.0*(1-fEdistSquared/(25.f))) + (bHasSheet? 3.0 : 0.0) ;
+        float fTrigZ = (1.0*(1-fEdistSquared/25.f)) + (bHasSheet? 3.0 : 0.0) ;
         //printf("fTZ:%f fZ: %f\n",fTrigZ, this->fPos[2]);
         if (m_fPos[2]<=fTrigZ)
 		{

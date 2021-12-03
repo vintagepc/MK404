@@ -21,11 +21,11 @@
  */
 
 #include "Config.h"
+#include "EnabledType.h"
 #include "FatImage.h"                 // for FatImage
 #include "KeyController.h"
 #include "Macros.h"
 #include "PrintVisualType.h"
-#include "EnabledType.h"
 #include "Printer.h"                  // for Printer, Printer::VisualType
 #include "PrinterFactory.h"           // for PrinterFactory
 #include "ScriptHost.h"               // for ScriptHost

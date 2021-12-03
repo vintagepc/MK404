@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "PrintVisualType.h"
 #include "EnabledType.h"
+#include "PrintVisualType.h"
 
 class Config
 {
@@ -67,5 +67,5 @@ class Config
 		uint8_t m_iScheme = 0;
 		bool m_bDebugCore = false;
 		std::string m_strSecFW = "MM-control-01.hex";
-		unsigned int m_SoftPWM;
+		unsigned int m_SoftPWM = false;
 };

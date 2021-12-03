@@ -25,6 +25,7 @@
 #include "KeyController.h"
 #include "Macros.h"
 #include "PrintVisualType.h"
+#include "EnabledType.h"
 #include "Printer.h"                  // for Printer, Printer::VisualType
 #include "PrinterFactory.h"           // for PrinterFactory
 #include "ScriptHost.h"               // for ScriptHost
@@ -344,6 +345,9 @@ int main(int argc, char *argv[])
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed, cmd);
 	ValueArg<string> argFW("f","firmware","hex/afx/elf Firmware file to load (default MK3S.afx)",false,"MK3S.afx","filename", cmd);
 	ValueArg<string> argFW2("F","firmware2","secondary hex/afx/elf Firmware file to load to MMU, if present (default MM-control-01.hex)",false,"MM-control-01.hex","filename", cmd);
+	std::vector<string> vstrEnabled = EnabledType::GetOpts();
+	ValuesConstraint<string> vcEnabledOpts(vstrEnabled);
+	ValueArg<string> argSoftPWM("p","softPWM","enable/disable software PWM (currently only valid for MK2)",false,"",&vcEnabledOpts,cmd);
 	std::vector<string> vstrExts = PrintVisualType::GetOpts();
 	ValuesConstraint<string> vcPrintOpts(vstrExts);
 	ValueArg<string> argExtrusion("","extrusion","Set Print visual type. HR options create a LOT of triangles, do not use for large prints!",false, "Line", &vcPrintOpts, cmd);
@@ -398,6 +402,7 @@ int main(int argc, char *argv[])
 	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
 	Config::Get().SetLCDScheme(argLCDSCheme.getValue());
+	Config::Get().SetSoftPWM(EnabledType::GetNameToType().at(argSoftPWM.getValue()));
 	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
 	Config::Get().SetColourE(argColourE.isSet());
 	Config::Get().SetFW2(argFW2.getValue());

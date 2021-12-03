@@ -22,6 +22,7 @@
 #pragma once
 
 #include "PrintVisualType.h"
+#include "EnabledType.h"
 
 class Config
 {
@@ -52,6 +53,9 @@ class Config
 		inline void SetDebugCore(bool bVal){ m_bDebugCore = bVal;}
 		inline bool GetDebugCore(){ return m_bDebugCore;}
 
+		inline void SetSoftPWM(unsigned int iVal){ m_SoftPWM = iVal; }
+		inline unsigned int GetSoftPWM(){ return m_SoftPWM; }
+
 		// Secondary firmware?
 		inline void SetFW2(std::string strName){ m_strSecFW = std::move(strName);}
 		inline const std::string GetFW2(){ return m_strSecFW;}
@@ -63,5 +67,5 @@ class Config
 		uint8_t m_iScheme = 0;
 		bool m_bDebugCore = false;
 		std::string m_strSecFW = "MM-control-01.hex";
-
+		unsigned int m_SoftPWM;
 };

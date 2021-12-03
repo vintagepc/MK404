@@ -184,6 +184,17 @@ void Prusa_MK2_13::SetupHardware()
 
 	SetupPINDA();
 
+	switch (Config::Get().GetSoftPWM())
+	{
+		case EnabledType::Enabled:
+			hBed.SetSoftPWM(true);
+			break;
+		case EnabledType::Disabled:
+			hBed.SetSoftPWM(false);
+			break;
+		default:
+			break;
+	}
 	if (GetConnectSerial())
 	{
 		UART0.Connect('0');

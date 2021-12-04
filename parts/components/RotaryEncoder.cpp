@@ -25,8 +25,8 @@
 #include "RotaryEncoder.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
-#include <algorithm>         // for copy
 #include <GL/glut.h>
+#include <algorithm>         // for copy
 #include <iostream>
 
 static constexpr uint8_t  STATE_COUNT = 4;

@@ -141,11 +141,6 @@ void KeyCB(unsigned char key, int /*x*/, int y)
 	}
 }
 
-void SpecialKeyCB(int key, int x, int y)
-{
-	KeyCB(key | SPECIAL_KEY_MASK, x, y);
-}
-
 void displayCB()		/* function called whenever redisplay needed */
 {
 	if (bIsQuitting || pBoard->GetQuitFlag()) // Stop drawing if shutting down.
@@ -288,7 +283,7 @@ int initGL()
 	// Set up projection matrix
 	glutDisplayFunc(displayCB);		/* set window's display callback */
 	glutKeyboardFunc(KeyCB);		/* set window's key callback */
-	glutSpecialFunc(SpecialKeyCB);
+	glutSpecialFunc(KeyController::GLSpecialKeyReceiver);
 	glutMouseFunc(MouseCB);
 	glutPassiveMotionFunc(PassiveMotionCB);
 	glutMotionFunc(MotionCB);

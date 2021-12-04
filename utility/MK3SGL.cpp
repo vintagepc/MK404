@@ -106,10 +106,10 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterAction("MouseMove", "Simulates a mouse move (x,y)", ActMouseMove, {ArgType::Int,ArgType::Int});
 
 	RegisterKeyHandler('`', "Reset camera view to default");
-	RegisterKeyHandler('w', "Twists encoder CCW");
-	RegisterKeyHandler(GLUT_KEY_UP | SPECIAL_KEY_MASK, "Twists encoder CCW");
-	RegisterKeyHandler('s', "Twists encoder CW");
-	RegisterKeyHandler(GLUT_KEY_DOWN | SPECIAL_KEY_MASK, "Twists encoder CW");
+	RegisterKeyHandler('w', "");
+	RegisterKeyHandler(GLUT_KEY_UP | SPECIAL_KEY_MASK, "");
+	RegisterKeyHandler('s', "");
+	RegisterKeyHandler(GLUT_KEY_DOWN | SPECIAL_KEY_MASK, "");
 
 	// RegisterKeyHandler('5',"");
 	// RegisterKeyHandler('6',"");

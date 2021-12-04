@@ -30,7 +30,7 @@ class EnabledType
 {
 	public:
 
-		enum
+		enum class Type_t
 		{
 			NotSet,
 			Enabled,
@@ -46,12 +46,12 @@ class EnabledType
 			return v;
 		}
 
-		static const std::map<std::string, unsigned int>& GetNameToType()
+		static const std::map<std::string, Type_t>& GetNameToType()
 		{
-			static const std::map<std::string, unsigned int> m {
-				{"",NotSet},
-				{"enabled",Enabled},
-				{"disabled",Disabled},
+			static const std::map<std::string, Type_t> m {
+				{"",Type_t::NotSet},
+				{"enabled",Type_t::Enabled},
+				{"disabled",Type_t::Disabled},
 			};
 			return m;
 		};

@@ -186,10 +186,10 @@ void Prusa_MK2_13::SetupHardware()
 
 	switch (Config::Get().GetSoftPWM())
 	{
-		case EnabledType::Enabled:
+		case EnabledType::Type_t::Enabled:
 			hBed.SetSoftPWM(true);
 			break;
-		case EnabledType::Disabled:
+		case EnabledType::Type_t::Disabled:
 			hBed.SetSoftPWM(false);
 			break;
 		default:

@@ -329,6 +329,9 @@ int main(int argc, char *argv[])
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img", cmd);
 	SwitchArg argScriptHelp("","scripthelp", "Prints the available scripting commands for the current printer/context",cmd, false);
 	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "filename.txt", cmd);
+	std::vector<string> vstrEnabled = EnabledType::GetOpts();
+	ValuesConstraint<string> vcEnabledOpts(vstrEnabled);
+	ValueArg<string> argSoftPWM("p","softPWM","enable/disable software PWM (currently only valid for MK2)",false,"",&vcEnabledOpts,cmd);
 	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.",cmd);
 	SwitchArg argMute("m","mute","Tell a printer to mute any audio it may produce.", cmd);
 	SwitchArg argMarlin("","marlin","Synonym for --no-hacks",cmd,false);
@@ -345,9 +348,6 @@ int main(int argc, char *argv[])
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed, cmd);
 	ValueArg<string> argFW("f","firmware","hex/afx/elf Firmware file to load (default MK3S.afx)",false,"MK3S.afx","filename", cmd);
 	ValueArg<string> argFW2("F","firmware2","secondary hex/afx/elf Firmware file to load to MMU, if present (default MM-control-01.hex)",false,"MM-control-01.hex","filename", cmd);
-	std::vector<string> vstrEnabled = EnabledType::GetOpts();
-	ValuesConstraint<string> vcEnabledOpts(vstrEnabled);
-	ValueArg<string> argSoftPWM("p","softPWM","enable/disable software PWM (currently only valid for MK2)",false,"",&vcEnabledOpts,cmd);
 	std::vector<string> vstrExts = PrintVisualType::GetOpts();
 	ValuesConstraint<string> vcPrintOpts(vstrExts);
 	ValueArg<string> argExtrusion("","extrusion","Set Print visual type. HR options create a LOT of triangles, do not use for large prints!",false, "Line", &vcPrintOpts, cmd);

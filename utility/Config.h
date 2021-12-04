@@ -53,8 +53,8 @@ class Config
 		inline void SetDebugCore(bool bVal){ m_bDebugCore = bVal;}
 		inline bool GetDebugCore(){ return m_bDebugCore;}
 
-		inline void SetSoftPWM(unsigned int iVal){ m_SoftPWM = iVal; }
-		inline unsigned int GetSoftPWM(){ return m_SoftPWM; }
+		inline void SetSoftPWM(EnabledType::Type_t val){ m_SoftPWM = val; }
+		inline EnabledType::Type_t GetSoftPWM(){ return m_SoftPWM; }
 
 		// Secondary firmware?
 		inline void SetFW2(std::string strName){ m_strSecFW = std::move(strName);}
@@ -67,5 +67,5 @@ class Config
 		uint8_t m_iScheme = 0;
 		bool m_bDebugCore = false;
 		std::string m_strSecFW = "MM-control-01.hex";
-		unsigned int m_SoftPWM = false;
+		EnabledType::Type_t m_SoftPWM = EnabledType::Type_t::NotSet;
 };

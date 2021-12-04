@@ -21,6 +21,7 @@
  */
 
 #include "Config.h"
+#include "EnabledType.h"
 #include "FatImage.h"                 // for FatImage
 #include "KeyController.h"
 #include "Macros.h"
@@ -328,6 +329,9 @@ int main(int argc, char *argv[])
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "filename.img", cmd);
 	SwitchArg argScriptHelp("","scripthelp", "Prints the available scripting commands for the current printer/context",cmd, false);
 	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "filename.txt", cmd);
+	std::vector<string> vstrEnabled = EnabledType::GetOpts();
+	ValuesConstraint<string> vcEnabledOpts(vstrEnabled);
+	ValueArg<string> argSoftPWM("p","softPWM","enable/disable software PWM (currently only valid for MK2)",false,"",&vcEnabledOpts,cmd);
 	SwitchArg argNoHacks("n","no-hacks","Disable any special hackery that might have been implemented for a board to run its manufacturer firmware, e.g. if you want to run stock marlin and have issues. Effects depend on the board and firmware.",cmd);
 	SwitchArg argMute("m","mute","Tell a printer to mute any audio it may produce.", cmd);
 	SwitchArg argMarlin("","marlin","Synonym for --no-hacks",cmd,false);
@@ -398,6 +402,7 @@ int main(int argc, char *argv[])
 	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
 
 	Config::Get().SetLCDScheme(argLCDSCheme.getValue());
+	Config::Get().SetSoftPWM(EnabledType::GetNameToType().at(argSoftPWM.getValue()));
 	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
 	Config::Get().SetColourE(argColourE.isSet());
 	Config::Get().SetFW2(argFW2.getValue());

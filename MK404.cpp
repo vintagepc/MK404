@@ -143,12 +143,7 @@ void KeyCB(unsigned char key, int /*x*/, int y)
 
 void SpecialKeyCB(int key, int x, int y)
 {
-	if (key==0x65) { // Up
-		KeyController::GLKeyReceiver('w',x,y);
-	}
-	if (key==0x67) { // Down
-		KeyController::GLKeyReceiver('s',x,y);
-	}
+	KeyCB(key | SPECIAL_KEY_MASK, x, y);
 }
 
 void displayCB()		/* function called whenever redisplay needed */

@@ -132,6 +132,7 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	glutDisplayFunc(fcnDraw);
 
 	glutKeyboardFunc(KeyController::GLKeyReceiver); // same func as main window.
+	glutSpecialFunc(KeyController::GLSpecialKeyReceiver);
 
 	auto fwd = [](int button, int state, int x, int y) {g_pMK3SGL->MouseCB(button,state,x,y);};
 	glutMouseFunc(fwd);
@@ -209,6 +210,12 @@ void MK3SGL::OnKeyPress(const Key& key)
 		break;
 		case '`':
 			ResetCamera();
+			break;
+		case GLUT_KEY_UP | SPECIAL_KEY_MASK:
+			TwistKnob(true);
+			break;
+		case GLUT_KEY_DOWN | SPECIAL_KEY_MASK:
+			TwistKnob(false);
 			break;
 		case 'w':
 		case 's':

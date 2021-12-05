@@ -22,6 +22,7 @@
 #include "KeyController.h"
 #include "IKeyClient.h"
 #include "IScriptable.h"
+#include <GL/glut.h>
 #include <iostream>
 #include <memory>         // for allocator_traits<>::value_type
 #include <string>
@@ -45,6 +46,14 @@ IScriptable::LineStatus KeyController::ProcessAction(unsigned int /*iAction*/, c
 	if (vArgs.at(0)=="enter")
 	{
 		key = 0xd;
+	}
+	else if (vArgs.at(0) == "up")
+	{
+		key = GLUT_KEY_UP | SPECIAL_KEY_MASK;
+	}
+	else if (vArgs.at(0) == "down")
+	{
+		key = GLUT_KEY_DOWN | SPECIAL_KEY_MASK;
 	}
 	OnKeyPressed(key);
 	return LineStatus::Finished;
@@ -77,6 +86,12 @@ void KeyController::PutNiceKeyName(unsigned char key)
 	{
 		case 0xd:
 			std::cout << "Enter";
+			break;
+		case GLUT_KEY_UP | SPECIAL_KEY_MASK:
+			std::cout << "Up Arrow";
+			break;
+		case GLUT_KEY_DOWN | SPECIAL_KEY_MASK:
+			std::cout << "DOwn Arrow";
 			break;
 		default:
 			std::cout << key;

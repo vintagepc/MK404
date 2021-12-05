@@ -205,9 +205,9 @@ RotaryEncoder::RotaryEncoder(bool bVerbose):Scriptable("Encoder"),IKeyClient(),m
 	RegisterActionAndMenu("TwistCCW", "Twists the encoder once cycle counterclockwise",ActTwistCCW);
 
 	RegisterKeyHandler('w', "Twists encoder CCW");
-	RegisterKeyHandler(GLUT_KEY_UP | SPECIAL_KEY_MASK, "");
+	RegisterKeyHandler(GLUT_KEY_UP | SPECIAL_KEY_MASK, "Twists encoder CCW");
 	RegisterKeyHandler('s', "Twists encoder CW");
-	RegisterKeyHandler(GLUT_KEY_DOWN | SPECIAL_KEY_MASK, "");
+	RegisterKeyHandler(GLUT_KEY_DOWN | SPECIAL_KEY_MASK, "Twists encoder CW");
 	RegisterKeyHandler('h', "Pushes and long-holds the encoder button.");
 	RegisterKeyHandler(0xd, "Pushes and releases the encoder button");
 }

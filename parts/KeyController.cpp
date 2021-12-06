@@ -91,7 +91,7 @@ void KeyController::PutNiceKeyName(unsigned char key)
 			std::cout << "Up Arrow";
 			break;
 		case GLUT_KEY_DOWN | SPECIAL_KEY_MASK:
-			std::cout << "DOwn Arrow";
+			std::cout << "Down Arrow";
 			break;
 		default:
 			std::cout << key;

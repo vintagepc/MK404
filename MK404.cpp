@@ -283,6 +283,7 @@ int initGL()
 	// Set up projection matrix
 	glutDisplayFunc(displayCB);		/* set window's display callback */
 	glutKeyboardFunc(KeyCB);		/* set window's key callback */
+	glutSpecialFunc(KeyController::GLSpecialKeyReceiver);
 	glutMouseFunc(MouseCB);
 	glutPassiveMotionFunc(PassiveMotionCB);
 	glutMotionFunc(MotionCB);

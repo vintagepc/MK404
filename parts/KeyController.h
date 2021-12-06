@@ -28,6 +28,8 @@
 #include <string>            // for string
 #include <vector>            // for vector
 
+static constexpr uint8_t SPECIAL_KEY_MASK = 0x80;
+
 class IKeyClient;
 
 class KeyController: private Scriptable
@@ -46,6 +48,7 @@ class KeyController: private Scriptable
 		void PrintKeys(bool bMarkdown);
 
 		static inline void GLKeyReceiver(unsigned char key, int /*x*/, int /*y*/) { KeyController::GetController().OnKeyPressed(key); };
+		static inline void GLSpecialKeyReceiver(int key, int /*x*/, int /*y*/) { KeyController::GetController().OnKeyPressed(key | SPECIAL_KEY_MASK); };
 
 	protected:
 		KeyController();

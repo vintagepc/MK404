@@ -106,8 +106,10 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	RegisterAction("MouseMove", "Simulates a mouse move (x,y)", ActMouseMove, {ArgType::Int,ArgType::Int});
 
 	RegisterKeyHandler('`', "Reset camera view to default");
-	RegisterKeyHandler('w',"");
-	RegisterKeyHandler('s',"");
+	RegisterKeyHandler('w', "");
+	RegisterKeyHandler(GLUT_KEY_UP | SPECIAL_KEY_MASK, "");
+	RegisterKeyHandler('s', "");
+	RegisterKeyHandler(GLUT_KEY_DOWN | SPECIAL_KEY_MASK, "");
 
 	// RegisterKeyHandler('5',"");
 	// RegisterKeyHandler('6',"");
@@ -132,6 +134,7 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 	glutDisplayFunc(fcnDraw);
 
 	glutKeyboardFunc(KeyController::GLKeyReceiver); // same func as main window.
+	glutSpecialFunc(KeyController::GLSpecialKeyReceiver);
 
 	auto fwd = [](int button, int state, int x, int y) {g_pMK3SGL->MouseCB(button,state,x,y);};
 	glutMouseFunc(fwd);
@@ -210,9 +213,13 @@ void MK3SGL::OnKeyPress(const Key& key)
 		case '`':
 			ResetCamera();
 			break;
+		case GLUT_KEY_UP | SPECIAL_KEY_MASK:
 		case 'w':
+			TwistKnob(true);
+			break;
+		case GLUT_KEY_DOWN | SPECIAL_KEY_MASK:
 		case 's':
-			TwistKnob(key=='w');
+			TwistKnob(false);
 			break;
 		// case '5':
 		// case '6':

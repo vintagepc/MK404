@@ -21,10 +21,11 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include "KeyController.h"
 #include "RotaryEncoder.h"
 #include "TelemetryHost.h"
 #include "gsl-lite.hpp"
+#include <GL/glut.h>
 #include <algorithm>         // for copy
 #include <iostream>
 
@@ -173,11 +174,13 @@ void RotaryEncoder::OnKeyPress(const Key &key)
 {
 	switch (key)
 	{
+		case GLUT_KEY_UP | SPECIAL_KEY_MASK:
 		case 'w':
 			std::cout << '<';
 			Twist(RotaryEncoder::CCW_CLICK);
 			//if (m_pVis) m_pVis->TwistKnob(true);
 			break;
+		case GLUT_KEY_DOWN | SPECIAL_KEY_MASK:
 		case 's':
 			std::cout << '>';
 			Twist(RotaryEncoder::CW_CLICK);
@@ -202,7 +205,9 @@ RotaryEncoder::RotaryEncoder(bool bVerbose):Scriptable("Encoder"),IKeyClient(),m
 	RegisterActionAndMenu("TwistCCW", "Twists the encoder once cycle counterclockwise",ActTwistCCW);
 
 	RegisterKeyHandler('w', "Twists encoder CCW");
+	RegisterKeyHandler(GLUT_KEY_UP | SPECIAL_KEY_MASK, "Twists encoder CCW");
 	RegisterKeyHandler('s', "Twists encoder CW");
+	RegisterKeyHandler(GLUT_KEY_DOWN | SPECIAL_KEY_MASK, "Twists encoder CW");
 	RegisterKeyHandler('h', "Pushes and long-holds the encoder button.");
 	RegisterKeyHandler(0xd, "Pushes and releases the encoder button");
 }

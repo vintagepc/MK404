@@ -604,8 +604,9 @@ void MK3SGL::Draw()
 			glPopMatrix();
 
 			gluLookAt(0,0.5,3,0,0,0,0,1,0);
-			glRotatef(xrotate,0,1,0);
+			
 			glRotatef(zrotate,1,0,0);
+			glRotatef(xrotate,0,1,0);
 		}
 		
 		DrawAxes();

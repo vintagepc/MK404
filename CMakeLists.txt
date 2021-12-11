@@ -162,11 +162,6 @@ set(H_FILES_3rdParty
 	3rdParty/MK3/thermistortables.h
 	3rdParty/MK3/Configuration_prusa.h
 	3rdParty/MK3/eeprom.h
-	3rdParty/arcball/Camera.hpp
-	3rdParty/arcball/Matrix.hpp
-	3rdParty/arcball/Vectors.hpp
-	3rdParty/arcball/ArcBall.hpp
-	3rdParty/arcball/Quaternion.hpp
 )
 
 set(H_FILES ${H_FILES_base} ${H_FILES_3rdParty})
@@ -258,10 +253,6 @@ set(MK404_SOURCES_base
 	parts/KeyController.cpp
 )
 
-set(MK404_SOURCES_3rdparty
-	3rdParty/arcball/Camera.cpp
-)
-
 set (MK404_TEST_SOURCES
 #	scripts/tests/Internal_tests.cpp
 )
@@ -330,7 +321,6 @@ target_include_directories (MK404 PUBLIC
                             "${PROJECT_SOURCE_DIR}/parts/pinspecs"
                             "${PROJECT_SOURCE_DIR}/parts/wiring"
                             "${PROJECT_SOURCE_DIR}/utility"
-                            "${PROJECT_SOURCE_DIR}/3rdParty/arcball"
                          )
 target_include_directories(MK404 SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/3rdParty/pngpp")
 

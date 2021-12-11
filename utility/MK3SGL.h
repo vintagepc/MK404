@@ -21,7 +21,6 @@
 #pragma once
 
 #include "BasePeripheral.h"  // for BasePeripheral
-#include "Camera.hpp"        // for Camera
 #include "GLHelper.h"
 #include "GLObj.h"           // for GLObj
 #include "HD44780.h"         // for _IRQ
@@ -135,8 +134,6 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
 		std::vector<GLPrint*> m_vPrints = {&m_Print, &m_T1, &m_T2, &m_T3, &m_T4};
 
-        Camera m_camera;
-
         std::vector<GLObj*> m_vObjMMU = {&m_EVis,&m_MMUBase, &m_MMUSel, &m_MMUIdl};
 
         HD44780GL *m_pLCD = nullptr;
@@ -165,6 +162,10 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 		void OnToolChanged(avr_irq_t *irq, uint32_t iIdx);
 
 		void OnGenericChanged(avr_irq_t *irq, uint32_t iIdx);
+		void OnMouseMove(int x, int y);
+		void OnMouseDown(int x, int y);
+		void OnMouseUp();
+		void DrawAxes();
 
         // Correction parameters to get the model at 0,0,0 and aligned with the simulated starting positions.
         std::atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01}, m_fPPos = {0.f};
@@ -185,6 +186,12 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 			m_bFINDAOn = {false},
 			m_bSDCard = {true},
 			m_bPrintSurface = {true};
+
+		float xrotate=0.f;
+		float zrotate=0.f;
+		float xlastpos=0.f;
+		float ylastpos=0.f;
+		bool mouseDrag=false;
 
 		avr_cycle_count_t m_lastETick = 0;
 

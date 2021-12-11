@@ -22,7 +22,6 @@
 #include "MK3SGL.h"
 #include "CW1S_Full.h"
 #include "CW1S_Lite.h"
-#include "Camera.hpp"         // for Camera
 #include "GLPrint.h"          // for GLPrint
 #include "HD44780GL.h"        // for HD44780GL
 #include "KeyController.h"
@@ -184,10 +183,8 @@ MK3SGL::MK3SGL(const std::string &strModel, bool bMMU, Printer *pParent):Scripta
 
 void MK3SGL::ResetCamera()
 {
-	m_camera = Camera();
-	m_camera.setWindowSize(800,800);
-	m_camera.setEye(0,0.5,3);
-	m_camera.setCenter(0,0,0);
+	xrotate=0.f;
+	zrotate=0.f;
 }
 
 void MK3SGL::ResizeCB(int w, int h)
@@ -605,8 +602,13 @@ void MK3SGL::Draw()
 				glEnd();
 				glDisable(GL_COLOR_MATERIAL);
 			glPopMatrix();
-			glMultMatrixf(m_camera.getViewMatrix());
+
+			gluLookAt(0,0.5,3,0,0,0,0,1,0);
+			glRotatef(xrotate,0,1,0);
+			glRotatef(zrotate,1,0,0);
 		}
+		
+		DrawAxes();
 
 		glScalef(1.0f / fExtent, 1.0f / fExtent, 1.0f / fExtent);
 
@@ -614,7 +616,7 @@ void MK3SGL::Draw()
 		gsl::span<float> fTransform {_fTransform};
 		m_Objs->GetBaseCenter(fTransform);
 		// Centerize object.
-		glTranslatef (fTransform[0], fTransform[1], fTransform[2]);
+		glTranslatef (fTransform[0], 0, fTransform[2]);
 		if (m_bFollowNozzle)
 		{
 				float _fLook[3] = {0,0,0};
@@ -835,59 +837,63 @@ void MK3SGL::DrawMMU()
 		glPopMatrix();
 	}
 
-
-void MK3SGL::MouseCB(int button, int action, int x, int y)
+void MK3SGL::DrawAxes()
 {
-	auto w = glutGet(GLUT_WINDOW_WIDTH);
-	auto h = glutGet(GLUT_WINDOW_HEIGHT);
-	m_camera.setWindowSize(w, h);
-	m_camera.setCurrentMousePos(x,y);
- 	if (button == GLUT_LEFT_BUTTON) {
-		if (action == GLUT_DOWN)
-		{
-			m_camera.beginRotate();
-		}
-		else if (action == GLUT_UP)
-		{
-			m_camera.endRotate();
-		}
-	}
-	if (button == GLUT_RIGHT_BUTTON) {
-		if (action == GLUT_DOWN)
-		{
-			m_camera.beginPan();
-		}
-		else if (action == GLUT_UP)
-		{
-			m_camera.endPan();
-		}
+	glLineWidth(1);
+	glColor3f(0.0F,0.0F,0.0F);
+	glBegin(GL_LINES);
+	GLfloat c=100000.0;
+	glVertex3f(-c,0.0F,0.0F);
+	glVertex3f(+c,0.0F,0.0F);
+	glVertex3f(0.0F,-c,0.0F);
+	glVertex3f(0.0F,+c,0.0F);
+	glVertex3f(0.0F,0.0F,-c);
+	glVertex3f(0.0F,0.0F,+c);
+	glEnd();
+}
 
-	}
-	if (button == GLUT_MIDDLE_BUTTON) {
-		if (action == GLUT_DOWN)
-		{
-			m_camera.beginZoom();
-		}
-		else if (action == GLUT_UP)
-		{
-			m_camera.endZoom();
-		}
-
-	}
-	if (button==3)
+void MK3SGL::MouseCB(int/* button*/, int action, int x, int y)
+{
+	if (action == GLUT_UP)
 	{
-		m_camera.zoom(0.5f);
+		OnMouseUp();
 	}
-	if (button==4)
+	else if (action == GLUT_DOWN)
 	{
-		m_camera.zoom(-0.5f);
+		OnMouseDown(x,y);
 	}
-
-	m_bDirty = true;
 }
 
 void MK3SGL::MotionCB(int x, int y)
 {
- 	m_camera.setCurrentMousePos(x, y);
-	m_bDirty = true;
+	OnMouseMove(x,y);
+}
+
+void MK3SGL::OnMouseDown(int x, int y)
+{
+	mouseDrag=true;
+	xlastpos=x;
+	ylastpos=y;
+}
+
+void MK3SGL::OnMouseMove(int x, int y)
+{
+	if(!mouseDrag) return;
+	
+	int dx=x-xlastpos;
+	int dy=y-ylastpos;
+	
+
+	xrotate+=dx;
+	zrotate+=dy;
+	
+	m_bDirty=true;
+	
+	xlastpos=x;
+	ylastpos=y;
+}
+
+void MK3SGL::OnMouseUp()
+{
+	mouseDrag=false;
 }

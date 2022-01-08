@@ -154,7 +154,7 @@ void* ScriptHost::RunPty(void*)
 	fd_set fdsIn {}, fdsErr {};
 	unsigned char chrIn;
 	int iReadyRead, iChrRd;
-	std::cout << "** stdin is now accepting script commands **\n";
+	std::cout << "** ScriptHost: stdin READY **\n";
 
 	while (!m_bPtyQuit)
 	{

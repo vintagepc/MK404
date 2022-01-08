@@ -19,8 +19,6 @@ for line in iter(process.stdout.readline, b''):
 	if '** ScriptHost: stdin READY **' in line:
 		enabled = True;
 	if 'Starting atmega2560 execution...' in line:
-		if (not enabled):
-			sys.exit(1); # failed, scripthost wasn't ready.
 		print('Sending command\n');
 		process.stdin.write('ScriptHost::Log(test message)\n');
 		process.stdin.flush();
@@ -36,6 +34,7 @@ for line in iter(process.stdout.readline, b''):
 	if 'ScriptHost PTY closed.' in line:
 		break;
 print("Ended");
-if (not closed or not done):
+if (not closed or not done or not enabled or not logged):
+	print("Test failed - not all conditions met\n");
 	exit(1);
 exit(0);

@@ -164,10 +164,10 @@ void* ScriptHost::RunPty(void*)
 		FD_SET(fdPort, &fdsErr); //NOLINT
 		if ((iReadyRead = select(fdPort+1,&fdsIn, nullptr, &fdsErr,nullptr))<0)
 		{
-			std::cout << "Select ERR.\n";
+			std::cout << "Select ERR.\n"; //pragma: LCOV_EXCL_START
 			m_bPtyQuit = true;
 			break;
-		}
+		} // pragma: LCOV_EXCL_STOP
 		if (FD_ISSET(fdPort,&fdsIn)) //NOLINT
 		{
 			while ((iChrRd = read(fdPort, &chrIn,1))>0)
@@ -184,16 +184,17 @@ void* ScriptHost::RunPty(void*)
 			}
 			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
 			{
+				std::cout << "ScriptHost: stdin EOF\n";
 				m_bPtyQuit = true;
 				break;
 			}
 		}
-		if (FD_ISSET(fdPort, &fdsErr)) //NOLINT
+		if (FD_ISSET(fdPort, &fdsErr)) //NOLINT pragma: LCOV_EXCL_START
 		{
 			std::cerr << "Exception reading stdio. Quit.\n";
 			m_bPtyQuit = true;
 			break;
-		}
+		} //pragma: LCOV_EXCL_STOP
 
 	}
 	// cleanup.

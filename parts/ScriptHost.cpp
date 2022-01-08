@@ -24,11 +24,15 @@
 #include "gsl-lite.hpp"
 #include <GL/glew.h>  //NOLINT
 #include <GL/freeglut_std.h> // glut menus
+#include <cerrno>       // for EAGAIN, errno
 #include <cstddef>
 #include <exception>    // IWYU pragma: keep // for exception
+#include <fcntl.h>       // for open, O_NONBLOCK, O_RDWR
 #include <fstream>      // IWYU pragma: keep
 #include <iostream>
 #include <sstream>		// IWYU pragma: keep
+#include <sys/select.h>  // for FD_ISSET, FD_SET, select, FD_ZERO, fd_set
+#include <unistd.h>      // for read, write, close
 // IWYU pragma: no_include <bits/exception.h>
 
 
@@ -57,9 +61,25 @@ std::string ScriptHost::m_strCmd;
 
 std::set<std::string> ScriptHost::m_strGLAutoC;
 
+bool ScriptHost::m_bPtyStarted = false;
+std::atomic_bool ScriptHost::m_bPtyQuit = {false};
+pthread_t ScriptHost::m_ptyThread = 0;
+
 // String mutex... if interactive, for terminal->host,
 // if running a script, for host->terminal.
 std::mutex ScriptHost::m_lckScript;
+
+ScriptHost::~ScriptHost()
+{
+	if (!m_bPtyStarted)
+	{
+		return;
+	}
+	m_bPtyQuit = true;
+	pthread_cancel(m_ptyThread);
+	pthread_join(m_ptyThread,nullptr);
+	std::cout << "ScriptHost PTY closed.\n";
+}
 
 void ScriptHost::PrintScriptHelp(bool bMarkdown)
 {
@@ -118,6 +138,68 @@ bool ScriptHost::Setup(const std::string &strScript,unsigned uiFreq)
 		m_bCanAcceptInput = true;
 	}
 	return ValidateScript();
+}
+
+void ScriptHost::EnableStdio()
+{
+	pthread_create(&m_ptyThread, nullptr, RunPty, nullptr);
+	m_bPtyStarted = true;
+}
+
+void* ScriptHost::RunPty(void*)
+{
+	// Not much to see here, we just open the ports and shuttle characters back and forth across them.
+	//printf("Starting serial transfer thread...\n");
+	int fdPort = 0; // stdin, woot woot
+	fd_set fdsIn {}, fdsErr {};
+	unsigned char chrIn;
+	int iReadyRead, iChrRd;
+	std::cout << "** ScriptHost: stdin READY **\n";
+
+	while (!m_bPtyQuit)
+	{
+		FD_ZERO(&fdsIn); //NOLINT // complaints in system file.
+		FD_ZERO(&fdsErr); //NOLINT
+		FD_SET(fdPort, &fdsIn); //NOLINT
+		FD_SET(fdPort, &fdsErr); //NOLINT
+		if ((iReadyRead = select(fdPort+1,&fdsIn, nullptr, &fdsErr,nullptr))<0)
+		{
+			std::cout << "Select ERR.\n"; //pragma: LCOV_EXCL_START
+			m_bPtyQuit = true;
+			break;
+		} // pragma: LCOV_EXCL_STOP
+		if (FD_ISSET(fdPort,&fdsIn)) //NOLINT
+		{
+			while ((iChrRd = read(fdPort, &chrIn,1))>0)
+			{
+				if (chrIn == '\n')
+				{
+					KeyCB('\r'); // CR to process command.
+					KeyCB(0x1b); // ESC to clear it.
+				}
+				else
+				{
+					KeyCB(chrIn);
+				}
+			}
+			if (iChrRd == 0 || (iChrRd<0 && errno != EAGAIN))
+			{
+				std::cout << "ScriptHost: stdin EOF\n";
+				m_bPtyQuit = true;
+				break;
+			}
+		}
+		if (FD_ISSET(fdPort, &fdsErr)) //NOLINT pragma: LCOV_EXCL_START
+		{
+			std::cerr << "Exception reading stdio. Quit.\n";
+			m_bPtyQuit = true;
+			break;
+		} //pragma: LCOV_EXCL_STOP
+
+	}
+	// cleanup.
+	close(fdPort);
+	return nullptr;
 }
 
 void ScriptHost::_Init()

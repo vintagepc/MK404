@@ -537,6 +537,10 @@ int main(int argc, char *argv[])
 	else
 	{
 		ScriptHost::Setup("",pBoard->GetAVR()->frequency);
+		if (!m_bTerminal)
+		{
+			ScriptHost::EnableStdio();
+		}
 	}
 
 	if (!bNoGraphics)

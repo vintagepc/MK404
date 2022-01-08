@@ -29,6 +29,7 @@
 #include <atomic>         // for atomic_uint
 #include <map>            // for map
 #include <mutex>
+#include <pthread.h>
 #include <set>
 #include <string>         // for std::string
 #include <vector>         // for vector
@@ -67,6 +68,9 @@ class ScriptHost: public IScriptable
 		static void PrintScriptHelp(bool bMarkdown);
 
 		static void OnAVRCycle();
+
+		// Enable STDIO for scripting.
+		static void EnableStdio();
 
 		// Called to draw the terminal line.
 		static void Draw();
@@ -108,6 +112,7 @@ class ScriptHost: public IScriptable
 		LineStatus ProcessAction(unsigned int ID, const std::vector<std::string> &vArgs) override;
 
 		ScriptHost():IScriptable("ScriptHost"){}
+		~ScriptHost() override;
 
 		void _Init();
 		static ScriptHost& GetHost()
@@ -176,4 +181,10 @@ class ScriptHost: public IScriptable
 
 		static int m_iTimeoutCycles, m_iTimeoutCount;
 
+		static void* RunPty(void*);
+
+		// PTY stuff. Be careful, may cross threads!
+		static bool m_bPtyStarted;
+		static std::atomic_bool m_bPtyQuit;
+		static pthread_t m_ptyThread;
 };

@@ -284,6 +284,8 @@ namespace Boards
 		SetPin(Y_TMC2130_CS,1);
 		SetPin(Z_TMC2130_CS,1);
 		SetPin(E0_TMC2130_CS,1);
+
+		hExtruder.Reset();
 	}
 
 }; // namespace Boards

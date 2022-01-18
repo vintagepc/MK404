@@ -60,6 +60,9 @@ public:
 	// Change SoftPWM mode after creation
 	inline void SetSoftPWM(bool bVal) { m_bIsBed = bVal; }
 
+	// Reset heater
+	void Reset();
+
 	protected:
 		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
 

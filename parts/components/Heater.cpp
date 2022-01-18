@@ -69,6 +69,10 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * pAVR, avr_cycle_count_t)
     return 0;
 }
 
+void Heater::Reset()
+{
+	RegisterTimerUsec(m_fcnTempTick, 100000, this);
+}
 
 void Heater::OnPWMChanged(struct avr_irq_t *,uint32_t value)
 {

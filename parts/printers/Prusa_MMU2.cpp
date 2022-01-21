@@ -17,14 +17,6 @@
 #include "Prusa_MMU2.h"
 #include "GLHelper.h"
 #include "MK3SGL.h"
-#include "MMU2.h"
-
-// void Prusa_MMU2::SetupHardware()
-// {
-// 	_Init(Board::m_pAVR,this);
-// 	m_MMU.StartAVR();
-// }
-
 
 std::pair<int,int> Prusa_MMU2::GetWindowSize()
 {
@@ -35,26 +27,7 @@ std::pair<int,int> Prusa_MMU2::GetWindowSize()
 void Prusa_MMU2::Draw()
 {
 	glScalef(50.F/35.F,4,1);
-	MM_Control_01::Draw(static_cast<float>(GetWindowSize().second));
+	MMU2::Draw(static_cast<float>(GetWindowSize().second));
 	m_gl.OnDraw();
 }
 
-void Prusa_MMU2::OnVisualTypeSet(const std::string& /*type*/ )
-{
-	// if (type=="lite")
-	// {
-	// 	m_pVis.reset(new MK3SGL(type,true,this)); //NOLINT - suggestion is c++14.
-	// 	AddHardware(*m_pVis);
-	// }
-
-
-	// Wire up the additional MMU stuff.
-
-	//AddHardware(m_sniffer,'2');
-	//m_pVis->ConnectFrom(m_sniffer.GetIRQ(GCodeSniffer::CODEVAL_OUT),MK3SGL::TOOL_IN);
-	//m_pVis->ConnectFrom(GetIRQ(MMU2::SELECTOR_OUT), MK3SGL::SEL_IN);
-	//m_pVis->ConnectFrom(GetIRQ(MMU2::IDLER_OUT), MK3SGL::IDL_IN);
-	//m_pVis->ConnectFrom(GetIRQ(MMU2::LEDS_OUT),MK3SGL::MMU_LEDS_IN);
-	//m_pVis->ConnectFrom(GetIRQ(MMU2::FINDA_OUT),MK3SGL::FINDA_IN);
-	//m_pVis->ConnectFrom(GetIRQ(MMU2::FEED_DISTANCE), MK3SGL::FEED_IN);
-}

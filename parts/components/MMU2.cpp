@@ -40,7 +40,7 @@ MMU2 *MMU2::g_pMMU = nullptr;
 
 using Boards::MM_Control_01;
 
-MMU2::MMU2():IKeyClient(),MM_Control_01()
+MMU2::MMU2(bool bCreate):IKeyClient(),MM_Control_01()
 {
 	if (g_pMMU)
 	{
@@ -49,8 +49,10 @@ MMU2::MMU2():IKeyClient(),MM_Control_01()
 	}
 	g_pMMU = this;
 	SetBoardName("MMU2");
-	CreateBoard(Config::Get().GetFW2(),0, false, 100,"");
-
+	if (bCreate)
+	{
+		CreateBoard(Config::Get().GetFW2(),0, false, 100,"");
+	}
 	RegisterKeyHandler('F',"Toggle the FINDA");
 	RegisterKeyHandler('A', "Resumes full-auto MMU mode.");
 }

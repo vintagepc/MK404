@@ -41,8 +41,8 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
 						_IRQ(SHIFT_IN,"<32shift.in")
         #include "IRQHelper.h"
 
-        // Creates a new MMU2. Does all of the setup and firmware load.
-        MMU2();
+        // Creates a new MMU2. Creates board and starts it if bCreate = true
+        explicit MMU2(bool bCreate = true);
 
 		~MMU2() override {StopAVR();}
 

@@ -31,7 +31,6 @@ class Prusa_MMU2 : public Printer, public MMU2
 
 		Prusa_MMU2():MMU2(false){};
 
-		~Prusa_MMU2() = default;
 
 		inline std::pair<int,int> GetWindowSize() override;
 

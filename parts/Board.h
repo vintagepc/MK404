@@ -155,6 +155,17 @@ namespace Boards
 			// Whether any vendor-specific hackery should be disabled.
 			bool m_bNoHacks = false;
 
+			enum ScriptAction
+			{
+				Quit,
+				Reset,
+				Wait,
+				Pause,
+				Unpause,
+				WaitReset,
+				BOARD_ACT_END
+			};
+
 		private:
 
 		#ifdef TEST_MODE
@@ -198,15 +209,6 @@ namespace Boards
 			avr_flashaddr_t m_bootBase{0}, m_FWBase{0};
 
 			// Loads an ELF or HEX file into the MCU. Returns boot PC
-			enum ScriptAction
-			{
-				Quit,
-				Reset,
-				Wait,
-				Pause,
-				Unpause,
-				WaitReset
-			};
 
 			EEPROM m_EEPROM;
 	};

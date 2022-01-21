@@ -55,6 +55,9 @@ MMU2::MMU2(bool bCreate):IKeyClient(),MM_Control_01()
 	}
 	RegisterKeyHandler('F',"Toggle the FINDA");
 	RegisterKeyHandler('A', "Resumes full-auto MMU mode.");
+	RegisterActionAndMenu("ToggleFINDA","Toggles the FINDA", ActToggleFINDA);
+	RegisterActionAndMenu("SetFINDAAuto", "Returns FINDA operation to automatic", ActSetFINDAAuto);
+	RegisterAction("SetFINDA", "Sets FINDA state", ActSetFINDA, {ArgType::Bool});
 }
 
 void MMU2::OnKeyPress(const Key& key)
@@ -77,6 +80,33 @@ void MMU2::OnKeyPress(const Key& key)
 		}
 	}
 }
+
+IScriptable::LineStatus MMU2::ProcessAction(unsigned int iAction, const std::vector<std::string> &vArgs)
+{
+	switch (iAction)
+	{
+		case ActToggleFINDA:
+			m_bAutoFINDA = false;
+			ToggleFINDA();
+			return LineStatus::Finished;
+		case ActSetFINDA:
+		{
+			m_bAutoFINDA = false;
+			bool bState = std::stoi(vArgs.at(0))!=0;
+			if (m_bFINDAManual != bState)
+			{
+				ToggleFINDA();
+			}
+			return LineStatus::Finished;
+		}
+		case ActSetFINDAAuto:
+			m_bAutoFINDA = true;
+			return LineStatus::Finished;
+		default:
+			return Board::ProcessAction(iAction, vArgs);
+	}
+}
+
 
 const std::string MMU2::GetSerialPort()
 {

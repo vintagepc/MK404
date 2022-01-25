@@ -24,6 +24,7 @@
 #include "ADC_Buttons.h"
 #include "BasePeripheral.h"        // for BasePeripheral
 #include "IKeyClient.h"
+#include "IScriptable.h"
 #include "boards/MM_Control_01.h"  // for MM_Control_01
 #include "sim_irq.h"               // for avr_irq_t
 #include <atomic>
@@ -41,8 +42,8 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
 						_IRQ(SHIFT_IN,"<32shift.in")
         #include "IRQHelper.h"
 
-        // Creates a new MMU2. Does all of the setup and firmware load.
-        MMU2();
+        // Creates a new MMU2. Creates board and starts it if bCreate = true
+        explicit MMU2(bool bCreate = true);
 
 		~MMU2() override {StopAVR();}
 
@@ -53,6 +54,17 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
 		void ToggleFINDA();
 
     protected:
+		enum Actions
+		{
+			// We have to extend board rather than being our own IScriptable due
+			// to it causing multiple-inheritance ambiguity.
+			ActToggleFINDA = Board::ScriptAction::BOARD_ACT_END,
+			ActSetFINDA,
+			ActSetFINDAAuto
+		};
+
+		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &args) override;
+
         void SetupHardware() override;
 
 		void OnKeyPress(const Key& key) override;

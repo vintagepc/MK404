@@ -127,13 +127,13 @@ void PAT9125::UpdateSensorState()
 	if (m_bFilament)
 	{
 		m_regs.Shutter = 5; // Restore shutter/brightness.
-		m_regs.FrameAvg = 100;
+		m_regs.FrameAvg = 80;
 		m_uiNudgeCt = 0;
 	}
 	else
 	{
-		m_regs.Shutter = 20; // drop shutter as if underexposed.
-		m_regs.FrameAvg = 40; // and brightness.
+		m_regs.Shutter = 17; // drop shutter as if underexposed.
+		m_regs.FrameAvg = 20; // and brightness.
 	}
 }
 

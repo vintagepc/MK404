@@ -179,8 +179,11 @@ void PAT9125::SetYMotion(const float &fEVal, const float &fPVal)
 {
 		//printf("YMotion update: %f %f\n",fEVal, fPVal);
 		float fDelta = (fEVal+fPVal)-m_fYPos;
-		int16_t iCounts  = fDelta*(5.f*static_cast<float>(m_regs.Res_Y)/25.4f);
-		iCounts = -iCounts;
+		int16_t iCounts = -fDelta*(5.f*static_cast<float>(m_regs.Res_Y)/25.4f); //sensor is mounted with inverted Y axis
+		if (m_regs.Orientation & (1 << 4)) // Y inversion
+		{
+			iCounts = -iCounts;
+		}
 		if (fDelta>0 && iCounts==0) // Enforce minimum motion of at least 1 count.
 		{
 			iCounts = -1;

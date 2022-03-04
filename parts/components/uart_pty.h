@@ -57,7 +57,7 @@ class uart_pty: public BasePeripheral
 		~uart_pty();
 
 		// Registers with SimAVR
-		void Init(avr_t *avr);
+		void Init(avr_t *avr, char uart);
 
 		// Actually connects to the UART.
 		void Connect(char chrUART);

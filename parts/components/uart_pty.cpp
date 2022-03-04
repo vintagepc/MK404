@@ -278,9 +278,13 @@ void* uart_pty::Run()
 	return nullptr;
 }
 
-void uart_pty::Init(struct avr_t * avr)
+void uart_pty::Init(struct avr_t * avr, char uart)
 {
 	_Init(avr,this);
+	uint32_t f = 0;
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(uart), &f); //NOLINT - complaint in external macro
+	f &= ~AVR_UART_FLAG_POLL_SLEEP; // Issue #356
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(uart), &f); //NOLINT - complaint in external macro
 
 	RegisterNotify(BYTE_IN, MAKE_C_CALLBACK(uart_pty,OnByteIn), this);
 
@@ -334,10 +338,6 @@ void uart_pty::Connect(char uart)
 	uint32_t f = 0;
 	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(uart), &f); //NOLINT - complaint in external macro
 	f &= ~AVR_UART_FLAG_STDIO;
-	if (Config::Get().GetSkewCorrect())
-	{
-		f&= ~(AVR_UART_FLAG_POLL_SLEEP);
-	}
 	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(uart), &f); //NOLINT - complaint in external macro
 
 	avr_irq_t * src = avr_io_getirq(m_pAVR, AVR_IOCTL_UART_GETIRQ(uart), UART_IRQ_OUTPUT); //NOLINT - complaint in external macro

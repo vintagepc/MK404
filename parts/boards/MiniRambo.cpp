@@ -57,7 +57,7 @@ namespace Boards
 	{
 		DisableInterruptLevelPoll(8);
 
-		AddHardware(UART0);
+		AddHardware(UART0,'0');
 
 		AddHardware(m_Mon0,'0');
 

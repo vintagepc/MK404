@@ -73,7 +73,7 @@ namespace Boards {
 
 	void Board::AddSerialPty(uart_pty *UART, const char chrNum)
 	{
-		UART->Init(m_pAVR);
+		UART->Init(m_pAVR, chrNum);
 		UART->Connect(chrNum);
 	}
 

@@ -51,8 +51,8 @@ namespace Boards
 		DisableInterruptLevelPoll(8);
 
 		AddSerialPty(&UART2,'2');
-		AddHardware(UART0);
-		AddHardware(UART1);
+		AddHardware(UART0, '0');
+		AddHardware(UART1, '1');
 
 		AddHardware(m_Mon0,'0');
 		AddHardware(m_Mon1,'1');

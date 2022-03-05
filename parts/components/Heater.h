@@ -61,7 +61,7 @@ public:
 	inline void SetSoftPWM(bool bVal) { m_bIsBed = bVal; }
 
 	// Reset heater
-	void Reset();
+	void Reset() override;
 
 	protected:
 		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;

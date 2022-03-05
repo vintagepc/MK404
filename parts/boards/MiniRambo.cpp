@@ -196,8 +196,6 @@ namespace Boards
 		DisableInterruptLevelPoll(8);
 
 		SetPin(BTN_ENC,1);
-
-		UART0.Reset();
 	}
 
 }; // namespace Boards

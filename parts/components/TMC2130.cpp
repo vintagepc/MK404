@@ -264,6 +264,11 @@ TMC2130::~TMC2130()
 	CancelTimer(m_fcnStandstill,this);
 }
 
+void TMC2130::Reset()
+{
+	ClearDiag();
+}
+
 Scriptable::LineStatus TMC2130::ProcessAction (unsigned int iAct, const std::vector<std::string> &)
 {
 	switch (iAct)

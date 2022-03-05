@@ -63,7 +63,7 @@ class uart_pty: public BasePeripheral
 		void Connect(char chrUART);
 
 		// Resets the newline trap after a printer reset.
-		inline void Reset() { m_chrLast = '\n';}
+		inline void Reset() override { m_chrLast = '\n';}
 
 		// Gets the slave name (file). Used by the pipe thread.
 		inline const std::string GetSlaveName() { return std::string(static_cast<char*>(pty.slavename)); };

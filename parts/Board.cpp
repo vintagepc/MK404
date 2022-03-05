@@ -289,6 +289,16 @@ namespace Boards {
 		OnAVRDeinit();
 	}
 
+	void Board::_OnAVRReset()
+	{
+		for (BasePeripheral* p: m_periphs)
+		{
+			p->Reset();
+		}
+		// Do board reset
+		OnAVRReset();
+	}
+
 	void Board::OnKeyPress(const Key& key)
 	{
 		switch (key)
@@ -531,7 +541,7 @@ namespace Boards {
 				std::cout << "MCUSR: " << std::setw(2) << std::hex << (m_uiLastMCUSR = uiMCUSR) << '\n';
 				if (uiMCUSR) // only run on change and not changed to 0
 				{
-					OnAVRReset();
+					_OnAVRReset();
 					if (m_stResetWaitFlag == StateReset::WAITING) {
 						m_stResetWaitFlag = StateReset::FINISHED;
 					}
@@ -543,6 +553,7 @@ namespace Boards {
 			{
 				m_bReset = false;
 				avr_reset(m_pAVR);
+				_OnAVRReset();
 				avr_regbit_set(m_pAVR, m_pAVR->reset_flags.extrf);
 			}
 			state = avr_run(m_pAVR);

@@ -73,6 +73,8 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
         // Registers with SimAVR.
         void Init(avr_t *avr);
 
+		void Reset() override;
+
 	protected:
 		Scriptable::LineStatus ProcessAction (unsigned int iAct, const std::vector<std::string> &vArgs) override;
 

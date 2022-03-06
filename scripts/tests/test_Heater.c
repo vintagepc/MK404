@@ -69,12 +69,12 @@ int main()
 	printf("ON\n");
 	PORTH|=(1U<<4U);
 
-	loop_until_bit_is_set(PINH,6);
+	loop_until_bit_is_clear(PINH,6);
 
 	printf("OFF\n");
 	PORTH&=(255-(1<<4));
 
-	loop_until_bit_is_clear(PINH,6);
+	loop_until_bit_is_set(PINH,6);
 
 	// connect pwm to pin on timer 4, channel C
 	TIMSK4 = 0;

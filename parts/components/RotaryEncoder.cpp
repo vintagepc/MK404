@@ -116,6 +116,13 @@ void RotaryEncoder::Release()
 	RaiseIRQ(OUT_BUTTON, 1);
 }
 
+void RotaryEncoder::Reset()
+{
+	RaiseIRQ(OUT_A, gsl::at(m_States, m_iPhase)>>1U);
+    RaiseIRQ(OUT_B, gsl::at(m_States, m_iPhase)&1U);
+	Release();
+}
+
 /*
  * Simulates one "twist" pulse of the rotary encoder.
  */

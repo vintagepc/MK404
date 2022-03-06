@@ -62,6 +62,8 @@ public:
 	// Consumer for external (auto) sensor hook, set 0 or 1 to signify absence or presence of filament.
 	void Auto_Input(uint32_t val);
 
+	void Reset() override;
+
 	protected:
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 

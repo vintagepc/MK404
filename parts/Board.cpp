@@ -553,8 +553,8 @@ namespace Boards {
 			{
 				m_bReset = false;
 				avr_reset(m_pAVR);
-				_OnAVRReset();
 				avr_regbit_set(m_pAVR, m_pAVR->reset_flags.extrf);
+				_OnAVRReset();
 			}
 			state = avr_run(m_pAVR);
 		}

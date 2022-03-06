@@ -139,6 +139,11 @@ void IRSensor::Toggle()
 	Set(eNew);
 }
 
+void IRSensor::Reset()
+{
+	Set(m_eCurrent);
+}
+
 void IRSensor::Set(IRState val)
 {
 	m_eCurrent = val;

@@ -252,9 +252,6 @@ namespace Boards
 		std::cout << "RESET\n";
 		DisableInterruptLevelPoll(8);
 
-		// Restore powerpanic to high
-		PowerPanic.Press(1);
-
 		//depress encoder knob
 		if (!m_bFactoryReset)
 		{

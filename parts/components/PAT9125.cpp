@@ -34,6 +34,43 @@
 #include <string>              // for string
 #include <vector>              // for vector
 
+using namespace std;
+
+const map<uint8_t,RegInfo8_t> PAT9125::m_regInfo = PAT9125::GetRegInfo();
+
+
+map<uint8_t, RegInfo8_t> PAT9125::GetRegInfo()
+{
+	// Check the alignment/sizing.
+	static_assert(sizeof(m_regs) == sizeof(m_regs.raw));
+
+	static map<uint8_t, RegInfo8_t> m = {
+		{RI_PID1, {0x31, RegType::READONLY}},
+		{RI_PID2, {0x91, RegType::READONLY}},
+		{RI_MSTATUS, {0, RegType::READONLY}},
+		{RI_DXLOW, {0, RegType::READONLY}},
+		{RI_DYLOW, {0, RegType::READONLY}},
+		{RI_MODE, {0xA0}},
+		{RI_CONFIG, {0x17}},
+		{RI_WRITEPROTECT, {0x00}},
+		{RI_SLEEP1, {0x77}},
+		{RI_SLEEP2, {0x10}},
+		{RI_RESX, {0x14}},
+		{RI_RESY, {0x14}},
+		{RI_DXYHI, {0, RegType::READONLY}},
+		{RI_SHUTTER, {RegType::READONLY}},
+		{RI_FRAMEAVG, {RegType::READONLY}},
+		{RI_ORIENTATION, {0x04}},
+		{RI_BANK, {RegType::WRITEONLY}},
+		{RI_BANK2, {RegType::WRITEONLY}},
+	};
+	for(uint8_t i= RI_BANK; i<RI_BANK2; i++)
+	{
+		m[i] = {RegType::READWRITE};
+	}
+	return m;
+};
+
 
 PAT9125::PAT9125():I2CPeripheral(0x75),Scriptable("PAT9125"),IKeyClient()
 {
@@ -206,9 +243,24 @@ void PAT9125::SetYMotion(const float &fEVal, const float &fPVal)
 
 uint8_t PAT9125::GetRegVal(uint8_t uiAddr)
 {
+	if (uiAddr>RI_BANK) // Invalid.
+	{
+		return 0;
+	}
+	if (m_regs.raw[RI_BANK]>0)
+	{
+		uiAddr+=0x80;
+	}
+	if ((!m_regInfo.count(uiAddr))
+		|| m_regInfo.at(uiAddr).eType == RegType::WRITEONLY
+		|| m_regInfo.at(uiAddr).eType == RegType::RESERVED )
+	{
+		return 0;
+	}
+
 	switch (uiAddr)
 	{
-		case 0x02:
+		case RI_MSTATUS:
 		{
 			uint8_t val = m_regs.MStatus;
 			if (!m_bLoading)
@@ -227,7 +279,7 @@ uint8_t PAT9125::GetRegVal(uint8_t uiAddr)
 			}
 			return val;
 		}
-		case 0x04:
+		case RI_DYLOW:
 		{
 			//printf("Read DY: %d (%f) \n",m_regs.raw[uiAddr], (m_fYPos-m_fCurY));
 			m_fYPos = m_fCurY;
@@ -241,12 +293,31 @@ uint8_t PAT9125::GetRegVal(uint8_t uiAddr)
 
 bool PAT9125::SetRegVal(uint8_t uiAddr, uint32_t uiData)
 {
-	if (!(m_uiRW  & (1u<<uiAddr)))
+	if (uiAddr>RI_BANK) // Invalid.
 	{
-		std::cerr << "PAT9125: tried to write Read-only register\n";
+		return false;
+	}
+	if (m_regs.raw[RI_BANK]>0)
+	{
+		uiAddr+=0x80;
+	}
+	if ((!m_regInfo.count(uiAddr))
+		|| m_regInfo.at(uiAddr).eType == RegType::READONLY
+		|| m_regInfo.at(uiAddr).eType == RegType::RESERVED )
+	{
+		std::cerr << "PAT9125: tried to write Read-only or reserved register\n";
 		return false; // RO register.
 	}
-	gsl::at(m_regs.raw,uiAddr) = gsl::narrow<uint8_t>(uiData);
+	switch (uiAddr)
+	{
+		case RI_BANK:
+		case RI_BANK2:
+			m_regs.raw[RI_BANK] = uiData>0;
+			break;
+		default:
+			gsl::at(m_regs.raw,uiAddr) = gsl::narrow<uint8_t>(uiData);
+			break;
+	};
 	//printf("Wrote: %02x = %02x (%02x)\n",uiAddr,uiData, m_regs.raw[uiAddr]);
 	return true;
 };

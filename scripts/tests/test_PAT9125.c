@@ -222,7 +222,7 @@ void CheckReg(uint8_t addr, uint8_t expected)
 void WriteReg(uint8_t addr, uint8_t data)
 {
 	if (!swi2c_writeByte_A8(0x75, addr, &data))
-		printf("READ ERR\n");
+		printf("WRITE ERR\n");
 }
 
 int main()
@@ -284,12 +284,18 @@ int main()
 		WriteReg(i, i);
 		CheckReg(i,i);
 	}
+	// Check reading a write-only
+	CheckReg(0x7F,0);
 	// check it hasn't clobbered bank0
 	WriteReg(0x7F,0);
 	CheckReg(0x17, 0x50);
 	CheckReg(0x14, 0x05);
 	CheckReg(0x00, 0x31);
 	CheckReg(0x01, 0x91);
+	// Check the secret extension isn't accessible.
+	CheckReg(0xF0,0);
+	// test writing invalid.
+	WriteReg(0x85,10);
 	printf("EXT test done\n");
 
 	uint8_t bytein;

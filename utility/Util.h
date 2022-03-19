@@ -64,11 +64,11 @@ enum class RegType
 	READWRITE,
 };
 
-typedef struct RegInfo8_t
-{
+struct RegInfo8_t {
 	RegInfo8_t() {uiResetVal = 0, eType = RegType::RESERVED; };
 	RegInfo8_t(RegType eT, uint8_t uiRst = 0) {uiResetVal = uiRst; eType = eT; }; // NOLINT
 	RegInfo8_t(uint8_t uiRst, RegType eT = RegType::READWRITE){ uiResetVal = uiRst; eType = eT;}; //NOLINT
 	uint8_t uiResetVal;
 	RegType eType;
-} RegInfo8_t;
+};
+using RegInfo8_t = struct RegInfo8_t;

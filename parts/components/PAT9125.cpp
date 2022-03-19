@@ -41,9 +41,6 @@ const map<uint8_t,RegInfo8_t> PAT9125::m_regInfo = PAT9125::GetRegInfo();
 
 map<uint8_t, RegInfo8_t> PAT9125::GetRegInfo()
 {
-	// Check the alignment/sizing.
-	static_assert(sizeof(m_regs) == sizeof(m_regs.raw));
-
 	static map<uint8_t, RegInfo8_t> m = {
 		{RI_PID1, {0x31, RegType::READONLY}},
 		{RI_PID2, {0x91, RegType::READONLY}},

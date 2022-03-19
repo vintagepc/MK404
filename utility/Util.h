@@ -67,7 +67,7 @@ enum class RegType
 typedef struct RegInfo8_t
 {
 	RegInfo8_t() {uiResetVal = 0, eType = RegType::RESERVED; };
-	explicit RegInfo8_t(RegType eT) {uiResetVal = 0, eType = eT; };
+	RegInfo8_t(RegType eT, uint8_t uiRst = 0) {uiResetVal = uiRst; eType = eT; };
 	RegInfo8_t(uint8_t uiRst, RegType eT = RegType::READWRITE){ uiResetVal = uiRst; eType = eT;};
 	uint8_t uiResetVal;
 	RegType eType;

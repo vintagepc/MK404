@@ -34,14 +34,9 @@
 #include <string>              // for string
 #include <vector>              // for vector
 
-using namespace std;
-
-const map<uint8_t,RegInfo8_t> PAT9125::m_regInfo = PAT9125::GetRegInfo();
-
-
-map<uint8_t, RegInfo8_t> PAT9125::GetRegInfo()
+std::map<uint8_t, RegInfo8_t> PAT9125::GetRegInfo()
 {
-	map<uint8_t, RegInfo8_t> m = {
+	static std::map<uint8_t, RegInfo8_t> m = {
 		{RI_PID1, {0x31, RegType::READONLY}},
 		{RI_PID2, {0x91, RegType::READONLY}},
 		{RI_MSTATUS, {0, RegType::READONLY}},

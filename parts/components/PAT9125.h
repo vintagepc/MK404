@@ -123,7 +123,7 @@ class PAT9125: public I2CPeripheral, public Scriptable, private IKeyClient
 		float m_fYPos = 0.f, m_fPPos = 0.f, m_fEPos = 0.f;
 		float m_fCurY = 0.f;
 
-		static const std::map<uint8_t,RegInfo8_t> m_regInfo;
+		const std::map<uint8_t,RegInfo8_t> m_regInfo = PAT9125::GetRegInfo();
 
 		union m_regs
 		{

@@ -101,6 +101,7 @@ set(H_FILES_base
 	parts/components/w25x20cl.h
 	parts/I2CPeripheral.h
 	parts/IScriptable.h
+	parts/IThermalModel.h
 	parts/PinNames.h
 	parts/PinSpec.h
 	parts/PinSpec_Helper.h
@@ -205,6 +206,7 @@ set(MK404_SOURCES_base
 	parts/components/GLIndicator.cpp
 	parts/components/LED.cpp
 	parts/components/MCP23S17.cpp
+	parts/components/Model_Nozzle.cpp
 	parts/components/MMU1.cpp
 	parts/components/MMU2.cpp
 	parts/components/PAT9125.cpp

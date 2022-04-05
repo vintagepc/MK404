@@ -27,6 +27,7 @@
 #include "BasePeripheral.h"    // for BasePeripheral, MAKE_C_TIMER_CALLBACK
 #include "GLIndicator.h"
 #include "IScriptable.h"       // for IScriptable::LineStatus
+#include "Model_Nozzle.h"
 #include "Scriptable.h"        // for Scriptable
 #include "sim_avr.h"           // for avr_t
 #include "sim_avr_types.h"     // for avr_cycle_count_t
@@ -96,4 +97,6 @@ public:
         uint8_t m_uiPWM = {0};
 		bool m_bStopTicking = false;
 		avr_cycle_count_t m_cntOff = 0;
+
+		ModelNozzle m_model;
 };

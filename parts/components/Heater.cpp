@@ -40,17 +40,24 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * pAVR, avr_cycle_count_t)
 	{
 		return 0;
 	}
-
-    if (m_uiPWM>0 || (pAVR->cycle-m_cntOff)<(pAVR->frequency/100))
-    {
-        float fDelta = (m_fThermalMass*(static_cast<float>(m_uiPWM)/255.0f))*0.3f;
-        m_fCurrentTemp += fDelta;
-    }
-    else // Cooling - do a little exponential decay
-    {
-        float dT = (m_fCurrentTemp - m_fAmbientTemp)*pow(2.7183,-0.005*0.3);
-        m_fCurrentTemp -= m_fCurrentTemp - (m_fAmbientTemp + dT);
-    }
+	if (!m_bIsBed)
+	{
+		float fP= 40.f /*J/s (watts)*/ * (static_cast<float>(m_uiPWM)/255.0f);
+		m_fCurrentTemp = m_model.OnCycle(0.3F, fP);
+	}
+	else
+	{
+		if (m_uiPWM>0 || (pAVR->cycle-m_cntOff)<(pAVR->frequency/100))
+		{
+			float fDelta = (m_fThermalMass*(static_cast<float>(m_uiPWM)/255.0f))*0.3f;
+			m_fCurrentTemp += fDelta;
+		}
+		else // Cooling - do a little exponential decay
+		{
+			float dT = (m_fCurrentTemp - m_fAmbientTemp)*pow(2.7183,-0.005*0.3);
+			m_fCurrentTemp -= m_fCurrentTemp - (m_fAmbientTemp + dT);
+		}
+	}
 	float v = (m_fCurrentTemp - m_fColdTemp) / (m_fHotTemp - m_fColdTemp);
 	SetLerp(255.F*v);
 

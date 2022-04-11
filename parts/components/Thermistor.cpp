@@ -33,6 +33,9 @@ Thermistor::Thermistor(float fStartTemp):Scriptable("Thermistor"),m_fCurrentTemp
 	RegisterActionAndMenu("Disconnect","Disconnects the thermistor as though it has gone open circuit",Actions::OpenCircuit);
 	RegisterActionAndMenu("Short","Short the thermistor out",Actions::Shorted);
 	RegisterActionAndMenu("Reconnect","Restores the normal thermistor state",Actions::Connected);
+	RegisterActionAndMenu("BadPullUp","Act as though the internal pullup on the Atmega is enabled",Actions::BadPullup);
+	RegisterActionAndMenu("BadFerrite","Act as though the ferrite in series with the thermistor is bad",Actions::BadFerrite);
+	RegisterActionAndMenu("BadFerriteAndPullup","Act as though the ferrite in series with the thermistor is bad, together with bad pullup",Actions::BadFerriteAndPullup);
 	RegisterAction("Set", "Sets the temperature to the specified value", ActSetTemp, {ArgType::Float});
 }
 
@@ -49,6 +52,9 @@ Scriptable::LineStatus Thermistor::ProcessAction(unsigned int iAction, const std
 		case Shorted:
 		case OpenCircuit:
 		case Connected:
+		case BadPullup:
+		case BadFerriteAndPullup:
+		case BadFerrite:
 		{
 			m_eState = static_cast<Actions>(iAction);
 			return LineStatus::Finished;
@@ -56,6 +62,35 @@ Scriptable::LineStatus Thermistor::ProcessAction(unsigned int iAction, const std
 		default:
 			return LineStatus::Unhandled;
 	}
+}
+
+static constexpr float fVcc = 5; // mV
+static constexpr float fRs = 2370; // Ohms
+static constexpr float fRPu = 4700; // Ohms
+static constexpr float fRFerrite = 650; // Ohms - resistance of a bad ferrite
+static constexpr float fRIntPu = 40000; // internal pullup (avg 20K-55K)
+static constexpr float fRUpper = 1.f/((1.f/(fRIntPu+(2*fRs)))+(1.f/(fRPu)));
+
+float Thermistor::CalcBadPullup(float fNorm)
+{
+
+	// Calculate something proportional to Rtherm based on normal measurement:
+	float fRth = (fNorm*fRPu)/(fVcc-fNorm);
+	// If bad ferrite, add it to the Th resistance
+	if (m_eState == BadFerriteAndPullup || m_eState == BadFerrite)
+	{
+		fRth += fRFerrite;
+	}
+	// Voltage at midpoint junction between therm and 4.7K pullup
+	float fVx = (fVcc*(fRth))/(fRUpper + fRth);
+	// New measured value at ADC input - if no pullup enabled.
+	float fNew = fVx;
+	// If bad pullup, do the additional divider calc:
+	if (m_eState == BadFerriteAndPullup || m_eState == BadPullup)
+	{
+		 fNew += ((fVcc-fVx)*((2*fRs)/((2*fRs)+fRIntPu)));
+	}
+	return fNew;
 }
 
 uint32_t Thermistor::OnADCRead(struct avr_irq_t*, uint32_t)
@@ -81,8 +116,15 @@ uint32_t Thermistor::OnADCRead(struct avr_irq_t*, uint32_t)
 			}
 			// if (m_adc_mux_number==-1)
 			// 	printf("simAVR ADC out value: %u\n",((tt / m_oversampling) * 5000) / 0x3ff);
-			uint32_t uiVal = (((tt / m_iOversampling) * 5000) / 0x3ff);
-			return uiVal;
+			uint32_t uiVal = (tt / m_iOversampling);
+			if (m_eState >= BadPullup && m_eState <= BadFerriteAndPullup)
+			{
+				return  1000.f*CalcBadPullup(5.f*static_cast<float>(uiVal)/1023.f);
+			}
+			else
+			{
+				return (uiVal* 5000) / 0x3ff;
+			}
 		}
 	}
 	std::cout << static_cast<const char*>(__FUNCTION__) << '(' << std::to_string(GetMuxNumber()) << ") temperature out of range: " << m_fCurrentTemp << '\n';

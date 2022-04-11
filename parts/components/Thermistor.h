@@ -57,6 +57,8 @@ class Thermistor: public ADCPeripheral, public Scriptable
 	protected:
 		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &args) override;
 
+		float CalcBadPullup(float fNorm);
+
 	private:
 
 		uint32_t OnADCRead(avr_irq_t *irq, uint32_t value) override;
@@ -66,6 +68,9 @@ class Thermistor: public ADCPeripheral, public Scriptable
 			OpenCircuit,
 			Shorted,
 			Connected,
+			BadPullup,
+			BadFerrite,
+			BadFerriteAndPullup,
 			ActSetTemp
 		};
 

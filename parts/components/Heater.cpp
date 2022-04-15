@@ -34,6 +34,7 @@
 #define TRACE(_w)_w
 #endif
 
+static constexpr float TICK_RATE = 0.3f;
 
 avr_cycle_count_t Heater::OnTempTick(avr_t * pAVR, avr_cycle_count_t)
 {
@@ -44,18 +45,18 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * pAVR, avr_cycle_count_t)
 	if (!m_bIsBed && !Config::Get().GetDisableTM())
 	{
 		float fP= 40.f /*J/s (watts)*/ * (static_cast<float>(m_uiPWM)/255.0f);
-		m_fCurrentTemp = m_model.OnCycle(0.3F, fP);
+		m_fCurrentTemp = m_model.OnCycle(TICK_RATE, fP);
 	}
 	else
 	{
 		if (m_uiPWM>0 || (pAVR->cycle-m_cntOff)<(pAVR->frequency/100))
 		{
-			float fDelta = (m_fThermalMass*(static_cast<float>(m_uiPWM)/255.0f))*0.3f;
+			float fDelta = (m_fThermalMass*(static_cast<float>(m_uiPWM)/255.0f))*TICK_RATE;
 			m_fCurrentTemp += fDelta;
 		}
 		else // Cooling - do a little exponential decay
 		{
-			float dT = (m_fCurrentTemp - m_fAmbientTemp)*pow(2.7183,-0.005*0.3);
+			float dT = (m_fCurrentTemp - m_fAmbientTemp)*pow(2.7183,-0.005*TICK_RATE);
 			m_fCurrentTemp -= m_fCurrentTemp - (m_fAmbientTemp + dT);
 		}
 	}
@@ -67,7 +68,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * pAVR, avr_cycle_count_t)
 
     if (m_uiPWM>0 || m_fCurrentTemp>m_fAmbientTemp+0.3)
 	{
-        RegisterTimerUsec(m_fcnTempTick,300000,this);
+        RegisterTimerUsec(m_fcnTempTick,TICK_RATE*1000000,this);
 	}
     else
     {

@@ -56,6 +56,10 @@ class Config
 		inline void SetSoftPWM(EnabledType::Type_t val){ m_SoftPWM = val; }
 		inline EnabledType::Type_t GetSoftPWM(){ return m_SoftPWM; }
 
+		// Use a "debug" core? (board-specific)
+		inline void SetDisableTM(bool bVal){ m_bThermalModel = bVal;}
+		inline bool GetDisableTM(){ return m_bThermalModel;}
+
 		// Secondary firmware?
 		inline void SetFW2(std::string strName){ m_strSecFW = std::move(strName);}
 		inline const std::string GetFW2(){ return m_strSecFW;}
@@ -66,6 +70,7 @@ class Config
 		bool m_bSkew = false;
 		uint8_t m_iScheme = 0;
 		bool m_bDebugCore = false;
+		bool m_bThermalModel = true;
 		std::string m_strSecFW = "MM-control-01.hex";
 		EnabledType::Type_t m_SoftPWM = EnabledType::Type_t::NotSet;
 };

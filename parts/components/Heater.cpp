@@ -21,6 +21,7 @@
 	along with MK404.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Config.h"
 #include "Heater.h"
 #include "TelemetryHost.h"
 #include "sim_regbit.h"       // for avr_regbit_get, AVR_IO_REGBIT
@@ -40,7 +41,7 @@ avr_cycle_count_t Heater::OnTempTick(avr_t * pAVR, avr_cycle_count_t)
 	{
 		return 0;
 	}
-	if (!m_bIsBed)
+	if (!m_bIsBed && !Config::Get().GetDisableTM())
 	{
 		float fP= 40.f /*J/s (watts)*/ * (static_cast<float>(m_uiPWM)/255.0f);
 		m_fCurrentTemp = m_model.OnCycle(0.3F, fP);

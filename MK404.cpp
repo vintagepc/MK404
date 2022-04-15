@@ -337,6 +337,7 @@ int main(int argc, char *argv[])
 	SwitchArg argMute("m","mute","Tell a printer to mute any audio it may produce.", cmd);
 	SwitchArg argMarlin("","marlin","Synonym for --no-hacks",cmd,false);
 	SwitchArg argLoad("l","loadfw","Directs the printer to load the default firmware file. (-f implies -l) If neither -l or -f are provided, the printer executes solely from its persisted flash.", cmd);
+	SwitchArg argLegacyModel("","legacythermal","Use the legacy thermal model for the nozzle heater.", cmd);
 	ValueArg<uint8_t> argLCDSCheme("","lcd-scheme", "Sets the default LCD colour scheme index, 0, 1, or 2",false, 0,"0-2",cmd);
 	SwitchArg argKlipper("","klipper","Synonym for --skew-correct and --no-hacks",cmd,false);
 	SwitchArg argKeyHelp("k","keys","Prints the list of available keyboard controls",cmd,false);
@@ -407,6 +408,7 @@ int main(int argc, char *argv[])
 	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
 	Config::Get().SetColourE(argColourE.isSet());
 	Config::Get().SetFW2(argFW2.getValue());
+	Config::Get().SetDisableTM(argLegacyModel.getValue());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 

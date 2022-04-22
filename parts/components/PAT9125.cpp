@@ -56,6 +56,12 @@ std::map<uint8_t, RegInfo8_t> PAT9125::GetRegInfo()
 		{RI_BANK, {RegType::WRITEONLY}},
 		{RI_BANK2, {RegType::WRITEONLY}},
 	};
+
+	// mystery registers
+	m[0x5E] = {RegType::READWRITE};
+	m[0x20] = {RegType::READWRITE};
+	m[0x2B] = {RegType::READWRITE};
+	m[0x32] = {RegType::READWRITE};
 	for(uint8_t i= RI_BANK; i<RI_BANK2; i++)
 	{
 		m[i] = {RegType::READWRITE};

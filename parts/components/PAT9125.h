@@ -25,6 +25,7 @@
 #include "IKeyClient.h"
 #include "IScriptable.h"       // for IScriptable::LineStatus
 #include "Scriptable.h"        // for Scriptable
+#include "Util.h"
 #include "sim_avr.h"           // for avr_t
 #include "sim_irq.h"           // for avr_irq_t
 #include <cstdint>            // for uint8_t, uint32_t, int32_t, uint16_t
@@ -87,19 +88,47 @@ class PAT9125: public I2CPeripheral, public Scriptable, private IKeyClient
 
 	private:
 
-	enum Actions
-	{
-		ActToggle,
-		ActSet,
-		ActToggleJam,
-		ActResumeAuto
-	};
+		static std::map<uint8_t,RegInfo8_t> GetRegInfo();
+
+		enum Actions
+		{
+			ActToggle,
+			ActSet,
+			ActToggleJam,
+			ActResumeAuto
+		};
+
+		enum RegIndex {
+			RI_PID1,
+			RI_PID2,
+			RI_MSTATUS,
+			RI_DXLOW,
+			RI_DYLOW,
+			RI_MODE,
+			RI_CONFIG,
+			RI_WRITEPROTECT = 9,
+			RI_SLEEP1,
+			RI_SLEEP2,
+			RI_RESX = 13,
+			RI_RESY,
+			RI_DXYHI = 18,
+			RI_SHUTTER = 20,
+			RI_FRAMEAVG = 23,
+			RI_ORIENTATION = 25,
+			RI_BANK = 0x7F,
+			RI_BANK2 = 0xFF, // special case for BANK when BANK=1
+			RI_END
+		};
 
 		float m_fYPos = 0.f, m_fPPos = 0.f, m_fEPos = 0.f;
 		float m_fCurY = 0.f;
+
+		const std::map<uint8_t,RegInfo8_t> m_regInfo = PAT9125::GetRegInfo();
+
 		union m_regs
 		{
-			uint8_t raw[32] {0x31, 0x91, 0, 0, 0, 0xA0, 0x17, 0,0, 0, 0x77, 0x10, 0, 0x14, 0x14, 0,0,0,0,0, 20, 0,0, 40,0, 0x04 };
+			// Note: addresses >0x7F are used for "Bank1", the undocumented region.
+			uint8_t raw[RI_END] {0x31, 0x91, 0, 0, 0, 0xA0, 0x17, 0,0, 0, 0x77, 0x10, 0, 0x14, 0x14, 0,0,0,0,0, 20, 0,0, 40,0, 0x04 };
 			struct {
 				uint8_t PID1;
 				uint8_t PID2;
@@ -127,9 +156,9 @@ class PAT9125: public I2CPeripheral, public Scriptable, private IKeyClient
 				uint8_t FrameAvg;
 				uint8_t :8;
 				uint8_t Orientation;
+				uint8_t _undefined[RI_END - RI_ORIENTATION - 1U];
 			};
 		}m_regs;
-		uint32_t m_uiRW = 0x2006E60; //1<<addr if RW.
 
 		bool m_bFilament = false, m_bLoading = false;
 

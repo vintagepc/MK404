@@ -205,10 +205,24 @@ void ReadReg(uint8_t addr)
 
 }
 
+void CheckReg(uint8_t addr, uint8_t expected)
+{
+	uint8_t uiReply = 0;
+	if (!swi2c_readByte_A8(0x75, addr, &uiReply))
+	{
+		printf("READ ERR\n");
+	}
+	else if (uiReply != expected)
+	{
+		printf("RD ERR %02x: %02x != %02x\n",addr,uiReply, expected);
+	}
+
+}
+
 void WriteReg(uint8_t addr, uint8_t data)
 {
 	if (!swi2c_writeByte_A8(0x75, addr, &data))
-		printf("READ ERR\n");
+		printf("WRITE ERR\n");
 }
 
 int main()
@@ -261,6 +275,28 @@ int main()
 	ReadReg(0x14);
 
 	ReadReg(0x14);
+
+	// Check the bank 1 read/write functionality.
+	WriteReg(0x7F, 1);
+	for (int i=0; i<0x7F; i++)
+	{
+		CheckReg(i,0);
+		WriteReg(i, i);
+		CheckReg(i,i);
+	}
+	// Check reading a write-only
+	CheckReg(0x7F,0);
+	// check it hasn't clobbered bank0
+	WriteReg(0x7F,0);
+	CheckReg(0x17, 0x50);
+	CheckReg(0x14, 0x05);
+	CheckReg(0x00, 0x31);
+	CheckReg(0x01, 0x91);
+	// Check the secret extension isn't accessible.
+	CheckReg(0xF0,0);
+	// test writing invalid.
+	WriteReg(0x85,10);
+	printf("EXT test done\n");
 
 	uint8_t bytein;
 	// Make sure we don't get a reply to a different address.

@@ -396,10 +396,10 @@ int main(int argc, char *argv[])
 		}
 		const char *const args[2] =
 		{
-			argv[0],
+			*argv,
 			"--help"
 		};
-		cmd.parse(2,args);
+		cmd.parse(2,&args[0]);
 		return 0;
 	}
 

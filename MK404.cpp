@@ -400,7 +400,7 @@ int main(int argc, char *argv[])
 			"--help"
 		};
 		cmd.parse(2,&args[0]);
-		return 0;
+		return 0; // pragma: LCOV_EXCL_LINE - returns don't always get correctly marked as covered due to optimization
 	}
 
 	// Handle the convenience synonyms:

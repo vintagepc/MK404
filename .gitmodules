@@ -6,7 +6,7 @@
 	url = https://github.com/tinyobjloader/tinyobjloader.git
 [submodule "3rdParty/TCLAP"]
 	path = 3rdParty/TCLAP
-	url = https://git.code.sf.net/p/tclap/code
+	url = https://github.com/vintagepc/TCLAP.git
 [submodule "3rdParty/gitversion"]
 	path = 3rdParty/gitversion
 	url = https://github.com/vintagepc/gitversion.git

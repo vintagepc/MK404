@@ -329,9 +329,9 @@ int main(int argc, char *argv[])
 	SwitchArg argTest("","test","Run it test mode (don't auto-exit due to lack of GL event loop and waiting for the window to close)", cmd);
 	SwitchArg argSkew("","skew-correct","Attempt to correct for fast clock skew of the simulated board", cmd);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.", cmd);
-	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "file:*.img|*.bin", cmd);
+	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "file:img|bin", cmd);
 	SwitchArg argScriptHelp("","scripthelp", "Prints the available scripting commands for the current printer/context",cmd, false);
-	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "file:*.txt", cmd);
+	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "file:txt", cmd);
 	std::vector<string> vstrEnabled = EnabledType::GetOpts();
 	ValuesConstraint<string> vcEnabledOpts(vstrEnabled);
 	ValueArg<string> argSoftPWM("p","softPWM","enable/disable software PWM (currently only valid for MK2)",false,"",&vcEnabledOpts,cmd);
@@ -350,8 +350,8 @@ int main(int argc, char *argv[])
 	std::vector<string> vstrGfx = {"none","lite","fancy", "bear"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed, cmd);
-	ValueArg<string> argFW("f","firmware","hex/afx/elf Firmware file to load (default MK3S.afx)",false,"MK3S.afx","file:*.hex|*.afx|*.elf", cmd);
-	ValueArg<string> argFW2("F","firmware2","secondary hex/afx/elf Firmware file to load to MMU, if present (default MM-control-01.hex)",false,"MM-control-01.hex","file:*.hex|*.afx|*.elf", cmd);
+	ValueArg<string> argFW("f","firmware","hex/afx/elf Firmware file to load (default MK3S.afx)",false,"MK3S.afx","file:hex|afx|elf", cmd);
+	ValueArg<string> argFW2("F","firmware2","secondary hex/afx/elf Firmware file to load to MMU, if present (default MM-control-01.hex)",false,"MM-control-01.hex","file:hex|afx|elf", cmd);
 	std::vector<string> vstrExts = PrintVisualType::GetOpts();
 	ValuesConstraint<string> vcPrintOpts(vstrExts);
 	ValueArg<string> argExtrusion("","extrusion","Set Print visual type. HR options create a LOT of triangles, do not use for large prints!",false, "Line", &vcPrintOpts, cmd);
@@ -360,7 +360,7 @@ int main(int argc, char *argv[])
 	SwitchArg argCmplZsh("","complete-zsh","Generate zsh auto-complete script for supported arguments",cmd);
 	SwitchArg argCmplBash("","complete-bash","Generate bash auto-complete script for supported arguments",cmd);
 	SwitchArg argColourE("", "colour-extrusion", "Colours extrusion by width (for advanced step/extrusion debugging.", cmd, false);
-	ValueArg<string> argStrBoot("","bootloader-file", "Specifies a .hex file to load as the bootloader. If empty, ("") no bootloader is loaded, if unspecified the default is used.",false,"stk500boot_v2_mega2560.hex","file:*.hex",cmd);
+	ValueArg<string> argStrBoot("","bootloader-file", "Specifies a .hex file to load as the bootloader. If empty, ("") no bootloader is loaded, if unspecified the default is used.",false,"stk500boot_v2_mega2560.hex","file:hex",cmd);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.",cmd);
 	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown",cmd);
 

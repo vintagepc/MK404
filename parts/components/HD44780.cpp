@@ -222,7 +222,10 @@ uint32_t HD44780::OnDataReady()
 	else
 	{
 		{
-			m_vRam.at(m_uiCursor) = m_uiDataPins;
+			if (m_uiCursor<m_vRam.size()) // For desync case, it's possible to go OOB.
+			{
+				m_vRam.at(m_uiCursor) = m_uiDataPins;
+			}
 		}
 
 		for (unsigned int i=0; i<m_uiHeight; i++) // Flag line change for search performance.
@@ -289,7 +292,7 @@ uint32_t HD44780::OnCmdReady()
 			SetFlag(HD44780_FLAG_N, m_uiDataPins & 8U);
 			SetFlag(HD44780_FLAG_F, m_uiDataPins & 4U);
 			if (!four && !GetFlag(HD44780_FLAG_D_L)) {
-				std::cout << static_cast<const char*>(__FUNCTION__) << "activating 4-bit mode" << '\n';
+				TRACE(std::cout << static_cast<const char*>(__FUNCTION__) << "activating 4-bit mode" << '\n');
 				SetFlag(HD44780_FLAG_LOWNIBBLE, 0);
 			}
 		}

@@ -347,6 +347,7 @@ int main(int argc, char *argv[])
 	ValuesConstraint<string> vcSizes(vstrSizes);
 	ValueArg<string> argImgSize("","image-size","Specify a size for a new SD image. You must specify an image with --sdimage",false,"256M",&vcSizes,cmd);
 	SwitchArg argGDB("","gdb","Enable SimAVR's GDB support",cmd);
+	SwitchArg argGDB2("","gdb2","Enable SimAVR's GDB support on the MMU/secondary board",cmd);
 	std::vector<string> vstrGfx = {"none","lite","fancy", "bear"};
 	ValuesConstraint<string> vcGfxAllowed(vstrGfx);
 	ValueArg<string> argGfx("g","graphics","Whether to enable fancy (advanced) or lite (minimal advanced) visuals. If not specified, only the basic 2D visuals are shown.",false,"lite",&vcGfxAllowed, cmd);
@@ -403,6 +404,12 @@ int main(int argc, char *argv[])
 		return 0; // pragma: LCOV_EXCL_LINE - returns don't always get correctly marked as covered due to optimization
 	}
 
+	if (argGDB2.isSet() && argGDB.isSet())
+	{
+		std::cerr <<"Cannot enable both GDB connections at the same time!\n";
+		exit(1);
+	}
+
 	// Handle the convenience synonyms:
 	// Longer term it'd be neat to have a synonym handler in  TCLAP....
 	bool bArgHacks = argNoHacks.isSet() || argKlipper.isSet() || argMarlin.isSet();
@@ -435,6 +442,7 @@ int main(int argc, char *argv[])
 	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
 	Config::Get().SetColourE(argColourE.isSet());
 	Config::Get().SetFW2(argFW2.getValue());
+	Config::Get().SetGDB2(argGDB2.isSet());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 

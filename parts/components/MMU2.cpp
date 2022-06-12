@@ -51,7 +51,7 @@ MMU2::MMU2(bool bCreate):IKeyClient(),MM_Control_01()
 	SetBoardName("MMU2");
 	if (bCreate)
 	{
-		CreateBoard(Config::Get().GetFW2(),0, false, 100,"");
+		CreateBoard(Config::Get().GetFW2(),0, Config::Get().GetGDB2(), 100,"Caterina-prusa_mm_control.hex");
 	}
 	RegisterKeyHandler('F',"Toggle the FINDA");
 	RegisterKeyHandler('A', "Resumes full-auto MMU mode.");

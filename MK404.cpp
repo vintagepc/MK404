@@ -406,8 +406,8 @@ int main(int argc, char *argv[])
 
 	if (argGDB2.isSet() && argGDB.isSet())
 	{
-		std::cerr <<"Cannot enable both GDB connections at the same time!\n";
-		exit(1);
+		std::cerr <<"Cannot enable both GDB connections at the same time!\n";  // pragma: LCOV_EXCL_LINE - Silly to test.
+		exit(1); // pragma: LCOV_EXCL_LINE
 	}
 
 	// Handle the convenience synonyms:

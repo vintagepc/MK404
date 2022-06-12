@@ -68,8 +68,9 @@ namespace Boards
 		m_Extr.SetSimple(true);
 
 
-		cfg.uiFullStepsPerMM = 400*16;
-		cfg.iMaxMM = 75;
+		cfg.uiFullStepsPerMM = 200*32;
+		cfg.iMaxMM = 76;
+		cfg.fStartPos = 10;
 		cfg.bInverted = true;
 		cfg.bHasNoEndStops = false;
 		m_Sel.SetConfig(cfg);

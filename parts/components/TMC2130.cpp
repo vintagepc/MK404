@@ -288,6 +288,7 @@ void TMC2130::SetConfig(TMC2130_cfg_t cfgIn)
     m_iMaxPos = PosToStep(cfg.iMaxMM);
     m_fCurPos = cfg.fStartPos;
 	m_fEnd = StepToPos(m_iMaxPos);
+	m_bDir = cfg.bInverted;
 	m_bConfigured = true;
 }
 

@@ -65,6 +65,8 @@ class RotaryEncoder:public BasePeripheral,public Scriptable, private IKeyClient
 
         // Release event for mouse push.
         void Release();
+
+		void Reset() override;
 	protected:
 		LineStatus ProcessAction(unsigned int action, const std::vector<std::string> &vArgs) override;
 

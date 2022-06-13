@@ -65,6 +65,9 @@ class BasePeripheral
 
 		}
 
+		// Reset handler - so the peripheral can set up its GPIOs after MCU reset, etc.
+		virtual void Reset() {};
+
 		// Detaches the component from its registered IRQs. They must have come through ConnectTo/From!
 		void DisconnectAll()
 		{

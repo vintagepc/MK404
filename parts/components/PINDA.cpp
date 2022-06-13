@@ -275,6 +275,18 @@ void PINDA::Reconfigure(float fX, float fY, XYCalMap map)
 
 }
 
+void PINDA::Reset()
+{
+	if (!m_bIsSheetPresent)
+	{
+        CheckTriggerNoSheet();
+	}
+    else
+	{
+        CheckTrigger();
+	}
+}
+
 void PINDA::Init(struct avr_t * avr, avr_irq_t *irqX, avr_irq_t *irqY, avr_irq_t *irqZ)
 {
     _Init(avr, this);

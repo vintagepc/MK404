@@ -60,6 +60,8 @@ class PINDA:public BasePeripheral,public Scriptable, private IKeyClient {
 	// Reconfigures the PINDA after it's been set up (for printer variants sharing base classes)
 	void Reconfigure(float fX, float fY, XYCalMap map);
 
+	void Reset() override;
+
 	// so we can use initializer syntax later
 	using MBLMap_t = struct MBLMap_t
 	{

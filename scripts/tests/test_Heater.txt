@@ -24,7 +24,6 @@ Board::Pause()
 GLHelper::SnapRect(tests/snaps/Heater03,29,244,28,40)
 Board::Resume()
 Button::Press();
-Button::Release();
 Serial0::NextLineMustBe(OFF)
 TelHost::WaitFor(Heater_B_>heater.on,0)
 Board::Pause()

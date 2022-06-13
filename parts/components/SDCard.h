@@ -60,6 +60,8 @@ class SDCard:public SPIPeripheral, public Scriptable, private IKeyClient
 
 		inline bool IsMounted(){return m_bMounted; }
 
+		void Reset() override;
+
 	protected:
 		uint8_t OnSPIIn(struct avr_irq_t * irq, uint32_t value) override;
 

@@ -144,6 +144,7 @@ namespace Boards
 			inline void AddHardware(HW &hw, types ... args)
 			{
 				hw.Init(m_pAVR, args... );
+				m_periphs.push_back(&hw);
 			}
 
 			inline void SetBoardName(std::string strName){m_strBoard = std::move(strName);}
@@ -174,9 +175,12 @@ namespace Boards
 
 			void CreateAVR();
 
+			// Private, responsible for calling overload.
 			void _OnAVRInit();
 
 			void _OnAVRDeinit();
+
+			void _OnAVRReset();
 
 			bool _PinNotConnectedMsg(PinNames::Pin ePin);
 
@@ -211,5 +215,7 @@ namespace Boards
 			// Loads an ELF or HEX file into the MCU. Returns boot PC
 
 			EEPROM m_EEPROM;
+
+			std::vector<BasePeripheral*> m_periphs;
 	};
 }; // namespace Boards

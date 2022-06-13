@@ -86,6 +86,11 @@ avr_cycle_count_t Button::AutoRelease(avr_t *, avr_cycle_count_t uiWhen)
 	return 0;
 }
 
+void Button::Reset()
+{
+	RaiseIRQ(BUTTON_OUT,1);
+}
+
 void Button::Press(uint32_t uiUsec)
 {
 	CancelTimer(m_fcnRelease,this);

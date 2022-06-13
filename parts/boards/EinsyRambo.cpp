@@ -252,11 +252,6 @@ namespace Boards
 		std::cout << "RESET\n";
 		DisableInterruptLevelPoll(8);
 
-		// Restore powerpanic to high
-		PowerPanic.Press(1);
-
-		UART0.Reset();
-
 		//depress encoder knob
 		if (!m_bFactoryReset)
 		{
@@ -284,8 +279,6 @@ namespace Boards
 		SetPin(Y_TMC2130_CS,1);
 		SetPin(Z_TMC2130_CS,1);
 		SetPin(E0_TMC2130_CS,1);
-
-		hExtruder.Reset();
 	}
 
 }; // namespace Boards

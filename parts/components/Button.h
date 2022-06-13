@@ -53,6 +53,8 @@ class Button:public BasePeripheral, public Scriptable, private IKeyClient
 	// Turns the button into a toggle switch instead.
 	void SetIsToggle(bool bVal);
 
+	void Reset() override;
+
 	protected:
 		LineStatus ProcessAction(unsigned int iAction, const std::vector<std::string> &vArgs) override;
 

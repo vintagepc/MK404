@@ -88,7 +88,8 @@ int main()
 		volatile uint8_t newPin = PINF;
 		if (newVal!=val)
 		{
-			printf("ADC %02x PIN %02x\n",newVal,newPin);
+			// Note: mask added to avoid test breaking if something is attached to other pins on F
+			printf("ADC %02x PIN %02x\n",newVal,newPin & 0x02);
 			val = newVal;
 		}
 	}

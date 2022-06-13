@@ -60,6 +60,10 @@ class Config
 		inline void SetFW2(std::string strName){ m_strSecFW = std::move(strName);}
 		inline const std::string GetFW2(){ return m_strSecFW;}
 
+		// GDB on secondary board
+		inline void SetGDB2(bool bVal){ m_bGDB2 = bVal;}
+		inline const bool GetGDB2(){ return m_bGDB2;}
+
 	private:
 		unsigned int m_iExtrusion = false;
 		bool m_bColorExtrusion = false;
@@ -68,4 +72,5 @@ class Config
 		bool m_bDebugCore = false;
 		std::string m_strSecFW = "MM-control-01.hex";
 		EnabledType::Type_t m_SoftPWM = EnabledType::Type_t::NotSet;
+		bool m_bGDB2 = false;
 };

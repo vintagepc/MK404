@@ -68,8 +68,9 @@ namespace Boards
 		m_Extr.SetSimple(true);
 
 
-		cfg.uiFullStepsPerMM = 400*16;
-		cfg.iMaxMM = 70;
+		cfg.uiFullStepsPerMM = 200*32;
+		cfg.iMaxMM = 76;
+		cfg.fStartPos = 10;
 		cfg.bInverted = true;
 		cfg.bHasNoEndStops = false;
 		m_Sel.SetConfig(cfg);
@@ -81,8 +82,8 @@ namespace Boards
 		m_Sel.ConnectFrom(m_shift.GetIRQ(HC595::BIT2), TMC2130::DIR_IN);
 		m_Sel.ConnectFrom(m_shift.GetIRQ(HC595::BIT3), TMC2130::ENABLE_IN);
 
-		cfg.uiFullStepsPerMM = 8*16;
-		cfg.iMaxMM = 200;
+		cfg.uiFullStepsPerMM = 9*16;
+		cfg.iMaxMM = 225;
 		m_Idl.SetConfig(cfg);
 		AddHardware(m_Idl);
 		TryConnect(I_TMC2130_CS,&m_Idl,TMC2130::SPI_CSEL);

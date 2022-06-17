@@ -329,6 +329,7 @@ int main(int argc, char *argv[])
 	SwitchArg argTest("","test","Run it test mode (don't auto-exit due to lack of GL event loop and waiting for the window to close)", cmd);
 	SwitchArg argSkew("","skew-correct","Attempt to correct for fast clock skew of the simulated board", cmd);
 	SwitchArg argSerial("s","serial","Connect a printer's serial port to a PTY instead of printing its output to the console.", cmd);
+	ValueArg<uint32_t> argSeed("","seed","Seed for srand/interrupt fuzz", false, 0, "unsigned integer", cmd);
 	ValueArg<string> argSD("","sdimage","Use the given SD card .img file instead of the default", false ,"", "file:img|bin", cmd);
 	SwitchArg argScriptHelp("","scripthelp", "Prints the available scripting commands for the current printer/context",cmd, false);
 	ValueArg<string> argScript("","script","Execute the given script. Use --scripthelp for syntax.", false ,"", "file:txt", cmd);
@@ -370,7 +371,10 @@ int main(int argc, char *argv[])
 
 	TCLAP::UnlabeledValueArg<string> argModel("printer","Model name of the printer to run",false,"Prusa_MK3S",&vcAllowed, cmd);
 
-
+	if (argSeed.isSet())
+	{
+		srand(argSeed.getValue());
+	}
 
 	if (version::IS_DEV_VERSION)
 	{

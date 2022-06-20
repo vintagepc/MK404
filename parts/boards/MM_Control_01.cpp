@@ -53,7 +53,7 @@ namespace Boards
 		TryConnect(SHIFT_CLOCK,&m_shift,HC595::IN_CLOCK);
 
 		TMC2130::TMC2130_cfg_t cfg;
-		cfg.uiFullStepsPerMM = 280*8;
+		cfg.uiFullStepsPerMM = 84*32;
 		cfg.fStartPos = 0;
 		cfg.bHasNoEndStops = true;
 

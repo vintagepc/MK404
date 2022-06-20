@@ -131,16 +131,6 @@ void Prusa_MK3S::OnVisualTypeSet(const std::string &type)
 	}
 }
 
-void Prusa_MK3S::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
-{
-	if (v==0x02)// Marlin is done setting up UCSRA0...
-	{
-		v|=(1U<<5U); // leave the UDRE0 alone
-		std::cout << "Reset UDRE0 after serial config changed\n";
-	}
-	avr_core_watch_write(avr,addr,v);
-}
-
 void Prusa_MK3S::SetupIR()
 {
 	// Setup the 3S IR sensor.
@@ -162,12 +152,6 @@ void Prusa_MK3S::SetupHardware()
 		UART0.Connect('0');
 		UART1.Connect('1');
 	}
-
-	auto fcnSerial = [](avr_t *avr, avr_io_addr_t addr, uint8_t v, void * param)
-	{auto *p = static_cast<Prusa_MK3S*>(param); p->FixSerial(avr, addr,v);};
-
-	avr_register_io_write(m_pAVR, 0xC0, fcnSerial, this);
-
 }
 
 void Prusa_MK3S::OnAVRCycle()

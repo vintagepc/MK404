@@ -37,8 +37,6 @@
 #include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
 #include <iostream>           // for operator<<, cout, ostream, basic_ostream
 
-using std::cout;
-
 Prusa_MK2_13::Prusa_MK2_13():MiniRambo(),Printer()
 {
 }

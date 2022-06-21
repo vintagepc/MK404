@@ -37,8 +37,6 @@
 #include <GL/freeglut_std.h>  // for GLUT_DOWN, GLUT_LEFT_BUTTON, GLUT_RIGHT...
 #include <iostream>           // for operator<<, cout, ostream, basic_ostream
 
-using std::cout;
-
 Prusa_MK2_13::Prusa_MK2_13():MiniRambo(),Printer()
 {
 }
@@ -160,16 +158,6 @@ std::pair<int,int> Prusa_MK2_13::GetWindowSize(){
 	return prSize;
 }
 
-void Prusa_MK2_13::FixSerial(avr_t * avr, avr_io_addr_t addr, uint8_t v)
-{
-	if (v==0x02)// Marlin is done setting up UCSRA0...
-	{
-		v|=(1U<<5U); // leave the UDRE0 alone
-		cout << "Reset UDRE0 after serial config changed\n";
-	}
-	avr_core_watch_write(avr,addr,v);
-}
-
 void Prusa_MK2_13:: SetupPINDA()
 {
 	AddHardware(pinda, X.GetIRQ(A4982::POSITION_OUT),  Y.GetIRQ(A4982::POSITION_OUT),  Z.GetIRQ(A4982::POSITION_OUT));
@@ -199,12 +187,6 @@ void Prusa_MK2_13::SetupHardware()
 	{
 		UART0.Connect('0');
 	}
-
-	auto fcnSerial = [](avr_t *avr, avr_io_addr_t addr, uint8_t v, void * param)
-	{auto *p = static_cast<Prusa_MK2_13*>(param); p->FixSerial(avr, addr,v);};
-
-	avr_register_io_write(m_pAVR, 0xC0, fcnSerial, this);
-
 }
 
 void Prusa_MK2_13::OnAVRCycle()

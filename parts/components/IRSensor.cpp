@@ -150,5 +150,9 @@ void IRSensor::Set(IRState val)
 
 void IRSensor::Auto_Input(uint32_t val)
 {
-	m_bExternal = val>0;
+	if (IsConnected() && m_bExternal != (val>0))
+	{
+		m_bExternal = val>0;
+		_SyncDigitalIRQ<VoltageSrc>(GetCurrentValue());
+	}
 }

@@ -157,6 +157,7 @@ void TMC2130::OnDirIn(struct avr_irq_t * , uint32_t value)
 {
     TRACE(printf("TMC2130 %c: DIR changed to %02x\n",m_cAxis.load(),value));
     m_bDir = value^cfg.bInverted; // XOR
+	m_regs.defs.IOIN.dir = value;
 }
 
 avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *, avr_cycle_count_t)
@@ -169,6 +170,7 @@ avr_cycle_count_t TMC2130::OnStandStillTimeout(avr_t *, avr_cycle_count_t)
 // Called when STEP is triggered.
 void TMC2130::OnStepIn(struct avr_irq_t * irq, uint32_t value)
 {
+	m_regs.defs.IOIN.step = value;
     if (!m_bEnable) return;
 	if (!m_regs.defs.CHOPCONF.dedge)
 	{
@@ -230,7 +232,7 @@ void TMC2130::OnEnableIn(struct avr_irq_t *, uint32_t value)
 {
 	TRACE(printf("TMC2130 %c: EN changed to %02x\n",m_cAxis.load(),value));
     m_bEnable = value==0; // active low, i.e motors off when high.
-
+	m_regs.defs.IOIN.drv_en = value;
 	if(!m_bEnable)
 	{
 		// transition immediately to standstill

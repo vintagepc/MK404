@@ -64,17 +64,26 @@ uint8_t SPI_TX(uint8_t cData){
 }
 
 uint8_t uiStatus;
-unsigned long uiReply;
+
+union  {
+	uint32_t raw;
+	uint8_t bytes[4];
+} reply;
+
+volatile uint8_t print = 0;
 
 void TMCTX(uint8_t uiAddr, unsigned long uiData)
 {
 	PORTA &= 0xFE;
-	uiReply =0;
+	reply.raw =0;
 	uiStatus = SPI_TX(uiAddr);
 	for (unsigned int i=0; i<4; i++)
 	{
 		uint8_t out = (uiData >> (8U*(3U-i)) & 0xFF);
-		uiReply |= SPI_TX(out)<<(8U*i);
+		out = SPI_TX(out);
+		if (print) printf("%02x ",out);
+		reply.bytes[3-i] = out;
+		//uiReply |= out<<(8U*i);
 	}
 	PORTA|=1;
 }
@@ -85,6 +94,13 @@ void step()
 	_delay_ms(1);
 	PORTA&=~(1U<<2);
 }
+
+enum IOIN_BITS
+{
+	BIT_STEP = 0b1,
+	BIT_DIR = 0b10,
+	BIT_ENA = 0b10000,
+};
 
 int main()
 {
@@ -103,11 +119,11 @@ int main()
 
 	TMCTX(0x01,0);
 
-	printf("RP %02x %06lx\n",uiStatus, uiReply);
+	printf("RP %02x %06lx\n",uiStatus, reply.raw);
 
 	TMCTX(0x6F,0);
 
-	printf("RP %02x %06lx\n",uiStatus, uiReply);
+	printf("RP %02x %06lx\n",uiStatus, reply.raw);
 
 	TMCTX(0x80,1U<<7U); // DIAG0_stall
 
@@ -200,6 +216,52 @@ int main()
 	PORTA|=(1U<<3); // rev dir
 	step();
 	printf("STEP\n");
+
+
+	TMCTX(0x04, 0);
+	TMCTX(0x04, 0);
+
+	printf("IOIN STEP %u\n", (reply.raw & BIT_STEP)>0);
+
+	PORTA |= 1u<<2;
+	TMCTX(0x04, 0);
+	TMCTX(0x04, 0);
+
+	printf("IOIN STEP %u\n", (reply.raw & BIT_STEP)>0);
+
+
+
+	PORTA&=~(3U<<2);
+	TMCTX(0x04, 0);
+	TMCTX(0x04, 0);
+	printf("IOIN STEP %u\n", (reply.raw & BIT_STEP)>0);
+
+	printf("IOIN DIR %u\n", (reply.raw & BIT_DIR)>0);
+
+
+	PORTA|=(1U<<3);
+	TMCTX(0x04, 0);
+	TMCTX(0x04, 0);
+	printf("IOIN DIR %u\n", (reply.raw & BIT_DIR)>0);
+
+	PORTA&=~(1U<<3);
+	PORTA&=~(1U<<4);
+	TMCTX(0x04, 0);
+	TMCTX(0x04, 0);
+	printf("IOIN DIR %u\n", (reply.raw & BIT_DIR)>0);
+	printf("IOIN ENA %u\n", (reply.raw & BIT_ENA)>0);
+
+	PORTA|=(1U<<4);
+
+	TMCTX(0x04, 0);
+	TMCTX(0x04, 0);
+	printf("IOIN ENA %u\n", (reply.raw & BIT_ENA)>0);
+
+	PORTA&=~(1U<<4);
+
+	TMCTX(0x04, 0);
+	TMCTX(0x04, 0);
+	printf("IOIN ENA %u\n", (reply.raw & BIT_ENA)>0);
 
 	printf("FINISHED\n");
 

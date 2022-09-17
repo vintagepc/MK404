@@ -163,7 +163,12 @@ class TMC2130: public SPIPeripheral, public Scriptable, public GLMotor
                 uint32_t _unimplemented[2]; //0x02 - 0x03
                 struct                 // 0x04
                 {
-					uint8_t         :6;  // unused
+					uint8_t step    :1;  // unused
+					uint8_t dir    :1;  // unused
+					uint8_t dcen    :1;  // unused
+					uint8_t dcin    :1;  // unused
+					uint8_t drv_en    :1;  // unused
+					uint8_t dco    :1;  // unused
 					uint8_t one     :1;  // always one
 					uint8_t         :1;  // unused
 					uint16_t        :16; // unused

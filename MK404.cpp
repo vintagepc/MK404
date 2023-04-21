@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
 
 	m_bTerminal = argTerm.isSet();
 
-	m_bTestMode = (argModel.getValue()=="Test_Printer") | argTest.isSet();
+	m_bTestMode = (argModel.getValue()=="Test_Printer") || argTest.isSet();
 
 	Config::Get().SetLCDScheme(argLCDSCheme.getValue());
 	Config::Get().SetSoftPWM(EnabledType::GetNameToType().at(argSoftPWM.getValue()));

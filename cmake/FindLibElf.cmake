@@ -23,6 +23,7 @@ find_path (LIBELF_INCLUDE_DIRS
   NAMES
     libelf.h
   PATHS
+    /opt/homebrew/Cellar/libelf
     /usr/include
     /usr/include/libelf
     /usr/local/include
@@ -35,6 +36,8 @@ find_path (LIBELF_INCLUDE_DIRS
     /opt/homebrew/include/libelf
     /opt/homebrew/include/opt/libelf
     /opt/homebrew/opt
+    /opt/homebrew/Cellar/libelf
+    /opt/homebrew/Cellar/libelf/0.8.13_1/include/libelf
     /sw/include
     /sw/include/libelf
     ENV CPATH)
@@ -43,6 +46,7 @@ find_library (LIBELF_LIBRARIES
   NAMES
     elf
   PATHS
+    /opt/homebrew/Cellar/libelf
     /usr/lib
     /usr/local/lib
     /opt/local/lib

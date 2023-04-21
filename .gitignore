@@ -5,3 +5,4 @@ build-env
 *.o
 *.elf
 .vscode/settings.json
+.DS_Store

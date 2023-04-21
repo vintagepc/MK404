@@ -14,7 +14,10 @@ else()
 
   find_library(GLUT_glut_LIBRARY NAMES glut
     NO_DEFAULT_PATH
-    PATHS /usr/local/lib
+    PATHS 
+    /usr/local/lib
+    /opt/homebrew/lib
+    
     DOC "brew freeglut")
   mark_as_advanced(GLUT_glut_LIBRARY)
   if(GLUT_glut_LIBRARY)

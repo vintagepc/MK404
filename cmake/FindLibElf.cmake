@@ -12,6 +12,7 @@
 #  BSD license.
 #  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 #
+#include <libelf.h>
 
 
 if (LIBELF_LIBRARIES AND LIBELF_INCLUDE_DIRS)
@@ -28,6 +29,12 @@ find_path (LIBELF_INCLUDE_DIRS
     /usr/local/include/libelf
     /opt/local/include
     /opt/local/include/libelf
+    /opt/homebrew
+    /opt/homebrew/libelf
+    /opt/homebrew/include
+    /opt/homebrew/include/libelf
+    /opt/homebrew/include/opt/libelf
+    /opt/homebrew/opt
     /sw/include
     /sw/include/libelf
     ENV CPATH)

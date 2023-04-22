@@ -17,7 +17,7 @@ jobs:
   # This workflow contains a single job called "build"
   part_tests:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -107,7 +107,7 @@ jobs:
 
   ext1_tests:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -190,7 +190,7 @@ jobs:
 
   Upload_Coverage:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: [ext1_tests, part_tests]
     steps:
 
@@ -225,7 +225,7 @@ jobs:
 
     - name: Upload to codecov.io
       uses: codecov/codecov-action@v2.1.0
-      with: 
+      with:
         # Comma-separated list of files to upload
         files: ./parts/parts.info,./ext1/ext1.info
         # Specify whether or not CI build should fail if Codecov runs into an error during upload

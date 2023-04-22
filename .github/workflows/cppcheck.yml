@@ -15,7 +15,7 @@ jobs:
   # This workflow contains a single job called "build"
   cppcheck:
     # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -50,7 +50,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get purge clang-*
-        sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install clang-6.0 clang-tidy-6.0
+        sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install clang-5.0 clang-tidy-5.0
         sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu cppcheck
 
     - name: Cache permissions

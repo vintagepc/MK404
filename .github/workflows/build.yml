@@ -5,12 +5,13 @@ name: CI Build
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
-  workflow_dispatch:
-    inputs:
-      tags:
-        description: 'Test scenario tags'  
-    
-    
+  push:
+    branches: [ master ]
+    tags:
+      - "v*"
+  pull_request:
+    branches: [ master ]
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -51,7 +52,7 @@ jobs:
     - name: Install packages
       run: |
           sudo apt-get update
-          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl2-dev
+          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
@@ -161,7 +162,7 @@ jobs:
           choco install --no-progress cygwin
       - name: Install cygwin dependencies
         run: |
-          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -l C:/tools/cygcache -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL2-devel,avr-gcc,python2,libpng-devel
+          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -l C:/tools/cygcache -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL-devel,avr-gcc,python2,libpng-devel
         shell: cmd
 
       - name: Checkout ${{ github.event.pull_request.head.ref }}
@@ -205,5 +206,53 @@ jobs:
           name: Binaries
           path: ${{ runner.workspace }}/MK404/build/MK404.exe
 
-      - name
+  Publish:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request }}
+    needs: [build, build_osx, build_cygwin]
+    steps:
+      - name: Retrieve platform binaries
+        uses: actions/download-artifact@v2
+        with:
+          name: Binaries
+
+      - name: Extract assets
+        run: |
+          tar -jxvf MK404-development-build.tar.bz2
+          mv MK404_OSX MK404-dev/
+          mv MK404.exe MK404-dev/MK404-cygwin.exe
+
+      - name: Check tag version
+        id: get_version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Build ${{ steps.get_version.outputs.VERSION }} tarball
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          mv MK404-dev MK404-${{ steps.get_version.outputs.VERSION }}
+          tar -jcvf MK404-${{ steps.get_version.outputs.VERSION }}-multiplatform.tar.bz2 MK404-${{ steps.get_version.outputs.VERSION }}
+
+      - name: RELEASE THE KRAKEN
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            MK404-${{ steps.get_version.outputs.VERSION }}-multiplatform.tar.bz2
+
+      - name: Rebuild dev tarball
+        if: steps.get_version.outcome == 'Skipped'
+        run: tar -jcvf MK404-dev-multiplatform.tar.bz2 MK404-dev
+
+      - name: Publish prerelease
+        if: steps.get_version.outcome == 'Skipped'
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "dev"
+          prerelease: true
+          title: "Latest (Development) Build"
+          files: |
             MK404-dev-multiplatform.tar.bz2

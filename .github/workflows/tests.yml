@@ -17,7 +17,7 @@ jobs:
   # This workflow contains a single job called "build"
   part_tests:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -53,16 +53,16 @@ jobs:
     - name: Install packages
       run: |
           sudo apt-get update
-          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov xvfb
+          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl2-dev lcov xvfb mesa-utils
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
 
-    - uses: openrndr/setup-opengl@v1.1
-    - run: |
-        xvfb-run glxinfo
-        ls -l
-        echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
+    #- uses: openrndr/setup-opengl@v1.1
+    #- run: |
+    #    xvfb-run glxinfo
+    #    ls -l
+    #    echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
 
     - name: Prepare CMake build
       run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DENABLE_GCOV=1 -DSANITY_TESTS=1 -DRUNNER_ENV=1 ..
@@ -107,7 +107,7 @@ jobs:
 
   ext1_tests:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -143,16 +143,16 @@ jobs:
     - name: Install packages
       run: |
           sudo apt-get update
-          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov xvfb
+          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl2-dev lcov xvfb mesa-utils
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
 
-    - uses: openrndr/setup-opengl@v1.1
-    - run: |
-        xvfb-run glxinfo
-        ls -l
-        echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
+    #- uses: openrndr/setup-opengl@v1.1
+    #- run: |
+    #    xvfb-run glxinfo
+    #    ls -l
+    #    echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
 
     - name: Prepare CMake build
       run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DENABLE_GCOV=1 -DSANITY_TESTS=1 -DRUNNER_ENV=1 ..
@@ -190,7 +190,7 @@ jobs:
 
   Upload_Coverage:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: [ext1_tests, part_tests]
     steps:
 
@@ -225,7 +225,7 @@ jobs:
 
     - name: Upload to codecov.io
       uses: codecov/codecov-action@v2.1.0
-      with: 
+      with:
         # Comma-separated list of files to upload
         files: ./parts/parts.info,./ext1/ext1.info
         # Specify whether or not CI build should fail if Codecov runs into an error during upload

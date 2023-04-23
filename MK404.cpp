@@ -276,7 +276,11 @@ void timerCB(int i)
 	}
 	// 16 = 60fps
 	glutTimerFunc(16, timerCB, i);
+	#ifdef FORCE_3D_REDRAW
+	displayCB();
+	#else
 	glutPostRedisplay();
+	#endif
 }
 
 

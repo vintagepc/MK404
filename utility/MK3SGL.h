@@ -94,7 +94,6 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 		// Flags window for redisplay
 		inline void FlagForRedraw() {
 			#ifdef FORCE_3D_REDRAW // Special case for runners...
-				std::cout << "Forcing redraw for 3D visuals\n";
 				Draw();
 			#else // Normal case:
 				glutPostWindowRedisplay(m_iWindow);

@@ -23,7 +23,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -31,7 +31,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -39,7 +39,7 @@ jobs:
         submodules: true
 
     - name: Cache packages
-      uses: actions/cache@v1.0.3
+      uses: actions/cache@v3.0.11
       id: cache-pkgs
       with:
           path: "packages"
@@ -79,7 +79,7 @@ jobs:
     - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_core.tar.gz tests/snaps/
 
     - name: Upload report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Report
         path: |
@@ -87,7 +87,7 @@ jobs:
 #          ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
 
     - name: Upload coverage artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Coverage
         path: |
@@ -112,7 +112,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -120,7 +120,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -128,7 +128,7 @@ jobs:
         submodules: true
 
     - name: Cache packages
-      uses: actions/cache@v1.0.3
+      uses: actions/cache@v3.0.11
       id: cache-pkgs
       with:
           path: "packages"
@@ -168,14 +168,14 @@ jobs:
     - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_ext1.tar.gz tests/snaps/
 
     - name: Upload report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Report
         path: |
           ${{ runner.workspace }}/MK404/build/snaps_ext1.tar.gz
 
     - name: Upload coverage artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Coverage2
         path: |
@@ -193,7 +193,7 @@ jobs:
     steps:
 
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -201,7 +201,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -209,13 +209,13 @@ jobs:
         submodules: true
 
     - name: Retrieve coverage reports
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3.1.1
       with:
         name: Coverage
         path: parts
 
     - name: Retrieve coverage reports
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3.1.1
       with:
         name: Coverage2
         path: ext1

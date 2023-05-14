@@ -21,7 +21,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -29,7 +29,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -37,7 +37,7 @@ jobs:
         submodules: true
 
     - name: Cache packages
-      uses: actions/cache@v1.0.3
+      uses: actions/cache@v3.0.11
       id: cache-pkgs
       with:
           path: "packages"
@@ -70,7 +70,7 @@ jobs:
         make -j2 |& tee tidy.txt
 
     - name: Upload clang-tidy log
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: warnings
         path: ${{ runner.workspace }}/MK404/build/tidy.txt

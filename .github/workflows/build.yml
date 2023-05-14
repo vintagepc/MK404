@@ -23,7 +23,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -31,7 +31,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -39,7 +39,7 @@ jobs:
         submodules: true
 
     - name: Cache packages
-      uses: actions/cache@v1.0.3
+      uses: actions/cache@v3.0.11
       id: cache-pkgs
       with:
           path: "packages"
@@ -64,7 +64,7 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Checkout Wiki
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.wiki.git
@@ -89,7 +89,7 @@ jobs:
 
     - name: Upload artifact
       if: ${{ !github.event.pull_request }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Binaries
         path: ${{ runner.workspace }}/MK404/build/MK404-development-build.tar.bz2
@@ -102,7 +102,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -110,7 +110,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -133,7 +133,7 @@ jobs:
 
     - name: Upload OSX artifact
       if: ${{ !github.event.pull_request }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Binaries
         path: ${{ runner.workspace }}/MK404/build/MK404_OSX
@@ -166,7 +166,7 @@ jobs:
         shell: cmd
 
       - name: Checkout ${{ github.event.pull_request.head.ref }}
-        uses: actions/checkout@v2.2.0
+        uses: actions/checkout@v3
         if: ${{ github.event.pull_request }}
         with:
           repository: vintagepc/MK404.git
@@ -174,7 +174,7 @@ jobs:
           submodules: true
 
       - name: Checkout ${{ github.event.ref }}
-        uses: actions/checkout@v2.2.0
+        uses: actions/checkout@v3
         if: ${{ !github.event.pull_request }}
         with:
           repository: vintagepc/MK404.git
@@ -201,7 +201,7 @@ jobs:
 
       - name: Upload Cygwin artifact
         if: ${{ !github.event.pull_request }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.1
         with:
           name: Binaries
           path: ${{ runner.workspace }}/MK404/build/MK404.exe
@@ -212,7 +212,7 @@ jobs:
     needs: [build, build_osx, build_cygwin]
     steps:
       - name: Retrieve platform binaries
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3.1.1
         with:
           name: Binaries
 

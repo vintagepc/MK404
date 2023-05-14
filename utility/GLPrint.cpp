@@ -194,9 +194,9 @@ void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 			}
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 			m_uiExtrStart = m_uiExtrEnd;
-			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
 			m_fvDraw.insert(m_fvDraw.end(),fExtrEnd.begin(), fExtrEnd.end());
 			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
+			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
 
 		}
 		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[1], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});

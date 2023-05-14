@@ -432,7 +432,7 @@ void GLPrint::Draw()
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
 		{
 			std::lock_guard<std::mutex> lock(m_lock);
-			if (m_iVisType >= PrintVisualType::LINE)
+			if (m_iVisType >= PrintVisualType::LINE && m_ivTCount.size() > 0)
 			{
 				glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
 				glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
@@ -455,13 +455,20 @@ void GLPrint::Draw()
 			}
 			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
 			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
-			if (m_iVisType == PrintVisualType::LINE) glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
+			if (m_iVisType == PrintVisualType::LINE &&  m_ivCount.size() > 0)
+			{
+				glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
+			}
 
 
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());
 			if (m_ivCount.size()>0) // the "In progress" segments
 			{
-				glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),((m_fvDraw.size()/3)-m_ivStart.back())-1);
+				GLsizei iLen = ((m_fvDraw.size()/3)-m_ivStart.back())-1;
+				if (iLen > 0)
+				{
+					glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),iLen);
+				}
 			}
 			if (m_bExtruding && m_fvDraw.size() >0)
 			{

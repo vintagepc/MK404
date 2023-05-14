@@ -94,6 +94,7 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 		// Flags window for redisplay
 		inline void FlagForRedraw() {
 			#ifdef FORCE_3D_REDRAW // Special case for runners...
+				glutSetWindow(m_iWindow);
 				Draw();
 			#else // Normal case:
 				glutPostWindowRedisplay(m_iWindow);
@@ -138,6 +139,7 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
 		std::atomic_int m_iCurTool = {0};
         GLPrint m_Print = {0.8,0,0}, m_T1 = {0,0.8,0}, m_T2 = {0,0,0.8}, m_T3 = {0.8,0.4,0}, m_T4 = {0.8,0,0.8};
+        //GLPrint m_Print = {0,1,1}, m_T1 = {0,0.5,0.5}, m_T2 = {1,1,1}, m_T3 = {.8,0,0}, m_T4 = {0,0.8,0};
 
 		std::vector<GLPrint*> m_vPrints = {&m_Print, &m_T1, &m_T2, &m_T3, &m_T4};
 

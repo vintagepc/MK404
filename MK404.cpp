@@ -161,7 +161,12 @@ void displayCB()		/* function called whenever redisplay needed */
 		ScriptHost::Draw();
 		glPopMatrix();
 	}
+#ifdef FORCE_3D_REDRAW
 	printer->Draw();
+	glutSetWindow(window);
+#else
+	printer->Draw();
+#endif
 	m_iFrCount++;
 	m_iTic=glutGet(GLUT_ELAPSED_TIME);
 	auto iDiff = m_iTic - m_iLast;

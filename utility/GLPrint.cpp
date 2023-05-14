@@ -460,7 +460,7 @@ void GLPrint::Draw()
 				glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
 			}
 
-/*
+
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());
 			if (m_ivCount.size()>0) // the "In progress" segments
 			{
@@ -478,7 +478,6 @@ void GLPrint::Draw()
 					glVertex3fv(m_fExtrEnd.data());
 				glEnd();
 			}
-			*/
 		}
 		// Uncomment for vertex debugging.
 		 //glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fG);

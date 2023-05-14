@@ -420,7 +420,7 @@ void GLPrint::Draw()
 {
 	const std::array<float, 4> fColor = {{m_fColR,m_fColG,m_fColB,1}};
 	//std::vector<float> fG[4] = {0,0.5,0,1};
-	//static const std::array<float, 4> fY = {{1,1,0,1}};
+	static const std::array<float, 4> fY = {{1,1,0,1}};
 	//static const std::array<float, 4> fK = {0,0,0,1};
 	static const std::array<float, 4> fSpec = {{1,1,1,1}};
 	glLineWidth(1.0);

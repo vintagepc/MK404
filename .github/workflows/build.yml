@@ -143,14 +143,14 @@ jobs:
     runs-on: windows-latest
     if: "!contains(github.event.head_commit.message, 'NO_BUILD')"
     steps:
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3.0.11
         with:
           path: C:\tools\chococache
           key: ${{ runner.os }}-cygwin-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-cygwin-
       - name: Cygwin package cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3.0.11
         with:
           path: C:\tools\cygcache
           key: ${{ runner.os }}-cygwinpkgs-1_1

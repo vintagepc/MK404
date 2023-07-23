@@ -39,6 +39,22 @@ namespace Boards
 		#endif
 	}
 
+	void MM_Control_01::OnAVRReset()
+	{
+		if (m_bSidebandInit)
+		{
+			std::cout << "Sideband reset complete\n";
+			m_USideband.BypassXON();
+		}
+	}
+
+	void MM_Control_01::SetupSideband()
+	{
+		m_USideband.Init(m_pAVR);
+		m_USideband.ConnectPTYOnly("/tmp/MK404-MMU-sideband");
+		m_bSidebandInit = true;
+	}
+
 	void MM_Control_01::SetupHardware()
 	{
 		DisableInterruptLevelPoll(5);

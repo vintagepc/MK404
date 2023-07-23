@@ -47,14 +47,18 @@ namespace Boards
 			void Draw(float fY);
 
 		protected:
+
+			void OnAVRReset() override;
+
 			void SetupHardware() override;
 
+			void SetupSideband();
 
 		//	void CustomAVRInit() override;
 
 		//	void CustomAVRDeinit() override;
 
-			uart_pty m_UART;
+			uart_pty m_UART, m_USideband;
 			HC595 m_shift;
 			TMC2130 m_Sel {'S'},
 					m_Idl {'I'},
@@ -73,5 +77,7 @@ namespace Boards
 			const Wirings::MM_Control_01 m_wiring = Wirings::MM_Control_01();
 
 			std::string m_strTitle = "Missing Material Unit 2";
+
+			bool m_bSidebandInit = false;
 	};
 }; // namespace Boards

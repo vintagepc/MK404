@@ -57,6 +57,8 @@ int
 //#define TRACE(_w) _w
 #ifndef TRACE
 #define TRACE(_w)
+#else
+#include "sim_hex.h"
 #endif
 
 using std::cout;
@@ -91,7 +93,7 @@ void uart_pty::FlushData()
 {
 	std::lock_guard<std::mutex> lock(m_lock);
 	while (m_bXOn && !uart_pty_fifo_isempty(&pty.out)) {
-		TRACE(int r = p->pty.out.read;)
+		TRACE(int r = pty.out.read;)
 		uint8_t byte = uart_pty_fifo_read(&pty.out);
 		TRACE(printf("uart_pty_flush_incoming send r %03d:%02x\n", r, byte);)
 		if (m_chrLast == '\n' && byte == '\n')
@@ -278,14 +280,8 @@ void* uart_pty::Run()
 	return nullptr;
 }
 
-void uart_pty::Init(struct avr_t * avr, char uart)
+void uart_pty::InitPrivate()
 {
-	_Init(avr,this);
-	uint32_t f = 0;
-	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(uart), &f); //NOLINT - complaint in external macro
-	f &= ~AVR_UART_FLAG_POLL_SLEEP; // Issue #356
-	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(uart), &f); //NOLINT - complaint in external macro
-
 	RegisterNotify(BYTE_IN, MAKE_C_CALLBACK(uart_pty,OnByteIn), this);
 
 	int hastap = (getenv("SIMAVR_UART_TAP") && stoi(getenv("SIMAVR_UART_TAP"))) ||
@@ -310,6 +306,30 @@ void uart_pty::Init(struct avr_t * avr, char uart)
 
 	auto fRunCB =[](void * param) { auto p = static_cast<uart_pty*>(param); return p->Run();};
 	pthread_create(&m_thread, nullptr, fRunCB, this);
+
+}
+
+void uart_pty::BypassXON()
+{
+	OnXOnIn(nullptr, 0);
+}
+
+void uart_pty::Init(struct avr_t * avr)
+{
+	_Init(avr,this);
+	InitPrivate();
+	BypassXON();
+}
+
+void uart_pty::Init(struct avr_t * avr, char uart)
+{
+	_Init(avr,this);
+	uint32_t f = 0;
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_GET_FLAGS(uart), &f); //NOLINT - complaint in external macro
+	f &= ~AVR_UART_FLAG_POLL_SLEEP; // Issue #356
+	avr_ioctl(m_pAVR, AVR_IOCTL_UART_SET_FLAGS(uart), &f); //NOLINT - complaint in external macro
+
+	InitPrivate();
 
 }
 
@@ -352,24 +372,23 @@ void uart_pty::Connect(char uart)
 	if (xon) avr_irq_register_notify(xon, MAKE_C_CALLBACK(uart_pty,OnXOnIn), this);
 	if (xoff) avr_irq_register_notify(xoff, MAKE_C_CALLBACK(uart_pty,OnXOffIn),this);
 
-	//for (int ti = 0; ti < 1; ti++)
-		if (port[0].s) {
-			std::string strLnk("/tmp/simavr-uart");
-			// if (ti==1)
-			// {
-			// 	strLnk +="tap";
-			// }
-			strLnk+=uart;
-			unlink(strLnk.c_str());
-			if (symlink(static_cast<char*>(port[0].slavename), strLnk.c_str()) != 0)
-			{
-				std::cerr << "WARN: Can't create " << strLnk << " " << strerror(errno);
-			}
-			else
-			{
-				std::cout << strLnk << " now points to: " << static_cast<char*>(port[0].slavename) << '\n';
-			}
+	if (port[0].s) {
+		std::string strLnk("/tmp/simavr-uart");
+		// if (ti==1)
+		// {
+		// 	strLnk +="tap";
+		// }
+		strLnk+=uart;
+		unlink(strLnk.c_str());
+		if (symlink(static_cast<char*>(port[0].slavename), strLnk.c_str()) != 0)
+		{
+			std::cerr << "WARN: Can't create " << strLnk << " " << strerror(errno);
 		}
+		else
+		{
+			std::cout << strLnk << " now points to: " << static_cast<char*>(port[0].slavename) << '\n';
+		}
+	}
 	if (getenv("SIMAVR_UART_XTERM") && stoi(getenv("SIMAVR_UART_XTERM")))
 	{
 		std::string strCmd("xterm -e picocom -b 115200 ");
@@ -383,5 +402,20 @@ void uart_pty::Connect(char uart)
 	else
 	{
 		std::cout << "note: export SIMAVR_UART_XTERM=1 and install picocom to get a terminal\n";
+	}
+}
+
+void uart_pty::ConnectPTYOnly(const std::string& strLnk)
+{
+	if (port[0].s) {
+		unlink(strLnk.c_str());
+		if (symlink(static_cast<char*>(port[0].slavename), strLnk.c_str()) != 0)
+		{
+			std::cerr << "WARN: Can't create " << strLnk << " " << strerror(errno);
+		}
+		else
+		{
+			std::cout << strLnk << " now points to: " << static_cast<char*>(port[0].slavename) << '\n';
+		}
 	}
 }

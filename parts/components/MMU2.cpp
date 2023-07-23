@@ -25,6 +25,7 @@
 #include "IKeyClient.h"
 #include "LED.h"              // for LED
 #include "MM_Control_01.h"    // for MM_Control_01
+#include "MMUSideband.h"
 #include "PinNames.h"         // for Pin::FINDA_PIN
 #include "TMC2130.h"          // for TMC2130
 #include "gsl-lite.hpp"
@@ -40,7 +41,7 @@ MMU2 *MMU2::g_pMMU = nullptr;
 
 using Boards::MM_Control_01;
 
-MMU2::MMU2(bool bCreate):IKeyClient(),MM_Control_01()
+MMU2::MMU2(bool bCreate, bool bSetupSB):IKeyClient(),MM_Control_01(),m_bSidebandEnabled(bSetupSB)
 {
 	if (g_pMMU)
 	{
@@ -128,18 +129,23 @@ void MMU2::SetupHardware()
 	m_Idl.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(IDLER_OUT));
 	m_Extr.ConnectTo(TMC2130::POSITION_OUT,GetIRQ(PULLEY_IN));
 	m_shift.ConnectTo(HC595::SHIFT_OUT, GetIRQ(SHIFT_IN));
+
+	if (m_bSidebandEnabled)
+	{
+		SetupSidebandControl();
+	}
 }
 
 
 void MMU2::OnResetIn(struct avr_irq_t *irq, uint32_t value)
 {
-	if (!value && !m_bStarted)
+	if (!value && !IsStarted())
 	{
 		StartAVR();
 	}
     else if (irq->value && !value)
 	{
-        m_bReset = true;
+        SetResetFlag();
 	}
 }
 
@@ -149,6 +155,29 @@ void MMU2::ToggleFINDA()
 		std::cout << "FINDA (manual) toggled: " << (m_bFINDAManual?1U:0U) << '\n';
 		SetPin(FINDA_PIN, m_bFINDAManual? 1:0);
 		RaiseIRQ(FINDA_OUT,m_bFINDAManual? 1 : 0);
+}
+
+void MMU2::SetupSidebandControl()
+{
+	MM_Control_01::SetupSideband();
+	RegisterNotify(SB_BYTE_IN, MAKE_C_CALLBACK(MMU2, OnSidebandByteIn), this);
+	ConnectTo(SB_FS, m_USideband.GetIRQ(uart_pty::BYTE_IN));
+	ConnectFrom(m_USideband.GetIRQ(uart_pty::BYTE_OUT), SB_BYTE_IN);
+}
+
+void MMU2::OnSidebandByteIn(struct avr_irq_t * ,uint32_t value)
+{
+	switch (value)
+	{
+		case MMUSideband::RESET:
+			std::cout << "MMU Received sideband RESET signal\n";
+			RaiseIRQ(RESET,1);
+			RaiseIRQ(RESET,0);
+			break;
+		default:
+			std::cerr << "Unrecognized sideband control character:" << (char)value << "\n";
+			break;
+	}
 }
 
 void MMU2::OnPulleyFeedIn(struct avr_irq_t * ,uint32_t value)
@@ -162,6 +191,19 @@ void MMU2::OnPulleyFeedIn(struct avr_irq_t * ,uint32_t value)
 		// Reflect the distance out for IR sensor triggering.
 		RaiseIRQ(FEED_DISTANCE, value);
 		RaiseIRQ(FINDA_OUT,posOut>33.f);
+
+		if (m_bSidebandEnabled)
+		{
+			if (m_fLastPosOut < 400.f && posOut >= 400.f)
+			{
+				RaiseIRQ(SB_FS, MMUSideband::FS_AUTO_SET);
+			}
+			else if (m_fLastPosOut >= 400.f && posOut < 400.f)
+			{
+				RaiseIRQ(SB_FS, MMUSideband::FS_AUTO_CLEAR);
+			}
+			m_fLastPosOut = posOut;
+		}
 	}
 	else
 	{

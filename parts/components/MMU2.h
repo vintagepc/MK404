@@ -39,11 +39,11 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
     public:
         #define IRQPAIRS _IRQ(FEED_DISTANCE,"<mmu.feed_distance") _IRQ(RESET,"<mmu.reset") _IRQ(PULLEY_IN,"<mmu.pulley_in") \
                         _IRQ(SELECTOR_OUT,">sel_pos.out") _IRQ(IDLER_OUT,">idler_pos.out") _IRQ(LEDS_OUT,">leds.out") _IRQ(FINDA_OUT,">finda.out") \
-						_IRQ(SHIFT_IN,"<32shift.in")
+						_IRQ(SHIFT_IN,"<32shift.in") _IRQ(SB_FS, ">sideband_fs.out") _IRQ(SB_BYTE_IN, "sideband_byte.in")
         #include "IRQHelper.h"
 
         // Creates a new MMU2. Creates board and starts it if bCreate = true
-        explicit MMU2(bool bCreate = true);
+        explicit MMU2(bool bCreate = true, bool bSetupSideband = false);
 
 		~MMU2() override {StopAVR();}
 
@@ -52,6 +52,7 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
 
 		inline void SetFINDAState(bool bVal) {m_bFINDAManual = bVal;}
 		void ToggleFINDA();
+
 
     protected:
 		enum Actions
@@ -71,7 +72,7 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
 
     private:
 
-        void* Run();
+		void SetupSidebandControl();
 
         void OnResetIn(avr_irq_t *irq, uint32_t value);
 
@@ -79,11 +80,14 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
 
         void LEDHandler(avr_irq_t *irq, uint32_t value);
 
+        void OnSidebandByteIn(avr_irq_t *irq, uint32_t value);
+
         std::atomic_bool m_bAutoFINDA = {true};
 		std::atomic_bool m_bFINDAManual = {false};
-        std::atomic_bool m_bStarted = {false};
-        std::atomic_bool m_bReset ={false};
         pthread_t m_tRun = 0;
+
+		bool m_bSidebandEnabled = false;
+		float m_fLastPosOut = 0;
 
         static MMU2 *g_pMMU; // Needed for GL
 };

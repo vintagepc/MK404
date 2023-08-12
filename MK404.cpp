@@ -260,7 +260,7 @@ void ResizeCB(int w, int h)
 // gl timer. if the lcd is dirty, refresh display
 void timerCB(int i)
 {
-	if (bIsQuitting)
+	if (bIsQuitting || glutGetWindow()==0 )
 	{
 		return;
 	}

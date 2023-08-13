@@ -18,7 +18,7 @@ option(ENABLE_SHMQ "Enables Shared memory queue code for IPC pritner")
 
 
 if (ENABLE_GCOV)
-	SET(GCOV_BINARY /usr/bin/gcov-7)
+	SET(GCOV_BINARY /usr/bin/gcov)
 	message(STATUS "Using gcov ${GCOV_BINARY}")
 endif()
 

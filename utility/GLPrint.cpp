@@ -194,9 +194,9 @@ void GLPrint::OnEStep(const uint32_t& value, const uint32_t& /*deltaT*/)
 			}
 			std::lock_guard<std::mutex> lock(m_lock); // Lock out GL while updating vectors
 			m_uiExtrStart = m_uiExtrEnd;
+			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
 			m_fvDraw.insert(m_fvDraw.end(),fExtrEnd.begin(), fExtrEnd.end());
 			m_fvNorms.insert(m_fvNorms.end(), fCross.begin(), fCross.end());
-			m_ivStart.push_back(m_fvDraw.size()/3); // Index of what we're about to add...
 
 		}
 		m_vPath.push_back({m_uiExtrEnd[0], m_uiExtrEnd[2], m_uiExtrEnd[1], std::max(static_cast<uint64_t>(m_uiExtrEnd[3]), m_iEMax)});
@@ -432,7 +432,7 @@ void GLPrint::Draw()
 		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fColor.data());
 		{
 			std::lock_guard<std::mutex> lock(m_lock);
-			if (m_iVisType >= PrintVisualType::LINE && m_ivTCount.size() > 0)
+			if (m_iVisType >= PrintVisualType::LINE)
 			{
 				glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvTri.data());
 				glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvTriNorm.data());
@@ -455,20 +455,13 @@ void GLPrint::Draw()
 			}
 			glVertexPointer(3, GL_FLOAT, 3*sizeof(float), m_fvDraw.data());
 			glNormalPointer(GL_FLOAT, 3*sizeof(float), m_fvNorms.data());
-			if (m_iVisType == PrintVisualType::LINE &&  m_ivCount.size() > 0)
-			{
-				glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
-			}
+			if (m_iVisType == PrintVisualType::LINE) glMultiDrawArrays(GL_LINE_STRIP,m_ivStart.data(),m_ivCount.data(), m_ivCount.size());
 
 
 			glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE,fSpec.data());
 			if (m_ivCount.size()>0) // the "In progress" segments
 			{
-				GLsizei iLen = ((m_fvDraw.size()/3)-m_ivStart.back())-1;
-				if (iLen > 0)
-				{
-					glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),iLen);
-				}
+				glDrawArrays(GL_LINE_STRIP,m_ivStart.back(),((m_fvDraw.size()/3)-m_ivStart.back())-1);
 			}
 			if (m_bExtruding && m_fvDraw.size() >0)
 			{

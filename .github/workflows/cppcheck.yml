@@ -51,7 +51,7 @@ jobs:
         sudo apt-get update
         sudo apt-get purge clang-*
         sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install clang-6.0 clang-tidy-6.0
-        sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu cppcheck
+        sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl2-dev iwyu cppcheck
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages

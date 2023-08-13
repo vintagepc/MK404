@@ -92,14 +92,7 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
         void SetFollowNozzle(bool bFollow) { m_bFollowNozzle = bFollow;}
 
 		// Flags window for redisplay
-		inline void FlagForRedraw() {
-			#ifdef FORCE_3D_REDRAW // Special case for runners...
-				glutSetWindow(m_iWindow);
-				Draw();
-			#else // Normal case:
-				glutPostWindowRedisplay(m_iWindow);
-			#endif
-		}
+		inline void FlagForRedraw() { glutPostWindowRedisplay(m_iWindow); }
 
         // GL helpers needed for the window and mouse callbacks, use when creating the GL window.
         void MouseCB(int button, int state, int x, int y);

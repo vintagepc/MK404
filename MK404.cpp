@@ -161,12 +161,7 @@ void displayCB()		/* function called whenever redisplay needed */
 		ScriptHost::Draw();
 		glPopMatrix();
 	}
-#ifdef FORCE_3D_REDRAW
 	printer->Draw();
-	glutSetWindow(window);
-#else
-	printer->Draw();
-#endif
 	m_iFrCount++;
 	m_iTic=glutGet(GLUT_ELAPSED_TIME);
 	auto iDiff = m_iTic - m_iLast;
@@ -281,11 +276,7 @@ void timerCB(int i)
 	}
 	// 16 = 60fps
 	glutTimerFunc(16, timerCB, i);
-	#ifdef FORCE_3D_REDRAW
-	displayCB();
-	#else
 	glutPostRedisplay();
-	#endif
 }
 
 
@@ -615,6 +606,8 @@ int main(int argc, char *argv[])
 
 	if (!bNoGraphics)
 	{
+		glutSetWindow(window);
+		glutPopWindow();
 		glutMainLoop();
 	}
 

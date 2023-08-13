@@ -606,6 +606,8 @@ int main(int argc, char *argv[])
 
 	if (!bNoGraphics)
 	{
+		glutSetWindow(window);
+		glutPopWindow();
 		glutMainLoop();
 	}
 

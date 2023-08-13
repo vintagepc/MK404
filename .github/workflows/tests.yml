@@ -17,13 +17,13 @@ jobs:
   # This workflow contains a single job called "build"
   part_tests:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -31,7 +31,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -39,7 +39,7 @@ jobs:
         submodules: true
 
     - name: Cache packages
-      uses: actions/cache@v1.0.3
+      uses: actions/cache@v3.0.11
       id: cache-pkgs
       with:
           path: "packages"
@@ -53,15 +53,14 @@ jobs:
     - name: Install packages
       run: |
           sudo apt-get update
-          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov xvfb
+          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov xvfb mesa-utils
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
 
-    - uses: openrndr/setup-opengl@v1.1
-    - run: |
+    - name: Check OpenGL
+      run: |
         xvfb-run glxinfo
-        ls -l
         echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
 
     - name: Prepare CMake build
@@ -80,7 +79,7 @@ jobs:
     - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_core.tar.gz tests/snaps/
 
     - name: Upload report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Report
         path: |
@@ -88,7 +87,7 @@ jobs:
 #          ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
 
     - name: Upload coverage artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Coverage
         path: |
@@ -107,13 +106,13 @@ jobs:
 
   ext1_tests:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -121,7 +120,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -129,7 +128,7 @@ jobs:
         submodules: true
 
     - name: Cache packages
-      uses: actions/cache@v1.0.3
+      uses: actions/cache@v3.0.11
       id: cache-pkgs
       with:
           path: "packages"
@@ -143,15 +142,14 @@ jobs:
     - name: Install packages
       run: |
           sudo apt-get update
-          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov xvfb
+          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr avr-libc libglew-dev freeglut3-dev libsdl-sound1.2-dev lcov xvfb mesa-utils
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
 
-    - uses: openrndr/setup-opengl@v1.1
-    - run: |
+    - name: Check OpenGL
+      run: |
         xvfb-run glxinfo
-        ls -l
         echo "LD is $LD_LIBRARY_PATH and GD is $GALLIUM_DRIVER"
 
     - name: Prepare CMake build
@@ -170,14 +168,14 @@ jobs:
     - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_ext1.tar.gz tests/snaps/
 
     - name: Upload report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Report
         path: |
           ${{ runner.workspace }}/MK404/build/snaps_ext1.tar.gz
 
     - name: Upload coverage artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Coverage2
         path: |
@@ -190,12 +188,12 @@ jobs:
 
   Upload_Coverage:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     needs: [ext1_tests, part_tests]
     steps:
 
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -203,7 +201,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -211,13 +209,13 @@ jobs:
         submodules: true
 
     - name: Retrieve coverage reports
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3.0.2
       with:
         name: Coverage
         path: parts
 
     - name: Retrieve coverage reports
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3.0.2
       with:
         name: Coverage2
         path: ext1
@@ -225,7 +223,7 @@ jobs:
 
     - name: Upload to codecov.io
       uses: codecov/codecov-action@v2.1.0
-      with: 
+      with:
         # Comma-separated list of files to upload
         files: ./parts/parts.info,./ext1/ext1.info
         # Specify whether or not CI build should fail if Codecov runs into an error during upload

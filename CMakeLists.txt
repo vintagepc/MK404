@@ -449,10 +449,19 @@ endif()
 
 target_link_libraries(MK404 gsl-lite)
 
+file(GLOB_RECURSE ALL_MMU_FILES
+	"${PROJECT_SOURCE_DIR}/assets/Firmware/MM*.hex"
+)
+
 add_custom_command(TARGET MK404 POST_BUILD
+					COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}"
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/MM-control-01.hex"
-                    "${PROJECT_BINARY_DIR}/MM-control-01.hex")
+                    #"${PROJECT_SOURCE_DIR}/assets/Firmware/MM-control-01.hex"
+                    #"${PROJECT_BINARY_DIR}/MM-control-01.hex"
+					${ALL_MMU_FILES}
+					"${PROJECT_BINARY_DIR}/"
+					)
+
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/assets/Firmware/MK3S.afx"

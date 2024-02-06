@@ -12,6 +12,7 @@
 #  BSD license.
 #  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 #
+#include <libelf.h>
 
 
 if (LIBELF_LIBRARIES AND LIBELF_INCLUDE_DIRS)
@@ -22,12 +23,21 @@ find_path (LIBELF_INCLUDE_DIRS
   NAMES
     libelf.h
   PATHS
+    /opt/homebrew/Cellar/libelf
     /usr/include
     /usr/include/libelf
     /usr/local/include
     /usr/local/include/libelf
     /opt/local/include
     /opt/local/include/libelf
+    /opt/homebrew
+    /opt/homebrew/libelf
+    /opt/homebrew/include
+    /opt/homebrew/include/libelf
+    /opt/homebrew/include/opt/libelf
+    /opt/homebrew/opt
+    /opt/homebrew/Cellar/libelf
+    /opt/homebrew/Cellar/libelf/0.8.13_1/include/libelf
     /sw/include
     /sw/include/libelf
     ENV CPATH)
@@ -36,6 +46,7 @@ find_library (LIBELF_LIBRARIES
   NAMES
     elf
   PATHS
+    /opt/homebrew/Cellar/libelf
     /usr/lib
     /usr/local/lib
     /opt/local/lib

@@ -23,7 +23,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -31,7 +31,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -39,7 +39,7 @@ jobs:
         submodules: true
 
     - name: Cache packages
-      uses: actions/cache@v1.0.3
+      uses: actions/cache@v3.0.11
       id: cache-pkgs
       with:
           path: "packages"
@@ -52,7 +52,7 @@ jobs:
     - name: Install packages
       run: |
           sudo apt-get update
-          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev
+          sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl2-dev
 
     - name: Cache permissions
       run: sudo chmod -R 744 packages
@@ -64,10 +64,11 @@ jobs:
       run: cd ${{ runner.workspace }}/MK404/build && make -j2
 
     - name: Checkout Wiki
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.wiki.git
+        ref: 'master'
         path: ref
 
     - name: Regen docs
@@ -89,7 +90,7 @@ jobs:
 
     - name: Upload artifact
       if: ${{ !github.event.pull_request }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Binaries
         path: ${{ runner.workspace }}/MK404/build/MK404-development-build.tar.bz2
@@ -102,7 +103,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -110,7 +111,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -133,7 +134,7 @@ jobs:
 
     - name: Upload OSX artifact
       if: ${{ !github.event.pull_request }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: Binaries
         path: ${{ runner.workspace }}/MK404/build/MK404_OSX
@@ -143,14 +144,14 @@ jobs:
     runs-on: windows-latest
     if: "!contains(github.event.head_commit.message, 'NO_BUILD')"
     steps:
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3.0.11
         with:
           path: C:\tools\chococache
           key: ${{ runner.os }}-cygwin-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-cygwin-
       - name: Cygwin package cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3.0.11
         with:
           path: C:\tools\cygcache
           key: ${{ runner.os }}-cygwinpkgs-1_1
@@ -162,11 +163,11 @@ jobs:
           choco install --no-progress cygwin
       - name: Install cygwin dependencies
         run: |
-          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -l C:/tools/cygcache -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL-devel,avr-gcc,python2,libpng-devel
+          C:\tools\cygwin\cygwinsetup.exe -qgnNdO -l C:/tools/cygcache -R C:/tools/cygwin -s http://mirrors.kernel.org/sourceware/cygwin/ -P cmake,make,libelf-devel,gcc-core,gcc-g++,libstdc++-6-devel,git,libglut-devel,libGLEW-devel,libSDL_sound-devel,libSDL2-devel,avr-gcc,python3,libpng-devel
         shell: cmd
 
       - name: Checkout ${{ github.event.pull_request.head.ref }}
-        uses: actions/checkout@v2.2.0
+        uses: actions/checkout@v3
         if: ${{ github.event.pull_request }}
         with:
           repository: vintagepc/MK404.git
@@ -174,7 +175,7 @@ jobs:
           submodules: true
 
       - name: Checkout ${{ github.event.ref }}
-        uses: actions/checkout@v2.2.0
+        uses: actions/checkout@v3
         if: ${{ !github.event.pull_request }}
         with:
           repository: vintagepc/MK404.git
@@ -201,7 +202,7 @@ jobs:
 
       - name: Upload Cygwin artifact
         if: ${{ !github.event.pull_request }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3.1.1
         with:
           name: Binaries
           path: ${{ runner.workspace }}/MK404/build/MK404.exe
@@ -212,7 +213,7 @@ jobs:
     needs: [build, build_osx, build_cygwin]
     steps:
       - name: Retrieve platform binaries
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3.0.2
         with:
           name: Binaries
 

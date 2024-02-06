@@ -21,7 +21,7 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout ${{ github.event.pull_request.head.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -29,7 +29,7 @@ jobs:
         submodules: true
 
     - name: Checkout ${{ github.event.ref }}
-      uses: actions/checkout@v2.2.0
+      uses: actions/checkout@v3
       if: ${{ !github.event.pull_request }}
       with:
         repository: vintagepc/MK404.git
@@ -37,7 +37,7 @@ jobs:
         submodules: true
 
     - name: Cache packages
-      uses: actions/cache@v1.0.3
+      uses: actions/cache@v3.0.11
       id: cache-pkgs
       with:
           path: "packages"
@@ -48,7 +48,7 @@ jobs:
 
     - name: Install packages
       run: |
-        sudo apt-get update 
+        sudo apt-get update
         sudo apt-get purge clang-*
         sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install clang-5.0
         sudo apt-get -o Dir::Cache::Archives=`pwd`/packages install libelf-dev gcc-avr libglew-dev freeglut3-dev libsdl-sound1.2-dev iwyu
@@ -63,9 +63,9 @@ jobs:
       run: |
           cd ${{ runner.workspace }}/MK404/build && make |& tee IWYU.txt
           ! grep -q "include-what-you-use reported diagnostics" IWYU.txt
-          
+
     - name: Upload IWYU log
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         name: IWYU
         path: ${{ runner.workspace }}/MK404/build/IWYU.txt

@@ -84,7 +84,6 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
 
         std::atomic_bool m_bAutoFINDA = {true};
 		std::atomic_bool m_bFINDAManual = {false};
-        pthread_t m_tRun = 0;
 
 		bool m_bSidebandEnabled = false;
 		float m_fLastPosOut = 0;

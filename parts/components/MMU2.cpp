@@ -187,18 +187,18 @@ void MMU2::OnPulleyFeedIn(struct avr_irq_t * ,uint32_t value)
 
 	if (m_bAutoFINDA)
 	{
-   		SetPin(FINDA_PIN,posOut>33.0f);
+   		SetPin(FINDA_PIN, posOut > FINDA_TRIGGER_DISTANCE);
 		// Reflect the distance out for IR sensor triggering.
 		RaiseIRQ(FEED_DISTANCE, value);
-		RaiseIRQ(FINDA_OUT,posOut>33.f);
+		RaiseIRQ(FINDA_OUT, posOut > FINDA_TRIGGER_DISTANCE);
 
 		if (m_bSidebandEnabled)
 		{
-			if (m_fLastPosOut < 400.f && posOut >= 400.f)
+			if (m_fLastPosOut < FSENSOR_TRIGGER_DISTANCE && posOut >= FSENSOR_TRIGGER_DISTANCE)
 			{
 				RaiseIRQ(SB_FS, MMUSideband::FS_AUTO_SET);
 			}
-			else if (m_fLastPosOut >= 400.f && posOut < 400.f)
+			else if (m_fLastPosOut >= FSENSOR_TRIGGER_DISTANCE && posOut < FSENSOR_TRIGGER_DISTANCE)
 			{
 				RaiseIRQ(SB_FS, MMUSideband::FS_AUTO_CLEAR);
 			}

@@ -55,6 +55,14 @@ class MMU2: public BasePeripheral, public Boards::MM_Control_01, virtual private
 
 
     protected:
+
+		static constexpr float FINDA_TRIGGER_DISTANCE = 33.f;
+		static constexpr float FSENSOR_TRIGGER_DISTANCE = 400.f;
+
+	#ifdef TEST_MODE
+		friend void Test_MMU2_internal();
+	#endif
+
 		enum Actions
 		{
 			// We have to extend board rather than being our own IScriptable due

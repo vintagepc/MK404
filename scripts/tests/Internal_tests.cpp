@@ -32,6 +32,8 @@
 #include "HD44780.h"
 #include "IRSensor.h"
 #include "IScriptable.h"
+#include "MMU2.h"
+#include "MMUSideband.h"
 #include "PAT9125.h"
 #include "PINDA.h"
 #include "SDCard.h"
@@ -194,6 +196,80 @@ void Test_EEPROM_errors() {
 
 TEST_CASE("Internal_EEPROM_errors") {
 	Test_EEPROM_errors();
+}
+
+void Test_MMU2_internal() {
+	MMU2 m(true, true);
+
+	// Exercises some of the feed auto-actions like the FINDA and sideband/fsensor triggers...
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FEED_DISTANCE)->value == 0);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FINDA_OUT)->value == 0);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::SB_FS)->value != MMUSideband::FS_AUTO_SET);
+
+	float feed_value = MMU2::FINDA_TRIGGER_DISTANCE - 1.f;
+	uint32_t value;
+	std::memcpy(&value, &feed_value, sizeof(value));
+
+	// Check behaviour shy of trigger
+	m.RaiseIRQ(MMU2::IRQ::PULLEY_IN,value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FEED_DISTANCE)->value == value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FINDA_OUT)->value == 0);
+
+	// Check finda triggers
+	feed_value += 1.1f;
+	std::memcpy(&value, &feed_value, sizeof(value));
+	m.RaiseIRQ(MMU2::IRQ::PULLEY_IN,value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FEED_DISTANCE)->value == value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FINDA_OUT)->value == 1);
+
+	// Check FINDA untriggers
+	feed_value -= 1.1f;
+	std::memcpy(&value, &feed_value, sizeof(value));
+	m.RaiseIRQ(MMU2::IRQ::PULLEY_IN,value);
+	REQUIRE(m.m_bAutoFINDA);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FEED_DISTANCE)->value == value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FINDA_OUT)->value == 0);
+
+	REQUIRE(m.GetIRQ(MMU2::IRQ::SB_FS)->value != MMUSideband::FS_AUTO_SET);
+
+	feed_value = MMU2::FSENSOR_TRIGGER_DISTANCE - 0.1f;
+	std::memcpy(&value, &feed_value, sizeof(value));
+	m.RaiseIRQ(MMU2::IRQ::PULLEY_IN,value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FEED_DISTANCE)->value == value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::SB_FS)->value != MMUSideband::FS_AUTO_SET);
+
+	// Check that the sensor signal is set when we cross the threshold...
+	feed_value += 0.2f;
+	std::memcpy(&value, &feed_value, sizeof(value));
+	m.RaiseIRQ(MMU2::IRQ::PULLEY_IN,value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FEED_DISTANCE)->value == value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FINDA_OUT)->value == 1);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::SB_FS)->value == MMUSideband::FS_AUTO_SET);
+
+	// And cleared when we go back below.
+	feed_value -= 0.2f;
+	std::memcpy(&value, &feed_value, sizeof(value));
+	m.RaiseIRQ(MMU2::IRQ::PULLEY_IN,value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FEED_DISTANCE)->value == value);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::FINDA_OUT)->value == 1);
+	REQUIRE(m.GetIRQ(MMU2::IRQ::SB_FS)->value == MMUSideband::FS_AUTO_CLEAR);
+
+
+	// Check the reset flag:
+	REQUIRE(!m.GetResetFlag());
+
+	m.RaiseIRQ(MMU2::IRQ::SB_BYTE_IN, MMUSideband::FS_AUTO_CLEAR); // Try garbage
+	REQUIRE(!m.GetResetFlag()); // Should not reset
+	m.RaiseIRQ(MMU2::IRQ::SB_BYTE_IN, MMUSideband::RESET); // Try reset character:
+	REQUIRE(m.IsStarted()); // First release of reset line starts the CPU...
+
+	m.RaiseIRQ(MMU2::IRQ::SB_BYTE_IN, MMUSideband::RESET); // Try reset character:
+	REQUIRE(m.GetResetFlag()); // Second one should have set the flag.
+
+}
+
+TEST_CASE("Internal_MMU2_bridge") {
+	Test_MMU2_internal();
 }
 
 TEST_CASE("Internal_Colour_conversion") {

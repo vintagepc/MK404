@@ -59,8 +59,17 @@ class uart_pty: public BasePeripheral
 		// Registers with SimAVR
 		void Init(avr_t *avr, char uart);
 
+		// Registers a dummy UART PTY that isn't connected to the AVR.
+		void Init(avr_t *avr);
+
 		// Actually connects to the UART.
 		void Connect(char chrUART);
+
+		// Sets up a PTY but does nothing else.
+		void ConnectPTYOnly(const std::string& strLnk);
+
+		// Used to disable XON for PTY-only connections.
+		void BypassXON();
 
 		// Resets the newline trap after a printer reset.
 		inline void Reset() { m_chrLast = '\n';}
@@ -69,6 +78,9 @@ class uart_pty: public BasePeripheral
 		inline const std::string GetSlaveName() { return std::string(static_cast<char*>(pty.slavename)); };
 
 	private:
+
+		// Registers a dummy UART PTY that isn't connected to the AVR.
+		void InitPrivate();
 
 		void* Run();
 		void OnByteIn(avr_irq_t * irq, uint32_t value);

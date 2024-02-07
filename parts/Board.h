@@ -81,9 +81,11 @@ namespace Boards
 			inline std::string GetSDCardFile(){return m_strSDFile.empty()?GetStorageFileName("SDcard"):m_strSDFile;}
 
 			inline void SetResetFlag(){m_bReset = true;}
+			inline bool GetResetFlag(){return m_bReset;}
 			inline void SetQuitFlag(){m_bQuit = true; m_bPaused = false;}
 			inline bool GetQuitFlag(){return m_bQuit;}
 
+			inline bool IsStarted(){ return m_thread!=0; }
 			inline bool IsStopped(){ return m_pAVR->state == cpu_Stopped;}
 			inline bool IsPaused(){ return m_bPaused;}
 

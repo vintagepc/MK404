@@ -60,6 +60,10 @@ class Config
 		inline void SetFW2(std::string strName){ m_strSecFW = std::move(strName);}
 		inline const std::string GetFW2(){ return m_strSecFW;}
 
+		// Work folder?
+		inline void SetDataDir(std::string strDir){ m_strDataDir = std::move(strDir);}
+		inline const std::string GetDataDir(){ return m_strDataDir;}
+
 		// GDB on secondary board
 		inline void SetGDB2(bool bVal){ m_bGDB2 = bVal;}
 		inline const bool GetGDB2(){ return m_bGDB2;}
@@ -71,6 +75,7 @@ class Config
 		uint8_t m_iScheme = 0;
 		bool m_bDebugCore = false;
 		std::string m_strSecFW = "MM-control-01.hex";
+		std::string m_strDataDir = "";
 		EnabledType::Type_t m_SoftPWM = EnabledType::Type_t::NotSet;
 		bool m_bGDB2 = false;
 };

@@ -22,6 +22,7 @@
 
 #include "Board.h"
 #include "BasePeripheral.h"  // for BasePeripheral
+#include "Config.h"          // for Config
 #include "KeyController.h"  // for KeyController
 #include "ScriptHost.h"     // for ScriptHost
 #include "TelemetryHost.h"
@@ -565,7 +566,8 @@ namespace Boards {
 
 	std::string Board::GetStorageFileName(const std::string &strType)
 	{
-		std::string strFN {CXXDemangle(typeid(*this).name())};//= m_strBoard;
+		std::string strBase {CXXDemangle(typeid(*this).name())};//= m_strBoard;
+		std::string strFN = Config::Get().GetDataDir() + strBase;
 		//strFN.append("_").append(m_wiring.GetMCUName()).append("_").append(strType).append(".bin");
 		strFN.append("_").append(strType).append(".bin");
 #ifdef TEST_MODE // Creates special files in test mode that don't clobber your existing stuff.

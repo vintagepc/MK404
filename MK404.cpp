@@ -383,6 +383,13 @@ int main(int argc, char *argv[])
 
 	cmd.parse(argc,argv);
 
+	std::string strDataDir = "";
+
+#ifdef FLATPAK_INSTALL
+	strDataDir += std::getenv("HOME") + std::string("/MK404/");
+#endif
+	Config::Get().SetDataDir(strDataDir);
+
 	if (argCmplBash.isSet() || argCmplZsh.isSet())
 	{
 		TCLAP::BashCompletionOutput fmtOutBash;
@@ -425,9 +432,9 @@ int main(int argc, char *argv[])
 			std::cerr << "Cannot create an SD image without a filename." << '\n';
 			exit(1);
 		}
-		if (FatImage::MakeFatImage(argSD.getValue(), argImgSize.getValue()))
+		if (FatImage::MakeFatImage(strDataDir + argSD.getValue(), argImgSize.getValue()))
 		{
-			std::cout << "Wrote " << argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << '\n';
+			std::cout << "Wrote " << strDataDir + argSD.getValue() << ". You can now use mcopy to copy gcode files into the image." << '\n';
 		}
 		return 0;
 	}
@@ -441,31 +448,28 @@ int main(int argc, char *argv[])
 	Config::Get().SetSoftPWM(EnabledType::GetNameToType().at(argSoftPWM.getValue()));
 	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
 	Config::Get().SetColourE(argColourE.isSet());
-	Config::Get().SetFW2(argFW2.getValue());
+
+	Config::Get().SetFW2(strDataDir + argFW2.getValue());
 	Config::Get().SetGDB2(argGDB2.isSet());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());
 
 	ScriptHost::Init();
 
-	std::string strFW;
-	if (!argLoad.isSet() && !argFW.isSet())
+	std::string strFW = "";
+	if (argLoad.isSet() || argFW.isSet())
 	{
-		strFW = ""; // No firmware and no load directive.
-	}
-	else
-	{
-		strFW = argFW.getValue();
+		strFW = strDataDir + argFW.getValue();
 	}
 
 	std::string strBoot {""};
 	{
-		std::ifstream ifBL {argStrBoot.getValue()};
+		std::ifstream ifBL {strDataDir + argStrBoot.getValue()};
 		if (!argStrBoot.isSet() && ifBL.good())
 		{
 			if (argModel.getValue() != "Prusa_MMU2" && argModel.getValue() != "Prusa_CW1S" && argModel.getValue() != "Prusa_CW1" ) {
 				std::cout << "No bootloader specified, using default: " << argStrBoot.getValue() << '\n';
-				strBoot = argStrBoot.getValue();
+				strBoot = strDataDir + argStrBoot.getValue();
 			} // MMU does not take a bootloader.
 			else
 			{
@@ -479,7 +483,7 @@ int main(int argc, char *argv[])
 		else if (ifBL.good())
 		{
 			std::cout << "Using Bootloader: " << argStrBoot.getValue() << '\n';
-			strBoot = argStrBoot.getValue();
+			strBoot = strDataDir + argStrBoot.getValue();
 		}
 		else
 		{
@@ -487,8 +491,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),bArgHacks,argSerial.isSet(), argSD.getValue() ,
-		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(),strBoot); // this line is the CreateBoard() args.
+	void *pRawPrinter = PrinterFactory::CreatePrinter(argModel.getValue(),pBoard,printer,argBootloader.isSet(),bArgHacks,argSerial.isSet(), strDataDir + argSD.getValue() ,
+		strFW,argSpam.getValue(), argGDB.isSet(), argVCDRate.getValue(), strBoot); // this line is the CreateBoard() args.
 
 	pBoard->SetPrimary(true); // This is the primary board, responsible for scripting/dispatch. Blocks contention from sub-boards, e.g. MMU.
 
@@ -565,7 +569,7 @@ int main(int argc, char *argv[])
 
 	if (argScript.isSet())
 	{
-		if (!ScriptHost::Setup(argScript.getValue(),pBoard->GetAVR()->frequency))
+		if (!ScriptHost::Setup(strDataDir + argScript.getValue(),pBoard->GetAVR()->frequency))
 		{
 			return 1; // validate will have printed error info.
 		}

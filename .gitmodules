@@ -16,3 +16,6 @@
 [submodule "3rdParty/shmemq404"]
 	path = 3rdParty/shmemq404
 	url = https://github.com/vintagepc/shmemq404.git
+[submodule "3rdParty/flatpak-modules"]
+	path = 3rdParty/flatpak-modules
+	url = https://github.com/flathub/shared-modules.git

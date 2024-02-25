@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(OpenGL_GL_PREFERENCE LEGACY) # We really don't need GLX here. (Prevents linking unused libs)
 
 option(ENABLE_THREAD_SANITY "Enables -fsanitize=threads")
+option(ENABLE_ADDR_SANITY "Enables -fsanitize=address")
 option(ENABLE_IWYU "Enables Include-what-you-use")
 option(ENABLE_TIDY "Enables Clang-tidy")
 option(ENABLE_GCOV "Enables gcov coverage")
@@ -15,6 +16,7 @@ option(ENABLE_GPERF "Enables gperf profiling")
 option(RUNNER_ENV, "Adjust commands for github runner")
 option(ENABLE_PCH "Enables a precompiled header for faster compile times" 1)
 option(ENABLE_SHMQ "Enables Shared memory queue code for IPC pritner")
+option(FLATPAK_INSTALL "Changes install directories for flatpak")
 
 
 if (ENABLE_GCOV)
@@ -305,6 +307,10 @@ if (ENABLE_THREAD_SANITY)
 	target_compile_options(MK404 PRIVATE -fsanitize=thread)
 endif()
 
+if (ENABLE_ADDR_SANITY)
+	target_compile_options(MK404 PRIVATE -fsanitize=address)
+endif()
+
 add_custom_target(clean-simavr
 	COMMAND cd ${PROJECT_SOURCE_DIR}/3rdParty/simavr && make clean
 )
@@ -361,6 +367,12 @@ include_directories(${GLEW_INCLUDE_DIR})
 if (ENABLE_THREAD_SANITY)
 	target_link_libraries(MK404 -fsanitize=thread)
 endif()
+
+
+if (ENABLE_ADDR_SANITY)
+	target_link_libraries(MK404 -fsanitize=address)
+endif()
+
 
 if (ENABLE_GCOV)
 	target_compile_options(MK404 PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
@@ -449,26 +461,17 @@ endif()
 
 target_link_libraries(MK404 gsl-lite)
 
+file(GLOB_RECURSE FIRMWARE_FILES
+	"assets/*.hex"
+	"assets/*.afx"
+)
+
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/MM-control-01.hex"
-                    "${PROJECT_BINARY_DIR}/MM-control-01.hex")
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/MK3S.afx"
-                    "${PROJECT_BINARY_DIR}/MK3S.afx")
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/stk500boot_v2_mega2560.hex"
-                    "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Prusa-CW1-Firmware-en-v3.1.0.hex"
-                    "${PROJECT_BINARY_DIR}/Prusa-CW1-Firmware.hex")
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Prusa-CW1S-Firmware-en-v3.1.0.hex"
-                    "${PROJECT_BINARY_DIR}/Prusa-CW1S-Firmware.hex")
+                    ${FIRMWARE_FILES}
+                    "${PROJECT_BINARY_DIR}/"
+					)
+
 # Copies the models/materials:
 
 file(GLOB_RECURSE MODEL_FILES
@@ -483,6 +486,17 @@ add_custom_command(TARGET MK404 POST_BUILD
                     "${PROJECT_BINARY_DIR}/assets/"
                      )
 
+
+IF(FLATPAK_INSTALL)
+	INSTALL(TARGETS MK404 DESTINATION bin)
+	INSTALL(DIRECTORY "${PROJECT_BINARY_DIR}/assets/" DESTINATION bin/assets)
+	FOREACH(FIRMWARE IN LISTS FIRMWARE_FILES)
+		INSTALL(FILES ${FIRMWARE} DESTINATION bin)
+	ENDFOREACH()
+	#INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/io.github.vintagepc.MK404.png DESTINATION share/icons/hicolor/256x256/apps/)
+	INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/launch-mk404.sh DESTINATION bin PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
+	TARGET_COMPILE_DEFINITIONS(MK404 PRIVATE -DFLATPAK_INSTALL)
+ENDIF()
 
 file(GLOB TESTS_SOURCES ${PROJECT_SOURCE_DIR}/scripts/tests/test_*.c)
 message(STATUS "Checking for tests...")

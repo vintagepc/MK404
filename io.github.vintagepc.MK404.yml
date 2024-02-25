@@ -1,0 +1,48 @@
+id: io.github.vintagepc.MK404
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: launch-mk404.sh
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --device=dri
+  - --socket=pulseaudio
+  - --filesystem=~/MK404:create
+  - --filesystem=/tmp
+modules:
+  - 3rdParty/flatpak-modules/glew/glew.json
+  - 3rdParty/flatpak-modules/glu/glu-9.json
+  - 3rdParty/flatpak-modules/SDL2/SDL2-no-libdecor.json
+  - name: freeglut
+    buildsystem: cmake-ninja
+    sources:
+      - type: archive
+        url: "https://downloads.sourceforge.net/project/freeglut/freeglut/3.4.0/freeglut-3.4.0.tar.gz"
+        sha1: "169b069a6c3e7a3ce960887ab3e4a8ee73443bbd"
+    cleanup:
+      - /include/GL/freeglut.h
+      - /include/GL/freeglut_ext.h
+      - /include/GL/freeglut_std.h
+      - /include/GL/freeglut_ucall.h
+      - /include/GL/glut.h
+      - /lib/libglut.a
+      - /lib/pkgconfig/glut.pc
+      - /lib/cmake/FreeGLUT
+  - name: MK404
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_PREFIX=/app
+      - -DCMAKE_PREFIX_PATH=/lib
+      - -DFLATPAK_INSTALL=ON
+      - -DGLUT_INCLUDE_DIR=/include/GL
+    sources:
+      - type: dir
+        path: .
+    cleanup:
+      - /include/tiny_obj_loader.h
+      - /lib/pkgconfig/tinyobjloader.pc
+      - /lib/tinyobjloader
+      - /lib/tinyobjloader.a
+      - /share/doc/tinyobjloader

@@ -213,7 +213,7 @@ jobs:
     needs: [build, build_osx, build_cygwin]
     steps:
       - name: Retrieve platform binaries
-        uses: actions/download-artifact@v3.0.2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: Binaries
 

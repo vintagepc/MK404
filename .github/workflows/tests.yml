@@ -201,13 +201,13 @@ jobs:
         submodules: true
 
     - name: Retrieve coverage reports
-      uses: actions/download-artifact@v3.0.2
+      uses: actions/download-artifact@v4.1.7
       with:
         name: Coverage
         path: parts
 
     - name: Retrieve coverage reports
-      uses: actions/download-artifact@v3.0.2
+      uses: actions/download-artifact@v4.1.7
       with:
         name: Coverage2
         path: ext1

@@ -174,7 +174,9 @@ set(H_FILES ${H_FILES_base} ${H_FILES_3rdParty})
 if (NOT APPLE)
 	set(NON_APPLE_SRC parts/components/usbip.c)
 	set_source_files_properties(parts/components/usbip.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+ 	SET(LIBELF_EXTRA_INCLUDE)
 else()
+	SET(LIBELF_EXTRA_INCLUDE "/opt/homebrew/include/") # Stupid workaround
 	set(NON_APPLE_SRC)
 endif()
 
@@ -346,7 +348,7 @@ if (NOT CPPCHECK_ONLY)
 #target_link_libraries(Exe ${SDL2_LIBRARIES})
 
 find_package(LibElf REQUIRED)
-include_directories(${LIBELF_INCLUDE_DIRS})
+include_directories(${LIBELF_INCLUDE_DIRS} ${LIBELF_EXTRA_INCLUDE})
 find_package(SDL2)
 include_directories(${SDL2_INCLUDE_DIR})
 include(FindPNG)

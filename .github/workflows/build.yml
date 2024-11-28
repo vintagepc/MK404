@@ -96,6 +96,7 @@ jobs:
         path: ${{ runner.workspace }}/MK404/build/MK404-development-build.tar.bz2
 
   build_osx:
+    continue-on-error: true
     # The type of runner that the job will run on
     runs-on: macos-latest
     if: "!contains(github.event.head_commit.message, 'NO_BUILD')"

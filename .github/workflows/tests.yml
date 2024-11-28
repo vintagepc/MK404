@@ -75,15 +75,15 @@ jobs:
     - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_core.tar.gz tests/snaps/
 
     - name: Upload report
-      uses: actions/upload-artifact@v3.1.1
+      uses: actions/upload-artifact@v4
       with:
-        name: Report
+        name: Report-1
         path: |
           ${{ runner.workspace }}/MK404/build/snaps_core.tar.gz
 #          ${{ runner.workspace }}/MK404/build/Coverage.tar.gz
 
     - name: Upload coverage artifact
-      uses: actions/upload-artifact@v3.1.1
+      uses: actions/upload-artifact@v4
       with:
         name: Coverage
         path: |
@@ -160,14 +160,14 @@ jobs:
     - run: cd ${{ runner.workspace }}/MK404/build && tar -zcvf snaps_ext1.tar.gz tests/snaps/
 
     - name: Upload report
-      uses: actions/upload-artifact@v3.1.1
+      uses: actions/upload-artifact@v4
       with:
-        name: Report
+        name: Report-2
         path: |
           ${{ runner.workspace }}/MK404/build/snaps_ext1.tar.gz
 
     - name: Upload coverage artifact
-      uses: actions/upload-artifact@v3.1.1
+      uses: actions/upload-artifact@v4
       with:
         name: Coverage2
         path: |
@@ -201,20 +201,22 @@ jobs:
         submodules: true
 
     - name: Retrieve coverage reports
-      uses: actions/download-artifact@v3.0.2
+      uses: actions/download-artifact@v4.1.7
       with:
         name: Coverage
         path: parts
 
     - name: Retrieve coverage reports
-      uses: actions/download-artifact@v3.0.2
+      uses: actions/download-artifact@v4.1.7
       with:
         name: Coverage2
         path: ext1
 
 
     - name: Upload to codecov.io
-      uses: codecov/codecov-action@v2.1.0
+      uses: codecov/codecov-action@v4
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
         # Comma-separated list of files to upload
         files: ./parts/parts.info,./ext1/ext1.info

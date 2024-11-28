@@ -222,7 +222,7 @@ jobs:
       - name: Extract assets
         run: |
           tar -jxvf MK404-development-build.tar.bz2
-          mv MK404_OSX MK404-dev/
+          if [ -f MK404_OSX ]; then mv MK404_OSX MK404-dev/; fi
           mv MK404.exe MK404-dev/MK404-cygwin.exe
 
       - name: Check tag version

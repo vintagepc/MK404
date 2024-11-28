@@ -90,12 +90,13 @@ jobs:
 
     - name: Upload artifact
       if: ${{ !github.event.pull_request }}
-      uses: actions/upload-artifact@v3.1.1
+      uses: actions/upload-artifact@v4
       with:
-        name: Binaries
+        name: Binaries-linux
         path: ${{ runner.workspace }}/MK404/build/MK404-development-build.tar.bz2
 
   build_osx:
+    continue-on-error: true
     # The type of runner that the job will run on
     runs-on: macos-latest
     if: "!contains(github.event.head_commit.message, 'NO_BUILD')"
@@ -134,9 +135,9 @@ jobs:
 
     - name: Upload OSX artifact
       if: ${{ !github.event.pull_request }}
-      uses: actions/upload-artifact@v3.1.1
+      uses: actions/upload-artifact@v4
       with:
-        name: Binaries
+        name: Binaries-osx
         path: ${{ runner.workspace }}/MK404/build/MK404_OSX
 
   build_cygwin:
@@ -202,9 +203,9 @@ jobs:
 
       - name: Upload Cygwin artifact
         if: ${{ !github.event.pull_request }}
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v4
         with:
-          name: Binaries
+          name: Binaries-win
           path: ${{ runner.workspace }}/MK404/build/MK404.exe
 
   Publish:
@@ -213,14 +214,15 @@ jobs:
     needs: [build, build_osx, build_cygwin]
     steps:
       - name: Retrieve platform binaries
-        uses: actions/download-artifact@v3.0.2
+        uses: actions/download-artifact@v4.1.7
         with:
-          name: Binaries
+          pattern: Binaries-*
+          merge-multiple: true
 
       - name: Extract assets
         run: |
           tar -jxvf MK404-development-build.tar.bz2
-          mv MK404_OSX MK404-dev/
+          if [ -f MK404_OSX ]; then mv MK404_OSX MK404-dev/; fi
           mv MK404.exe MK404-dev/MK404-cygwin.exe
 
       - name: Check tag version

@@ -76,9 +76,9 @@ int main()
 	printf("READY\n");
 
 	SPI_TX(0x90);
-	SPI_TX(0xFF);
-	SPI_TX(0xFF);
-	printf("SPI %02x\n", SPI_TX(0xFF));
+	SPI_TX(0x00);
+	SPI_TX(0x00);
+	printf("SPI %02x\n", SPI_TX(0x00));
 	printf("SPI %02x\n", SPI_TX(0xFF));
 	printf("SPI %02x\n", SPI_TX(0xFF));
 

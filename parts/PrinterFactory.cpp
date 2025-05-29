@@ -1,7 +1,7 @@
 /*
 	PrinterFactory.cpp - Printer factory for printer models.
 	Add your printer implementation to the map of names->constructors.
-	Copyright 2020-2021 VintagePC <https://github.com/vintagepc/>
+	Copyright 2020-2025 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
 
@@ -30,6 +30,7 @@
 #include "printers/Prusa_MK2MMU_13.h"
 #include "printers/Prusa_MK2_13.h"
 #include "printers/Prusa_MK3.h"
+#include "printers/Prusa_MK25SMMU2.h"
 #include "printers/Prusa_MK3MMU2.h"
 #include "printers/Prusa_MK3S.h"
 #include "printers/Prusa_MK3SMMU2.h"
@@ -94,6 +95,7 @@ std::map<std::string,std::pair<Ctor,Dtor>>& PrinterFactory::GetModelMap()
 		{"Prusa_MK2MMU_mR13",	{&PrinterFactory::_CreatePrinter<Prusa_MK2MMU_13>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK2MMU_13>}},
 		{"Prusa_MK25_mR13",		{&PrinterFactory::_CreatePrinter<Prusa_MK25_13>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK25_13>}},
 		{"Prusa_MK25S_mR13",	{&PrinterFactory::_CreatePrinter<Prusa_MK25S_13>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK25S_13>}},
+		{"Prusa_MK25S_MMU2",	{&PrinterFactory::_CreatePrinter<Prusa_MK25SMMU2>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK25SMMU2>}},
 		{"Prusa_MK3",			{&PrinterFactory::_CreatePrinter<Prusa_MK3>	, 		&PrinterFactory::_DestroyPrinter<Prusa_MK3>}},
 		{"Prusa_MK3S",			{&PrinterFactory::_CreatePrinter<Prusa_MK3S>	, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3S>}},
 		{"Prusa_MK3SMMU2",		{&PrinterFactory::_CreatePrinter<Prusa_MK3SMMU2>, 	&PrinterFactory::_DestroyPrinter<Prusa_MK3SMMU2>}},

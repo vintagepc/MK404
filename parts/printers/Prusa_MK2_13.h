@@ -30,6 +30,7 @@
 #include <memory>           // for unique_ptr
 #include <string>           // for string
 #include <utility>          // for pair
+#include "Prusa_MMUTypes.h"  // for MMUType
 
 class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 {
@@ -57,7 +58,7 @@ class Prusa_MK2_13 : public Boards::MiniRambo, public Printer
 
 		virtual inline bool GetHasSheet() { return false; }
 
-		virtual inline bool GetHasMMU() { return false; }
+		virtual inline MMUType GetHasMMU() { return MMUType::NONE; }
 
 		std::unique_ptr<MK3SGL> m_pVis {nullptr};
 

@@ -117,6 +117,7 @@ set(H_FILES_base
 	parts/printers/Prusa_MK25_13.h
 	parts/printers/Prusa_MK25S_13.h
 	parts/printers/Prusa_MK2MMU_13.h
+	parts/printers/Prusa_MK25SMMU2.h
 	parts/printers/Prusa_MK3.h
 	parts/printers/Prusa_MK3MMU2.h
 	parts/printers/Prusa_MK3S.h
@@ -227,6 +228,7 @@ set(MK404_SOURCES_base
 	parts/printers/Prusa_MK2_13.cpp
 	parts/printers/Prusa_MK25_13.cpp
 	parts/printers/Prusa_MK25S_13.cpp
+	parts/printers/Prusa_MK25SMMU2.cpp
 	parts/printers/Prusa_MK2MMU_13.cpp
 	parts/printers/Prusa_MK3.cpp
 	parts/printers/Prusa_MK3MMU2.cpp

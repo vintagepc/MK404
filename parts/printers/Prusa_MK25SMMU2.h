@@ -46,6 +46,9 @@ class Prusa_MK25SMMU2 : public Prusa_MK25S_13
 		std::pair<int,int> GetWindowSize() override;
 
 	protected:
+
+		void OnAVRReset() override;
+
 		void SetupHardware() override;
 
 		void OnMMUFeed(avr_irq_t *irq, uint32_t value);// Helper for MMU IR sensor triggering.

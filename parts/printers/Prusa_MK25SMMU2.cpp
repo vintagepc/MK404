@@ -35,7 +35,6 @@
 void Prusa_MK25SMMU2::SetupHardware()
 {
 	Prusa_MK25S_13::SetupHardware();
-	TryConnect(MMU_HWRESET,&m_MMU,MMU2::RESET);
 	m_IR.Set(IRSensor::IR_AUTO);
 	avr_irq_register_notify(m_MMU.GetIRQ(MMU2::FEED_DISTANCE), MAKE_C_CALLBACK(Prusa_MK25SMMU2,OnMMUFeed),this);
 
@@ -85,4 +84,10 @@ void Prusa_MK25SMMU2::OnMMUFeed(struct avr_irq_t *, uint32_t value)
 	float fVal;
 	std::memcpy(&fVal,&value,4);
 	m_IR.Auto_Input(fVal>400.f); // Trigger IR if MMU P pos > 400mm
+}
+
+void Prusa_MK25SMMU2::OnAVRReset()
+{
+	Prusa_MK25S_13::OnAVRReset();
+	avr_raise_irq(m_MMU.GetIRQ(MMU2::RESET),0);
 }

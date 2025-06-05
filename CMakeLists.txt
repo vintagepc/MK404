@@ -56,6 +56,7 @@ set (FIRMWARE
     assets/Firmware/MM-control-01.hex
     assets/Firmware/MK3S.afx
     assets/Firmware/stk500boot_v2_mega2560.hex
+	assets/Firmware/Caterina-prusa_mm_control.hex
     )
 
 set(H_FILES_base
@@ -452,7 +453,10 @@ endif()
 
 
 target_link_libraries(MK404 gsl-lite)
-
+add_custom_command(TARGET MK404 POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Caterina-prusa_mm_control.hex"
+                    "${PROJECT_BINARY_DIR}/Caterina-prusa_mm_control.hex")
 add_custom_command(TARGET MK404 POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "${PROJECT_SOURCE_DIR}/assets/Firmware/MM-control-01.hex"

@@ -46,7 +46,7 @@ class HD44780GL:public HD44780, private IKeyClient
 		~HD44780GL() override = default;
 
 		// Registers with SimAVR (for brightness)
-		void Init(avr_t *avr);
+		void Init(avr_t *avr) override;
 
 		// Draw with the currently selected colour scheme
 		void Draw(bool bMaterial = false);

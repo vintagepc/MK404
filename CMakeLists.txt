@@ -601,6 +601,7 @@ SET(PRINTERS
 	Prusa_MK25S_mR13
 	Prusa_MK25_mR13
 	Prusa_MK2MMU_mR13
+	Prusa_MK25S_MMU2
 	Prusa_MK2_mR13
 	Prusa_MK1_mR13
 	Prusa_MMU2

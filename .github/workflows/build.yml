@@ -61,7 +61,7 @@ jobs:
       run: mkdir ${{ runner.workspace }}/MK404/build && cd ${{ runner.workspace }}/MK404/build && cmake -DCMAKE_BUILD_TYPE=RELEASE ..
 
     - name: Build Einsy
-      run: cd ${{ runner.workspace }}/MK404/build && make -j2
+      run: cd ${{ runner.workspace }}/MK404/build && make -j$(nproc)
 
     - name: Checkout Wiki
       uses: actions/checkout@v3
@@ -130,7 +130,7 @@ jobs:
 
     - name: Build Einsy
       run: |
-        cd ${{ runner.workspace }}/MK404/build && make -j2
+        cd ${{ runner.workspace }}/MK404/build && make -j$(nproc)
         cp MK404 MK404_OSX
 
     - name: Upload OSX artifact
@@ -198,7 +198,7 @@ jobs:
           cd ${{runner.workspace}}\MK404\build
           pwd
           set PATH=C:\tools\cygwin\bin;C:\tools\cygwin\usr\bin
-          bash.exe -c "make -j2"
+          bash.exe -c "make -j$(nproc)"
         shell: cmd
 
       - name: Upload Cygwin artifact

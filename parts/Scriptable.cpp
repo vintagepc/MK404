@@ -56,3 +56,9 @@ void Scriptable::RegisterMenu(const std::string &strLabel, unsigned uiID)
 {
 	ScriptHost::AddMenuEntry(strLabel, uiID, this);
 }
+
+//Forwarder:
+void Scriptable::RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID, const std::vector<ArgType>& vTypes)
+{
+	IScriptable::RegisterAction(strAct,strDesc,ID, vTypes);
+}

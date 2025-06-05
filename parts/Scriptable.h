@@ -44,4 +44,6 @@ class Scriptable: public IScriptable
 
 		void RegisterMenu(const std::string &strLabel, unsigned uiID);
 
+		//Forwarder:
+		void RegisterAction(const std::string &strAct, const std::string& strDesc, unsigned int ID, const std::vector<ArgType>& vTypes);
 };

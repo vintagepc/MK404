@@ -550,10 +550,10 @@ add_test(ext1_MK2_Lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB
 add_test(ext1_IPC env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 IPCPrinter --script ../scripts/tests/test_boot_ipc.txt)
 add_test(ext1_IPCMMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 IPCPrinter_MMU2 -g lite --script ../scripts/tests/test_boot_ipcmmu2.txt )
 add_test(ext1_MMU2 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MMU2 -f MM-control-01.hex --script ../scripts/tests/test_boot_mmu2.txt )
-add_test(ext1_CW1 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex --script ../scripts/tests/test_boot_cw1.txt )
-add_test(ext1_CW1S env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_CW1S -f Prusa-CW1S-Firmware.hex --script ../scripts/tests/test_boot_cw1s.txt )
-add_test(ext1_CW1S_lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex -g lite --script ../scripts/tests/test_cw1_lite_gfx.txt )
-add_test(ext1_CW1S_full env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware.hex -g fancy --script ../scripts/tests/test_cw1_full_gfx.txt )
+add_test(ext1_CW1 env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware-en-v3.1.0.hex --script ../scripts/tests/test_boot_cw1.txt )
+add_test(ext1_CW1S env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_CW1S -f Prusa-CW1S-Firmware-en-v3.1.0.hex --script ../scripts/tests/test_boot_cw1s.txt )
+add_test(ext1_CW1S_lite env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware-en-v3.1.0.hex -g lite --script ../scripts/tests/test_cw1_lite_gfx.txt )
+add_test(ext1_CW1S_full env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_CW1 -f Prusa-CW1-Firmware-en-v3.1.0.hex -g fancy --script ../scripts/tests/test_cw1_full_gfx.txt )
 add_test(Internal_Scripting_stdio env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ../scripts/tests/extra_Scripting_stdio.py)
 
 

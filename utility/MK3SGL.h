@@ -108,6 +108,10 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 			}
 		}
 
+		// Changes MMU rendering placement (used by MK2.5SMMU2).
+		// NOT thread safe, do not call once rendering has started.
+		void AdjustMMUPos(float fX, float fY, float fZ);
+
 	protected:
 		LineStatus ProcessAction(unsigned int iAct, const std::vector<std::string> &vArgs) override;
 
@@ -168,6 +172,9 @@ class MK3SGL: public BasePeripheral, public Scriptable, private IKeyClient
 
         // Correction parameters to get the model at 0,0,0 and aligned with the simulated starting positions.
         std::atomic<float> m_fEPos = {0}, m_fXPos = {0.01}, m_fYPos = {0.01}, m_fZPos = {0.01}, m_fPPos = {0.f};
+
+		// MMU position correction (2.5sMMU2)
+		float m_fMMUAjd[3] = {};
 
         float m_fSelCorr = 0.025f;
 		std::atomic<float> m_fSelPos = {0.0f};

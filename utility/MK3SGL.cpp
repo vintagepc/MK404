@@ -251,6 +251,13 @@ void MK3SGL::OnKeyPress(const Key& key)
 	//printf("Offsets: %03f, %03f, %03f,\n",m_flDbg.load(),m_flDbg2.load(), m_flDbg3.load());
 }
 
+void MK3SGL::AdjustMMUPos(float fX, float fY, float fZ)
+{
+	m_fMMUAjd[0] = fX;
+	m_fMMUAjd[1] = fY;
+	m_fMMUAjd[2] = fZ;
+}
+
 void MK3SGL::Init(avr_t *avr)
 {
 	_Init(avr,this);
@@ -757,6 +764,7 @@ void MK3SGL::DrawMMU()
 		float _fTransform[3] {0,0,0};
 		gsl::span<float> fTransform = {_fTransform};
 		glPushMatrix();
+			glTranslatef(m_fMMUAjd[0], m_fMMUAjd[1], m_fMMUAjd[2]);
 			m_MMUBase.GetCenteringTransform(fTransform);
 			glTranslatef(0,0.3185,0.0425);
 			glTranslatef(-fTransform[0], -fTransform[1], -fTransform[2]);

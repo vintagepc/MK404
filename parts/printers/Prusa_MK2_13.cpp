@@ -45,13 +45,20 @@ void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
 {
 	if (type=="lite")
 	{
-		m_pVis.reset(new MK3SGL(type,false,this)); //NOLINT - suggestion is c++14.
+		m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
 	}
 	else if (type=="fancy")
 	{
 		m_pVis.reset(new MK3SGL(  //NOLINT - suggestion is c++14.
 			GetHasSheet()?"mk25":"mk2",
-			GetHasMMU(),this));
+			GetHasMMU(),this)
+		);
+
+		// This printer is positioned differently from the MK3, hence this correction for the MMU2 hybrid.
+		if (GetHasMMU() == MMUType::MMUv2)
+		{
+			m_pVis->AdjustMMUPos(0.034f, -0.023f, -0.235f);
+		}
 	}
 	else
 	{

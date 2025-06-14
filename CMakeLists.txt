@@ -52,12 +52,14 @@ endif()
 
 
 
-set (FIRMWARE
-    assets/Firmware/MM-control-01.hex
-    assets/Firmware/MK3S.afx
-    assets/Firmware/stk500boot_v2_mega2560.hex
-	assets/Firmware/Caterina-prusa_mm_control.hex
-    )
+SET(FIRMWARE
+	Caterina-prusa_mm_control.hex
+	MM-control-01.hex
+	MK3S.afx
+	stk500boot_v2_mega2560.hex
+	Prusa-CW1-Firmware-en-v3.1.0.hex
+	Prusa-CW1S-Firmware-en-v3.1.0.hex
+)
 
 set(H_FILES_base
 	parts/ADCPeripheral.h
@@ -274,9 +276,9 @@ set (MK404_TEST_SOURCES
 set(MK404_SOURCES ${MK404_SOURCES_base} ${MK404_SOURCES_3rdparty})
 
 if (ENABLE_TIDY)
-	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${FIRMWARE})
+	add_executable(MK404 MK404.cpp ${MK404_SOURCES})
 else()
-	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES} ${FIRMWARE})
+	add_executable(MK404 MK404.cpp ${MK404_SOURCES} ${H_FILES})
 endif()
 
 if(ENABLE_SHMQ)
@@ -453,30 +455,16 @@ endif()
 
 
 target_link_libraries(MK404 gsl-lite)
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Caterina-prusa_mm_control.hex"
-                    "${PROJECT_BINARY_DIR}/Caterina-prusa_mm_control.hex")
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/MM-control-01.hex"
-                    "${PROJECT_BINARY_DIR}/MM-control-01.hex")
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/MK3S.afx"
-                    "${PROJECT_BINARY_DIR}/MK3S.afx")
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/stk500boot_v2_mega2560.hex"
-                    "${PROJECT_BINARY_DIR}/stk500boot_v2_mega2560.hex")
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Prusa-CW1-Firmware-en-v3.1.0.hex"
-                    "${PROJECT_BINARY_DIR}/Prusa-CW1-Firmware.hex")
-add_custom_command(TARGET MK404 POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${PROJECT_SOURCE_DIR}/assets/Firmware/Prusa-CW1S-Firmware-en-v3.1.0.hex"
-                    "${PROJECT_BINARY_DIR}/Prusa-CW1S-Firmware.hex")
+
+FOREACH (FW_FILE IN LISTS FIRMWARE)
+	ADD_CUSTOM_COMMAND(TARGET MK404 POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		"${PROJECT_SOURCE_DIR}/assets/Firmware/${FW_FILE}"
+		"${PROJECT_BINARY_DIR}/${FW_FILE}"
+		COMMENT "Copying firmware file ${FW_FILE} to build directory."
+	)
+ENDFOREACH()
+
 # Copies the models/materials:
 
 file(GLOB_RECURSE MODEL_FILES
@@ -545,11 +533,14 @@ add_test(ext1_MK3S_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVF
 add_test(ext1_MK3_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MK3 -f MK3S.afx --script ../scripts/tests/test_boot_MK3.txt --lcd-scheme 2 )
 add_test(ext1_MK3SMMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MK3SMMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3SMMU2.txt --lcd-scheme 2 )
 add_test(ext1_MK3MMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MK3MMU2 -f MK3S.afx --script ../scripts/tests/test_boot_MK3MMU2.txt --lcd-scheme 2 )
+add_test(ext1_MK25SMMU2_Boot env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MK25S_MMU2 -f ../assets/Firmware/MK25S_MMU2S_test.hex -F ../assets/Firmware/MMU3_FW3.0.2+878.hex --script ../scripts/tests/test_boot_MK25SMMU2.txt --lcd-scheme 2 )
 add_test(ext1_Lite_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 -g lite -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_lite_gfx.txt --lcd-scheme 2 )
 add_test(ext1_Bear_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 -g bear -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_bear_gfx.txt --lcd-scheme 2 )
 add_test(ext1_Fancy_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 -g fancy -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_fancy_gfx.txt --lcd-scheme 2 )
 add_test(ext1_Lite_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404  Prusa_MK3SMMU2 -g lite -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_litemmu_gfx.txt --lcd-scheme 2 )
 add_test(ext1_Fancy_MMU_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MK3SMMU2 -g fancy -f tests/extra_EinsyRambo.afx --script ../scripts/tests/test_fancymmu_gfx.txt --lcd-scheme 2 )
+add_test(ext1_MK25SMMU2_Lite_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404  Prusa_MK25S_MMU2 -g lite  -f ../assets/Firmware/MK25S_MMU2S_test.hex -F ../assets/Firmware/MMU3_FW3.0.2+878.hex --script ../scripts/tests/test_25slitemmu_gfx.txt --lcd-scheme 2 )
+add_test(ext1_MK25SMMU2_Fancy_Gfx env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MK25S_MMU2 -g fancy -f ../assets/Firmware/MK25S_MMU2S_test.hex -F ../assets/Firmware/MMU3_FW3.0.2+878.hex --script ../scripts/tests/test_25sfancymmu_gfx.txt --lcd-scheme 2 )
 add_test(ext1_Mouse env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MK3S -f tests/extra_EinsyRambo.afx -g lite --script ../scripts/tests/test_lite_gfx_mouse.txt --lcd-scheme 2 )
 add_test(ext1_Keys env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MK3 -f tests/extra_EinsyRambo.afx -g lite --script ../scripts/tests/test_lite_gfx_keys.txt --lcd-scheme 2 )
 add_test(ext1_MK2_Fancy env ${TEST_EXPORT_PREFIX} ${TEST_XVFB_PREFIX} ${TEST_XVFB_ARGS} ./MK404 Prusa_MK2_mR13 -f tests/extra_MiniRambo.afx -g fancy --script ../scripts/tests/test_MK2_fancy.txt --lcd-scheme 2 )

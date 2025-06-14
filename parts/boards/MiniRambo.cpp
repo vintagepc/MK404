@@ -58,6 +58,7 @@ namespace Boards
 		DisableInterruptLevelPoll(8);
 
 		AddHardware(UART0,'0');
+		AddSerialPty(&UART2,'2');
 
 		AddHardware(m_Mon0,'0');
 
@@ -151,6 +152,7 @@ namespace Boards
 
 
 		AddUARTTrace('0'); // External
+		AddUARTTrace('2');
 
 		// SD card
 		std::string strSD = GetSDCardFile();

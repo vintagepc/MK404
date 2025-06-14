@@ -361,6 +361,7 @@ int main(int argc, char *argv[])
 	SwitchArg argCmplZsh("","complete-zsh","Generate zsh auto-complete script for supported arguments",cmd);
 	SwitchArg argCmplBash("","complete-bash","Generate bash auto-complete script for supported arguments",cmd);
 	SwitchArg argColourE("", "colour-extrusion", "Colours extrusion by width (for advanced step/extrusion debugging.", cmd, false);
+	ValueArg<string> argStrBoot2("","bootloader-file2", "Specifies a .hex file to load as the bootloader for the MMU. If empty, ("") the default is used bootloader is loaded",false,"Caterina-prusa_mm_control.hex ","file:hex",cmd);
 	ValueArg<string> argStrBoot("","bootloader-file", "Specifies a .hex file to load as the bootloader. If empty, ("") no bootloader is loaded, if unspecified the default is used.",false,"stk500boot_v2_mega2560.hex","file:hex",cmd);
 	SwitchArg argBootloader("b","bootloader","Run bootloader on first start instead of going straight to the firmware.",cmd);
 	SwitchArg argMD("","markdown","Used to auto-generate the items in refs/ as markdown",cmd);
@@ -442,6 +443,7 @@ int main(int argc, char *argv[])
 	Config::Get().SetExtrusionMode(PrintVisualType::GetNameToType().at(argExtrusion.getValue()));
 	Config::Get().SetColourE(argColourE.isSet());
 	Config::Get().SetFW2(argFW2.getValue());
+	Config::Get().SetSecondaryBootloader(argStrBoot2.getValue());
 	Config::Get().SetGDB2(argGDB2.isSet());
 
 	TelemetryHost::GetHost().SetCategories(argVCD.getValue());

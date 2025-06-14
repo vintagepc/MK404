@@ -90,7 +90,7 @@ class HD44780:public BasePeripheral, public Scriptable
 		explicit HD44780(uint8_t width = 20, uint8_t height = 4);
 
 		// Registers IRQs with SimAVR.
-		void Init(avr_t *avr);
+		virtual void Init(avr_t *avr);
 
 		// Returns height and width.
         inline uint8_t GetWidth() { return m_uiWidth;}

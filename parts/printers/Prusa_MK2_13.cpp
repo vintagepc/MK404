@@ -45,13 +45,20 @@ void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
 {
 	if (type=="lite")
 	{
-		m_pVis.reset(new MK3SGL(type,false,this)); //NOLINT - suggestion is c++14.
+		m_pVis.reset(new MK3SGL(type,GetHasMMU(),this)); //NOLINT - suggestion is c++14.
 	}
 	else if (type=="fancy")
 	{
 		m_pVis.reset(new MK3SGL(  //NOLINT - suggestion is c++14.
 			GetHasSheet()?"mk25":"mk2",
-			GetHasMMU(),this));
+			GetHasMMU(),this)
+		);
+
+		// This printer is positioned differently from the MK3, hence this correction for the MMU2 hybrid.
+		if (GetHasMMU() == MMUType::MMUv2)
+		{
+			m_pVis->AdjustMMUPos(0.034f, -0.023f, -0.235f);
+		}
 	}
 	else
 	{
@@ -75,12 +82,16 @@ void Prusa_MK2_13::OnVisualTypeSet(const std::string &type)
 	m_pVis->ConnectFrom(hBed.GetIRQ(Heater::ON_OUT), MK3SGL::BED_IN);
 	m_pVis->ConnectFrom(sd_card.GetIRQ(SDCard::CARD_PRESENT), MK3SGL::SD_IN);
 	m_pVis->ConnectFrom(pinda.GetIRQ(PINDA::TRIGGER_OUT), MK3SGL::PINDA_IN);
-	if (GetHasMMU())
+	if (GetHasMMU() == MMUType::MMUv1)
 	{
 		m_pVis->ConnectFrom(m_mmu.GetIRQ(MMU1::TOOL_OUT),MK3SGL::TOOL_IN);
 		m_pVis->ConnectFrom(E1.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
 		m_pVis->ConnectFrom(E2.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
 		m_pVis->ConnectFrom(E3.GetIRQ(A4982::STEP_POS_OUT),MK3SGL::E_STEP_IN);
+	}
+	else
+	{
+		// N.B. MMU2 is handled separately in a derived class.
 	}
 	m_pVis->SetLCD(&lcd);
 

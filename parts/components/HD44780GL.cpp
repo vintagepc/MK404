@@ -136,7 +136,7 @@ void HD44780GL::GenerateCharQuads()
 	}
 	glGenBuffers(1, &m_bgVtxBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, m_bgVtxBuffer);
-	glBufferData(GL_ARRAY_BUFFER, vRects.size() * sizeof(float), &vRects.at(0),	GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vRects.size() * sizeof(float), &vRects.at(0),	GL_STATIC_DRAW); // cppcheck-suppress [containerOutOfBounds] // Pretty sure it's just wrong, there's no way for it to NOT be initialized.
 }
 
 void HD44780GL::GLPutChar(unsigned char c, uint32_t character, uint32_t text, uint32_t shadow, bool bMaterial)

@@ -1,6 +1,6 @@
 /*
 	MiniRambo.h - Board definition for the Prusa MiniRambo
-	Copyright 2020 VintagePC <https://github.com/vintagepc/>
+	Copyright 2020-5 VintagePC <https://github.com/vintagepc/>
 
  	This file is part of MK404.
 
@@ -61,7 +61,7 @@ namespace Boards
 
 			HD44780GL lcd;
 			Beeper m_buzzer;
-			uart_pty UART0;
+			uart_pty UART0, UART2;
 			RotaryEncoder encoder;
 			A4982 X{'X'}, Y{'Y'}, Z{'Z'}, E{'E'}, E1{'2'}, E2{'3'}, E3{'4'};
 			Thermistor tExtruder, tBed, tPinda, tAmbient;

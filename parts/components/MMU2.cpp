@@ -52,7 +52,7 @@ MMU2::MMU2(bool bCreate, bool bSetupSB):IKeyClient(),MM_Control_01(),m_bSideband
 	SetBoardName("MMU2");
 	if (bCreate)
 	{
-		CreateBoard(Config::Get().GetFW2(),0, Config::Get().GetGDB2(), 100,"");
+		CreateBoard(Config::Get().GetFW2(),0, Config::Get().GetGDB2(), 100, Config::Get().GetSecondaryBootloader());
 	}
 	RegisterKeyHandler('F',"Toggle the FINDA");
 	RegisterKeyHandler('A', "Resumes full-auto MMU mode.");
